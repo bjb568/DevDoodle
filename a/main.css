@@ -44,6 +44,7 @@ body {
 .white, .error { color: #fff }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
+.pre { white-space: pre-wrap }
 .clear, .clearfix:after, nav:after {
 	content: '';
 	display: block;
