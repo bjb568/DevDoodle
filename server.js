@@ -21,6 +21,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.users = collection;
 		});
+		db.collection('chat', function(err, collection) {
+			if (err) throw err;
+			collections.chat = collection;
+		});
 	});
 });
 
@@ -36,7 +40,8 @@ var mime = {
 	'.css': 'text/css',
 	'.js': 'text/javascript',
 	'.png': 'image/png',
-	'.svg': 'image/svg+xml'
+	'.svg': 'image/svg+xml',
+	'.mp3': 'audio/mpeg'
 };
 
 function linkUser(name) {
@@ -155,11 +160,11 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/chat/') {
 		respondPage(req, res, function() {
-			res.write('<div id="chat" class="scrly hglt pad" style="max-height: 60vh"></div>');
-			res.write('<textarea id="ta" class="umar"></textarea><button class="blk" onclick="socket.send(document.getElementById(\'ta\').value); document.getElementById(\'ta\').value = \'\';">Post</button>');
+			res.write('<div id="chat" class="scrly hglt pad" style="max-height: 80vh"></div>');
+			res.write('<textarea id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;" onkeypress="if (arguments[0].keyCode == 13 &amp;&amp; !arguments[0].shiftKey) { send(); arguments[0].preventDefault(); }"></textarea><button class="blk" onclick="send()">Post</button>');
 			res.write('<script>');
-			res.write('var socket = new WebSocket(\'ws://localhost:8125/chat\');');
-			res.write('socket.onmessage = function(e) { var div = document.createElement(\'div\'); div.textContent = e.data; document.getElementById(\'chat\').appendChild(div); }');
+			res.write('var socket = new WebSocket(\'ws://localhost:8125/chat\'), loaded = false, onBottom = true, onscroll = function() { onBottom = document.getElementById(\'chat\').scrollTop >= document.getElementById(\'chat\').scrollHeight }; setTimeout(function() { loaded = true }, 3000);');
+			res.write('function send() { socket.send(document.getElementById(\'ta\').value); document.getElementById(\'ta\').value = \'\'; }; socket.onmessage = function(e) { var div = document.createElement(\'div\'); div.classList.add(\'hglt\'); div.classList.add(\'umar\'); div.classList.add(\'spad\'); div.textContent = e.data; document.getElementById(\'chat\').appendChild(div); if (loaded) { new Audio(\'/a/beep.mp3\').play(); } if (onBottom) document.getElementById(\'chat\').scrollTop = document.getElementById(\'chat\').scrollHeight }');
 			res.write('</script>');
 		});
 	} else {
@@ -173,16 +178,17 @@ http.createServer(function(req, res) {
 }).listen(8124);
 console.log('Server running at http://localhost:8124/');
 
-var chat = {};
-chat.ws = new ws.Server({host: 'localhost', port:8125});
-chat.messages = [];
+var chatWS = new ws.Server({host: 'localhost', port:8125});
 
-chat.ws.on('connection', function(tws) {
-	for (var i = 0; i < chat.messages.length; i++)
-		tws.send(chat.messages[i]);
+chatWS.on('connection', function(tws) {
+	collections.chat.find().toArray(function(err, docs) {
+		docs.forEach(function(doc) {
+			tws.send(doc.body);
+		});
+	});
 	tws.on('message', function(message) {
-		chat.messages.push(message);
-		for (var i in chat.ws.clients)
-			chat.ws.clients[i].send(message);
+		collections.chat.insert({body: message});
+		for (var i in chatWS.clients)
+			chatWS.clients[i].send(message);
 	});
 });
