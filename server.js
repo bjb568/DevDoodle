@@ -48,7 +48,7 @@ function linkUser(name) {
 	return '<a href="/user/'+name+'">'+name+'</a>';
 };
 
-function respondPage(req, res, callback, header) {
+function respondPage(title, req, res, callback, header) {
 	var query = url.parse(req.url, true).query, cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
@@ -56,12 +56,11 @@ function respondPage(req, res, callback, header) {
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
 		collections.users.findOne({cookie: cookies.id}, function(err, user) {
+			data = data.toString();
 			if (user = user || header.user) {
-				res.write(data.toString().replace('$search', query.q || '').replace('<a href="/login/">Login</a>', linkUser(user.name)));
-				delete header.user;
-			} else {
-				res.write(data.toString().replace('$search', query.q || ''));
+				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
+			res.write(data.replace('$title', title).replace('$search', query.q || ''));
 			delete header.user;
 			callback();
 			fs.readFile('a/foot.html', function(err, data) {
@@ -75,7 +74,7 @@ function respondPage(req, res, callback, header) {
 http.createServer(function(req, res) {
 	console.log('Req '+req.url);
 	if (req.url == '/') {
-		respondPage(req, res, function() {
+		respondPage('DevDoodle', req, res, function() {
 			res.write('Lorem ipsum. <a>this is a link</a>');
 		});
 	} else if (req.url == '/login/') {
@@ -87,7 +86,7 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				if (post.create) {
-					respondPage(req, res, function() {
+					respondPage('In dev', req, res, function() {
 						res.write('In dev');
 					});
 				} else {
@@ -96,7 +95,7 @@ http.createServer(function(req, res) {
 						if (err) throw err;
 						if (user) {
 							var rstr = crypto.randomBytes(48).toString('base64');
-							respondPage(req, res, function() {
+							respondPage('Login Success | DevDoodle', req, res, function() {
 								res.write('Welcome back, '+user.name+'. You have '+user.rep+' repuatation.');
 							}, {
 								'Set-Cookie': cookie.serialize('id', rstr, {
@@ -107,7 +106,7 @@ http.createServer(function(req, res) {
 							});
 							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
 						} else {
-							respondPage(req, res, function() {
+							respondPage('Login | DevDoodle', req, res, function() {
 								res.write('<style>');
 								res.write('#content input[type=text], button { display: block }');
 								res.write('</style>');
@@ -128,7 +127,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		} else {
-			respondPage(req, res, function() {
+			respondPage('Login | DevDoodle', req, res, function() {
 				res.write('<style>');
 				res.write('#content input[type=text], button { display: block }');
 				res.write('</style>');
@@ -145,7 +144,7 @@ http.createServer(function(req, res) {
 			});
 		}
 	} else if (req.url == '/user/') {
-		respondPage(req, res, function() {
+		respondPage('Users | DevDoodle', req, res, function() {
 			collections.users.find().toArray(function(err, docs) {
 				if (err) throw err;
 				res.write('<table><tbody>');
@@ -159,7 +158,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url == '/chat/') {
-		respondPage(req, res, function() {
+		respondPage('Chat | DevDoodle', req, res, function() {
 			res.write('<div id="chat" class="scrly hglt pad pre" style="max-height: 80vh"></div>');
 			res.write('<textarea id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;" onkeypress="if (arguments[0].keyCode == 13 &amp;&amp; !arguments[0].shiftKey) { send(); arguments[0].preventDefault(); }"></textarea><button class="blk" onclick="send()">Post</button>');
 			res.write('<script>');
