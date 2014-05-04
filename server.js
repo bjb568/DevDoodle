@@ -170,7 +170,7 @@ http.createServer(function(req, res) {
 	} else {
 		fs.exists('.' + req.url, function(exists) {
 			if (exists) {
-				res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain'});
+				res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public'});
 				fs.createReadStream('.' + req.url).pipe(res);
 			} else errors[404](res);
 		});
