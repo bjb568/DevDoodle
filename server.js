@@ -159,12 +159,10 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/chat/') {
 		respondPage('Chat | DevDoodle', req, res, function() {
-			res.write('<div id="chat" class="scrly hglt pad pre" style="max-height: 80vh"></div>');
-			res.write('<textarea id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;" onkeypress="if (arguments[0].keyCode == 13 &amp;&amp; !arguments[0].shiftKey) { send(); arguments[0].preventDefault(); }"></textarea><button class="blk" onclick="send()">Post</button>');
-			res.write('<script>');
-			res.write('var socket = new WebSocket(\'ws://localhost:8125/chat\'), loaded = false, onBottom = true, onscroll = function() { onBottom = document.getElementById(\'chat\').scrollTop + document.getElementById(\'chat\').offsetHeight >= document.getElementById(\'chat\').scrollHeight - 2 }; setTimeout(function() { loaded = true }, 3000);');
-			res.write('function send() { socket.send(document.getElementById(\'ta\').value); document.getElementById(\'ta\').value = \'\'; document.getElementById(\'chat\').scrollTop = document.getElementById(\'chat\').scrollHeight }; socket.onmessage = function(e) { var div = document.createElement(\'div\'); div.classList.add(\'hglt\'); div.classList.add(\'umar\'); div.classList.add(\'spad\'); div.textContent = e.data; document.getElementById(\'chat\').appendChild(div); if (loaded) { new Audio(\'/a/beep.mp3\').play(); } if (onBottom) document.getElementById(\'chat\').scrollTop = document.getElementById(\'chat\').scrollHeight }');
-			res.write('</script>');
+			fs.readFile('chat.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+			});
 		});
 	} else {
 		res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public'});
