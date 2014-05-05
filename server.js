@@ -63,11 +63,13 @@ function respondPage(title, req, res, callback, header) {
 			res.write(data.replace('$title', title).replace('$search', query.q || ''));
 			delete header.user;
 			callback();
-			fs.readFile('a/foot.html', function(err, data) {
-				if (err) throw err;
-				res.end(data);
-			});
 		});
+	});
+};
+function respondPageFooter(res) {
+	fs.readFile('a/foot.html', function(err, data) {
+		if (err) throw err;
+		res.end(data);
 	});
 };
 
@@ -76,6 +78,7 @@ http.createServer(function(req, res) {
 	if (req.url == '/') {
 		respondPage('DevDoodle', req, res, function() {
 			res.write('Lorem ipsum. <a>this is a link</a>');
+			respondPageFooter(res);
 		});
 	} else if (req.url == '/login/') {
 		if (req.method == 'POST') {
@@ -88,6 +91,7 @@ http.createServer(function(req, res) {
 				if (post.create) {
 					respondPage('In dev', req, res, function() {
 						res.write('In dev');
+						respondPageFooter(res);
 					});
 				} else {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64'); // (!!p) Increase to 1e6
@@ -97,6 +101,7 @@ http.createServer(function(req, res) {
 							var rstr = crypto.randomBytes(48).toString('base64');
 							respondPage('Login Success | DevDoodle', req, res, function() {
 								res.write('Welcome back, '+user.name+'. You have '+user.rep+' repuatation.');
+								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', rstr, {
 									path: '/',
@@ -121,6 +126,7 @@ http.createServer(function(req, res) {
 								res.write('</div>');
 								res.write('<button type="submit">Submit</button>');
 								res.write('</form>');
+								respondPageFooter(res);
 							});
 						}
 					});
@@ -141,6 +147,7 @@ http.createServer(function(req, res) {
 				res.write('</div>');
 				res.write('<button type="submit">Submit</button>');
 				res.write('</form>');
+				respondPageFooter(res);
 			});
 		}
 	} else if (req.url == '/user/') {
@@ -155,6 +162,7 @@ http.createServer(function(req, res) {
 					res.write('</tr>');
 				});
 				res.write('</tbody></table>');
+				respondPageFooter(res);
 			});
 		});
 	} else if (req.url == '/chat/') {
@@ -162,6 +170,7 @@ http.createServer(function(req, res) {
 			fs.readFile('chat.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
+				respondPageFooter(res);
 			});
 		});
 	} else {
