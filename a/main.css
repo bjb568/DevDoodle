@@ -25,9 +25,9 @@ body {
 .lft { float: left }
 .rit { float: right }
 .mar { margin: 6px }
-.sumar { margin-top: 4px }
-.umar { margin-top: 6px }
-.bumar { margin-top: 8px }
+.sumar:not(:first-child) { margin-top: 4px }
+.umar:not(:first-child) { margin-top: 6px }
+.bumar:not(:first-child) { margin-top: 8px }
 .mar { margin: 6px }
 .lmar, #content { margin-bottom: 6px }
 .rmar { margin-right: 6px }
