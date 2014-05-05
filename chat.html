@@ -1,5 +1,5 @@
 <div id="chat" class="scrly hglt pad pre" style="max-height: 80vh"></div>
-<textarea id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;"></textarea><button class="blk" onclick="send()">Post</button>
+<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;"></textarea><button class="blk" onclick="send()">Post</button>
 <script>
 	var socket = new WebSocket('ws://localhost:8125/chat');
 	var loaded = false;
@@ -20,7 +20,7 @@
 		div.classList.add('spad');
 		div.textContent = e.data;
 		document.getElementById('chat').appendChild(div);
-		if (loaded) { new Audio('/a/beep.mp3').play(); }
+		if (loaded) { new Audio('/a/beep.mp3').play() }
 		if (onBottom) { document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight }
 	};
 	document.getElementById('ta').onkeypress = function(e) {
