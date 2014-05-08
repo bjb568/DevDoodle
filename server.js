@@ -29,10 +29,12 @@ db.open(function(err, db) {
 });
 
 var errors = [];
-errors[404] = function(res) {
+errors[404] = function(req, res) {
 	console.log(404);
-	res.writeHead(404, {'Content-Type': 'text/html'});
-	res.end('404');
+	respondPage('404 | DevDoodle', req, res, function() {
+		res.write('<h1>404</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
 };
 
 var mime = {
@@ -48,11 +50,11 @@ function linkUser(name) {
 	return '<a href="/user/'+name+'">'+name+'</a>';
 };
 
-function respondPage(title, req, res, callback, header) {
+function respondPage(title, req, res, callback, header, status) {
 	var query = url.parse(req.url, true).query, cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
-	res.writeHead(200, header);
+	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
 		collections.users.findOne({cookie: cookies.id}, function(err, user) {
@@ -177,7 +179,7 @@ http.createServer(function(req, res) {
 		res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public'});
 		var stream = fs.createReadStream('.' + req.url);
 		stream.on('error', function(error) {
-			errors[404](res);
+			errors[404](req, res);
 		});
 		stream.on('readable', function() {
 			stream.pipe(res);
