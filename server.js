@@ -201,12 +201,12 @@ var chatWS = new ws.Server({host: 'localhost', port:8125});
 chatWS.on('connection', function(tws) {
 	collections.chat.find().toArray(function(err, docs) {
 		docs.forEach(function(doc) {
-			tws.send(doc.body);
+			tws.send('{"event":"init","body":'+JSON.stringify(doc.body)+'}');
 		});
 	});
 	tws.on('message', function(message) {
 		collections.chat.insert({body: message});
 		for (var i in chatWS.clients)
-			chatWS.clients[i].send(message);
+			chatWS.clients[i].send('{"event":"add","body":'+JSON.stringify(message)+'}');
 	});
 });

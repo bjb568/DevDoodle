@@ -2,26 +2,27 @@
 <textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;"></textarea><button class="blk" onclick="send()">Post</button>
 <script>
 	var socket = new WebSocket('ws://localhost:8125/chat');
-	var loaded = false;
 	var onBottom = true;
 	onscroll = function() {
 		onBottom = document.getElementById('chat').scrollTop + document.getElementById('chat').offsetHeight >= document.getElementById('chat').scrollHeight - 2;
 	};
-	setTimeout(function() { loaded = true }, 3000);
 	function send() {
 		socket.send(document.getElementById('ta').value);
 		document.getElementById('ta').value = '';
 		document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
 	};
 	socket.onmessage = function(e) {
-		var div = document.createElement('div');
-		div.classList.add('hglt');
-		div.classList.add('umar');
-		div.classList.add('spad');
-		div.textContent = e.data;
-		document.getElementById('chat').appendChild(div);
-		if (loaded) { new Audio('/a/beep.mp3').play() }
-		if (onBottom) { document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight }
+		var data = JSON.parse(e.data);
+		if (data.event == 'init' || data.event == 'add') {
+			var div = document.createElement('div');
+			div.classList.add('hglt');
+			div.classList.add('umar');
+			div.classList.add('spad');
+			div.textContent = data.body;
+			document.getElementById('chat').appendChild(div);
+			if (data.event == 'add') new Audio('/a/beep.mp3').play();
+			if (onBottom) document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+		}
 	};
 	document.getElementById('ta').onkeypress = function(e) {
 		if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
