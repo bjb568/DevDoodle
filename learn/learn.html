@@ -1,0 +1,76 @@
+<style>
+	#courses, #projects { max-width: 1500px }
+	#courses > div {
+		background: rgba(16, 128, 255, 0.8);
+		transition: background 0.2s;
+		margin: 4px 0;
+	}
+	#projects > div {
+		background: rgba(0,200,4,0.8);
+		transition: background 0.2s;
+		margin: 4px 0;
+	}
+	.desc {
+		margin-top: 4px;
+		background: rgba(255, 255, 255, 0.75);
+	}
+	.objectives {
+		margin-top: 4px;
+		background: rgba(255, 255, 255, 0.75);
+		border-radius: 3px;
+	}
+	#courses > div:hover { background: rgba(24, 172, 255, 0.8) }
+	#projects > div:hover { background: rgba(64,255,16,0.8) }
+	#courses a:hover { color: #333 }
+	#projects a:hover { color: #333 }
+	#courses a:active { color: #00f }
+	#projects a:active { color: #00f }
+	@media screen and (min-width: 801px) {
+		#courses > div, #projects > div {
+			width: 49%;
+			margin-right: 1%;
+		}
+	}
+</style>
+<h1 id="heading">Courses</h1>
+<div id="courses" class="row">
+	<div class="pad br">
+		<h2 id="html"><a href="web">Web Development</a></h2>
+		<img src="web.png" />
+		<h4>Course Description</h4>
+		<div class="desc">Learn the basics of creating a website with HTML, CSS, and Javascript.</div>
+		<h4>Course Objectives</h4>
+		<ul class="objectives">
+			<li>Build a login system</li>
+			<li>Process payments</li>
+			<li>Build powerful web apps</li>
+		</ul>
+	</div>
+	<div class="pad br">
+		<h2 id="php"><a href="#">Node.js</a></h2>
+		<img src="nodejs.png" />
+		<h4>Course Description</h4>
+		<div class="desc">Learn the basics of the most beautiful and powerful server-side language.</div>
+		<h4>Course Objectives</h4>
+		<ul class="objectives">
+			<li>Build a login system</li>
+			<li>Process payments</li>
+			<li>Build powerful web apps</li>
+		</ul>
+	</div>
+</div>
+<h1 id="heading">Projects</h1>
+<div id="projects" class="row">
+	<div class="pad br">
+		<h2 id="personalsite"><a href="#">Build A Website</a></h2>
+		<img src="http://placekitten.com/1536/512" />
+		<h4>Project desc</h4>
+		<div class="desc">Create a personal website to show your fans!</div>
+		<h4>Project Objectives</h4>
+		<ul class="objectives">
+			<li>Create a cool site with HTML, CSS and JS.</li>
+			<li>Add a donation button with APIs</li>
+			<li>Build a login system for your site</li>
+		</ul>
+	</div>
+</div>

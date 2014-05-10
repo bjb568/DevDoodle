@@ -175,6 +175,14 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
+	} else if (req.url == '/learn/') {
+		respondPage('Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/learn.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+			});
+			respondPageFooter(res);
+		});
 	} else {
 		res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public'});
 		var stream = fs.createReadStream('.' + req.url);
