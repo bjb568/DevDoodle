@@ -30,7 +30,6 @@ db.open(function(err, db) {
 
 var errors = [];
 errors[404] = function(req, res) {
-	console.log(404);
 	respondPage('404 | DevDoodle', req, res, function() {
 		res.write('<h1>404</h1>');
 		respondPageFooter(res);
@@ -169,7 +168,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/chat/') {
 		respondPage('Chat | DevDoodle', req, res, function() {
-			fs.readFile('chat.html', function(err, data) {
+			fs.readFile('chat/room.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);
@@ -180,17 +179,19 @@ http.createServer(function(req, res) {
 			fs.readFile('learn/learn.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
+				respondPageFooter(res);
 			});
-			respondPageFooter(res);
 		});
 	} else {
-		res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public'});
-		var stream = fs.createReadStream('.' + req.url);
-		stream.on('error', function(error) {
-			errors[404](req, res);
-		});
-		stream.on('readable', function() {
-			stream.pipe(res);
+		fs.stat('.' + req.url, function(err, stats) {
+			if (err) { errors[404](req,res) } else {
+				res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public', 'Content-Length': stats.size});
+				fs.readFile('.' + req.url, function(err, data) {
+					if (err) { errors[404](req,res) } else {
+						res.end(data);
+					}
+				});
+			}
 		});
 	}
 }).listen(8124);
