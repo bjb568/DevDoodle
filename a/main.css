@@ -23,7 +23,7 @@ body {
 .lft, .row > * { float: left }
 .rit { float: right }
 .mar { margin: 6px }
-.no-mar-top, .pad *:first-child, .desc *:first-child { margin-top: -2px }
+.no-mar-top, .pad h1:first-child, .desc h1:first-child, .pad h2:first-child, .desc h2:first-child, .pad h3:first-child, .desc h3:first-child { margin-top: -2px }
 .sumar:not(:first-child) { margin-top: 4px }
 .umar:not(:first-child), *:not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
 .bumar:not(:first-child) { margin-top: 8px }
