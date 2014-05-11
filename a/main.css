@@ -46,6 +46,7 @@ h2, section h1, article h1 {
 	margin-top: 0.8em; margin-bottom: 0.3em;
 	font-size: 1.3em;
 }
+ul { margin: 4px 0 0 0 }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.7) }
 .error { background: #f00 }
 .white, .error { color: #fff }
@@ -76,6 +77,11 @@ h2, section h1, article h1 {
 }
 h1, h2, h3, h4, h5, h6 {
 	margin: 2px 0px;
+	font-family: Verdana;
+	font-weight: normal;
+}
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
+	font-weight: inherit !important;
 }
 h1 {
 	margin-top: 2px;
