@@ -174,6 +174,14 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
+	} else if (req.url == '/dev/') {
+		respondPage('Create | DevDoodle', req, res, function() {
+			fs.readFile('dev/create.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
 	} else if (req.url == '/learn/') {
 		respondPage('Learn | DevDoodle', req, res, function() {
 			fs.readFile('learn/learn.html', function(err, data) {
