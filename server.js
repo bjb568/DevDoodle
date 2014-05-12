@@ -190,6 +190,14 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
+	} else if (req.url == '/learn/web/'){
+		respondPage('Web Courses | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
 	} else {
 		fs.stat('.' + req.url, function(err, stats) {
 			if (err) { errors[404](req,res) } else {
