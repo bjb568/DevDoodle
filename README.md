@@ -1,4 +1,4 @@
-![alt tag](//devdoodle.net/ap/logo1.png)
+![alt tag](http://devdoodle.net/ap/logo1.png)
 
 DevDoodle is a programmers' network where you can do tutorials, ask questions, and create and share your own programs! We're only in beta now, so some features are incomplete.
 
