@@ -10,35 +10,38 @@ body {
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
 }
+#content * { overflow: auto }
 *::-webkit-input-placeholder {
 	color: #666;
 	font-size: 0.9em;
 }
 .blk { display: block }
 .ib, #logo { display: inline-block }
-#logo img {
-	max-height: 100%; max-width: 100%;
-	padding: 4px 6px 2px;
-}
+.maxwidth, img { max-width: 100% }
 .lft, .row > * { float: left }
-.rit { float: right }
+.rit, .c-sig { float: right }
+*:first-child { margin-top: 0 }
 .mar { margin: 6px }
-.no-mar-top, .pad h1:first-child, .desc h1:first-child, .pad h2:first-child, .desc h2:first-child, .pad h3:first-child, .desc h3:first-child { margin-top: -2px }
-.sumar:not(:first-child) { margin-top: 4px }
-.umar:not(:first-child), *:not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
-.bumar:not(:first-child) { margin-top: 8px }
+.tumar { margin-top: 2px }
+.sumar, :not(img) + .desc { margin-top: 4px }
+.umar, :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
+.bumar, h1:not(:first-child) { margin-top: 8px }
 .mar { margin: 6px }
 .lmar, #content { margin-bottom: 6px }
 .rmar { margin-right: 6px }
-.smar, .error { margin-bottom: 6px }
+.smar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad, .desc, #content, #footer, .error { padding: 6px }
+.pad { padding: 2px 4px 4px }
+.desc, #content, #footer, .error { padding: 4px }
 .spad { padding: 3px }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
 .br, .desc { border-radius: 4px }
-.hglt, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
+.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
+.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.7) }
+.grey, .c-sig { color: #555 }
+small, footer, .c-sig { font-size: 0.85em }
 h3, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
 	margin-top: 0.5em;
 	font-size: 1em;
@@ -47,29 +50,11 @@ h2, section h1, article h1 {
 	margin-top: 0.8em; margin-bottom: 0.3em;
 	font-size: 1.3em;
 }
-ul { margin: 4px 0 0 0 }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.7) }
+ul, p { margin: 6px 0 0 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
-#nav input {
-	width: 160px; max-width: 100%;
-	margin: 0;
-}
-#nav form {
-	max-width: 100%;
-	line-height: 1;
-}
-#nav > * {
-	padding: 0 4px;
-	color: #ddd;
-	font-weight: normal;
-}
-#nav > *, #nav input {
-	font-size: 0.9rem;
-	line-height: 1.5;
-}
 .pre { white-space: pre-wrap }
 .clear, .clearfix::after, nav::after, .row::after {
 	display: block;
@@ -83,10 +68,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 h1 *, h2 *, h3 *, h4 *, h5 *, h6 * { font-weight: inherit !important }
 h1 {
-	margin-top: 2px;
 	margin-bottom: 0.3em;
 	border-bottom: 1px solid #aaa;
 	font-size: 1.5em;
+	line-height: 1;
+	padding-bottom: 1px;
+	vertical-align: bottom;
 }
 a, .ctrl {
 	color: #000;
@@ -97,9 +84,11 @@ a, .ctrl {
 }
 a:active, .ctrl:active { color: #02d }
 a:hover, .ctrl:hover { color: #15f }
-small, footer { font-size: 0.85em }
-img { max-width: 80% }
-input { font-family: helvetica }
+input[type=text], input[type=password] {
+	font-family: helvetica;
+	font-size: 0.8em;
+	height: 1.8em;
+}
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
@@ -108,9 +97,28 @@ input { font-family: helvetica }
 }
 #logo {
 	display: block;
-	width: 180px; max-width: 100%;
+	width: 180px;
 	margin: 0 auto 4px;
 	line-height: normal;
+}
+#nav input {
+	width: 160px;
+	margin: 0;
+}
+#logo img {
+	max-height: 100%;
+	padding: 4px 6px 2px;
+}
+#nav form { line-height: 1 }
+#nav > * {
+	padding: 0 4px;
+	color: #ddd;
+	font-weight: normal;
+}
+#nav > *, #nav input {
+	font-size: 0.9rem;
+	line-height: 1.5;
+	height: auto;
 }
 #content { padding-bottom: 24px }
 @media screen and (min-width: 350px) and (max-width: 440px) { 
@@ -132,6 +140,12 @@ input { font-family: helvetica }
 	#nav form {
 		display: block;
 		padding: 4px 0;
+	}
+}
+@media screen and (min-width: 700px) {
+	.half {
+		width: 49%;
+		margin-right: 1%;
 	}
 }
 @media screen and (min-width: 350px) { 
@@ -214,7 +228,7 @@ input { font-family: helvetica }
 		width: 100%;
 		padding-left: 16px;
 	}
-	#nav > *::after {
+	#nav > ::after {
 		position: absolute;
 		right: 0.5em;
 		content: '\276F';
