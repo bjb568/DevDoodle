@@ -1,69 +1,38 @@
 <style>
-	#courses, #projects { max-width: 1500px }
+	#courses { max-width: 1800px }
 	#courses > div {
 		background: rgba(16, 140, 255, 0.8);
 		transition: background 0.2s;
-		margin: 4px 0;
-	}
-	#projects > div {
-		background: rgba(16, 212, 96, 0.8);
-		transition: background 0.2s;
-		margin: 4px 0;
-	}
-	.desc {
-		margin-top: 4px;
-		background: rgba(255, 255, 255, 0.75);
 	}
 	#courses > div:hover { background: rgba(24, 160, 255, 0.8) }
-	#projects > div:hover { background: rgba(24, 255, 128, 0.8) }
 	#content a:hover { color: #333 }
 	#content a:active { color: #100 }
-	@media screen and (min-width: 700px) {
-		#courses > div, #projects > div {
-			width: 49%;
-			margin-right: 1%;
-		}
-	}
+	#courses img { border-radius: 4px }
 </style>
 <h1 id="heading">Courses</h1>
 <div id="courses" class="row">
-	<div class="pad br">
+	<div class="half pad br">
 		<h2><a href="web">Web Development</a></h2>
 		<img src="web.png" />
-		<div class="desc">
+		<div class="desc shglt">
 			Learn how to use semantic HTML, styling with Cascading Style Sheets, and interactivity with Javascript. You will:
-			<ul>
+			<ul class="umar">
 				<li>Build a news site</li>
 				<li>Style your site with CSS</li>
 				<li>Add interactivity with Javascript</li>
 			</ul>
 		</div>
 	</div>
-	<div class="pad br">
+	<div class="half pad br">
 		<h2><a>Server-side Javascript</a></h2>
 		<img src="nodejs.png" />
-		<div class="desc">
+		<div class="desc shglt">
 			Learn how to use Node.js and Mongodb to power a web server. You will:
-			<ul>
+			<ul class="umar">
 				<li>Build a simple server</li>
 				<li>Let it serve static files and handle errors</li>
 				<li>Build an authentication system</li>
 				<li>Create a mongodb chat app</li>
-			</ul>
-		</div>
-	</div>
-</div>
-<h1 id="heading">Projects</h1>
-<div id="projects" class="row">
-	<div class="desc">
-		<h2><a>Build a Personal Website</a></h2>
-		<img src="http://placekitten.com/1536/512" />
-		<div class="desc">
-			Create a personal website to show your fans!
-			<ul class="objectives">
-				<li>Create a cool site with HTML, CSS, and JS.</li>
-				<li>Build a login system for your site</li>
-				<li>Add a donation button with the Paypal APIs</li>
 			</ul>
 		</div>
 	</div>
