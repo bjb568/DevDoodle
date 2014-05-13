@@ -10,7 +10,7 @@ body {
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
 }
-#content * { overflow: auto }
+#content *:not(li) { overflow: auto }
 *::-webkit-input-placeholder {
 	color: #666;
 	font-size: 0.9em;
