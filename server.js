@@ -86,9 +86,6 @@ function respondPageFooter(res) {
 
 function respondLoginPage(err, req, res, post) {
 	respondPage('Login | DevDoodle', req, res, function() {
-		res.write('<style>');
-		res.write('#content input[type=text], button { display: block }');
-		res.write('</style>');
 		if (err) res.write('<div class="error">'+err+'</div>');
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?' checked=""':'') + ' /><label for="create">Create an account</label>');
@@ -100,6 +97,9 @@ function respondLoginPage(err, req, res, post) {
 		res.write('</div>');
 		res.write('<button type="submit">Submit</button>');
 		res.write('</form>');
+		res.write('<style>');
+		res.write('#content input[type=text], button { display: block }');
+		res.write('</style>');
 		respondPageFooter(res);
 	});
 }
