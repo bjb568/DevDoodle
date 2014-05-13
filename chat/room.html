@@ -7,7 +7,7 @@
 		onBottom = document.getElementById('chat').scrollTop + document.getElementById('chat').offsetHeight >= document.getElementById('chat').scrollHeight - 2;
 	};
 	function send() {
-		socket.send(document.getElementById('ta').value);
+		socket.send(JSON.stringify({body: document.getElementById('ta').value, idcookie: decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}));
 		document.getElementById('ta').value = '';
 		document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
 	};
@@ -19,6 +19,12 @@
 			div.classList.add('umar');
 			div.classList.add('spad');
 			div.textContent = data.body;
+			var sig = document.createElement('span');
+			sig.classList.add('c-sig');
+			sig.textContent = '-' + data.user + ', ';
+			if (!data.time) data.time = new Date().getTime();
+			sig.appendChild(agot(data.time));
+			div.appendChild(sig);
 			document.getElementById('chat').appendChild(div);
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom) document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;

@@ -7,10 +7,20 @@ var querystring = require('querystring');
 var cookie = require('cookie');
 var crypto = require('crypto');
 
+var nodemailer = require("nodemailer");
+
+var transport = nodemailer.createTransport("SMTP", {
+    host: "7pnm-mwkh.accessdomain.com",
+    secureConnection: true,
+    port: 465,
+    auth: {
+        user: "support@devdoodle.net",
+        pass: "KnT$6D6hF35^75tNyu6t"
+    }
+});
+
 var mongo = require('mongodb');
 var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {auto_reconnect: false, poolSize: 4}), {w:0, native_parser: false});
-
-var content = '';
 
 var collections = {};
 db.open(function(err, db) {
@@ -74,6 +84,26 @@ function respondPageFooter(res) {
 	});
 };
 
+function respondLoginPage(err, req, res, post) {
+	respondPage('Login | DevDoodle', req, res, function() {
+		res.write('<style>');
+		res.write('#content input[type=text], button { display: block }');
+		res.write('</style>');
+		if (err) res.write('<div class="error">'+err+'</div>');
+		res.write('<form method="post">');
+		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?' checked=""':'') + ' /><label for="create">Create an account</label>');
+		res.write('<input type="text" name="name" placeholder="Name" required="" />');
+		res.write('<input type="password" name="pass" placeholder="Password" required="" />');
+		res.write('<div id="ccreate" ' + (post.create?'':'hidden="" ') + '>');
+		res.write('<input type="password" name="passc" placeholder="Confirm Password" />');
+		res.write('<input type="text" name="email" placeholder="Email" />');
+		res.write('</div>');
+		res.write('<button type="submit">Submit</button>');
+		res.write('</form>');
+		respondPageFooter(res);
+	});
+}
+
 http.createServer(function(req, res) {
 	console.log('Req '+req.url);
 	if (req.url == '/') {
@@ -82,6 +112,7 @@ http.createServer(function(req, res) {
 			respondPageFooter(res);
 		});
 	} else if (req.url == '/login/') {
+		var i;
 		if (req.method == 'POST') {
 			var post = '';
 			req.on('data', function(data) {
@@ -90,16 +121,34 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				if (post.create) {
-					respondPage('In dev', req, res, function() {
-						res.write('In dev');
-						respondPageFooter(res);
-					});
+					if (!post.name|| !post.pass || !post.passc || !post.email) {
+						respondLoginPage('All fields are required.', req, res, post);
+					} else if (post.pass != post.passc) {
+						respondLoginPage('Passwords don\'t match.', req, res, post);
+					} else {
+						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							var pass = new Buffer(key).toString('base64');
+							var rstr = crypto.randomBytes(128).toString('base64');
+							collections.users.insert({name: post.name, pass: pass, email: post.email, confirm: rstr, rep: 0, level: 0});
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: post.email,
+								subject: 'Confirm your account',
+								html: '<h1>Welcome to <code>DevDoodle</code>!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
+							});
+							respondPage('Account Created | DevDoodle', req, res, function() {
+								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+								respondPageFooter(res);
+							});
+							
+						});
+					}
 				} else {
-					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64'); // (!!p) Increase to 1e6
+					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
 					collections.users.findOne({name: post.name, pass: pass}, function(err, user) {
 						if (err) throw err;
 						if (user) {
-							var rstr = crypto.randomBytes(48).toString('base64');
+							var rstr = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success | DevDoodle', req, res, function() {
 								res.write('Welcome back, '+user.name+'. You have '+user.rep+' repuatation.');
 								respondPageFooter(res);
@@ -112,45 +161,30 @@ http.createServer(function(req, res) {
 							});
 							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
 						} else {
-							respondPage('Login | DevDoodle', req, res, function() {
-								res.write('<style>');
-								res.write('#content input[type=text], button { display: block }');
-								res.write('</style>');
-								res.write('<div class="error">Invalid credentials.</div>');
-								res.write('<form method="post">');
-								res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?'checked ':'') + ' /><label for="create">Create an account</label>');
-								res.write('<input type="text" name="name" placeholder="Name" required="" />');
-								res.write('<input type="password" name="pass" placeholder="Password" required="" />');
-								res.write('<div id="ccreate" ' + (post.create?'':'hidden="" ') + '>');
-								res.write('<input type="password" name="passc" placeholder="Confirm Password" />');
-								res.write('<input type="text" name="email" placeholder="Email" />');
-								res.write('</div>');
-								res.write('<button type="submit">Submit</button>');
-								res.write('</form>');
-								respondPageFooter(res);
-							});
+							respondLoginPage('Invalid Credentials.', req, res, post);
 						}
 					});
 				}
 			});
 		} else {
-			respondPage('Login | DevDoodle', req, res, function() {
-				res.write('<style>');
-				res.write('#content input[type=text], button { display: block }');
-				res.write('</style>');
-				res.write('<form method="post">');
-				res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1" /><label for="create">Create an account</label>');
-				res.write('<input type="text" name="name" placeholder="Name" required="" />');
-				res.write('<input type="password" name="pass" placeholder="Password" required="" />');
-				res.write('<div id="ccreate" hidden="">');
-				res.write('<input type="password" name="passc" placeholder="Confirm Password" />');
-				res.write('<input type="text" name="email" placeholder="Email" />');
-				res.write('</div>');
-				res.write('<button type="submit">Submit</button>');
-				res.write('</form>');
-				respondPageFooter(res);
-			});
+			respondLoginPage(null, req, res, {});
 		}
+	} else if (i = req.url.match(/\/login\/confirm\/([A-Za-z\d+\/=]{172})/)) {
+		collections.users.findOne({confirm: i[1]}, function(err, user) {
+			if (err) throw err;
+			if (user) {
+				collections.users.update({name: user.name}, {$set: {confirm: undefined}});
+				respondPage('Account confirmed | DevDoodle', req, res, function() {
+					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
+					respondPageFooter(res);
+				});
+			} else {
+				respondPage('Account confirmation failed | DevDoodle', req, res, function() {
+					res.write('<h1>Account confirmation failed</h1><p>Your token is invalid.</p>');
+					respondPageFooter(res);
+				});
+			}
+		});
 	} else if (req.url == '/user/') {
 		respondPage('Users | DevDoodle', req, res, function() {
 			collections.users.find().toArray(function(err, docs) {
@@ -185,7 +219,7 @@ http.createServer(function(req, res) {
 	} else {
 		fs.stat('.' + req.url, function(err, stats) {
 			if (err) { errors[404](req,res) } else {
-				res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=604800, public', 'Content-Length': stats.size});
+				res.writeHead(200, {'Content-Type': mime[path.extname(req.url)] || 'text/plain', 'Cache-Control': 'max-age=6012800, public', 'Content-Length': stats.size});
 				fs.readFile('.' + req.url, function(err, data) {
 					if (err) { errors[404](req,res) } else {
 						res.end(data);
@@ -202,12 +236,20 @@ var chatWS = new ws.Server({host: 'localhost', port:8125});
 chatWS.on('connection', function(tws) {
 	collections.chat.find().toArray(function(err, docs) {
 		docs.forEach(function(doc) {
-			tws.send('{"event":"init","body":'+JSON.stringify(doc.body)+'}');
+			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
 		});
 	});
 	tws.on('message', function(message) {
-		collections.chat.insert({body: message});
-		for (var i in chatWS.clients)
-			chatWS.clients[i].send('{"event":"add","body":'+JSON.stringify(message)+'}');
+		message = JSON.parse(message);
+		collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+			if (err) throw err;
+			if (user) {
+				collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime()});
+				for (var i in chatWS.clients)
+					chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+			} else {
+				tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+			}
+		});
 	});
 });
