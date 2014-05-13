@@ -3,20 +3,22 @@
 	#tree {
 		overflow-x: scroll;
 		height: 600px;
+		background: rgba(255, 255, 255, 0.5);
 	}
 	#tree-inner {
 		width: 1200px;
 		max-width: none;
+		margin: 8px;
 	}
 	#tree-inner * {
 		max-width: none;
 		max-height: none;
 		display: inline-block;
-	}
-	body > div > div *:not(line) {
+		position: relative;
 	}
 	#tree-inner line {
 		display: block;
+		background: transparent;
 	}
 	.html-branch, .js-branch {
 		width: 600px;
@@ -27,16 +29,16 @@
 	.js-data-branch {
 		margin-left: 75px;
 	}
-	.js-divrol-branch {
+	.js-control-branch {
 		margin-right: 75px;
 	}
-	.css-color-branch, .css-box-branch, .js-data-branch, .js-divrol-branch {
+	.css-color-branch, .css-box-branch, .js-data-branch, .js-control-branch {
 		width: 150px;
 	}
-	.html-branch, .js-branch, .html-a-branch, .js-a-branch, .css-color-branch, .css-box-branch, .js-data-branch, .js-divrol-branch, .ajax-branch, .events-branch {
+	.html-branch, .js-branch, .html-a-branch, .js-a-branch, .css-color-branch, .css-box-branch, .js-data-branch, .js-control-branch, .ajax-branch, .events-branch {
 		float: left;
 	}
-	.css-branch, .js-divrol-branch {
+	.css-branch, .js-control-branch {
 		float: right;
 	}
 	#tree-inner .course {
@@ -144,6 +146,7 @@
 	#tree-inner .bump-up {
 		margin-top: -24px;
 	}
+	#tree-inner .left-down, #tree-inner .right-down, #tree-inner .looping-elements { width: auto; height: 0 }
 	#tree-inner .left-down:before {
 		content: '';
 		display: block;
@@ -367,7 +370,7 @@
 					<line class="left-down"></line>
 					<div class="course">
 						<a>Positioning</a>
-						<div class="description">Position elements in relation to the parent, window, or normal flow; divrol overlapping elements.</div>
+						<div class="description">Position elements in relation to the parent, window, or normal flow; control overlapping elements.</div>
 					</div>
 				</div>
 			</div>
@@ -425,9 +428,9 @@
 					<div class="description">Convert from one type to another.</div>
 				</div>
 			</div>
-			<div class="js-divrol-branch">
+			<div class="js-control-branch">
 				<div class="course">
-					<a>divrol structures</a>
+					<a>control structures</a>
 					<div class="description">Use if, else if, and else blocks.</div>
 				</div>
 				<line class="cline"></line>
