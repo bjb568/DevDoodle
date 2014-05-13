@@ -198,6 +198,62 @@ http.createServer(function(req, res) {
 				respondPageFooter(res)
 			});
 		});
+	} else if (req.url == '/learn/web/intro/'){
+		respondPage('Intro to HTML | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/intro/web-intro.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/intro/1/'){
+		respondPage('Intro to HTML | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/intro/1/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/intro/2/'){
+		respondPage('Intro to HTML | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/intro/2/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/intro/3/'){
+		respondPage('Intro to HTML | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/intro/3/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/intro/4/'){
+		respondPage('Intro to HTML | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/intro/4/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/basic-tags/'){
+		respondPage('Basic Tags | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/basic-tags/web-basic-tags.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
+	} else if (req.url == '/learn/web/basic-tags/1/'){
+		respondPage('Basic Tags | Learn | DevDoodle', req, res, function() {
+			fs.readFile('learn/web/basic-tags/1/index.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res)
+			});
+		});
 	} else {
 		fs.stat('.' + req.url, function(err, stats) {
 			if (err) { errors[404](req,res) } else {
