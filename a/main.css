@@ -208,9 +208,6 @@ input[type=text], input[type=password] {
 	#nav > :nth-child(6) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
 }
-@media screen and (min-width: 1100px) and (max-width: 1499px) { 
-	#nav > :last-child { border-right: 1px solid #444 }
-}
 @media screen and (min-width: 1500px) { 
 	#cont { overflow: hidden }
 	#cont::before { display: none }
