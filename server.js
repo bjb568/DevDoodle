@@ -62,17 +62,20 @@ function linkUser(name) {
 function respondPage(title, req, res, callback, header, status) {
 	var query = url.parse(req.url, true).query, cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
+	var inhead = header.inhead;
+	var huser = header.user;
+	delete header.inhead;
+	delete header.user;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
 		collections.users.findOne({cookie: cookies.id}, function(err, user) {
 			data = data.toString();
-			if (user = user || header.user) {
+			if (user = user || huser) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
-			res.write(data.replace('$title', title).replace('$search', query.q || ''));
-			delete header.user;
+			res.write(data.replace('$title', title).replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
@@ -244,7 +247,7 @@ http.createServer(function(req, res) {
 				respondPage(data.substr(0,data.indexOf('\n')), req, res, function() {
 					res.write(data.substr(data.indexOf('\n')+1));
 					respondPageFooter(res);
-				});
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 			}
 		});
 	} else {
