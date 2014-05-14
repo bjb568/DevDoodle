@@ -1,0 +1,30 @@
+Basic Tags | Learn | DevDoodle
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Tags</h1>
+		</div>
+		<bl id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></bl>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>
+		&lt;title>This is the document title&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>This is a paragraph&lt;/p>
+	&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+</script>
