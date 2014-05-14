@@ -86,9 +86,6 @@ function respondPageFooter(res) {
 
 function respondLoginPage(err, req, res, post) {
 	respondPage('Login | DevDoodle', req, res, function() {
-		res.write('<style>');
-		res.write('#content input[type=text], button { display: block }');
-		res.write('</style>');
 		if (err) res.write('<div class="error">'+err+'</div>');
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?' checked=""':'') + ' /><label for="create">Create an account</label>');
@@ -100,6 +97,9 @@ function respondLoginPage(err, req, res, post) {
 		res.write('</div>');
 		res.write('<button type="submit">Submit</button>');
 		res.write('</form>');
+		res.write('<style>');
+		res.write('#content input[type=text], button { display: block }');
+		res.write('</style>');
 		respondPageFooter(res);
 	});
 }
@@ -169,7 +169,7 @@ http.createServer(function(req, res) {
 		} else {
 			respondLoginPage(null, req, res, {});
 		}
-	} else if (i = req.url.match(/\/login\/confirm\/([A-Za-z\d+\/=]{172})/)) {
+	} else if (i = req.url.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
@@ -213,7 +213,7 @@ http.createServer(function(req, res) {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
-				respondPageFooter(res);
+				respondPageFooter(res);åå
 			});
 		});
 	} else if (req.url == '/learn/') {
@@ -231,6 +231,21 @@ http.createServer(function(req, res) {
 				res.write(data);
 				respondPageFooter(res)
 			});
+		});
+	} else if (req.url.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
+		res.writeHead(302, {Location: '1/'});
+		res.end();
+	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+		var loc = './learn/' + [i[1],i[2],i[3]].join('/') + '.html';
+		console.log(loc);
+		fs.readFile(loc, function(err, data) {
+			data = data.toString();
+			if (err) { errors[404](req,res) } else {
+				respondPage(data.substr(0,data.indexOf('\n')), req, res, function() {
+					res.write(data.substr(data.indexOf('\n')+1));
+					respondPageFooter(res);
+				});
+			}
 		});
 	} else {
 		fs.stat('.' + req.url, function(err, stats) {

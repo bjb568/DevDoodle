@@ -1,0 +1,174 @@
+Intro to HTML recap | Learn | DevDoodle
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>Recap</h2>
+			<bl>Congratulations! You now know what HTML is. Let's review:</bl>
+			<ul>
+				<li>HTML stands for Hyper Text Markup Language - it's a language used to mark up text on the web.</li>
+				<li>HTML is used to provide formatting, layout, and a foundation for other web technologies.</li>
+				<li>You mark up text with tags - a start tag before the content and an end tag after.</li>
+				<li>The basic HTML document consists of a doctype and html, head, and body tags:
+					<codebl>&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;/head>
+	&lt;body>&lt;/body>
+&lt;/html></codebl>
+				</li>
+			</ul>
+			<bl>Next, we'll learn more about tags, and how to format text.</bl>
+			<form action="../../basic-tags/">
+				<button id="check" type="submit">Move on</button>
+			</form>
+		</div>
+		<bl id="cntrls"><a href="../3/" class="lft">Back</a></bl>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;title>You did it!&lt;/title>&lt;/head>
+	&lt;body>&lt;h1>Congrats! You did it!&lt;/h1>&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+</script>
+<style>
+		html {
+			width: 100%;
+			color: #fff;
+		}
+		html, #content-inner, #footer {
+			background: #000;
+		}
+		#content {
+			margin-top: 0;
+		}
+		#content-inner {
+			padding: 0;
+		}
+		h1 {
+			border-bottom: none;
+		}
+		h2 {
+			margin-top: 0;
+		}
+		#html, #output {
+			width: 100%;
+			height: 50vmax;
+		}
+		#text {
+			background: rgba(255, 255, 255, 0.8);
+			color: #000;
+			padding: 4px 6px;
+		}
+		#html {
+			background: #000;
+			color: #fff;
+			line-height: 125%;
+			resize: none;
+		}
+		#output {
+			background: #fff;
+		}
+		#html, #output {
+			border: 1px solid #fff;
+			margin-top: 8px;
+		}
+		@media screen and (max-width: 800px) {
+			#html, #output {
+				height: 30vmax;
+			}
+		}
+		@media screen and (min-width: 801px) {
+			#text {
+				margin: 4px 8px 0 0;
+			}
+			#html, #output {
+				width: calc(50% - 8px);
+			}
+			#output {
+				margin-left: 8px;
+			}
+		}
+		@media screen and (min-width: 1200px) {
+			#text, #html, #output {
+				height: 90vh;
+				margin-top: 4px;
+			}
+			#text {
+				width: 400px;
+				margin-right: 0;
+			}
+			#html, #output {
+				width: calc(50% - 216px);
+				margin-left: 16px;
+			}
+			#text-inner {
+				overflow: auto;
+				position: absolute;
+				top: 2px;
+				right: 8px;
+				bottom: 24px;
+				left: 6px;
+			}
+			#cntrls {
+				position: absolute;
+				bottom: 2px;
+				width: calc(100% - 12px);
+			}
+		}
+		@media screen and (min-width: 1501px) {
+			#content-inner {
+				padding-top: 4px;
+			}
+		}
+		#check {
+			width: 100%;
+			max-width: 400px;
+			font-size: 18px;
+			padding: 4px 8px;
+			margin: 0;
+			background: rgba(0, 220, 0, 0.6);
+			box-shadow: none;
+			transition: background-color 0.4s;
+		}
+		#check:hover {
+			background: rgba(80, 220, 80, 0.6);
+		}
+		#check:active {
+			transition: background-color 0.2s;
+			background: rgba(0, 200, 0, 0.6);
+		}
+		#passed, #failed {
+			position: absolute;
+			width: 100%;
+			transition: transform 0.3s;
+			-webkit-transition: -webkit-transform 0.3s;
+			padding: 4px;
+			transform-origin: top;
+			-webkit-transform-origin: top;
+			transform: scaleY(0);
+			-webkit-transform: scaleY(0);
+		}
+		#passed.show, #failed.show {
+			transform: none;
+			-webkit-transform: none;
+			position: static;
+		}
+		#passed {
+			background: rgba(100, 220, 100, 0.6);
+		}
+		#failed {
+			background: rgba(220, 100, 100, 0.6);
+		}
+</style>
