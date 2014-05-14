@@ -1,6 +1,8 @@
 html, #content, #footer {
 	background: #000;
+	color: #fff;
 }
+a { color: inherit }
 #content {
 	margin-top: 0;
 	padding: 0;
@@ -39,7 +41,7 @@ h2 {
 }
 @media screen and (min-width: 801px) {
 	#text {
-		margin: 4px 8px 0 0;
+		margin-right: 8px;
 	}
 	#html, #output {
 		width: calc(50% - 8px);
@@ -51,7 +53,6 @@ h2 {
 @media screen and (min-width: 1200px) {
 	#text, #html, #output {
 		height: 90vh;
-		margin-top: 4px;
 	}
 	#text {
 		width: 400px;
@@ -59,7 +60,7 @@ h2 {
 	}
 	#html, #output {
 		width: calc(50% - 216px);
-		margin-left: 16px;
+		margin-top: 0; margin-left: 16px;
 	}
 	#text-inner {
 		overflow: auto;
