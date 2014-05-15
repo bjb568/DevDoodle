@@ -20,7 +20,7 @@ var transport = nodemailer.createTransport("SMTP", {
 });
 
 var mongo = require('mongodb');
-var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {auto_reconnect: false, poolSize: 4}), {w:0, native_parser: false});
+var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {auto_reconnect: false, poolSize: 4}), {w: 0, native_parser: false});
 
 var collections = {};
 db.open(function(err, db) {
@@ -216,7 +216,7 @@ http.createServer(function(req, res) {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
-				respondPageFooter(res);åå
+				respondPageFooter(res);
 			});
 		});
 	} else if (req.url == '/learn/') {
@@ -232,7 +232,7 @@ http.createServer(function(req, res) {
 			fs.readFile('learn/web/web.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
-				respondPageFooter(res)
+				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {

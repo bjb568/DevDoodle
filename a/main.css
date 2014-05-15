@@ -22,16 +22,14 @@ body {
 *:first-child { margin-top: 0 }
 .mar { margin: 6px }
 .tumar { margin-top: 2px }
-.sumar, :not(img) + .desc { margin-top: 4px }
-.umar, :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
-.bumar, h1:not(:first-child) { margin-top: 8px }
-.mar { margin: 6px }
+.sumar:not(:first-child), :not(img) + .desc { margin-top: 4px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
+.bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content { margin-bottom: 6px }
 .rmar { margin-right: 6px }
-.smar, .error, .half { margin-bottom: 6px }
+.bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad { padding: 2px 4px 4px }
-.desc, #content, #footer, .error { padding: 4px }
+.pad, .desc, #content, #footer, .error { padding: 4px }
 .spad { padding: 3px }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
