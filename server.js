@@ -148,7 +148,7 @@ http.createServer(function(req, res) {
 					}
 				} else {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
-					collections.users.findOne({name: post.name, pass: pass}, function(err, user) {
+					collections.users.findOne({name: post.name, pass: pass, confirm: undefined}, function(err, user) {
 						if (err) throw err;
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
@@ -265,7 +265,7 @@ http.createServer(function(req, res) {
 }).listen(8124);
 console.log('Server running at http://localhost:8124/');
 
-var chatWS = new ws.Server({host: 'localhost', port:8125});
+var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
 	collections.chat.find().toArray(function(err, docs) {
@@ -274,16 +274,20 @@ chatWS.on('connection', function(tws) {
 		});
 	});
 	tws.on('message', function(message) {
-		message = JSON.parse(message);
-		collections.users.findOne({cookie: message.idcookie}, function(err, user) {
-			if (err) throw err;
-			if (user) {
-				collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime()});
-				for (var i in chatWS.clients)
-					chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
-			} else {
-				tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
-			}
-		});
+		try {
+			message = JSON.parse(message);
+			collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+				if (err) throw err;
+				if (user) {
+					collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime()});
+					for (var i in chatWS.clients)
+						chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+				} else {
+					tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+				}
+			});
+		} catch(e) {
+			tws.send('{"event":"err","body":"JSON Error."}');
+		}
 	});
 });

@@ -10,6 +10,7 @@
 		socket.send(JSON.stringify({body: document.getElementById('ta').value, idcookie: decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}));
 		document.getElementById('ta').value = '';
 		document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+		onscroll();
 	};
 	socket.onmessage = function(e) {
 		var data = JSON.parse(e.data);
@@ -29,6 +30,8 @@
 			document.getElementById('chat').appendChild(div);
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom) document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+		} else if (data.event == 'err') {
+			alert('Error: ' + data.body);
 		}
 	};
 	document.getElementById('ta').onkeypress = function(e) {
@@ -36,5 +39,5 @@
 			send();
 			e.preventDefault();
 		}
-	}
+	};
 </script>
