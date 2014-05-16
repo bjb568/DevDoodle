@@ -81,12 +81,11 @@ a, .ctrl {
 }
 a:active, .ctrl:active { color: #02d }
 a:hover, .ctrl:hover { color: #15f }
-input[type=text], input[type=password], textarea {
+input[type=text], input[type=password] {
 	font-family: helvetica;
 	font-size: 0.8em;
 	height: 1.8em;
 }
-textarea { font-size: 0.9em }
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
