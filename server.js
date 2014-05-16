@@ -137,7 +137,7 @@ http.createServer(function(req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to <code>DevDoodle</code>!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
 							});
 							respondPage('Account Created | DevDoodle', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -269,6 +269,7 @@ var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
 	collections.chat.find().toArray(function(err, docs) {
+		if (err) throw err;
 		var docs = docs.slice(Math.max(docs.length - 144, 1));
 		docs.forEach(function(doc) {
 			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
