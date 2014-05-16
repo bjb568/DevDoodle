@@ -269,7 +269,8 @@ var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
 	collections.chat.find().toArray(function(err, docs) {
-		docs.forEach(function(doc) {
+		var docs = docs.slice(Math.max(docs.length - 144, 1));
+		docs.forEach(function(doc, i) {
 			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
 		});
 	});
