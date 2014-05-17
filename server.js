@@ -45,79 +45,105 @@ db.open(function(err, db) {
 var errors = [];
 errors[400] = function(req, res) {
 	respondPage('400 | DevDoodle', req, res, function() {
-		res.write('<h1>400</h1>');
+		res.write('<h1>Error 400 :(</h1>');
+		res.write('<bl>The request was corrupted, please try again. If the problem persists, please <a href="mailto:problem@brianjblair.com">let us know</a>.</bl>');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[403] = function(req, res) {
 	respondPage('403 | DevDoodle', req, res, function() {
-		res.write('<h1>403</h1>');
+		res.write('<h1>Error 403 :(</h1>');
+		res.write('<bl>Access denied. You don\'t have the necessary permissions to access this page.</bl>');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[404] = function(req, res) {
 	respondPage('404 | DevDoodle', req, res, function() {
-		res.write('<h1>404</h1>');
+		res.write('<h1>Error 404 :(</h1>');
+		res.write('<bl>The requested file or directory could not be found. If you got here from a broken link, please <a href="mailto:problem@brianjblair.com">let us know</a>.</bl>');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[405] = function(req, res) {
 	respondPage('405 | DevDoodle', req, res, function() {
-		res.write('<h1>405</h1>');
+		res.write('<h1>Error 405 :(</h1>');
+		res.write('Method not allowed.');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[413] = function(req, res) {
 	respondPage('413 | DevDoodle', req, res, function() {
-		res.write('<h1>413</h1>');
+		res.write('<h1>Error 413 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[414] = function(req, res) {
 	respondPage('414 | DevDoodle', req, res, function() {
-		res.write('<h1>414</h1>');
+		res.write('<h1>Error 414 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[415] = function(req, res) {
 	respondPage('415 | DevDoodle', req, res, function() {
-		res.write('<h1>415</h1>');
+		res.write('<h1>Error 415 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[418] = function(req, res) {
 	respondPage('418 | DevDoodle', req, res, function() {
-		res.write('<h1>418</h1>');
+		res.write('<h1>Error 418 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[429] = function(req, res) {
 	respondPage('429 | DevDoodle', req, res, function() {
-		res.write('<h1>429</h1>');
+		res.write('<h1>Error 429 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[431] = function(req, res) {
 	respondPage('431 | DevDoodle', req, res, function() {
-		res.write('<h1>431</h1>');
+		res.write('<h1>Error 431 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[500] = function(req, res) {
 	respondPage('500 | DevDoodle', req, res, function() {
-		res.write('<h1>500</h1>');
+		res.write('<h1>Error 500 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[505] = function(req, res) {
 	respondPage('505 | DevDoodle', req, res, function() {
-		res.write('<h1>505</h1>');
+		res.write('<h1>Error 505 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
 errors[521] = function(req, res) {
 	respondPage('521 | DevDoodle', req, res, function() {
-		res.write('<h1>521</h1>');
+		res.write('<h1>Error 521 :(</h1>');
+		res.write('');
+		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
