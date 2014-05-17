@@ -20,7 +20,7 @@ var transport = nodemailer.createTransport("SMTP", {
 });
 
 var mongo = require('mongodb');
-var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {auto_reconnect: false, poolSize: 4}), {w:0, native_parser: false});
+var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {auto_reconnect: false, poolSize: 4}), {w: 0, native_parser: false});
 
 var collections = {};
 db.open(function(err, db) {
@@ -34,6 +34,10 @@ db.open(function(err, db) {
 		db.collection('chat', function(err, collection) {
 			if (err) throw err;
 			collections.chat = collection;
+		});
+		db.collection('chatusers', function(err, collection) {
+			if (err) throw err;
+			collections.chatusers = collection;
 		});
 	});
 });
@@ -62,17 +66,20 @@ function linkUser(name) {
 function respondPage(title, req, res, callback, header, status) {
 	var query = url.parse(req.url, true).query, cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
+	var inhead = header.inhead;
+	var huser = header.user;
+	delete header.inhead;
+	delete header.user;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
 		collections.users.findOne({cookie: cookies.id}, function(err, user) {
 			data = data.toString();
-			if (user = user || header.user) {
+			if (user = user || huser) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
-			res.write(data.replace('$title', title).replace('$search', query.q || ''));
-			delete header.user;
+			res.write(data.replace('$title', title).replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
@@ -134,7 +141,7 @@ http.createServer(function(req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to <code>DevDoodle</code>!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
 							});
 							respondPage('Account Created | DevDoodle', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -145,7 +152,7 @@ http.createServer(function(req, res) {
 					}
 				} else {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
-					collections.users.findOne({name: post.name, pass: pass}, function(err, user) {
+					collections.users.findOne({name: post.name, pass: pass, confirm: undefined}, function(err, user) {
 						if (err) throw err;
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
@@ -169,11 +176,11 @@ http.createServer(function(req, res) {
 		} else {
 			respondLoginPage(null, req, res, {});
 		}
-	} else if (i = req.url.match(/\/login\/confirm\/([A-Za-z\d+\/=]{172})/)) {
+	} else if (i = req.url.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({name: user.name}, {$set: {confirm: undefined}});
+				collections.users.update({name: user.name}, {$unset: {confirm: ''}});
 				respondPage('Account confirmed | DevDoodle', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
@@ -187,7 +194,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/user/') {
 		respondPage('Users | DevDoodle', req, res, function() {
-			collections.users.find().toArray(function(err, docs) {
+			collections.users.find({}, function(err, docs) {
 				if (err) throw err;
 				res.write('<table><tbody>');
 				docs.forEach(function(doc) {
@@ -229,8 +236,23 @@ http.createServer(function(req, res) {
 			fs.readFile('learn/web/web.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
-				respondPageFooter(res)
+				respondPageFooter(res);
 			});
+		});
+	} else if (req.url.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
+		res.writeHead(302, {Location: '1/'});
+		res.end();
+	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+		var loc = './learn/' + [i[1],i[2],i[3]].join('/') + '.html';
+		console.log(loc);
+		fs.readFile(loc, function(err, data) {
+			data = data.toString();
+			if (err) { errors[404](req,res) } else {
+				respondPage(data.substr(0,data.indexOf('\n')), req, res, function() {
+					res.write(data.substr(data.indexOf('\n')+1));
+					respondPageFooter(res);
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+			}
 		});
 	} else {
 		fs.stat('.' + req.url, function(err, stats) {
@@ -247,25 +269,70 @@ http.createServer(function(req, res) {
 }).listen(8124);
 console.log('Server running at http://localhost:8124/');
 
-var chatWS = new ws.Server({host: 'localhost', port:8125});
+var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
-	collections.chat.find().toArray(function(err, docs) {
-		docs.forEach(function(doc) {
+	var cursor = collections.chat.find();
+	cursor.count(function(err, count) {
+		cursor.skip(count - 92).each(function(err, doc) {
+			if (err) throw err;
+			if (!doc) return;
 			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
 		});
 	});
-	tws.on('message', function(message) {
-		message = JSON.parse(message);
-		collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+	collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1')) || null}, function(err, user) {
+		if (err) throw err;
+		if (!user) user = {};
+		collections.chatusers.remove({name: user.name}, {w: 1}, function(err, rem) {
 			if (err) throw err;
-			if (user) {
-				collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime()});
-				for (var i in chatWS.clients)
-					chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
-			} else {
-				tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
-			}
+			console.log(rem);
+			collections.chatusers.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) {
+					tws.send(JSON.stringify({event: 'adduser', name: doc.name}));
+				} else if (user.name) {
+					if (rem) {
+						tws.send(JSON.stringify({event: 'adduser', name: user.name}));
+					} else {
+						for (var i in chatWS.clients)
+							chatWS.clients[i].send(JSON.stringify({event: 'adduser', name: user.name}));
+					}
+					collections.chatusers.insert({name: user.name, seen: new Date().getTime()});
+					console.log({name: user.name, seen: new Date().getTime()});
+				}
+			});
 		});
+	});
+	tws.on('message', function(message) {
+		console.log(message);
+		try {
+			message = JSON.parse(message);
+			collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+				if (err) throw err;
+				if (!user) user = {};
+				if (message.event == 'post') {
+					if (user.name) {
+						collections.chat.insert({body: message.body, name: user.name, time: new Date().getTime()});
+						for (var i in chatWS.clients)
+							chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+					} else tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+				} else if (message.event == 'update') {
+					collections.chatusers.update({name: user.name}, {$set: {state: message.state, seen: new Date().getTime()}}, function(err, result) {
+						if (err) throw err;
+						collections.chatusers.find({seen: {$lt: new Date().getTime() - 20000}}).each(function(err, doc) {
+							if (err) throw err;
+							if (!doc) return;
+							console.log('325' + JSON.stringify(doc));
+							for (var i in chatWS.clients)
+								chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: doc.name}));
+						});
+					});
+				} else {
+					tws.send('{"event":"err","body":"Unsupported or missing event type."}');
+				}
+			});
+		} catch(e) {
+			tws.send('{"event":"err","body":"JSON Error."}');
+		}
 	});
 });
