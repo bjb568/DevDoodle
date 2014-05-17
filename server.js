@@ -35,6 +35,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.chat = collection;
 		});
+		db.collection('chatusers', function(err, collection) {
+			if (err) throw err;
+			collections.chatusers = collection;
+		});
 	});
 });
 
@@ -176,7 +180,7 @@ http.createServer(function(req, res) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({name: user.name}, {$set: {confirm: undefined}});
+				collections.users.update({name: user.name}, {$unset: {confirm: ''}});
 				respondPage('Account confirmed | DevDoodle', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
@@ -190,7 +194,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/user/') {
 		respondPage('Users | DevDoodle', req, res, function() {
-			collections.users.find().toArray(function(err, docs) {
+			collections.users.find({}, function(err, docs) {
 				if (err) throw err;
 				res.write('<table><tbody>');
 				docs.forEach(function(doc) {
@@ -268,24 +272,63 @@ console.log('Server running at http://localhost:8124/');
 var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
-	collections.chat.find().toArray(function(err, docs) {
-		if (err) throw err;
-		var docs = docs.slice(Math.max(docs.length - 144, 1));
-		docs.forEach(function(doc) {
+	var cursor = collections.chat.find();
+	cursor.count(function(err, count) {
+		cursor.skip(count - 92).each(function(err, doc) {
+			if (err) throw err;
+			if (!doc) return;
 			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
 		});
 	});
+	collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1')) || null}, function(err, user) {
+		if (err) throw err;
+		if (!user) user = {};
+		collections.chatusers.remove({name: user.name}, {w: 1}, function(err, rem) {
+			if (err) throw err;
+			console.log(rem);
+			collections.chatusers.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) {
+					tws.send(JSON.stringify({event: 'adduser', name: doc.name}));
+				} else if (user.name) {
+					if (rem) {
+						tws.send(JSON.stringify({event: 'adduser', name: user.name}));
+					} else {
+						for (var i in chatWS.clients)
+							chatWS.clients[i].send(JSON.stringify({event: 'adduser', name: user.name}));
+					}
+					collections.chatusers.insert({name: user.name, seen: new Date().getTime()});
+					console.log({name: user.name, seen: new Date().getTime()});
+				}
+			});
+		});
+	});
 	tws.on('message', function(message) {
+		console.log(message);
 		try {
 			message = JSON.parse(message);
 			collections.users.findOne({cookie: message.idcookie}, function(err, user) {
 				if (err) throw err;
-				if (user) {
-					collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime()});
-					for (var i in chatWS.clients)
-						chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+				if (!user) user = {};
+				if (message.event == 'post') {
+					if (user.name) {
+						collections.chat.insert({body: message.body, name: user.name, time: new Date().getTime()});
+						for (var i in chatWS.clients)
+							chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+					} else tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+				} else if (message.event == 'update') {
+					collections.chatusers.update({name: user.name}, {$set: {state: message.state, seen: new Date().getTime()}}, function(err, result) {
+						if (err) throw err;
+						collections.chatusers.find({seen: {$lt: new Date().getTime() - 20000}}).each(function(err, doc) {
+							if (err) throw err;
+							if (!doc) return;
+							console.log('325' + JSON.stringify(doc));
+							for (var i in chatWS.clients)
+								chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: doc.name}));
+						});
+					});
 				} else {
-					tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+					tws.send('{"event":"err","body":"Unsupported or missing event type."}');
 				}
 			});
 		} catch(e) {

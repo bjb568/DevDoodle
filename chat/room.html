@@ -1,34 +1,62 @@
-<div id="chat" class="scrly hglt pad pre" style="max-height: 80vh"></div>
-<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 5vh; min-height: 18px;"></textarea><button class="blk" onclick="send()">Post</button>
+<div class="row" style="height: calc(100% - 120px)">
+	<div id="chat" class="half scrly hglt pad pre" style="height: 100%; width: 80%;"></div>
+	<div class="half umar" style="width: 18%">
+		<h1>Room Name</h1>
+		<p>Room description. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe, illo, fuga, iure, expedita neque voluptas rerum blanditiis temporibus ducimus commodi fugit cumque nostrum alias praesentium eveniet impedit pariatur voluptatum. Nesciunt.</p>
+		<hr />
+		<h2>Users:</h2>
+		<div id="users"></div>
+	</div>
+</div>
+<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button class="blk" onclick="send()">Post</button>
 <script>
+	var noPageOverflow = 420;
 	var socket = new WebSocket('ws://localhost:8125/chat');
 	var onBottom = true;
+	var idcookie = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
 	onscroll = function() {
 		onBottom = document.getElementById('chat').scrollTop + document.getElementById('chat').offsetHeight >= document.getElementById('chat').scrollHeight - 2;
 	};
-	function send() {
-		socket.send(JSON.stringify({body: document.getElementById('ta').value, idcookie: decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}));
+	function send(value) {
+		if (!(value = value || document.getElementById('ta').value)) return;
+		socket.send(JSON.stringify({event: 'post', body: value, idcookie: idcookie}));
 		document.getElementById('ta').value = '';
 		document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+		onscroll();
 	};
 	socket.onmessage = function(e) {
-		var data = JSON.parse(e.data);
-		if (data.event == 'init' || data.event == 'add') {
-			var div = document.createElement('div');
-			div.classList.add('hglt');
-			div.classList.add('umar');
-			div.classList.add('spad');
-			div.classList.add('clearfix');
-			div.textContent = data.body;
-			var sig = document.createElement('span');
-			sig.classList.add('c-sig');
-			sig.textContent = '-' + data.user + ', ';
-			if (!data.time) data.time = new Date().getTime();
-			sig.appendChild(agot(data.time));
-			div.appendChild(sig);
-			document.getElementById('chat').appendChild(div);
-			if (data.event == 'add') new Audio('/a/beep.mp3').play();
-			if (onBottom) document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+		try {
+			var data = JSON.parse(e.data);
+			if (data.event == 'init' || data.event == 'add') {
+				var div = document.createElement('div');
+				div.classList.add('hglt');
+				div.classList.add('umar');
+				div.classList.add('spad');
+				div.classList.add('scrl');
+				div.classList.add('clearfix');
+				div.textContent = data.body;
+				var sig = document.createElement('span');
+				sig.classList.add('c-sig');
+				sig.textContent = '-' + data.user + ', ';
+				if (!data.time) data.time = new Date().getTime();
+				sig.appendChild(agot(data.time));
+				div.appendChild(sig);
+				document.getElementById('chat').appendChild(div);
+				if (data.event == 'add') new Audio('/a/beep.mp3').play();
+				if (onBottom) document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+			} else if (data.event == 'adduser') {
+				var div = document.createElement('div');
+				div.id = 'user-' + (div.textContent = data.name);
+				document.getElementById('users').appendChild(div);
+			} else if (data.event == 'deluser') {
+				var div = document.getElementById('user-' + data.name);
+				div.parentNode.removeChild(div);
+			} else if (data.event == 'err') {
+				alert('Error: ' + data.body);
+			}
+		} catch(err) {
+			console.log(err);
+			//alert('JSON Error.');
 		}
 	};
 	document.getElementById('ta').onkeypress = function(e) {
@@ -36,5 +64,8 @@
 			send();
 			e.preventDefault();
 		}
-	}
+	};
+	setInterval(function() {
+		socket.send(JSON.stringify({event: 'update', state: 1, idcookie: idcookie}));
+	}, 10000);
 </script>
