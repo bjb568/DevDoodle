@@ -1,5 +1,10 @@
+var noPageOverflow = noPageOverflow || false;
 function minHeight() {
-	document.getElementById('content').style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) + 'px';
+	if (noPageOverflow) {
+		document.getElementById('content').style.height = Math.max(innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) + 'px';
+	} else {
+		document.getElementById('content').style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) + 'px';
+	}
 };
 function ago(d) {
 	d = Math.round((new Date() - d) / 1000);

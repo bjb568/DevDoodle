@@ -1,0 +1,55 @@
+Setting up a page - Tags | Learn | DevDoodle
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>Setting up a page - Tags</h2>
+			<p>HTML applies semantics and formatting using <em>tags</em>. In the first lesson, we saw a few tags, including the html, head, body, and p tags.</p>
+			<h3>What is a tag?</h3>
+			<p>There are two types of tags - start tags (<code>&lt;p></code>) and end tags (<code>&lt;/p></code>) enclosed in brackets (all start-tags have end-tags). To write a start tag, type <code>&lt;</code> (less-than), the tag name, then <code>></code> (greater-than). To write an end tag, type <code>&lt;</code> (less-than), a <code>/</code> (slash) the tag name, then <code>></code> (greater-than).</p>
+			<code class="blk">&lt;p>&lt;/p></code>
+			<p>The <em>tag contents</em> (anything between the start and end tags) are formatted differently depending on what the tag is.</p>
+			<p>Right now, we need to set up a webpage, so we need to use some tags.</p>
+			<code class="blk">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;/head>
+	&lt;body>&lt;/body>
+&lt;/html></code>
+			<p>After the doctype, there is an <code>&lt;html></code> tag. Inside it is <code>&lt;head></code> and <code>&lt;body></code>. The head tag will contain all meta-tags (title, description, etc.), while the body tag will contain visible content.</p>
+			<p>To move on, write the basic page with a doctype and html, head, and body tag.</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="clearfix">
+				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="clearfix">
+				<h2>Try Again</h2>
+				Did you copy the tags correctly? Make sure you have them in the right order.
+			</div>
+		</div>
+		<bl id="cntrls"><a href="../2/" class="lft">Back</a><a href="../4/" class="rit">Next</a></bl>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	function submit() {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed').classList.remove('show');
+		} else {
+			document.getElementById('failed').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
+</script>

@@ -1,0 +1,34 @@
+Intro to HTML | Learn | DevDoodle
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>What is HTML?</h2>
+			<p>HTML (Hyper Text Markup Language) is the language of web pages. It augments text, by adding formatting (header, bold, italic), hyperlinks (clickable text), and a foundation for other web technologies (CSS, JavaScript).</p>
+			<p>On the right/bottom is a basic HTML file and output. You don't need to understand it for now - click next for more info.</p>
+		</div>
+		<bl id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></bl>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>
+		&lt;title>This is the document title&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>This is a paragraph&lt;/p>
+	&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+</script>

@@ -22,16 +22,14 @@ body {
 *:first-child { margin-top: 0 }
 .mar { margin: 6px }
 .tumar { margin-top: 2px }
-.sumar, :not(img) + .desc { margin-top: 4px }
-.umar, :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), .row:not(:first-child) { margin-top: 6px }
-.bumar, h1:not(:first-child) { margin-top: 8px }
-.mar { margin: 6px }
+.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
+.bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content { margin-bottom: 6px }
 .rmar { margin-right: 6px }
-.smar, .error, .half { margin-bottom: 6px }
+.bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad { padding: 2px 4px 4px }
-.desc, #content, #footer, .error { padding: 4px }
+.pad, .desc, #content, #footer, .error { padding: 4px }
 .spad { padding: 3px }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
@@ -52,7 +50,7 @@ h2, section h1, article h1 {
 	margin-top: 0.8em; margin-bottom: 0.3em;
 	font-size: 1.3em;
 }
-ul, p { margin: 6px 0 0 0 }
+ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
@@ -64,11 +62,10 @@ ul, p { margin: 6px 0 0 0 }
 	content: '';
 }
 h1, h2, h3, h4, h5, h6 {
-	margin: 2px 0px;
 	font-family: Verdana;
 	font-weight: normal;
 }
-h1 *, h2 *, h3 *, h4 *, h5 *, h6 * { font-weight: inherit }
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
 h1 {
 	margin-bottom: 0.2em;
 	border-bottom: 1px solid #aaa;
@@ -77,6 +74,10 @@ h1 {
 	padding-bottom: 1px;
 	vertical-align: bottom;
 }
+h2, article h1, section h1 {
+	font-size: 1.3em;
+}
+hr { border-bottom: none }
 a, .ctrl {
 	color: #000;
 	font-weight: bold;
@@ -86,11 +87,12 @@ a, .ctrl {
 }
 a:active, .ctrl:active { color: #02d }
 a:hover, .ctrl:hover { color: #15f }
-input[type=text], input[type=password] {
+input[type=text], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: 0.8em;
 	height: 1.8em;
 }
+textarea { font-size: 0.9em }
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
@@ -210,9 +212,6 @@ input[type=text], input[type=password] {
 	#nav > :nth-child(-n+5) { float: left }
 	#nav > :nth-child(6) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
-}
-@media screen and (min-width: 1100px) and (max-width: 1499px) { 
-	#nav > :last-child { border-right: 1px solid #444 }
 }
 @media screen and (min-width: 1500px) { 
 	#cont { overflow: hidden }

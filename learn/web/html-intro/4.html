@@ -1,0 +1,45 @@
+Intro to HTML recap | Learn | DevDoodle
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>Recap</h2>
+			<bl>Congratulations! You now know what HTML is. Let's review:</bl>
+			<ul>
+				<li>HTML stands for Hyper Text Markup Language - it's a language used to mark up text on the web.</li>
+				<li>HTML is used to provide formatting, layout, and a foundation for other web technologies.</li>
+				<li>You mark up text with tags - a start tag before the content and an end tag after.</li>
+				<li>The basic HTML document consists of a doctype and html, head, and body tags:
+					<code class="blk">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;/head>
+	&lt;body>&lt;/body>
+&lt;/html></code>
+				</li>
+			</ul>
+			<bl>Next, we'll learn more about tags, and how to format text.</bl>
+			<form action="../../basic-tags/">
+				<button id="check" type="submit">Move on</button>
+			</form>
+		</div>
+		<bl id="cntrls"><a href="../3/" class="lft">Back</a></bl>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;title>You did it!&lt;/title>&lt;/head>
+	&lt;body>&lt;h1>Congrats! You did it!&lt;/h1>&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+</script>
