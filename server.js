@@ -51,7 +51,7 @@ errors[400] = function(req, res) {
 		res.write('<p>The request cannot be fulfilled due to bad syntax. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>')
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 400)
 };
 errors[403] = function(req, res) {
 	respondPage('403 | DevDoodle', req, res, function() {
@@ -61,7 +61,7 @@ errors[403] = function(req, res) {
 		res.write('<p>The request was a valid request, but the server is refusing to respond to it. Unlike a 401 Unauthorized response, authenticating will make no difference. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 403)
 };
 errors[404] = function(req, res) {
 	respondPage('404 | DevDoodle', req, res, function() {
@@ -81,7 +81,7 @@ errors[405] = function(req, res) {
 		res.write('<p>A request was made of a resource using a request method not supported by that resource; for example, using GET on a form which requires data to be presented via POST, or using PUT on a read-only resource. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 405)
 };
 errors[413] = function(req, res) {
 	respondPage('413 | DevDoodle', req, res, function() {
@@ -91,7 +91,7 @@ errors[413] = function(req, res) {
 		res.write('<p>The request is larger than the server is willing or able to process. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 413)
 };
 errors[414] = function(req, res) {
 	respondPage('414 | DevDoodle', req, res, function() {
@@ -101,7 +101,7 @@ errors[414] = function(req, res) {
 		res.write('<p>The URI provided was too long for the server to process. Often the result of too much data being encoded as a query-string of a GET request, in which case it should be converted to a POST request.</p> <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 414)
 };
 errors[415] = function(req, res) {
 	respondPage('415 | DevDoodle', req, res, function() {
@@ -111,7 +111,7 @@ errors[415] = function(req, res) {
 		res.write('<p>The request entity has a media type which the server or resource does not support. For example, the client uploads an image as image/svg+xml, but the server requires that images use a different format. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 415)
 };
 errors[418] = function(req, res) {
 	respondPage('418 | DevDoodle', req, res, function() {
@@ -121,7 +121,7 @@ errors[418] = function(req, res) {
 		res.write('<p>This code was defined in 1998 as one of the traditional IETF April Fools\' jokes, in RFC 2324, Hyper Text Coffee Pot Control Protocol, and is not expected to be implemented by actual HTTP servers. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 418)
 };
 errors[429] = function(req, res) {
 	respondPage('429 | DevDoodle', req, res, function() {
@@ -131,7 +131,7 @@ errors[429] = function(req, res) {
 		res.write('<p>The user has sent too many requests in a given amount of time. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 429)
 };
 errors[431] = function(req, res) {
 	respondPage('431 | DevDoodle', req, res, function() {
@@ -141,7 +141,7 @@ errors[431] = function(req, res) {
 		res.write('<p>The server is unwilling to process the request because either an individual header field, or all the header fields collectively, are too large. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 431)
 };
 errors[500] = function(req, res) {
 	respondPage('500 | DevDoodle', req, res, function() {
@@ -151,7 +151,7 @@ errors[500] = function(req, res) {
 		res.write('<p>An unexpected condition was encountered. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 500)
 };
 errors[505] = function(req, res) {
 	respondPage('505 | DevDoodle', req, res, function() {
@@ -161,7 +161,7 @@ errors[505] = function(req, res) {
 		res.write('<p>The server does not support the HTTP protocol version used in the request. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 505)
 };
 errors[521] = function(req, res) {
 	respondPage('521 | DevDoodle', req, res, function() {
@@ -171,7 +171,7 @@ errors[521] = function(req, res) {
 		res.write('<p>The origin webserver refused the connection. <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">See more</a> status codes.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>, or <a href="mailto:problem@brianjblair.com">contact us</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 521)
 };
 
 
