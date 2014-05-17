@@ -70,7 +70,7 @@ errors[404] = function(req, res) {
 errors[405] = function(req, res) {
 	respondPage('405 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 405 :(</h1>');
-		res.write('Method not allowed.');
+		res.write('<bl>Method not allowed.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -78,7 +78,7 @@ errors[405] = function(req, res) {
 errors[413] = function(req, res) {
 	respondPage('413 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 413 :(</h1>');
-		res.write('');
+		res.write('<bl>Request entity too large.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -86,7 +86,7 @@ errors[413] = function(req, res) {
 errors[414] = function(req, res) {
 	respondPage('414 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 414 :(</h1>');
-		res.write('');
+		res.write('<bl>Request URI too long.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -94,7 +94,7 @@ errors[414] = function(req, res) {
 errors[415] = function(req, res) {
 	respondPage('415 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 415 :(</h1>');
-		res.write('');
+		res.write('<bl>Unsupported media type.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -102,7 +102,7 @@ errors[415] = function(req, res) {
 errors[418] = function(req, res) {
 	respondPage('418 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 418 :(</h1>');
-		res.write('');
+		res.write('<bl>I\'m a little teapot, short and stout.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -110,7 +110,7 @@ errors[418] = function(req, res) {
 errors[429] = function(req, res) {
 	respondPage('429 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 429 :(</h1>');
-		res.write('');
+		res.write('<bl>Too many requests.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -118,7 +118,7 @@ errors[429] = function(req, res) {
 errors[431] = function(req, res) {
 	respondPage('431 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 431 :(</h1>');
-		res.write('');
+		res.write('<bl>Request header fields too large.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -126,7 +126,7 @@ errors[431] = function(req, res) {
 errors[500] = function(req, res) {
 	respondPage('500 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 500 :(</h1>');
-		res.write('');
+		res.write('<bl>Internal server error.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -134,7 +134,7 @@ errors[500] = function(req, res) {
 errors[505] = function(req, res) {
 	respondPage('505 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 505 :(</h1>');
-		res.write('');
+		res.write('<bl>HTTP version not supported.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
@@ -142,7 +142,7 @@ errors[505] = function(req, res) {
 errors[521] = function(req, res) {
 	respondPage('521 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 521 :(</h1>');
-		res.write('');
+		res.write('<bl>Web server is down.</bl>');
 		res.write('<bl><a href="">Reload</a> or <a href="javascript:history.go(-1)">go back</a>.</bl>');
 		respondPageFooter(res);
 	}, {}, 404)
