@@ -43,12 +43,88 @@ db.open(function(err, db) {
 });
 
 var errors = [];
+errors[400] = function(req, res) {
+	respondPage('400 | DevDoodle', req, res, function() {
+		res.write('<h1>400</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[403] = function(req, res) {
+	respondPage('403 | DevDoodle', req, res, function() {
+		res.write('<h1>403</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
 errors[404] = function(req, res) {
 	respondPage('404 | DevDoodle', req, res, function() {
 		res.write('<h1>404</h1>');
 		respondPageFooter(res);
 	}, {}, 404)
 };
+errors[405] = function(req, res) {
+	respondPage('405 | DevDoodle', req, res, function() {
+		res.write('<h1>405</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[413] = function(req, res) {
+	respondPage('413 | DevDoodle', req, res, function() {
+		res.write('<h1>413</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[414] = function(req, res) {
+	respondPage('414 | DevDoodle', req, res, function() {
+		res.write('<h1>414</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[415] = function(req, res) {
+	respondPage('415 | DevDoodle', req, res, function() {
+		res.write('<h1>415</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[418] = function(req, res) {
+	respondPage('418 | DevDoodle', req, res, function() {
+		res.write('<h1>418</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[429] = function(req, res) {
+	respondPage('429 | DevDoodle', req, res, function() {
+		res.write('<h1>429</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[431] = function(req, res) {
+	respondPage('431 | DevDoodle', req, res, function() {
+		res.write('<h1>431</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[500] = function(req, res) {
+	respondPage('500 | DevDoodle', req, res, function() {
+		res.write('<h1>500</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[505] = function(req, res) {
+	respondPage('505 | DevDoodle', req, res, function() {
+		res.write('<h1>505</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+errors[521] = function(req, res) {
+	respondPage('521 | DevDoodle', req, res, function() {
+		res.write('<h1>521</h1>');
+		respondPageFooter(res);
+	}, {}, 404)
+};
+
+
+
+
 
 var mime = {
 	'.html': 'text/html',
