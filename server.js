@@ -345,7 +345,6 @@ http.createServer(function(req, res) {
 		res.end();
 	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		var loc = './learn/' + [i[1],i[2],i[3]].join('/') + '.html';
-		console.log(loc);
 		fs.readFile(loc, function(err, data) {
 			data = data.toString();
 			if (err) { errors[404](req,res) } else {
@@ -386,7 +385,6 @@ chatWS.on('connection', function(tws) {
 		if (!user) user = {};
 		collections.chatusers.remove({name: user.name}, {w: 1}, function(err, rem) {
 			if (err) throw err;
-			console.log(rem);
 			collections.chatusers.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
@@ -398,8 +396,7 @@ chatWS.on('connection', function(tws) {
 						for (var i in chatWS.clients)
 							chatWS.clients[i].send(JSON.stringify({event: 'adduser', name: user.name}));
 					}
-					collections.chatusers.insert({name: user.name, seen: new Date().getTime()});
-					console.log({name: user.name, seen: new Date().getTime()});
+					collections.chatusers.insert({name: user.name});
 				}
 			});
 		});
@@ -408,7 +405,7 @@ chatWS.on('connection', function(tws) {
 		console.log(message);
 		try {
 			message = JSON.parse(message);
-			collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+			collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1')) || null}, function(err, user) {
 				if (err) throw err;
 				if (!user) user = {};
 				if (message.event == 'post') {
@@ -416,24 +413,28 @@ chatWS.on('connection', function(tws) {
 						collections.chat.insert({body: message.body, name: user.name, time: new Date().getTime()});
 						for (var i in chatWS.clients)
 							chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
-					} else tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+					} else tws.send(JSON.stringify({event: 'err', body: 'You must be logged in to post on chat.'}));
 				} else if (message.event == 'update') {
-					collections.chatusers.update({name: user.name}, {$set: {state: message.state, seen: new Date().getTime()}}, function(err, result) {
-						if (err) throw err;
-						collections.chatusers.find({seen: {$lt: new Date().getTime() - 20000}}).each(function(err, doc) {
-							if (err) throw err;
-							if (!doc) return;
-							console.log('325' + JSON.stringify(doc));
-							for (var i in chatWS.clients)
-								chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: doc.name}));
-						});
-					});
+					if (user.name) {
+						collections.chatusers.update({name: user.name}, {$set: {state: message.state}});
+						for (var i in chatWS.clients)
+							chatWS.clients[i].send(JSON.stringify({event: 'statechange', state: message.state, user: user.name}));
+					}
 				} else {
-					tws.send('{"event":"err","body":"Unsupported or missing event type."}');
+					tws.send(JSON.stringify({event: 'err', body: 'Unsupported or missing event type.'}));
 				}
 			});
 		} catch(e) {
-			tws.send('{"event":"err","body":"JSON Error."}');
+			tws.send(JSON.stringify({event: 'err', body: 'JSON error.'}));
 		}
+	});
+	tws.on('close', function() {
+		collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1')) || null}, function(err, user) {
+			if (err) throw err;
+			if (!user) return;
+			for (var i in chatWS.clients)
+				chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: user.name}));
+			collections.chatusers.remove({name: user.name});
+		});
 	});
 });
