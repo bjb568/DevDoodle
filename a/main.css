@@ -25,7 +25,7 @@ body {
 .sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
-.lmar, #content { margin-bottom: 6px }
+.lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
 .bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
