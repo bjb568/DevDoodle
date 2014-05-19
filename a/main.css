@@ -21,9 +21,9 @@ body {
 .rit, .c-sig { float: right }
 *:first-child { margin-top: 0 }
 .mar { margin: 6px }
-.tumar { margin-top: 2px }
-.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child) { margin-top: 6px }
+.tumar, h1 + *, h2 + *, h3 + * { margin-top: 2px }
+.sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content { margin-bottom: 6px }
 .rmar { margin-right: 6px }
@@ -36,21 +36,13 @@ body {
 .scrly { overflow-y: auto }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.7) }
+.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.8) }
 .grey, a.small, .c-sig { color: #555 }
 small, a.small, footer, .c-sig {
 	font-size: 0.85em;
 	font-weight: normal;
 }
-h3, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
-	margin-top: 0.5em;
-	font-size: 1em;
-}
-h2, section h1, article h1 {
-	margin-top: 0.8em; margin-bottom: 0.3em;
-	font-size: 1.3em;
-}
-ul, p { margin: 6px 0 2px 0 }
+ul { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
@@ -62,20 +54,27 @@ ul, p { margin: 6px 0 2px 0 }
 	content: '';
 }
 h1, h2, h3, h4, h5, h6 {
-	font-family: Verdana;
+	margin-top: 0.2em; margin-bottom: 0.2em;
+	font-family: Tahoma, Helvetica;
+}
+h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
 	font-weight: normal;
+	font-family: Verdana;
 }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
 h1 {
-	margin-bottom: 0.2em;
 	border-bottom: 1px solid #aaa;
 	font-size: 1.5em;
 	line-height: 1;
 	padding-bottom: 1px;
 	vertical-align: bottom;
 }
-h2, article h1, section h1 {
+h2, h1.title, section h1, article h1 {
 	font-size: 1.3em;
+}
+h3, h2.title, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
+	margin-top: 0.5em;
+	font-size: 1em;
 }
 hr { border-bottom: none }
 a, .ctrl {
@@ -90,9 +89,11 @@ a:hover, .ctrl:hover { color: #15f }
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: 0.8em;
-	height: 1.8em;
 }
-textarea { font-size: 0.9em }
+textarea {
+	font-size: 0.9em;
+	display: block;
+}
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
