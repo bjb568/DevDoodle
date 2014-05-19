@@ -39,6 +39,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.chatusers = collection;
 		});
+		db.collection('chatrooms', function(err, collection) {
+			if (err) throw err;
+			collections.chatrooms = collection;
+		});
 	});
 });
 
@@ -147,10 +151,6 @@ errors[521] = function(req, res) {
 	}, {}, 521)
 };
 
-
-
-
-
 var mime = {
 	'.html': 'text/html',
 	'.css': 'text/css',
@@ -192,25 +192,50 @@ function respondPageFooter(res) {
 	});
 };
 
-function respondLoginPage(err, req, res, post) {
+function errorsHTML(errs) {
+	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
+}
+
+function respondLoginPage(errs, req, res, post) {
 	respondPage('Login | DevDoodle', req, res, function() {
-		if (err) res.write('<div class="error">'+err+'</div>');
+		res.write('<h1>Log in</h1>\n');
+		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?' checked=""':'') + ' /><label for="create">Create an account</label>');
-		res.write('<input type="text" name="name" placeholder="Name" required="" />');
-		res.write('<input type="password" name="pass" placeholder="Password" required="" />');
-		res.write('<div id="ccreate" ' + (post.create?'':'hidden="" ') + '>');
-		res.write('<input type="password" name="passc" placeholder="Confirm Password" />');
-		res.write('<input type="text" name="email" placeholder="Email" />');
-		res.write('</div>');
-		res.write('<button type="submit">Submit</button>');
-		res.write('</form>');
-		res.write('<style>');
-		res.write('#content input[type=text], button { display: block }');
+		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create?' checked=""':'') + ' /><label for="create">Create an account</label>\n');
+		res.write('<input type="text" name="name" placeholder="Name" required="" />\n');
+		res.write('<input type="password" name="pass" placeholder="Password" required="" />\n');
+		res.write('<div id="ccreate" ' + (post.create?'':'hidden="" ') + '>\n');
+		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
+		res.write('<input type="text" name="email" placeholder="Email" />\n');
+		res.write('</div>\n');
+		res.write('<button type="submit">Submit</button>\n');
+		res.write('</form>\n');
+		res.write('<style>\n');
+		res.write('#content input[type=text], button { display: block }\n');
 		res.write('</style>');
 		respondPageFooter(res);
 	});
-}
+};
+
+function respondCreateRoomPage(errs, req, res, post) {
+	respondPage('Create Room | Chat | DevDoodle', req, res, function() {
+		res.write('<h1>Create Room</h1>\n');
+		res.write(errorsHTML(errs));
+		res.write('<form method="post">\n');
+		res.write('<div>Name: <input type="text" name="name" required="" /></div>\n');
+		res.write('<div>Description: <textarea name="desc" required="" rows="3" cols="80"></textarea></div>\n');
+		res.write('<div>Type: <select name="type">\n');
+		res.write('\t<option value="P">Public</option>\n');
+		res.write('\t<option value="R">Read-only</option>\n');
+		res.write('\t<option value="N">Private</option>\n');
+		res.write('\t<option value="M">♦ only</option>\n');
+		res.write('</select>\n');
+		res.write('</div>\n');
+		res.write('<button type="submit">Submit</button>\n');
+		res.write('</form>\n');
+		respondPageFooter(res);
+	});
+};
 
 http.createServer(function(req, res) {
 	console.log('Req '+req.url);
@@ -230,9 +255,9 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name|| !post.pass || !post.passc || !post.email) {
-						respondLoginPage('All fields are required.', req, res, post);
+						respondLoginPage(['All fields are required.'], req, res, post);
 					} else if (post.pass != post.passc) {
-						respondLoginPage('Passwords don\'t match.', req, res, post);
+						respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					} else {
 						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							var pass = new Buffer(key).toString('base64');
@@ -269,13 +294,13 @@ http.createServer(function(req, res) {
 							});
 							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
 						} else {
-							respondLoginPage('Invalid Credentials.', req, res, post);
+							respondLoginPage(['Invalid Credentials.'], req, res, post);
 						}
 					});
 				}
 			});
 		} else {
-			respondLoginPage(null, req, res, {});
+			respondLoginPage([], req, res, {});
 		}
 	} else if (i = req.url.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
@@ -295,25 +320,77 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/user/') {
 		respondPage('Users | DevDoodle', req, res, function() {
-			collections.users.find({}, function(err, docs) {
+			res.write('<table><tbody>');
+			collections.users.find({}).each(function(err, doc) {
 				if (err) throw err;
-				res.write('<table><tbody>');
-				docs.forEach(function(doc) {
+				if (doc) {
 					res.write('<tr>');
 					res.write('<td>' + doc.name + '</td>');
 					res.write('<td>' + doc.rep + '</td>');
 					res.write('</tr>');
-				});
-				res.write('</tbody></table>');
-				respondPageFooter(res);
+				} else {
+					res.write('</tbody></table>');
+					respondPageFooter(res);
+				}
 			});
 		});
 	} else if (req.url == '/chat/') {
 		respondPage('Chat | DevDoodle', req, res, function() {
-			fs.readFile('chat/room.html', function(err, data) {
+			res.write('<h1>Chat Rooms</h1>');
+			collections.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
+				if (doc) {
+					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
+					res.write('<p>' + doc.desc + '</p>\n');
+				} else {
+					res.write('<hr />\n');
+					res.write('<a href="newroom" class="small">Create Room</a>');
+					respondPageFooter(res);
+				}
+			});
+			respondPageFooter(res);
+		});
+	} else if (req.url == '/chat/newroom') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				var errors = [];
+				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
+				if (!post.desc || post.desc.length < 16 ) errors.push('Description must be at least 16 chars long.');
+				if (errors.length) {
+					respondCreateRoomPage(errors, req, res, {});
+				} else {
+					collections.chatrooms.find().sort({'_id': -1}).limit(1).next(function(err, last) {
+						if (err) throw err;
+						var i = last ? last._id + 1 : 0;
+						collections.chatrooms.insert({
+							name: post.name,
+							desc: post.desc,
+							type: post.type,
+							_id: i
+						});
+						res.writeHead(302, {Location: i});
+						res.end();
+					});
+				}
+			});
+		} else {
+			respondCreateRoomPage([], req, res, {});
+		}
+	} else if (i = req.url.match(/\/chat\/(\d+)/)) {
+		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
+			if (err) throw err;
+			if (!doc) return errors[404](req, res);
+			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function() {
+				fs.readFile('chat/room.html', function(err, data) {
+					if (err) throw err;
+					res.write(data.toString().replace('$id', doc._id).replace('$name', doc.name).replace('$desc', doc.desc));
+					respondPageFooter(res);
+				});
 			});
 		});
 	} else if (req.url == '/dev/') {
@@ -345,7 +422,6 @@ http.createServer(function(req, res) {
 		res.end();
 	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		var loc = './learn/' + [i[1],i[2],i[3]].join('/') + '.html';
-		console.log(loc);
 		fs.readFile(loc, function(err, data) {
 			data = data.toString();
 			if (err) { errors[404](req,res) } else {
@@ -373,21 +449,23 @@ console.log('Server running at http://localhost:8124/');
 var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
-	var cursor = collections.chat.find();
+	tws.room = parseInt(tws.upgradeReq.url.replace('/chat/', ''));
+	if (isNaN(tws.room)) return;
+	var cursor = collections.chat.find({room: tws.room});
 	cursor.count(function(err, count) {
-		cursor.skip(count - 92).each(function(err, doc) {
+		if (err) throw err;
+		cursor.skip(Math.max(0, count - 92)).each(function(err, doc) {
 			if (err) throw err;
 			if (!doc) return;
 			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
 		});
 	});
-	collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1')) || null}, function(err, user) {
+	collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 		if (err) throw err;
 		if (!user) user = {};
-		collections.chatusers.remove({name: user.name}, {w: 1}, function(err, rem) {
+		collections.chatusers.remove({name: user.name, room: tws.room}, {w: 1}, function(err, rem) {
 			if (err) throw err;
-			console.log(rem);
-			collections.chatusers.find().each(function(err, doc) {
+			collections.chatusers.find({room: tws.room}).each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					tws.send(JSON.stringify({event: 'adduser', name: doc.name}));
@@ -396,10 +474,9 @@ chatWS.on('connection', function(tws) {
 						tws.send(JSON.stringify({event: 'adduser', name: user.name}));
 					} else {
 						for (var i in chatWS.clients)
-							chatWS.clients[i].send(JSON.stringify({event: 'adduser', name: user.name}));
+							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({event: 'adduser', name: user.name}));
 					}
-					collections.chatusers.insert({name: user.name, seen: new Date().getTime()});
-					console.log({name: user.name, seen: new Date().getTime()});
+					collections.chatusers.insert({name: user.name, room: tws.room});
 				}
 			});
 		});
@@ -408,32 +485,36 @@ chatWS.on('connection', function(tws) {
 		console.log(message);
 		try {
 			message = JSON.parse(message);
-			collections.users.findOne({cookie: message.idcookie}, function(err, user) {
+			collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 				if (err) throw err;
 				if (!user) user = {};
 				if (message.event == 'post') {
 					if (user.name) {
-						collections.chat.insert({body: message.body, name: user.name, time: new Date().getTime()});
+						collections.chat.insert({body: message.body, user: user.name, time: new Date().getTime(), room: tws.room});
 						for (var i in chatWS.clients)
-							chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
-					} else tws.send('{"event":"err","body":"You must be logged in to post on chat."}');
+							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({event: 'add', body: message.body, user: user.name}));
+					} else tws.send(JSON.stringify({event: 'err', body: 'You must be logged in to post on chat.'}));
 				} else if (message.event == 'update') {
-					collections.chatusers.update({name: user.name}, {$set: {state: message.state, seen: new Date().getTime()}}, function(err, result) {
-						if (err) throw err;
-						collections.chatusers.find({seen: {$lt: new Date().getTime() - 20000}}).each(function(err, doc) {
-							if (err) throw err;
-							if (!doc) return;
-							console.log('325' + JSON.stringify(doc));
-							for (var i in chatWS.clients)
-								chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: doc.name}));
-						});
-					});
+					if (user.name) {
+						collections.chatusers.update({name: user.name, room: tws.room}, {$set: {state: message.state}});
+						for (var i in chatWS.clients)
+							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({event: 'statechange', state: message.state, user: user.name}));
+					}
 				} else {
-					tws.send('{"event":"err","body":"Unsupported or missing event type."}');
+					tws.send(JSON.stringify({event: 'err', body: 'Unsupported or missing event type.'}));
 				}
 			});
 		} catch(e) {
-			tws.send('{"event":"err","body":"JSON Error."}');
+			tws.send(JSON.stringify({event: 'err', body: 'JSON error.'}));
 		}
+	});
+	tws.on('close', function() {
+		collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+			if (err) throw err;
+			if (!user) return;
+			for (var i in chatWS.clients)
+				if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({event: 'deluser', name: user.name}));
+			collections.chatusers.remove({name: user.name, room: tws.room});
+		});
 	});
 });

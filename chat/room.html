@@ -1,8 +1,8 @@
 <div class="row" style="height: calc(100% - 120px)">
 	<div id="chat" class="half scrly hglt pad pre" style="height: 100%; width: 80%;"></div>
 	<div class="half umar" style="width: 18%">
-		<h1>Room Name</h1>
-		<p>Room description. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Saepe, illo, fuga, iure, expedita neque voluptas rerum blanditiis temporibus ducimus commodi fugit cumque nostrum alias praesentium eveniet impedit pariatur voluptatum. Nesciunt.</p>
+		<h1>$name</h1>
+		<p>$desc</p>
 		<hr />
 		<h2>Users:</h2>
 		<div id="users"></div>
@@ -11,20 +11,44 @@
 <textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button class="blk" onclick="send()">Post</button>
 <script>
 	var noPageOverflow = 420;
-	var socket = new WebSocket('ws://localhost:8125/chat');
+	var socket = new WebSocket('ws://localhost:8125/chat/$id');
 	var onBottom = true;
-	var idcookie = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
+	var timeout = setTimeout(inactive, 10000);
+	var state = 1;
 	onscroll = function() {
 		onBottom = document.getElementById('chat').scrollTop + document.getElementById('chat').offsetHeight >= document.getElementById('chat').scrollHeight - 2;
 	};
 	function send(value) {
 		if (!(value = value || document.getElementById('ta').value)) return;
-		socket.send(JSON.stringify({event: 'post', body: value, idcookie: idcookie}));
+		socket.send(JSON.stringify({event: 'post', body: value}));
 		document.getElementById('ta').value = '';
 		document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
 		onscroll();
 	};
+	function update(nstate) {
+		if (nstate == 1 &amp;&amp; document.getElementById('ta').value) nstate = 2;
+		if (state != nstate) {
+			state = nstate;
+			socket.send(JSON.stringify({event: 'update', state: state}));
+		}
+	};
+	function inactive() {
+		update(0);
+	};
+	function active() {
+		clearTimeout(timeout);
+		timeout = setTimeout(inactive, 10000);
+		update(1);
+	};
+	addEventListener('keyup', active);
+	addEventListener('keydown', active);
+	addEventListener('click', active);
+	addEventListener('mousemove', active);
+	addEventListener('touchstart', active);
+	addEventListener('scroll', active);
+	document.getElementById('chat').addEventListener('scroll', active);
 	socket.onmessage = function(e) {
+		console.log(e.data);
 		try {
 			var data = JSON.parse(e.data);
 			if (data.event == 'init' || data.event == 'add') {
@@ -51,8 +75,19 @@
 			} else if (data.event == 'deluser') {
 				var div = document.getElementById('user-' + data.name);
 				div.parentNode.removeChild(div);
+			} else if (data.event == 'statechange') {
+				if (data.state == 0)
+					document.getElementById('user-' + data.user).classList.add('inactive');
+				else
+					document.getElementById('user-' + data.user).classList.remove('inactive');
+				if (data.state == 2)
+					document.getElementById('user-' + data.user).classList.add('writing');
+				else
+					document.getElementById('user-' + data.user).classList.remove('writing');
 			} else if (data.event == 'err') {
 				alert('Error: ' + data.body);
+			} else {
+				throw 'Unsupported event type.';
 			}
 		} catch(err) {
 			console.log(err);
@@ -65,7 +100,14 @@
 			e.preventDefault();
 		}
 	};
-	setInterval(function() {
-		socket.send(JSON.stringify({event: 'update', state: 1, idcookie: idcookie}));
-	}, 10000);
 </script>
+<style>
+	.inactive {
+		color: red;
+		font-style: italic;
+	}
+	.writing {
+		color: green;
+		font-weight: bold;
+	}
+</style>
