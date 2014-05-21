@@ -25,12 +25,11 @@ body {
 	}
 }
 :not(.target):target {
-	font-weight: bold;
 	animation: target 1s;
 	-webkit-animation: target 1s;
 }
-[hidden], .target:not(:target) { display: none }
 .blk { display: block }
+[hidden], .target:not(:target) { display: none }
 .ib, #logo { display: inline-block }
 .maxwidth, img { max-width: 100% }
 .lft, .row > * { float: left }

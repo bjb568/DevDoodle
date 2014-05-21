@@ -455,7 +455,7 @@ chatWS.on('connection', function(tws) {
 	var cursor = collections.chat.find({room: tws.room});
 	cursor.count(function(err, count) {
 		if (err) throw err;
-		var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] || Infinity;
+		var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
 		var skip = Math.max(0, Math.min(count - 92, i));
 		tws.send(JSON.stringify({event: 'info-skipped', body: skip, ts: skip == i}));
 		i = 0;
