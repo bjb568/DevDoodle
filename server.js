@@ -58,7 +58,7 @@ errors[400] = function(req, res) {
 errors[403] = function(req, res) {
 	respondPage('403 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 403</h1>');
-		res.write('<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 403)
@@ -98,7 +98,7 @@ errors[414] = function(req, res) {
 errors[415] = function(req, res) {
 	respondPage('415 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 415</h1>');
-		res.write('<p>Unsupported media type. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 415)
@@ -129,7 +129,7 @@ errors[431] = function(req, res) {
 errors[500] = function(req, res) {
 	respondPage('500 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 500 :(</h1>');
-		res.write('<p>Internal server error. This will be automatically reported.</p>');
+		res.write('<p>Internal server error. tws will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 500)
@@ -239,13 +239,13 @@ function respondCreateRoomPage(errs, req, res, post) {
 
 http.createServer(function(req, res) {
 	console.log('Req '+req.url);
+	var i;
 	if (req.url == '/') {
 		respondPage('DevDoodle', req, res, function() {
-			res.write('Lorem ipsum. <a>this is a link</a>');
+			res.write('Lorem ipsum. <a>tws is a link</a>');
 			respondPageFooter(res);
 		});
 	} else if (req.url == '/login/') {
-		var i;
 		if (req.method == 'POST') {
 			var post = '';
 			req.on('data', function(data) {
@@ -267,7 +267,7 @@ http.createServer(function(req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for tws email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/'+rstr+'">here</a>.</p>'
 							});
 							respondPage('Account Created | DevDoodle', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -388,7 +388,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replace('$id', doc._id).replace('$name', doc.name).replace('$desc', doc.desc));
+					res.write(data.toString().split('$id').join(doc._id).replace('$name', doc.name).replace('$desc', doc.desc));
 					respondPageFooter(res);
 				});
 			});
@@ -449,15 +449,21 @@ console.log('Server running at http://localhost:8124/');
 var chatWS = new ws.Server({host: 'localhost', port: 8125});
 
 chatWS.on('connection', function(tws) {
-	tws.room = parseInt(tws.upgradeReq.url.replace('/chat/', ''));
-	if (isNaN(tws.room)) return;
+	var i;
+	if (!(i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) return;
+	if (isNaN(tws.room = parseInt(i[1]))) return;
 	var cursor = collections.chat.find({room: tws.room});
 	cursor.count(function(err, count) {
 		if (err) throw err;
-		cursor.skip(Math.max(0, count - 92)).each(function(err, doc) {
+		var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] || Infinity;
+		var skip = Math.max(0, Math.min(count - 92, i));
+		tws.send(JSON.stringify({event: 'info-skipped', body: skip, ts: skip == i}));
+		i = 0;
+		cursor.skip(skip).limit(144).each(function(err, doc) {
 			if (err) throw err;
-			if (!doc) return;
-			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time}));
+			if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
+			i++;
+			tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time, num: skip + i}));
 		});
 	});
 	collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
@@ -485,7 +491,7 @@ chatWS.on('connection', function(tws) {
 		console.log(message);
 		try {
 			message = JSON.parse(message);
-			collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+			collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 				if (err) throw err;
 				if (!user) user = {};
 				if (message.event == 'post') {
@@ -500,6 +506,21 @@ chatWS.on('connection', function(tws) {
 						for (var i in chatWS.clients)
 							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({event: 'statechange', state: message.state, user: user.name}));
 					}
+				} else if (message.event == 'req') {
+					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({event: 'err', body: 'Could not fetch posts.'}));
+					var cursor = collections.chat.find({room: tws.room});
+					cursor.count(function(err, count) {
+						if (err) throw err;
+						var i = 0;
+						var num = message.skip - message.to || 1;
+						cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+							if (err) throw err;
+							if (!doc) return;
+							i++;
+							console.log(message.skip - i - 1);
+							tws.send(JSON.stringify({event: 'init', body: doc.body, user: doc.user, time: doc.time, num: message.skip - i, before: true}));
+						});
+					});
 				} else {
 					tws.send(JSON.stringify({event: 'err', body: 'Unsupported or missing event type.'}));
 				}
@@ -509,7 +530,7 @@ chatWS.on('connection', function(tws) {
 		}
 	});
 	tws.on('close', function() {
-		collections.users.findOne({cookie: decodeURIComponent(!this.upgradeReq.headers.cookie || this.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 			if (err) throw err;
 			if (!user) return;
 			for (var i in chatWS.clients)

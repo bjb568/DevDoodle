@@ -14,6 +14,22 @@ body {
 	color: #666;
 	font-size: 0.9em;
 }
+@keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+@-webkit-keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+:not(.target):target {
+	font-weight: bold;
+	animation: target 1s;
+	-webkit-animation: target 1s;
+}
+[hidden], .target:not(:target) { display: none }
 .blk { display: block }
 .ib, #logo { display: inline-block }
 .maxwidth, img { max-width: 100% }
