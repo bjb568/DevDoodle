@@ -57,7 +57,7 @@ small, a.small, footer, .c-sig {
 	font-size: 0.85em;
 	font-weight: normal;
 }
-ul { margin: 6px 0 2px 0 }
+ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
@@ -241,10 +241,9 @@ textarea {
 		background: #181818;
 	}
 	#nav > :nth-child(6) { margin-top: 16px }
-	#nav > *, #nav form {
+	#nav > * {
 		width: 100%;
 		padding-left: 16px;
-		padding-right: 24px;
 	}
 	#nav > ::after {
 		position: absolute;
@@ -253,5 +252,4 @@ textarea {
 		color: #999;
 	}
 	#logo { height: 2rem }
-	#nav input { width: 100% }
 }
