@@ -57,7 +57,7 @@ small, a.small, footer, .c-sig {
 	font-size: 0.85em;
 	font-weight: normal;
 }
-ul { margin: 6px 0 2px 0 }
+ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
