@@ -14,7 +14,22 @@ body {
 	color: #666;
 	font-size: 0.9em;
 }
+@keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+@-webkit-keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+:not(.target):target {
+	animation: target 1s;
+	-webkit-animation: target 1s;
+}
 .blk { display: block }
+[hidden], .target:not(:target) { display: none }
 .ib, #logo { display: inline-block }
 .maxwidth, img { max-width: 100% }
 .lft, .row > * { float: left }
@@ -25,7 +40,7 @@ body {
 .sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
-.lmar, #content { margin-bottom: 6px }
+.lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
 .bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
