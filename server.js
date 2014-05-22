@@ -523,7 +523,7 @@ chatWS.on('connection', function (tws) {
 			ts: skip == i
 		}));
 		i = 0;
-		cursor.skip(skip).limit(144).each(function (err, doc) {
+		cursor.skip(skip).limit(92).each(function (err, doc) {
 			if (err) throw err;
 			if (!doc) return tws.send(JSON.stringify({
 				event: 'info-complete'
