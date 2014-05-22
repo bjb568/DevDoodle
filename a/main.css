@@ -123,6 +123,7 @@ textarea {
 }
 #nav input {
 	width: 160px;
+	max-width: 100%;
 	margin: 0;
 }
 #logo img {
@@ -139,6 +140,7 @@ textarea {
 	font-size: 0.9rem;
 	line-height: 1.5;
 	height: auto;
+	max-width: 100%;
 }
 #content { padding-bottom: 24px }
 @media screen and (min-width: 350px) and (max-width: 440px) { 
