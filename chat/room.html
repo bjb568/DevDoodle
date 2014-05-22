@@ -19,9 +19,9 @@
 	var skipped;
 	var cont = document.getElementById('chat');
 	var lock = true;
-	var lockTimeout = setTimeout(function() { lock = false }, 1000);
-	cont.onscroll = function() {
+	cont.onscroll = function(e) {
 		if (!lock &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 32) {
+			e.preventDefault();
 			cont.scrollTop = 32;
 			skipped = Math.max(0, skipped - 1);
 			socket.send(JSON.stringify({event: 'req', skip: skipped}));
@@ -131,8 +131,8 @@
 		}
 	};
 	function complete() {
+		lock = false;
 		if (!isNaN(hash)) {
-			lock = false;
 			location.hash = '';
 			location.hash = '#' + hash;
 		}
