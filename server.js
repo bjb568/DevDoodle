@@ -59,7 +59,7 @@ errors[400] = function (req, res) {
 		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 400)
+	}, {}, 400);
 };
 errors[403] = function (req, res) {
 	respondPage('403 | DevDoodle', req, res, function () {
@@ -67,7 +67,7 @@ errors[403] = function (req, res) {
 		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 403)
+	}, {}, 403);
 };
 errors[404] = function (req, res) {
 	respondPage('404 | DevDoodle', req, res, function () {
@@ -75,7 +75,7 @@ errors[404] = function (req, res) {
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.split('/').join(' ')) + '">Search</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 404);
 };
 errors[405] = function (req, res) {
 	respondPage('405 | DevDoodle', req, res, function () {
@@ -83,7 +83,7 @@ errors[405] = function (req, res) {
 		res.write('<p>Method not allowed.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 405)
+	}, {}, 405);
 };
 errors[413] = function (req, res) {
 	respondPage('413 | DevDoodle', req, res, function () {
@@ -91,7 +91,7 @@ errors[413] = function (req, res) {
 		res.write('<p>Request entity too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 413)
+	}, {}, 413);
 };
 errors[414] = function (req, res) {
 	respondPage('414 | DevDoodle', req, res, function () {
@@ -99,7 +99,7 @@ errors[414] = function (req, res) {
 		res.write('<p>Request URI too long.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 414)
+	}, {}, 414);
 };
 errors[415] = function (req, res) {
 	respondPage('415 | DevDoodle', req, res, function () {
@@ -107,14 +107,14 @@ errors[415] = function (req, res) {
 		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 415)
+	}, {}, 415);
 };
 errors[418] = function (req, res) {
 	respondPage('418 | DevDoodle', req, res, function () {
 		res.write('<h1>418!</h1>');
 		res.write('<p>I\'m a little teapot, short and stout.</p>');
 		respondPageFooter(res);
-	}, {}, 418)
+	}, {}, 418);
 };
 errors[429] = function (req, res) {
 	respondPage('429 | DevDoodle', req, res, function () {
@@ -122,7 +122,7 @@ errors[429] = function (req, res) {
 		res.write('<p>Too many requests.</p>');
 		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 429)
+	}, {}, 429);
 };
 errors[431] = function (req, res) {
 	respondPage('431 | DevDoodle', req, res, function () {
@@ -130,7 +130,7 @@ errors[431] = function (req, res) {
 		res.write('<p>Request header fields too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 431)
+	}, {}, 431);
 };
 errors[500] = function (req, res) {
 	respondPage('500 | DevDoodle', req, res, function () {
@@ -138,7 +138,7 @@ errors[500] = function (req, res) {
 		res.write('<p>Internal server error. tws will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 500)
+	}, {}, 500);
 };
 errors[505] = function (req, res) {
 	respondPage('505 | DevDoodle', req, res, function () {
@@ -146,7 +146,7 @@ errors[505] = function (req, res) {
 		res.write('<p>HTTP version not supported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 505)
+	}, {}, 505);
 };
 errors[521] = function (req, res) {
 	respondPage('521 | DevDoodle', req, res, function () {
@@ -154,7 +154,7 @@ errors[521] = function (req, res) {
 		res.write('<p>We\'re down. Please wait a few minutes before continuing.</p>');
 		res.write('<p><a href="">Reload</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 521)
+	}, {}, 521);
 };
 
 var mime = {
