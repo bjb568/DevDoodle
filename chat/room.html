@@ -1,8 +1,15 @@
 <div class="row" style="height: calc(100% - 120px)">
 	<div id="chat" class="half scrly hglt pad pre" style="height: 100%; width: 80%;"></div>
 	<div class="half umar" style="width: 18%">
-		<h1>$name</h1>
-		<p>$desc</p>
+		<div id="roominfo">
+			<h1><span id="name">$name</span> <small><a id="edit">Edit</a></small></h1>
+			<p id="desc">$desc</p>
+		</div>
+		<form id="editform" hidden="">
+			<input id="nameedit" type="text" value="$name" class="large" />
+			<textarea id="descedit" type="text" class="fullwidth">$desc</textarea>
+			<button>Submit</button>
+		</form>
 		<hr />
 		<h2>Users:</h2>
 		<div id="users"></div>
@@ -19,9 +26,9 @@
 	var skipped;
 	var cont = document.getElementById('chat');
 	var lock = true;
-	var lockTimeout = setTimeout(function() { lock = false }, 1000);
-	cont.onscroll = function() {
+	cont.onscroll = function(e) {
 		if (!lock &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 32) {
+			e.preventDefault();
 			cont.scrollTop = 32;
 			skipped = Math.max(0, skipped - 1);
 			socket.send(JSON.stringify({event: 'req', skip: skipped}));
@@ -115,6 +122,9 @@
 			}
 		} else if (data.event == 'info-complete') {
 			complete();
+		} else if (data.event == 'info-update') {
+			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
+			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 		}
@@ -131,11 +141,21 @@
 		}
 	};
 	function complete() {
+		lock = false;
 		if (!isNaN(hash)) {
-			lock = false;
 			location.hash = '';
 			location.hash = '#' + hash;
 		}
+	};
+	document.getElementById('edit').onclick = function() {
+		document.getElementById('roominfo').hidden = true;
+		document.getElementById('editform').hidden = false;
+	};
+	document.getElementById('editform').onsubmit = function() {
+		document.getElementById('roominfo').hidden = false;
+		document.getElementById('editform').hidden = true;
+		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
+		return false;
 	};
 </script>
 <style>
@@ -147,4 +167,5 @@
 		color: green;
 		font-weight: bold;
 	}
+	#editform { margin: 0 }
 </style>

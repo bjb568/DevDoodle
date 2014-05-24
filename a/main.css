@@ -1,6 +1,5 @@
 html { background: linear-gradient(rgba(20, 20, 20, 0.85), rgba(20, 20, 20, 0.85)), url('/a/background.png') no-repeat left center fixed }
 body {
-	margin: 0;
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
 	tab-size: 4;
@@ -31,11 +30,13 @@ body {
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
 .ib, #logo { display: inline-block }
+.fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
 .lft, .row > * { float: left }
 .rit, .c-sig { float: right }
-*:first-child { margin-top: 0 }
+:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
+.nomar, body, input { margin: 0 }
 .tumar, h1 + *, h2 + *, h3 + * { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
@@ -44,7 +45,7 @@ body {
 .rmar { margin-right: 6px }
 .bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad, .desc, #content, #footer, .error { padding: 4px }
+.pad, .desc, #content, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
@@ -53,9 +54,22 @@ body {
 .hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.8) }
 .grey, a.small, .c-sig { color: #555 }
+.large { font-size: 1.2em }
+input[type=text].large, input[type=password].large { font-size: 1.3em }
 small, a.small, footer, .c-sig {
 	font-size: 0.85em;
 	font-weight: normal;
+}
+h1 small {
+	float: right;
+	font-size: 0.65em;
+	margin-top: 0.5em;
+}
+.popup {
+	position: absolute;
+	top: 20%; right: 20%; left: 20%;
+	background: rgba(240, 240, 240, 0.95);
+	box-shadow: 1px 1px 8px #000;
 }
 ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
@@ -123,7 +137,7 @@ textarea {
 }
 #nav input {
 	width: 160px;
-	margin: 0;
+	max-width: 100%;
 }
 #logo img {
 	max-height: 100%;
@@ -139,6 +153,7 @@ textarea {
 	font-size: 0.9rem;
 	line-height: 1.5;
 	height: auto;
+	max-width: 100%;
 }
 #content { padding-bottom: 24px }
 @media screen and (min-width: 350px) and (max-width: 440px) { 
@@ -241,9 +256,10 @@ textarea {
 		background: #181818;
 	}
 	#nav > :nth-child(6) { margin-top: 16px }
-	#nav > * {
+	#nav > *, #nav form {
 		width: 100%;
 		padding-left: 16px;
+		padding-right: 24px;
 	}
 	#nav > ::after {
 		position: absolute;
@@ -252,4 +268,5 @@ textarea {
 		color: #999;
 	}
 	#logo { height: 2rem }
+	#nav input { width: 100% }
 }

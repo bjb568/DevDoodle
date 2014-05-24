@@ -1,3 +1,14 @@
+String.prototype.replaceAll = function(find, replace) {
+	if (typeof find == 'string') return this.split(find).join(replace);
+	var t = this, i, j;
+	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
+	return t;
+};
+
+function html(input, flags) {
+	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
+};
+
 var http = require('http');
 var ws = require('ws');
 var fs = require('fs');
@@ -59,7 +70,7 @@ errors[400] = function (req, res) {
 		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 400)
+	}, {}, 400);
 };
 errors[403] = function (req, res) {
 	respondPage('403 | DevDoodle', req, res, function () {
@@ -67,15 +78,15 @@ errors[403] = function (req, res) {
 		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 403)
+	}, {}, 403);
 };
 errors[404] = function (req, res) {
 	respondPage('404 | DevDoodle', req, res, function () {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.split('/').join(' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 404)
+	}, {}, 404);
 };
 errors[405] = function (req, res) {
 	respondPage('405 | DevDoodle', req, res, function () {
@@ -83,7 +94,7 @@ errors[405] = function (req, res) {
 		res.write('<p>Method not allowed.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 405)
+	}, {}, 405);
 };
 errors[413] = function (req, res) {
 	respondPage('413 | DevDoodle', req, res, function () {
@@ -91,7 +102,7 @@ errors[413] = function (req, res) {
 		res.write('<p>Request entity too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 413)
+	}, {}, 413);
 };
 errors[414] = function (req, res) {
 	respondPage('414 | DevDoodle', req, res, function () {
@@ -99,7 +110,7 @@ errors[414] = function (req, res) {
 		res.write('<p>Request URI too long.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 414)
+	}, {}, 414);
 };
 errors[415] = function (req, res) {
 	respondPage('415 | DevDoodle', req, res, function () {
@@ -107,14 +118,14 @@ errors[415] = function (req, res) {
 		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 415)
+	}, {}, 415);
 };
 errors[418] = function (req, res) {
 	respondPage('418 | DevDoodle', req, res, function () {
 		res.write('<h1>418!</h1>');
 		res.write('<p>I\'m a little teapot, short and stout.</p>');
 		respondPageFooter(res);
-	}, {}, 418)
+	}, {}, 418);
 };
 errors[429] = function (req, res) {
 	respondPage('429 | DevDoodle', req, res, function () {
@@ -122,7 +133,7 @@ errors[429] = function (req, res) {
 		res.write('<p>Too many requests.</p>');
 		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 429)
+	}, {}, 429);
 };
 errors[431] = function (req, res) {
 	respondPage('431 | DevDoodle', req, res, function () {
@@ -130,7 +141,7 @@ errors[431] = function (req, res) {
 		res.write('<p>Request header fields too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 431)
+	}, {}, 431);
 };
 errors[500] = function (req, res) {
 	respondPage('500 | DevDoodle', req, res, function () {
@@ -138,7 +149,7 @@ errors[500] = function (req, res) {
 		res.write('<p>Internal server error. tws will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 500)
+	}, {}, 500);
 };
 errors[505] = function (req, res) {
 	respondPage('505 | DevDoodle', req, res, function () {
@@ -146,7 +157,7 @@ errors[505] = function (req, res) {
 		res.write('<p>HTTP version not supported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 505)
+	}, {}, 505);
 };
 errors[521] = function (req, res) {
 	respondPage('521 | DevDoodle', req, res, function () {
@@ -154,7 +165,7 @@ errors[521] = function (req, res) {
 		res.write('<p>We\'re down. Please wait a few minutes before continuing.</p>');
 		res.write('<p><a href="">Reload</a>.</p>');
 		respondPageFooter(res);
-	}, {}, 521)
+	}, {}, 521);
 };
 
 var mime = {
@@ -429,7 +440,7 @@ http.createServer(function (req, res) {
 			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function () {
 				fs.readFile('chat/room.html', function (err, data) {
 					if (err) throw err;
-					res.write(data.toString().split('$id').join(doc._id).replace('$name', doc.name).replace('$desc', doc.desc));
+					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
@@ -523,7 +534,7 @@ chatWS.on('connection', function (tws) {
 			ts: skip == i
 		}));
 		i = 0;
-		cursor.skip(skip).limit(144).each(function (err, doc) {
+		cursor.skip(skip).limit(92).each(function (err, doc) {
 			if (err) throw err;
 			if (!doc) return tws.send(JSON.stringify({
 				event: 'info-complete'
@@ -653,6 +664,26 @@ chatWS.on('connection', function (tws) {
 							}));
 						});
 					});
+				} else if (message.event == 'info-update') {
+					if (user.name) {
+						collections.chatrooms.update({
+							_id: tws.room
+						}, {
+							$set: {
+								name: message.name,
+								desc: message.desc,
+							}
+						});
+						for (var i in chatWS.clients)
+							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+								event: 'info-update',
+								name: message.name,
+								desc: message.desc,
+							}));
+					} else tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to edit room information.'
+					}));
 				} else {
 					tws.send(JSON.stringify({
 						event: 'err',
