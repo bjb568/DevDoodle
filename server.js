@@ -1,3 +1,14 @@
+String.prototype.replaceAll = function(find, replace) {
+	if (typeof find == 'string') return this.split(find).join(replace);
+	var t = this, i, j;
+	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
+	return t;
+};
+
+function html(input, flags) {
+	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
+};
+
 var http = require('http');
 var ws = require('ws');
 var fs = require('fs');
@@ -73,7 +84,7 @@ errors[404] = function (req, res) {
 	respondPage('404 | DevDoodle', req, res, function () {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.split('/').join(' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 404);
 };
@@ -429,7 +440,7 @@ http.createServer(function (req, res) {
 			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function () {
 				fs.readFile('chat/room.html', function (err, data) {
 					if (err) throw err;
-					res.write(data.toString().split('$id').join(doc._id).replace('$name', doc.name).replace('$desc', doc.desc));
+					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
@@ -653,6 +664,26 @@ chatWS.on('connection', function (tws) {
 							}));
 						});
 					});
+				} else if (message.event == 'info-update') {
+					if (user.name) {
+						collections.chatrooms.update({
+							_id: tws.room
+						}, {
+							$set: {
+								name: message.name,
+								desc: message.desc,
+							}
+						});
+						for (var i in chatWS.clients)
+							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+								event: 'info-update',
+								name: message.name,
+								desc: message.desc,
+							}));
+					} else tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to edit room information.'
+					}));
 				} else {
 					tws.send(JSON.stringify({
 						event: 'err',
