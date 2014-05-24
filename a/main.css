@@ -78,9 +78,8 @@ ul, p { margin: 6px 0 2px 0 }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
 .clear, .clearfix::after, nav::after, .row::after {
-	display: block;
-	clear: both;
 	content: '';
+	clear: both;
 }
 h1, h2, h3, h4, h5, h6 {
 	margin-top: 0.2em; margin-bottom: 0.2em;
