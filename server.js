@@ -671,8 +671,14 @@ chatWS.on('connection', function (tws) {
 						}, {
 							$set: {
 								name: message.name,
-								desc: message.desc,
+								desc: message.desc
 							}
+						});
+						collections.chat.insert({
+							body: 'Room description updated to '+message.name+': '+message.desc,
+							user: 'Bot',
+							time: new Date().getTime(),
+							room: tws.room
 						});
 						for (var i in chatWS.clients)
 							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({

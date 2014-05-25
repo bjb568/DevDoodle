@@ -124,6 +124,25 @@
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
+			var div = document.createElement('div');
+			div.classList.add('hglt');
+			div.classList.add('umar');
+			div.classList.add('spad');
+			div.classList.add('scrl');
+			div.classList.add('clearfix');
+			div.textContent = 'Room description updated to "'+data.name+'": '+data.desc;
+			var sig = document.createElement('span');
+			sig.classList.add('c-sig');
+			sig.textContent = '-Bot, ';
+			var permalink = document.createElement('a');
+			permalink.appendChild(agot(new Date().getTime()));
+			permalink.href = '#' + data.num;
+			sig.appendChild(permalink);
+			div.appendChild(sig);
+			cont.appendChild(div)
+			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
+			else cont.scrollTop += div.offsetHeight;
+			cont.onscroll();
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 		}
