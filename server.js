@@ -222,7 +222,7 @@ function respondLoginPage(errs, req, res, post) {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /><label for="create">Create an account</label>\n');
+		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<input type="text" name="name" placeholder="Name" required="" />\n');
 		res.write('<input type="password" name="pass" placeholder="Password" required="" />\n');
 		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');

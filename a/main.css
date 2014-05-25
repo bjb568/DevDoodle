@@ -37,8 +37,8 @@ body {
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input { margin: 0 }
-.tumar, h1 + *, h2 + *, h3 + * { margin-top: 2px }
-.sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
+.tumar, h1 + *, h2 + *, h3 + *, form * { margin-top: 2px }
+.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content, p { margin-bottom: 6px }
@@ -79,6 +79,7 @@ ul, p { margin: 6px 0 2px 0 }
 .pre { white-space: pre-wrap }
 .clear, .clearfix::after, nav::after, .row::after {
 	content: '';
+	display: block;
 	clear: both;
 }
 h1, h2, h3, h4, h5, h6 {
@@ -128,32 +129,30 @@ textarea {
 	text-align: top;
 	background: #000;
 }
-#logo {
-	display: block;
-	width: 180px;
-	margin: 0 auto 4px;
-	line-height: normal;
-}
-#nav input {
-	width: 160px;
-	max-width: 100%;
-}
-#logo img {
-	max-height: 100%;
-	padding: 4px 6px 2px;
-}
-#nav form { line-height: 1 }
 #nav > * {
 	padding: 0 4px;
 	color: #ddd;
 	font-weight: normal;
-}
-#nav > *, #nav input {
 	font-size: 0.9rem;
 	line-height: 1.5;
-	height: auto;
+}
+#logo {
+	display: block;
+	width: 180px;
+	margin: 0 auto 4px;
+	line-height: 0;
 	max-width: 100%;
 }
+#nav input {
+	width: 160px;
+	max-width: 100%;
+	font-size: 0.9rem;
+}
+#logo img {
+	max-height: 100%;
+	padding: 4px 6px;
+}
+#nav form { line-height: 1 }
 #content { padding-bottom: 24px }
 @media screen and (min-width: 350px) and (max-width: 440px) { 
 	#nav a:nth-child(5)::after, #nav a:nth-last-child(2)::after {
@@ -199,15 +198,7 @@ textarea {
 		vertical-align: sub;
 	}
 }
-@media screen and (min-width: 800px) { 
-	#cont::before {
-		position: absolute;
-		left: 0; right: 0;
-		height: 2rem;
-		background: #000;
-		content: '';
-		z-index: -1;
-	}
+@media screen and (min-width: 800px) {
 	#nav {
 		padding: 0;
 		background: #111;
