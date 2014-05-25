@@ -27,9 +27,8 @@
 	var cont = document.getElementById('chat');
 	var lock = true;
 	cont.onscroll = function(e) {
-		if (!lock &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 32) {
+		if (!lock &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 144) {
 			e.preventDefault();
-			cont.scrollTop = 32;
 			skipped = Math.max(0, skipped - 1);
 			socket.send(JSON.stringify({event: 'req', skip: skipped}));
 		}
@@ -92,11 +91,11 @@
 			permalink.href = '#' + (div.id = data.num);
 			sig.appendChild(permalink);
 			div.appendChild(sig);
-			if (data.before) cont.insertBefore(div, cont.firstChild); else {
-				cont.appendChild(div);
-			}
+			if (data.before) cont.insertBefore(div, cont.firstChild);
+			else cont.appendChild(div);
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
+			else cont.scrollTop += div.offsetHeight;
 			cont.onscroll();
 		} else if (data.event == 'adduser') {
 			var div = document.createElement('div');
