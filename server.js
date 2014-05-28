@@ -9,6 +9,33 @@ function html(input, flags) {
 	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
 };
 
+var site = {};
+
+site.sections = [{
+	title: 'DevDoodle',
+	link: '/'
+}, {
+	title: 'Courses | DevDoodle',
+	link: '/learn/'
+}, {
+	title: 'Programs | DevDoodle',
+	link: '/dev/'
+}, {
+	title: 'Q&amp;A | DevDoodle',
+	link: '/qa/'
+}, {
+	title: 'Chat | DevDoodle',
+	link: '/chat/'
+}, {
+	title: 'Moderation | DevDoodle',
+	link: '/mod/'
+}];
+
+site.sections.default = {
+	title: 'DevDoodle',
+	link: null
+};
+
 var http = require('http');
 var ws = require('ws');
 var fs = require('fs');
@@ -60,12 +87,16 @@ db.open(function (err, db) {
 			if (err) throw err;
 			collections.chatrooms = collection;
 		});
+		db.collection('programs', function (err, collection) {
+			if (err) throw err;
+			collections.programs = collection;
+		});
 	});
 });
 
 var errors = [];
 errors[400] = function (req, res) {
-	respondPage('400 | DevDoodle', req, res, function () {
+	respondPage('400', null, req, res, function () {
 		res.write('<h1>Error 400 :(</h1>');
 		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
@@ -73,7 +104,7 @@ errors[400] = function (req, res) {
 	}, {}, 400);
 };
 errors[403] = function (req, res) {
-	respondPage('403 | DevDoodle', req, res, function () {
+	respondPage('403', null, req, res, function () {
 		res.write('<h1>Error 403</h1>');
 		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -81,7 +112,7 @@ errors[403] = function (req, res) {
 	}, {}, 403);
 };
 errors[404] = function (req, res) {
-	respondPage('404 | DevDoodle', req, res, function () {
+	respondPage('404', null, req, res, function () {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.replaceAll('/', ' ')) + '">Search</a>.</p>');
@@ -89,7 +120,7 @@ errors[404] = function (req, res) {
 	}, {}, 404);
 };
 errors[405] = function (req, res) {
-	respondPage('405 | DevDoodle', req, res, function () {
+	respondPage('405', null, req, res, function () {
 		res.write('<h1>Error 405</h1>');
 		res.write('<p>Method not allowed.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -97,7 +128,7 @@ errors[405] = function (req, res) {
 	}, {}, 405);
 };
 errors[413] = function (req, res) {
-	respondPage('413 | DevDoodle', req, res, function () {
+	respondPage('413', null, req, res, function () {
 		res.write('<h1>Error 413</h1>');
 		res.write('<p>Request entity too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -105,7 +136,7 @@ errors[413] = function (req, res) {
 	}, {}, 413);
 };
 errors[414] = function (req, res) {
-	respondPage('414 | DevDoodle', req, res, function () {
+	respondPage('414', null, req, res, function () {
 		res.write('<h1>Error 414</h1>');
 		res.write('<p>Request URI too long.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -113,7 +144,7 @@ errors[414] = function (req, res) {
 	}, {}, 414);
 };
 errors[415] = function (req, res) {
-	respondPage('415 | DevDoodle', req, res, function () {
+	respondPage('415', null, req, res, function () {
 		res.write('<h1>Error 415</h1>');
 		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -121,14 +152,14 @@ errors[415] = function (req, res) {
 	}, {}, 415);
 };
 errors[418] = function (req, res) {
-	respondPage('418 | DevDoodle', req, res, function () {
+	respondPage('418', null, req, res, function () {
 		res.write('<h1>418!</h1>');
 		res.write('<p>I\'m a little teapot, short and stout.</p>');
 		respondPageFooter(res);
 	}, {}, 418);
 };
 errors[429] = function (req, res) {
-	respondPage('429 | DevDoodle', req, res, function () {
+	respondPage('429', null, req, res, function () {
 		res.write('<h1>Error 429</h1>');
 		res.write('<p>Too many requests.</p>');
 		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
@@ -136,7 +167,7 @@ errors[429] = function (req, res) {
 	}, {}, 429);
 };
 errors[431] = function (req, res) {
-	respondPage('431 | DevDoodle', req, res, function () {
+	respondPage('431', null, req, res, function () {
 		res.write('<h1>Error 431</h1>');
 		res.write('<p>Request header fields too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
@@ -144,7 +175,7 @@ errors[431] = function (req, res) {
 	}, {}, 431);
 };
 errors[500] = function (req, res) {
-	respondPage('500 | DevDoodle', req, res, function () {
+	respondPage('500', null, req, res, function () {
 		res.write('<h1>Error 500 :(</h1>');
 		res.write('<p>Internal server error. tws will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
@@ -152,7 +183,7 @@ errors[500] = function (req, res) {
 	}, {}, 500);
 };
 errors[505] = function (req, res) {
-	respondPage('505 | DevDoodle', req, res, function () {
+	respondPage('505', null, req, res, function () {
 		res.write('<h1>Error 505</h1>');
 		res.write('<p>HTTP version not supported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
@@ -181,7 +212,7 @@ function linkUser(name) {
 	return '<a href="/user/' + name + '">' + name + '</a>';
 };
 
-function respondPage(title, req, res, callback, header, status) {
+function respondPage(title, section, req, res, callback, header, status) {
 	var query = url.parse(req.url, true).query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
@@ -189,6 +220,7 @@ function respondPage(title, req, res, callback, header, status) {
 	var huser = header.user;
 	delete header.inhead;
 	delete header.user;
+	section = site.sections[section] || site.sections.default;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function (err, data) {
@@ -200,7 +232,7 @@ function respondPage(title, req, res, callback, header, status) {
 			if (user = user || huser) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
-			res.write(data.replace('$title', title).replace('$search', query.q || '').replace('$inhead', inhead));
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + section.title).replace('"' + section.link + '"', '"' + section.link + '" class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
@@ -218,7 +250,7 @@ function errorsHTML(errs) {
 }
 
 function respondLoginPage(errs, req, res, post) {
-	respondPage('Login | DevDoodle', req, res, function () {
+	respondPage('Login', null, req, res, function () {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
@@ -239,7 +271,7 @@ function respondLoginPage(errs, req, res, post) {
 };
 
 function respondCreateRoomPage(errs, req, res, post) {
-	respondPage('Create Room | Chat | DevDoodle', req, res, function () {
+	respondPage('Create Room', 4, req, res, function () {
 		res.write('<h1>Create Room</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
@@ -262,7 +294,7 @@ http.createServer(function (req, res) {
 	console.log('Req ' + req.url);
 	var i;
 	if (req.url == '/') {
-		respondPage('DevDoodle', req, res, function () {
+		respondPage(null, 0, req, res, function () {
 			res.write('Lorem ipsum. <a>tws is a link</a>');
 			respondPageFooter(res);
 		});
@@ -281,8 +313,8 @@ http.createServer(function (req, res) {
 						respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					} else {
 						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function (err, key) {
-							var pass = new Buffer(key).toString('base64');
-							var rstr = crypto.randomBytes(128).toString('base64');
+							var pass = new Buffer(key).toString('base64'),
+								rstr = crypto.randomBytes(128).toString('base64');
 							collections.users.insert({
 								name: post.name,
 								pass: pass,
@@ -297,7 +329,7 @@ http.createServer(function (req, res) {
 								subject: 'Confirm your account',
 								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for tws email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
 							});
-							respondPage('Account Created | DevDoodle', req, res, function () {
+							respondPage('Account Created', null, req, res, function () {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
 								respondPageFooter(res);
 							});
@@ -314,7 +346,7 @@ http.createServer(function (req, res) {
 						if (err) throw err;
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
-							respondPage('Login Success | DevDoodle', req, res, function () {
+							respondPage('Login Success', null, req, res, function () {
 								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' repuatation.');
 								respondPageFooter(res);
 							}, {
@@ -353,19 +385,19 @@ http.createServer(function (req, res) {
 						confirm: ''
 					}
 				});
-				respondPage('Account confirmed | DevDoodle', req, res, function () {
+				respondPage('Account confirmed', null, req, res, function () {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
 				});
 			} else {
-				respondPage('Account confirmation failed | DevDoodle', req, res, function () {
+				respondPage('Account confirmation failed', null, req, res, function () {
 					res.write('<h1>Account confirmation failed</h1><p>Your token is invalid.</p>');
 					respondPageFooter(res);
 				});
 			}
 		});
 	} else if (req.url == '/user/') {
-		respondPage('Users | DevDoodle', req, res, function () {
+		respondPage('Users', null, req, res, function () {
 			res.write('<table><tbody>');
 			collections.users.find({}).each(function (err, doc) {
 				if (err) throw err;
@@ -381,7 +413,7 @@ http.createServer(function (req, res) {
 			});
 		});
 	} else if (req.url == '/chat/') {
-		respondPage('Chat | DevDoodle', req, res, function () {
+		respondPage('Chat', 4, req, res, function () {
 			res.write('<h1>Chat Rooms</h1>');
 			collections.chatrooms.find().each(function (err, doc) {
 				if (err) throw err;
@@ -437,7 +469,7 @@ http.createServer(function (req, res) {
 		}, function (err, doc) {
 			if (err) throw err;
 			if (!doc) return errors[404](req, res);
-			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function () {
+			respondPage(doc.name, 4, req, res, function () {
 				fs.readFile('chat/room.html', function (err, data) {
 					if (err) throw err;
 					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
@@ -446,7 +478,7 @@ http.createServer(function (req, res) {
 			});
 		});
 	} else if (req.url == '/dev/') {
-		respondPage('Create | DevDoodle', req, res, function () {
+		respondPage(null, 2, req, res, function () {
 			fs.readFile('dev/create.html', function (err, data) {
 				if (err) throw err;
 				res.write(data);
@@ -454,7 +486,7 @@ http.createServer(function (req, res) {
 			});
 		});
 	} else if (req.url == '/learn/') {
-		respondPage('Learn | DevDoodle', req, res, function () {
+		respondPage(null, 1, req, res, function () {
 			fs.readFile('learn/learn.html', function (err, data) {
 				if (err) throw err;
 				res.write(data);
@@ -462,7 +494,7 @@ http.createServer(function (req, res) {
 			});
 		});
 	} else if (req.url == '/learn/web/') {
-		respondPage('Web Courses | Learn | DevDoodle', req, res, function () {
+		respondPage('Web Courses', 1, req, res, function () {
 			fs.readFile('learn/web/web.html', function (err, data) {
 				if (err) throw err;
 				res.write(data);
@@ -481,7 +513,7 @@ http.createServer(function (req, res) {
 				errors[404](req, res)
 			} else {
 				data = data.toString();
-				respondPage(data.substr(0, data.indexOf('\n')), req, res, function () {
+				respondPage(data.substr(0, data.indexOf('\n')), 1, req, res, function () {
 					res.write(data.substr(data.indexOf('\n') + 1));
 					respondPageFooter(res);
 				}, {
