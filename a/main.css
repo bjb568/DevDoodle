@@ -163,6 +163,7 @@ textarea {
 #nav > .active:nth-child(3)::before {
 	content: '';
 	position: absolute;
+	z-index: 1;
 	width: 10px;
 	height: 10px;
 	background: #000;
@@ -268,7 +269,6 @@ textarea {
 	#nav :nth-child(3).active ~ div {
 		height: calc(2rem + 6px);
 	}
-	#nav > .active:nth-child(3)::before { z-index: 1 }
 }
 @media screen and (min-width: 1500px) { 
 	#cont { overflow: hidden }
@@ -300,14 +300,25 @@ textarea {
 		left: 32px;
 		margin-top: -4px;
 	}
-	#nav > .active { position: relative }
+	#nav > :not(#logo) {
+		position: relative;
+		padding-left: 16px;
+	}
 	#nav > .active::before {
 		content: '';
-		display: block;
 		position: absolute;
 		left: 5px;
 		top: 3px;
 		bottom: 3px;
+		width: 3px;
+		background: #777;
+	}
+	#nav > .active + nav::before {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: calc(-2rem + 1px);
+		bottom: calc(2rem + 6px);
 		width: 3px;
 		background: #777;
 	}
