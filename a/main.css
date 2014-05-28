@@ -231,7 +231,7 @@ textarea {
 	}
 	#nav > a { transition: background 0.15s }
 	#nav > a:hover { background: #262626 }
-	#nav > a:active, #nav > a.active { background: #000 }
+	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
 	#nav > :not(div), #nav form {
 		display: inline-block;
 		padding: 0 12px;
@@ -243,9 +243,9 @@ textarea {
 		width: auto; height: 100%;
 		margin: 0;
 	}
-	#logo:hover::before { background: rgba(255, 255, 255, 0.3) }
-	#logo:active::before { background: rgba(0, 0, 0, 0.2) }
-	#logo::before {
+	#logo:hover div { background: rgba(255, 255, 255, 0.3) }
+	#logo:active div { background: rgba(0, 0, 0, 0.2) }
+	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
 		transition: background 0.2s;
@@ -265,7 +265,7 @@ textarea {
 		left: 7rem;
 		border-bottom: none;
 	}
-	#nav .active ~ div {
+	#nav :nth-child(3).active ~ div {
 		height: calc(2rem + 6px);
 	}
 	#nav > .active:nth-child(3)::before { z-index: 1 }
