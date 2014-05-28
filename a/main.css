@@ -224,6 +224,7 @@ textarea {
 		white-space: pre;
 		content: '\a';
 	}
+	#nav nav > a.active { font-weight: bold }
 }
 @media screen and (min-width: 800px) {
 	#nav {

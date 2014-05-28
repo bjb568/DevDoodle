@@ -218,7 +218,7 @@ function respondPage(title, section, req, res, callback, header, status) {
 			}
 			var firstDir = req.url.split('/')[1],
 				firstDirTitle = site.titles[firstDir];
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (firstDirTitle ? firstDirTitle + ' | ' + site.name : site.name)).replace('"/' + firstDir + '/"', '"/' + firstDir + '/" class="active"').replaceAll('"' + req.url + '"', '"' + req.url + '" class="active"').replaceAll('class="active" class="active"', 'class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (firstDirTitle ? firstDirTitle + ' | ' : '') + site.name).replace('"/' + firstDir + '/"', '"/' + firstDir + '/" class="active"').replaceAll('"' + req.url + '"', '"' + req.url + '" class="active"').replaceAll('class="active" class="active"', 'class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
