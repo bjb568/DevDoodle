@@ -478,8 +478,11 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url == '/dev/new/') {
 		respondPage('New', 2, req, res, function() {
-			res.write('<h1>New Program</h1>');
-			respondPageFooter(res);
+			fs.readFile('dev/new/new.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
 		});
 	} else if (req.url == '/dev/docs/') {
 		respondPage('New', 2, req, res, function() {
