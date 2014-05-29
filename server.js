@@ -216,9 +216,8 @@ function respondPage(title, section, req, res, callback, header, status) {
 			if (user = user || huser) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
-			var firstDir = req.url.split('/')[1],
-				firstDirTitle = site.titles[firstDir];
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (firstDirTitle ? firstDirTitle + ' | ' : '') + site.name).replace('"/' + firstDir + '/"', '"/' + firstDir + '/" class="active"').replaceAll('"' + req.url + '"', '"' + req.url + '" class="active"').replaceAll('class="active" class="active"', 'class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
+			var dirs = req.url.split('/');
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url + '"', '"' + req.url + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
@@ -479,6 +478,22 @@ http.createServer(function(req, res) {
 	} else if (req.url == '/dev/new/') {
 		respondPage('New', 2, req, res, function() {
 			fs.readFile('dev/new/new.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url == '/dev/new/canvas') {
+		respondPage('Canvas.js Editor', 2, req, res, function() {
+			fs.readFile('dev/new/canvas.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url == '/dev/new/html') {
+		respondPage('HTML Editor', 2, req, res, function() {
+			fs.readFile('dev/new/html.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);
