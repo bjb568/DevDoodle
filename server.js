@@ -4,6 +4,9 @@ String.prototype.replaceAll = function(find, replace) {
 	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
 	return t;
 };
+String.prototype.repeat = function(num) {
+	return new Array(++num).join(this);
+};
 
 function html(input, flags) {
 	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
