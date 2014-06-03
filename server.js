@@ -9,6 +9,9 @@ String.prototype.replaceAll = function(find, replace) {
 String.prototype.repeat = function(num) {
 	return new Array(++num).join(this);
 };
+Number.prototype.bound = function(l, h) {
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
+};
 
 function html(input, flags) {
 	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);

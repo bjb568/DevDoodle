@@ -70,21 +70,21 @@
 			textarea.focus();
 		} else if (document.activeElement == textarea) {
 			if (textarea.value) {
-				getOutput().key = textarea.value;
+				outputWindow.key = textarea.value;
 				textarea.value = '';
 			}
 		}
 	};
 	handleTA();
 	addEventListener('keydown', function(e) {
-		if (document.activeElement == textarea &amp;&amp; getOutput()) {
-			getOutput().keyCodes[e.keyCode] = true;
+		if (document.activeElement == textarea &amp;&amp; outputWindow) {
+			outputWindow.keyCodes[e.keyCode] = true;
 		}
 		handleTA();
 	});
 	addEventListener('keyup', function(e) {
-		if (document.activeElement == textarea &amp;&amp; getOutput()) {
-			delete getOutput().keyCodes[e.keyCode];
+		if (document.activeElement == textarea &amp;&amp; outputWindow) {
+			delete outputWindow.keyCodes[e.keyCode];
 		}
 		handleTA();
 	});
@@ -92,24 +92,23 @@
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script>var code='+JSON.stringify(document.getElementById('code').value)+';&lt;/script>&lt;script src="/dev/canvas.js">&lt;/script>&lt;/body>&lt;/html>';
 	};
+	var outputWindow;
 	function run() {
 		document.getElementById('output').srcdoc = createCode();
-	};
-	function getOutput() {
-		return document.getElementById('output').contentWindow;
+		outputWindow = document.getElementById('output').contentWindow;
 	};
 	if (navigator.userAgent.indexOf('Mobile') === -1) {
 		addEventListener('mousemove',function(e) {
 			try {
-				var cRect = getOutput().canvas.getBoundingClientRect(), iRect = document.getElementById('output').getBoundingClientRect();
-				getOutput().mouseX = (e.clientX - Math.round(cRect.left + iRect.left)) / cRect.width * getOutput().width;
-				getOutput().mouseY = (e.clientY - Math.round(cRect.top + iRect.top)) / cRect.height * getOutput().height;
-				getOutput().mouseX = getOutput().mouseX.bound(0,getOutput().width);
-				getOutput().mouseY = getOutput().mouseY.bound(0,getOutput().height);
+				var cRect = outputWindow.canvas.getBoundingClientRect(), iRect = document.getElementById('output').getBoundingClientRect();
+				outputWindow.mouseX = (e.clientX - Math.round(cRect.left + iRect.left)) / cRect.width * outputWindow.width;
+				outputWindow.mouseY = (e.clientY - Math.round(cRect.top + iRect.top)) / cRect.height * outputWindow.height;
+				outputWindow.mouseX = outputWindow.mouseX.bound(0,outputWindow.width);
+				outputWindow.mouseY = outputWindow.mouseY.bound(0,outputWindow.height);
 			} catch(e) {}
 		},false);
 		addEventListener('mouseup', function() {
-			getOutput().mousePressed = false;
+			outputWindow.mousePressed = false;
 		},false);
 	};
 	var oldValue = document.getElementById('code').innerHTML;
