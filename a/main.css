@@ -185,11 +185,16 @@ textarea {
 	display: block;
 	background: #000;
 }
-@media screen and (min-width: 360px) and (max-width: 800px) { 
+@media screen and (min-width: 360px) and (max-width: 799px) { 
 	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
+	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
+		white-space: pre;
+		content: '\a';
+	}
 }
-@media screen and (max-width: 800px) { 
+@media screen and (max-width: 799px) { 
 	#nav input { transition: width 1s }
+	#nav nav > a.active { font-weight: bold }
 }
 @media screen and (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
@@ -221,13 +226,6 @@ textarea {
 		background: #888;
 		vertical-align: sub;
 	}
-}
-@media screen and (min-width: 360px) and (max-width: 799px) {
-	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
-		white-space: pre;
-		content: '\a';
-	}
-	#nav nav > a.active { font-weight: bold }
 }
 @media screen and (min-width: 800px) {
 	#nav {
