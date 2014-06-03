@@ -48,6 +48,7 @@ body {
 .lmar { margin-left: 6px }
 .pad, .desc, #content, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
+.noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
@@ -202,10 +203,9 @@ textarea {
 @media screen and (min-width: 700px) {
 	.half {
 		float: left;
-		width: 49%;
-		margin-right: 1%;
+		width: 49.5%;
 	}
-	.half.rit { float: right }
+	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 }
 @media screen and (min-width: 360px) { 
 	#nav {

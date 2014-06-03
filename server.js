@@ -1,7 +1,9 @@
+'use strict';
+
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;
-	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
+	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
 	return t;
 };
 String.prototype.repeat = function(num) {
@@ -486,11 +488,13 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/dev/new/canvas') {
+	} else if (req.url.split('?')[0] == '/dev/new/canvas') {
 		respondPage('Canvas.js Editor', 2, req, res, function() {
 			fs.readFile('dev/new/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
+				var get = url.parse(req.url, true).query;
+				res.write(data.toString().replaceAll(['$id', '$code'], ['', get ? (get.code || '') : '']));
+				console.log(['', !get || get.code]);
 				respondPageFooter(res);
 			});
 		});

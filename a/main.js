@@ -1,8 +1,9 @@
+'use strict';
+
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
-	var t = this,
-		i, j;
-	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
+	var t = this, i, j;
+	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
 	return t;
 };
 String.prototype.repeat = function(num) {

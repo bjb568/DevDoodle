@@ -1,0 +1,159 @@
+<div id="row" class="row">
+	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off">$code</textarea>
+	<iframe id="output" style="background-color: #fff" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+<style>
+	*::-webkit-input-placeholder { color: #888 }
+	*::-moz-placeholder { color: #999 }
+	body, #content, #footer {
+		background: #000;
+	}
+	a:hover {
+		color: #4ff;
+	}
+	a:active {
+		color: #06f;
+	}
+	*:not(input):not(button) {
+		color: #fff;
+	}
+	#code, #output {
+		width: 95%;
+		outline: none;
+	}
+	#code {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		border: 1px solid #fff;
+		height: 500px;
+		resize: none;
+		white-space: nowrap;
+	}
+	#output {
+		height: 400px;
+	}
+	@media screen and (min-width: 700px) {
+		#row, #code, #output { height: 100% }
+		#code { width: 60% }
+		#output {
+			width: 39%;
+			float: right;
+		}
+	}
+	#save.p {
+		cursor: progress;
+		pointer-events: none;
+		color: #000;
+	}
+</style>
+<script>
+	var footerOff = true, noPageOverflow = 400;
+	document.getElementById('code').onkeypress = function(e) {
+		if (e.keyCode === 13) {
+			var oldSelectionStart = this.selectionStart;
+			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-((false/*Parse!*/)?0:1);
+			this.value = this.value.substr(0,this.selectionStart)+'\n'+'\t'.repeat(tabs)+this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		}
+		setTimeout(run, 0);
+	};
+	var textarea = document.createElement('textarea');
+	document.body.appendChild(textarea);
+	textarea.style.position = 'fixed';
+	textarea.style.opacity = .001;
+	function handleTA() {
+		if (document.activeElement == document.body) {
+			textarea.focus();
+		} else if (document.activeElement == textarea) {
+			if (textarea.value) {
+				getOutput().key = textarea.value;
+				textarea.value = '';
+			}
+		}
+	};
+	handleTA();
+	addEventListener('keydown', function(e) {
+		if (document.activeElement == textarea &amp;&amp; getOutput()) {
+			getOutput().keyCodes[e.keyCode] = true;
+		}
+		handleTA();
+	});
+	addEventListener('keyup', function(e) {
+		if (document.activeElement == textarea &amp;&amp; getOutput()) {
+			delete getOutput().keyCodes[e.keyCode];
+		}
+		handleTA();
+	});
+	addEventListener('keypress', handleTA);
+	function createCode() {
+		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script>var code='+JSON.stringify(document.getElementById('code').value)+';&lt;/script>&lt;script src="/dev/canvas.js">&lt;/script>&lt;/body>&lt;/html>';
+	};
+	function run() {
+		document.getElementById('output').srcdoc = createCode();
+	};
+	function getOutput() {
+		return document.getElementById('output').contentWindow;
+	};
+	if (navigator.userAgent.indexOf('Mobile') === -1) {
+		addEventListener('mousemove',function(e) {
+			try {
+				var cRect = getOutput().canvas.getBoundingClientRect(), iRect = document.getElementById('output').getBoundingClientRect();
+				getOutput().mouseX = (e.clientX - Math.round(cRect.left + iRect.left)) / cRect.width * getOutput().width;
+				getOutput().mouseY = (e.clientY - Math.round(cRect.top + iRect.top)) / cRect.height * getOutput().height;
+				getOutput().mouseX = getOutput().mouseX.bound(0,getOutput().width);
+				getOutput().mouseY = getOutput().mouseY.bound(0,getOutput().height);
+			} catch(e) {}
+		},false);
+		addEventListener('mouseup', function() {
+			getOutput().mousePressed = false;
+		},false);
+	};
+	var oldValue = document.getElementById('code').innerHTML;
+	function handleCode() {
+		if (this.value !== oldValue) {
+			oldValue = this.value;
+			onbeforeunload = function() {
+				return 'You have unsaved code.';
+			};
+			run();
+		}
+	};
+	document.getElementById('code').addEventListener('keyup', handleCode);
+	document.getElementById('code').addEventListener('keydown', handleCode);
+	document.getElementById('code').addEventListener('keypress', function() {
+		setTimeout(function(t) {
+			handleCode.call(t);
+		}, 0, this);
+	});
+	run();
+	function save(fork) {
+		document.getElementById('save').classList.add('p');
+		request('../save.php', function(req) {
+			if (req.responseText != 'Saved Program') {
+				if (isNaN(req.responseText)) {
+					alert('Save error. Push save to try again.');
+				} else {
+					onbeforeunload = null;
+					window.location = '../'+req.responseText+'/';
+				}
+			} else {
+				onbeforeunload = null;
+				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
+			}
+			document.getElementById('save').classList.remove('p');
+			console.log(req.responseText);
+		}, 'id=$id'+(fork?'&amp;fork=1':'')+'&amp;code='+encodeURIComponent(document.getElementById('code').value));
+	};
+	function del() {
+		if (confirm('Are you sure you want to delete this?')) {
+			request('../del.php', function(req) {
+				console.log(req.responseText);
+				location = '';
+			}, 'id=$id');
+		}
+	};
+</script>
