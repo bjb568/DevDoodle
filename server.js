@@ -108,7 +108,7 @@ errors[404] = function(req, res) {
 	respondPage('404', null, req, res, function() {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.replaceAll('/', ' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 404);
 };
@@ -206,7 +206,7 @@ function linkUser(name) {
 };
 
 function respondPage(title, section, req, res, callback, header, status) {
-	var query = url.parse(req.url, true).query,
+	var query = url.parse(req.url.pathname, true).query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
 	var inhead = header.inhead;
@@ -224,8 +224,8 @@ function respondPage(title, section, req, res, callback, header, status) {
 			if (user = user || huser) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
-			var dirs = req.url.split('/');
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url + '"', '"' + req.url + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
+			var dirs = req.url.pathname.split('/');
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
 			callback();
 		});
 	});
@@ -285,13 +285,14 @@ function respondCreateRoomPage(errs, req, res, post) {
 
 http.createServer(function(req, res) {
 	console.log('Req ' + req.url);
+	req.url = url.parse(req.url, true);
 	var i;
-	if (req.url == '/') {
+	if (req.url.pathname == '/') {
 		respondPage(null, 0, req, res, function() {
 			res.write('Lorem ipsum. <a>tws is a link</a>');
 			respondPageFooter(res);
 		});
-	} else if (req.url == '/login/') {
+	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'POST') {
 			var post = '';
 			req.on('data', function(data) {
@@ -365,7 +366,7 @@ http.createServer(function(req, res) {
 		} else {
 			respondLoginPage([], req, res, {});
 		}
-	} else if (i = req.url.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
+	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({
 			confirm: i[1]
 		}, function(err, user) {
@@ -389,7 +390,7 @@ http.createServer(function(req, res) {
 				});
 			}
 		});
-	} else if (req.url == '/user/') {
+	} else if (req.url.pathname == '/user/') {
 		respondPage('Users', null, req, res, function() {
 			res.write('<table><tbody>');
 			collections.users.find({}).each(function(err, doc) {
@@ -405,7 +406,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (req.url == '/chat/') {
+	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', 4, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>');
 			collections.chatrooms.find().each(function(err, doc) {
@@ -421,7 +422,7 @@ http.createServer(function(req, res) {
 			});
 			respondPageFooter(res);
 		});
-	} else if (req.url == '/chat/newroom') {
+	} else if (req.url.pathname == '/chat/newroom') {
 		if (req.method == 'POST') {
 			var post = '';
 			req.on('data', function(data) {
@@ -456,7 +457,7 @@ http.createServer(function(req, res) {
 		} else {
 			respondCreateRoomPage([], req, res, {});
 		}
-	} else if (i = req.url.match(/\/chat\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({
 			_id: parseInt(i[1])
 		}, function(err, doc) {
@@ -470,7 +471,7 @@ http.createServer(function(req, res) {
 				});
 			});
 		});
-	} else if (req.url == '/dev/') {
+	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, 2, req, res, function() {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
@@ -478,12 +479,12 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/dev/list/') {
+	} else if (req.url.pathname == '/dev/list/') {
 		respondPage('List', 2, req, res, function() {
 			res.write('<h1>Program list</h1>');
 			respondPageFooter(res);
 		});
-	} else if (req.url == '/dev/new/') {
+	} else if (req.url.pathname == '/dev/new/') {
 		respondPage('New', 2, req, res, function() {
 			fs.readFile('dev/new/new.html', function(err, data) {
 				if (err) throw err;
@@ -491,17 +492,16 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url.split('?')[0] == '/dev/new/canvas') {
+	} else if (req.url.pathname.split('?')[0] == '/dev/new/canvas') {
 		respondPage('Canvas.js Editor', 2, req, res, function() {
 			fs.readFile('dev/new/canvas.html', function(err, data) {
 				if (err) throw err;
-				var get = url.parse(req.url, true).query;
-				res.write(data.toString().replaceAll(['$id', '$code'], ['', get ? (get.code || '') : '']));
-				console.log(['', !get || get.code]);
+				res.write(data.toString().replaceAll(['$id', '$code'], ['', req.url.query ? (req.url.query.code || '') : '']));
+				console.log(['', !req.url.query || req.url.query.code]);
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/dev/new/html') {
+	} else if (req.url.pathname == '/dev/new/html') {
 		respondPage('HTML Editor', 2, req, res, function() {
 			fs.readFile('dev/new/html.html', function(err, data) {
 				if (err) throw err;
@@ -509,7 +509,7 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/dev/docs/') {
+	} else if (req.url.pathname == '/dev/docs/') {
 		respondPage('New', 2, req, res, function() {
 			fs.readFile('dev/docs.html', function(err, data) {
 				if (err) throw err;
@@ -517,7 +517,7 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/learn/') {
+	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, 1, req, res, function() {
 			fs.readFile('learn/learn.html', function(err, data) {
 				if (err) throw err;
@@ -525,7 +525,7 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/learn/web/') {
+	} else if (req.url.pathname == '/learn/web/') {
 		respondPage('Web Courses', 1, req, res, function() {
 			fs.readFile('learn/web/web.html', function(err, data) {
 				if (err) throw err;
@@ -533,12 +533,12 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
+	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
 		res.writeHead(302, {
 			Location: '1/'
 		});
 		res.end();
-	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		var loc = './learn/' + [i[1], i[2], i[3]].join('/') + '.html';
 		fs.readFile(loc, function(err, data) {
 			if (err) {
@@ -554,16 +554,16 @@ http.createServer(function(req, res) {
 			}
 		});
 	} else {
-		fs.stat('.' + req.url, function(err, stats) {
+		fs.stat('.' + req.url.pathname, function(err, stats) {
 			if (err) {
 				errors[404](req, res)
 			} else {
 				res.writeHead(200, {
-					'Content-Type': mime[path.extname(req.url)] || 'text/plain',
+					'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 					'Cache-Control': 'max-age=6012800, public',
 					'Content-Length': stats.size
 				});
-				fs.readFile('.' + req.url, function(err, data) {
+				fs.readFile('.' + req.url.pathname, function(err, data) {
 					if (err) {
 						errors[404](req, res)
 					} else {
@@ -583,82 +583,88 @@ var chatWS = new ws.Server({
 
 chatWS.on('connection', function(tws) {
 	var i;
-	if (!(i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) return;
-	if (isNaN(tws.room = parseInt(i[1]))) return;
-	var cursor = collections.chat.find({
-		room: tws.room
-	});
-	cursor.count(function(err, count) {
-		if (err) throw err;
-		var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
-		var skip = Math.max(0, Math.min(count - 92, i));
-		tws.send(JSON.stringify({
-			event: 'info-skipped',
-			body: skip,
-			ts: skip == i
-		}));
-		i = 0;
-		cursor.skip(skip).limit(92).each(function(err, doc) {
-			if (err) throw err;
-			if (!doc) return tws.send(JSON.stringify({
-				event: 'info-complete'
-			}));
-			i++;
-			tws.send(JSON.stringify({
-				event: 'init',
-				body: doc.body,
-				user: doc.user,
-				time: doc.time,
-				num: skip + i
-			}));
-		});
-	});
-	collections.users.findOne({
-		cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-	}, function(err, user) {
-		if (err) throw err;
-		if (!user) user = {};
-		collections.chatusers.remove({
-			name: user.name,
+	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
+		if (isNaN(tws.room = parseInt(i[1]))) return;
+		var cursor = collections.chat.find({
 			room: tws.room
-		}, {
-			w: 1
-		}, function(err, rem) {
+		});
+		cursor.count(function(err, count) {
 			if (err) throw err;
-			collections.chatusers.find({
-				room: tws.room
-			}).each(function(err, doc) {
+			var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
+			var skip = Math.max(0, Math.min(count - 92, i));
+			tws.send(JSON.stringify({
+				event: 'info-skipped',
+				body: skip,
+				ts: skip == i
+			}));
+			i = 0;
+			cursor.skip(skip).limit(92).each(function(err, doc) {
 				if (err) throw err;
-				if (doc) {
-					tws.send(JSON.stringify({
-						event: 'adduser',
-						name: doc.name
-					}));
-				} else if (user.name) {
-					if (rem) {
+				if (!doc) return tws.send(JSON.stringify({
+					event: 'info-complete'
+				}));
+				i++;
+				tws.send(JSON.stringify({
+					event: 'init',
+					body: doc.body,
+					user: doc.user,
+					time: doc.time,
+					num: skip + i
+				}));
+			});
+		});
+		collections.users.findOne({
+			cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
+		}, function(err, user) {
+			if (err) throw err;
+			if (!user) user = {};
+			collections.chatusers.remove({
+				name: user.name,
+				room: tws.room
+			}, {
+				w: 1
+			}, function(err, rem) {
+				if (err) throw err;
+				collections.chatusers.find({
+					room: tws.room
+				}).each(function(err, doc) {
+					if (err) throw err;
+					if (doc) {
 						tws.send(JSON.stringify({
 							event: 'adduser',
-							name: user.name
+							name: doc.name
 						}));
-					} else {
-						for (var i in chatWS.clients)
-							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+					} else if (user.name) {
+						if (rem) {
+							tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name
 							}));
+						} else {
+							for (var i in chatWS.clients)
+								if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+									event: 'adduser',
+									name: user.name
+								}));
+						}
+						collections.chatusers.insert({
+							name: user.name,
+							room: tws.room
+						});
 					}
-					collections.chatusers.insert({
-						name: user.name,
-						room: tws.room
-					});
-				}
+				});
 			});
 		});
-	});
-	tws.on('message', function(message) {
-		console.log(message);
-		try {
-			message = JSON.parse(message);
+		tws.on('message', function(message) {
+			console.log(message);
+			try {
+				message = JSON.parse(message);
+			} catch (e) {
+				return tws.send(JSON.stringify({
+					event: 'err',
+					body: 'JSON error.'
+				}));
+			}
 			collections.users.findOne({
 				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
 			}, function(err, user) {
@@ -761,28 +767,38 @@ chatWS.on('connection', function(tws) {
 					}));
 				}
 			});
-		} catch (e) {
-			tws.send(JSON.stringify({
-				event: 'err',
-				body: 'JSON error.'
-			}));
-		}
-	});
-	tws.on('close', function() {
-		collections.users.findOne({
-			cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-		}, function(err, user) {
-			if (err) throw err;
-			if (!user) return;
-			for (var i in chatWS.clients)
-				if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-					event: 'deluser',
-					name: user.name
-				}));
-			collections.chatusers.remove({
-				name: user.name,
-				room: tws.room
+		});
+		tws.on('close', function() {
+			collections.users.findOne({
+				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
+			}, function(err, user) {
+				if (err) throw err;
+				if (!user) return;
+				for (var i in chatWS.clients)
+					if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+						event: 'deluser',
+						name: user.name
+					}));
+				collections.chatusers.remove({
+					name: user.name,
+					room: tws.room
+				});
 			});
 		});
-	});
+	} else if (tws.upgradeReq.url.toString().indexOf('/dev/') === 0) {
+		tws.on('message', function(message) {
+			console.log(message);
+			try {
+				message = JSON.parse(message);
+			} catch (e) {
+				return tws.send(JSON.stringify({
+					event: 'err',
+					body: 'JSON error.'
+				}));
+			}
+			if (message.event == 'new') {
+				console.log('New program')
+			}
+		});
+	}
 });

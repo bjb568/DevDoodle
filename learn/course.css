@@ -3,13 +3,9 @@ html, #content, #footer {
 	color: #fff;
 }
 a { color: inherit }
-#content {
-	margin-top: 0;
-	padding: 0;
-}
 #text-inner h1 {
 	border-bottom: none;
-	margin-top: 0.2em;
+	margin-top: .2em;
 }
 h2 {
 	margin-top: 0;
@@ -17,9 +13,11 @@ h2 {
 #html, #output {
 	width: 100%;
 	height: 50vmax;
+	border: 1px solid #fff;
+	margin-top: 8px;
 }
 #text {
-	background: rgba(255, 255, 255, 0.8);
+	background: rgba(255, 255, 255, .8);
 	color: #000;
 	padding: 4px 6px;
 	position: relative;
@@ -34,11 +32,6 @@ h2 {
 #output {
 	background: #fff;
 }
-#html, #output {
-	border: 1px solid #fff;
-	margin-top: 8px;
-	height: 30vmax;
-}
 @media screen and (min-width: 801px) {
 	#text {
 		margin-right: 8px;
@@ -51,7 +44,7 @@ h2 {
 	}
 }
 @media screen and (min-width: 1200px) {
-	#content > .row, #text, #html, #output { height: 100% }
+	.row, #text, #html, #output { height: 100% }
 	#text {
 		width: 400px;
 		margin-right: 0;
@@ -85,23 +78,22 @@ h2 {
 	max-width: 400px;
 	font-size: 18px;
 	padding: 4px 8px;
-	background: rgba(0, 220, 0, 0.6);
+	background: rgba(0, 220, 0, .6);
 	box-shadow: none;
-	transition: background-color 0.4s;
+	transition: background-color .4s;
 	border: none;
 	box-shadow: 1px 1px 2px #444;
 	margin-bottom: 12px;
 }
 #check:hover {
-	background: rgba(80, 220, 80, 0.6);
+	background: rgba(80, 220, 80, .6);
 }
 #check:active {
-	transition: background-color 0.2s;
-	background: rgba(0, 200, 0, 0.6);
+	transition: background-color .2s;
+	background: rgba(0, 200, 0, .6);
 }
 #passed, #failed {
-	display: none;
-	margin-top: 4px;
+	margin: 4px 0;
 	position: absolute;
 	width: 100%;
 	padding: 4px;
@@ -109,18 +101,17 @@ h2 {
 	-webkit-transform-origin: top;
 	transform: scaleY(0);
 	-webkit-transform: scaleY(0);
-	transition: transform 0.3s;
-	-webkit-transition: -webkit-transform 0.3s;
+	transition: transform .3s;
+	-webkit-transition: -webkit-transform .3s;
 }
 #passed.show, #failed.show {
-	display: block;
 	transform: none;
 	-webkit-transform: none;
 	position: static;
 }
 #passed {
-	background: rgba(100, 220, 100, 0.6);
+	background: rgba(100, 220, 100, .6);
 }
 #failed {
-	background: rgba(220, 100, 100, 0.6);
+	background: rgba(220, 100, 100, .6);
 }

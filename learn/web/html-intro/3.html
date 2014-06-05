@@ -26,13 +26,13 @@ Setting up a page - Tags
 				Did you copy the tags correctly? Make sure you have them in the right order.
 			</div>
 		</div>
-		<bl id="cntrls"><a href="../2/" class="lft">Back</a><a href="../4/" class="rit">Next</a></bl>
+		<div id="cntrls"><a href="../2/" class="lft">Back</a><a href="../4/" class="rit">Next</a></div>
 	</div>
 	<textarea id="html">&lt;!DOCTYPE html></textarea>
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var noPageOverflow = 520;
+	var footerOff = true, noPageOverflow = 520;
 	function run() {
 		document.getElementById('output').srcdoc = document.getElementById('html').value;
 	}

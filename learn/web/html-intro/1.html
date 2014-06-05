@@ -7,7 +7,7 @@ Intro to HTML
 			<p>HTML (Hyper Text Markup Language) is the language of web pages. It augments text, by adding formatting (header, bold, italic), hyperlinks (clickable text), and a foundation for other web technologies (CSS, JavaScript).</p>
 			<p>On the right/bottom is a basic HTML file and output. You don't need to understand it for now - click next for more info.</p>
 		</div>
-		<bl id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></bl>
+		<div id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></div>
 	</div>
 	<textarea id="html">&lt;!DOCTYPE html>
 &lt;html>
@@ -21,7 +21,7 @@ Intro to HTML
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var noPageOverflow = 520;
+	var footerOff = true, noPageOverflow = 520;
 	function run() {
 		document.getElementById('output').srcdoc = document.getElementById('html').value;
 	}

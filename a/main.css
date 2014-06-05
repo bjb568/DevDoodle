@@ -1,4 +1,4 @@
-html { background: linear-gradient(rgba(20, 20, 20, 0.85), rgba(20, 20, 20, 0.85)), url('/a/background.png') no-repeat left center fixed }
+html { background: linear-gradient(rgba(20, 20, 20, .85), rgba(20, 20, 20, .85)), url('/a/background.png') no-repeat left center fixed }
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
@@ -11,7 +11,7 @@ body {
 }
 *::-webkit-input-placeholder {
 	color: #666;
-	font-size: 0.9em;
+	font-size: .9em;
 }
 @keyframes target { 
 	0%, 30% {
@@ -53,24 +53,24 @@ body {
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
 .br, .desc { border-radius: 4px }
-.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.8) }
+.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, .4) }
+.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
 .grey, a.small, .c-sig { color: #555 }
 .large { font-size: 1.2em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
 small, a.small, footer, .c-sig {
-	font-size: 0.85em;
+	font-size: .85em;
 	font-weight: normal;
 }
 h1 small {
 	float: right;
-	font-size: 0.65em;
-	margin-top: 0.5em;
+	font-size: .65em;
+	margin-top: .5em;
 }
 .popup {
 	position: absolute;
 	top: 20%; right: 20%; left: 20%;
-	background: rgba(240, 240, 240, 0.95);
+	background: rgba(240, 240, 240, .95);
 	box-shadow: 1px 1px 8px #000;
 }
 ul, p { margin: 6px 0 2px 0 }
@@ -85,7 +85,7 @@ ul, p { margin: 6px 0 2px 0 }
 	clear: both;
 }
 h1, h2, h3, h4, h5, h6 {
-	margin-top: 0.2em; margin-bottom: 0.2em;
+	margin-top: .2em; margin-bottom: .2em;
 	font-family: Tahoma, Helvetica;
 }
 h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
@@ -104,7 +104,7 @@ h2, h1.title, section h1, article h1 {
 	font-size: 1.3em;
 }
 h3, h2.title, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
-	margin-top: 0.5em;
+	margin-top: .5em;
 	font-size: 1em;
 }
 hr { border-bottom: none }
@@ -112,18 +112,18 @@ a, .ctrl {
 	color: #000;
 	font-weight: bold;
 	text-decoration: none;
-	transition: color 0.2s;
+	transition: color .2s;
 	cursor: pointer;
 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
-a.blk:hover { background: rgba(255, 255, 255, 0.2) }
+a.blk:hover { background: rgba(255, 255, 255, .2) }
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
-	font-size: 0.8em;
+	font-size: .8em;
 }
 textarea {
-	font-size: 0.9em;
+	font-size: .9em;
 	display: block;
 }
 #nav {
@@ -136,7 +136,7 @@ textarea {
 	padding: 0 4px;
 	color: #ddd;
 	font-weight: normal;
-	font-size: 0.9rem;
+	font-size: .9rem;
 	line-height: 1.5;
 }
 #logo {
@@ -152,7 +152,7 @@ textarea {
 #nav input {
 	width: 160px;
 	max-width: 100%;
-	font-size: 0.9rem;
+	font-size: .9rem;
 	color: #000;
 }
 #logo img {
@@ -170,7 +170,7 @@ textarea {
 	height: 10px;
 	background: #000;
 	transform: rotate(45deg);
-	-webkit-transform: scale(1, 0.6) rotate(45deg);
+	-webkit-transform: scale(1, .6) rotate(45deg);
 	border-top: 2px solid #fff;
 	border-left: 2px solid #fff;
 	top: 100%;
@@ -232,7 +232,7 @@ textarea {
 		padding: 0;
 		background: #111;
 	}
-	#nav > a { transition: background 0.15s }
+	#nav > a { transition: background .15s }
 	#nav > a:hover { background: #262626 }
 	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
 	#nav nav > a {
@@ -251,12 +251,12 @@ textarea {
 		width: auto; height: 100%;
 		margin: 0;
 	}
-	#logo:hover div { background: rgba(255, 255, 255, 0.3) }
-	#logo:active div { background: rgba(0, 0, 0, 0.2) }
+	#logo:hover div { background: rgba(255, 255, 255, .3) }
+	#logo:active div { background: rgba(0, 0, 0, .2) }
 	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background 0.2s;
+		transition: background .2s;
 		content: '';
 	}
 	#logo img { padding-bottom: 4px }
@@ -297,7 +297,7 @@ textarea {
 	}
 	#nav > :not(nav):not(div)::after {
 		position: absolute;
-		right: 0.5em;
+		right: .5em;
 		content: '\276F';
 		color: #999;
 	}

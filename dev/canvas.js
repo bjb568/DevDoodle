@@ -104,7 +104,7 @@ function stroke(color,g,b) {
 	}
 };
 function strokeWidth(w) {
-	ctx.lineWidth = w === 0 ? 0.0001 : w;
+	ctx.lineWidth = w === 0 ? .0001 : w;
 };
 function line(x1,y1,x2,y2) {
 	ctx.lineCap = 'round';
