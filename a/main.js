@@ -24,6 +24,17 @@ function minHeight() {
 	}
 };
 
+function request(uri, success, params) {
+	var i = new XMLHttpRequest();
+	i.open('POST', uri, true);
+	i.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	i.send(params);
+	i.onload = function() {
+		success(this.responseText);
+	}
+	return i;
+}
+
 function ago(d) {
 	d = Math.round((new Date() - d) / 1000);
 	if (d < 60) {
@@ -49,13 +60,13 @@ function ago(d) {
 	}
 	return d;
 };
-
 function agot(d) {
 	var time = document.createElement('time');
 	time.textContent = ago(d);
 	time.setAttribute('datetime', new Date(d).toISOString());
 	return time;
 };
+
 addEventListener('DOMContentLoaded', function() {
 	if (navigator.userAgent.indexOf('Trident') === -1 && navigator.userAgent.indexOf('MSIE') === -1) {
 		document.getElementById('err').hidden = true;

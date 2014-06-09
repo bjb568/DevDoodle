@@ -1,4 +1,4 @@
-<h1>New Program <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
+<h1>$title <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
 <div id="row" class="row">
 	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off">$code</textarea>
 	<iframe id="output" style="background-color: #fff" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -141,4 +141,13 @@
 	});
 	run();
 	document.getElementById('restart').onclick = run;
+	document.getElementById('save').onclick = function() {
+		request('/api/program/save?type=1', function(res) {
+			if (res.indexOf('Error') === 0) alert(res);
+			else if (res.indexOf('Location') === 0) {
+				onbeforeunload = null;
+				location.href = res.split(' ')[1];
+			}
+		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
+	};
 </script>
