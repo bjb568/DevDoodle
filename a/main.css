@@ -32,15 +32,15 @@ body {
 .ib, #logo { display: inline-block }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > * { float: left }
+.lft, .row > :not(.half) { float: left }
 .rit, .c-sig { float: right }
-.nofloat, .half { float: none }
+.nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input { margin: 0 }
 .tumar, h1 + *, h2 + *, h3 + *, form * { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action=/search/]) { margin-top: 6px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
