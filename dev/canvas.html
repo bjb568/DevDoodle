@@ -147,7 +147,8 @@
 			else if (res.indexOf('Location') === 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
-			}
+			} else if (res == 'Success') onbeforeunload = null;
+			else alert('Unknown error. Response was: ' + res);
 		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
 	};
 </script>

@@ -458,7 +458,7 @@ http.createServer(function(req, res) {
 		} else {
 			respondCreateRoomPage([], req, res, {});
 		}
-	} else if (i = req.url.pathname.match(/\/chat\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({
 			_id: parseInt(i[1])
 		}, function(err, doc) {
@@ -531,7 +531,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname == '/learn/') {
-		respondPage(null, 1, req, res, function() {
+		respondPage(null, req, res, function() {
 			fs.readFile('learn/learn.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
@@ -557,7 +557,7 @@ http.createServer(function(req, res) {
 			if (err) errors[404](req, res);
 			else {
 				data = data.toString();
-				respondPage(data.substr(0, data.indexOf('\n')), 1, req, res, function() {
+				respondPage(data.substr(0, data.indexOf('\n')), req, res, function() {
 					res.write(data.substr(data.indexOf('\n') + 1));
 					respondPageFooter(res);
 				}, {
@@ -580,18 +580,28 @@ http.createServer(function(req, res) {
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to save a program.');
-					collections.programs.find().sort({
-						'_id': -1
-					}).limit(1).next(function(err, last) {
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
-						var i = last ? last._id + 1 : 1;
-						collections.programs.insert({
-							type: req.url.query.type,
-							code: post.code,
-							user: user._id,
-							_id: i
-						});
-						res.end('Location: /dev/' + i);
+						if (id && program && program.user.toString() == user._id.toString()) {
+							collections.programs.update({_id: id}, {$set: {code: post.code}});
+							res.end('Success');
+						} else {
+							collections.programs.find().sort({
+								'_id': -1
+							}).limit(1).next(function(err, last) {
+								if (err) throw err;
+								var i = last ? last._id + 1 : 1;
+								collections.programs.insert({
+									type: req.url.query.type,
+									code: post.code,
+									user: user._id,
+									_id: i
+								});
+								res.end('Location: /dev/' + i);
+							});
+						}
 					});
 				});
 			});

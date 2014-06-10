@@ -40,7 +40,7 @@ body {
 .nomar, body, input { margin: 0 }
 .tumar, h1 + *, h2 + *, h3 + *, form * { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action=/search/]) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
@@ -148,6 +148,8 @@ textarea {
 }
 #nav form {
 	padding: 4px 0;
+	line-height: 1;
+	display: inline-block;
 }
 #nav input {
 	width: 160px;
@@ -159,7 +161,6 @@ textarea {
 	max-height: 100%;
 	padding: 4px 6px;
 }
-#nav form { line-height: 1 }
 #content { padding-bottom: 24px }
 #nav > .active:nth-child(3) { position: relative }
 #nav > .active:nth-child(3)::before {
