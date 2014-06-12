@@ -13,8 +13,9 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-function html(input, flags) {
-	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
+function html(input, type) {
+	input = input.toString().replaceAll(['<', '>', '"', '&'],['&lt;', '&gt;', '&lt;', '&amp;']);
+	return type == 'attr' ? input.replaceAll('"', '&quot;') : input;
 };
 
 var site = {};
@@ -226,7 +227,7 @@ function respondPage(title, req, res, callback, header, status) {
 				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			}
 			var dirs = req.url.pathname.split('/');
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', query.q || '').replace('$inhead', inhead));
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
 			callback(user);
 		});
 	});
@@ -464,7 +465,7 @@ http.createServer(function(req, res) {
 		}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errors[404](req, res);
-			respondPage(doc.name, 4, req, res, function() {
+			respondPage(doc.name, req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
 					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
@@ -476,8 +477,21 @@ http.createServer(function(req, res) {
 		respondPage(null, req, res, function() {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
+				res.write('<h1>Programs</h1>\n');
+				res.write('<div class="row">\n');
+				collections.programs.find().sort({score: -1}).limit(16).each(function(err, data) {
+					if (err) throw err;
+					if (data) {
+						res.write('\t<div class="program">\n');
+						res.write('\t\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small><a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+						res.write('\t\t<iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script>var code='+JSON.stringify(data.code).replaceAll('"', '&quot;')+';&lt;/script>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;/body>&lt;/html>"></iframe>\n');
+						res.write('\t</div>\n');
+					} else {
+						res.write('</div>\n');
+						res.write('<a href="list/" class="center-text blk">See more</a>');
+						respondPageFooter(res);
+					}
+				});
 			});
 		});
 	} else if (req.url.pathname == '/dev/list/') {
@@ -497,7 +511,7 @@ http.createServer(function(req, res) {
 		respondPage('Canvas.js Editor', req, res, function() {
 			fs.readFile('dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (req.url.query.code || '') : '']));
+				res.write(data.toString().replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
@@ -517,7 +531,7 @@ http.createServer(function(req, res) {
 				fs.readFile('dev/canvas.html', function(err, data) {
 					if (err) throw err;
 					console.log(program);
-					res.write(data.toString().replaceAll(['$id', '$title', '$code'], [program._id.toString(), program.title || 'Untitled', program.code]));
+					res.write(data.toString().replaceAll(['$id', '$title', '$code'], [program._id.toString(), program.title || 'Untitled', html(program.code)]));
 					respondPageFooter(res);
 				});
 			});
@@ -584,7 +598,7 @@ http.createServer(function(req, res) {
 						id = i ? parseInt(i[1]) : 0;
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
-						if (id && program && program.user.toString() == user._id.toString()) {
+						if (id && program && program.user.toString() == user.name.toString()) {
 							collections.programs.update({_id: id}, {$set: {code: post.code}});
 							res.end('Success');
 						} else {
@@ -596,7 +610,7 @@ http.createServer(function(req, res) {
 								collections.programs.insert({
 									type: req.url.query.type,
 									code: post.code,
-									user: user._id,
+									user: user.name,
 									_id: i
 								});
 								res.end('Location: /dev/' + i);

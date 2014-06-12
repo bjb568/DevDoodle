@@ -1,7 +1,7 @@
 <h1>$title <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
 <div id="row" class="row">
 	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off">$code</textarea>
-	<iframe id="output" style="background-color: #fff" sandbox="allow-scripts allow-same-origin"></iframe>
+	<iframe id="output" sandbox="allow-scripts allow-same-origin"></iframe>
 </div>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
@@ -29,7 +29,7 @@
 		font-size: 1rem;
 		border: 1px solid #fff;
 		resize: none;
-		white-space: nowrap;
+		white-space: pre;
 		margin-bottom: 8px;
 	}
 	@media screen and (min-width: 650px) {
@@ -53,10 +53,9 @@
 		#code { width: 65% }
 		#output { width: 34% }
 	}
-	#save.p {
+	#save.progress {
 		cursor: progress;
-		pointer-events: none;
-		color: #000;
+		color: #4ff;
 	}
 </style>
 <script>
@@ -129,6 +128,7 @@
 			onbeforeunload = function() {
 				return 'You have unsaved code.';
 			};
+			if (!document.getElementById('save').classList.contains('progress')) document.getElementById('save').textContent = 'Save';
 			run();
 		}
 	};
@@ -142,13 +142,23 @@
 	run();
 	document.getElementById('restart').onclick = run;
 	document.getElementById('save').onclick = function() {
+		if (document.getElementById('save').classList.contains('progress')) return;
+		document.getElementById('save').classList.add('progress');
+		document.getElementById('save').textContent = 'Saving...';
 		request('/api/program/save?type=1', function(res) {
-			if (res.indexOf('Error') === 0) alert(res);
+			if (res.indexOf('Error') === 0) {
+				document.getElementById('save').textContent = 'Save';
+				alert(res);
+			}
 			else if (res.indexOf('Location') === 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
-			} else if (res == 'Success') onbeforeunload = null;
+			} else if (res == 'Success') {
+				onbeforeunload = null;
+				document.getElementById('save').textContent = 'Saved';
+			}
 			else alert('Unknown error. Response was: ' + res);
+			document.getElementById('save').classList.remove('progress');
 		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
 	};
 </script>

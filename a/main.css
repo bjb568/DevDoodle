@@ -62,16 +62,27 @@ small, a.small, footer, .c-sig {
 	font-size: .85em;
 	font-weight: normal;
 }
-h1 small {
+h1 small, h2 small {
 	float: right;
-	font-size: .65em;
-	margin: .5em;
+	font-size: .85rem;
 }
+h1 small { margin: .5em }
 .popup {
 	position: absolute;
 	top: 20%; right: 20%; left: 20%;
 	background: rgba(240, 240, 240, .95);
 	box-shadow: 1px 1px 8px #000;
+}
+.program {
+	max-width: 90%;
+	margin-right: 6px;
+}
+.program iframe {
+	width: 400px;
+	max-width: 100%;
+	max-height: 30vmin;
+	height: 22vmax;
+	min-height: 180px;
 }
 ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
