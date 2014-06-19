@@ -126,3 +126,4 @@ addEventListener('load', function() {
 	minHeight();
 });
 addEventListener('resize', minHeight);
+if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
