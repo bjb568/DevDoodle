@@ -33,7 +33,7 @@ function request(uri, success, params) {
 		success(this.responseText);
 	}
 	return i;
-}
+};
 
 function ago(d) {
 	d = Math.round((new Date() - d) / 1000);
@@ -95,22 +95,20 @@ addEventListener('DOMContentLoaded', function() {
 				} else {
 					var lines = this.value.split('\n'),
 						i = 0,
-						start = -1,
-						end = -1,
-						oS = this.selectionStart,
-						oE = this.selectionEnd;
-					while (++start < lines.length || (--start && 0)) if ((i += lines[start].length) >= this.selectionStart) break;
-					i = 0;
-					while (++end < lines.length || (--end && 0)) if ((i += lines[end].length) >= this.selectionEnd) break;
+						start = 0;
+					while ((i += lines[start].length) < this.selectionStart - start) start++;
+					var end = start;
+					i -= lines[start].length;
+					while ((i += lines[end].length) < this.selectionEnd - end) end++;
 					i = --start;
-					var n = 0;
 					while (++i <= end) {
-						if (e.shiftKey) lines[i][0] != '\t' ? n += lines[i].length : (lines[i] = lines[i].substr(1));
+						if (e.shiftKey) lines[i][0] != '\t' || (lines[i] = lines[i].substr(1));
 						else lines[i] = '\t' + lines[i];
 					}
 					this.value = lines.join('\n');
-					this.selectionStart = oS - (e.shiftKey ? 0 : 1);
-					this.selectionEnd = oE + (e.shiftKey ? -1 : 1) * (end - start - n);
+					var nS = lines.slice(0, ++start).join('\n').length;
+					this.selectionStart = (nS += nS ? 1 : 0);
+					this.selectionEnd = nS + lines.slice(start, ++end).join('\n').length;
 				}
 				e.preventDefault();
 			}
