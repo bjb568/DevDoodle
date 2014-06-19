@@ -100,7 +100,7 @@ errors[400] = function(req, res) {
 errors[403] = function(req, res) {
 	respondPage('403', req, res, function() {
 		res.write('<h1>Error 403</h1>');
-		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 403);
@@ -140,7 +140,7 @@ errors[414] = function(req, res) {
 errors[415] = function(req, res) {
 	respondPage('415', req, res, function() {
 		res.write('<h1>Error 415</h1>');
-		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Unsupported media type. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 415);
@@ -171,7 +171,7 @@ errors[431] = function(req, res) {
 errors[500] = function(req, res) {
 	respondPage('500', req, res, function() {
 		res.write('<h1>Error 500 :(</h1>');
-		res.write('<p>Internal server error. tws will be automatically reported.</p>');
+		res.write('<p>Internal server error. This will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 500);
@@ -223,9 +223,7 @@ function respondPage(title, req, res, callback, header, status) {
 		}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
-			if (user = user || huser) {
-				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
-			}
+			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
 			callback(user);
@@ -291,7 +289,7 @@ http.createServer(function(req, res) {
 	var i;
 	if (req.url.pathname == '/') {
 		respondPage(null, req, res, function() {
-			res.write('Lorem ipsum. <a>tws is a link</a>');
+			res.write('Hi');
 			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/login/') {
@@ -323,7 +321,7 @@ http.createServer(function(req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for tws email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
 							});
 							respondPage('Account Created', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -478,17 +476,17 @@ http.createServer(function(req, res) {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
 				res.write('<h1>Programs</h1>\n');
-				res.write('<div class="row">\n');
-				collections.programs.find().sort({score: -1}).limit(16).each(function(err, data) {
+				res.write('<div class="ib-row">\n');
+				collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
 						res.write('\t<div class="program">\n');
-						res.write('\t\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small><a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-						res.write('\t\t<iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script>var code='+JSON.stringify(data.code).replaceAll('"', '&quot;')+';&lt;/script>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;/body>&lt;/html>"></iframe>\n');
+						res.write('\t\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+						res.write('\t\t<iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script>var code='+JSON.stringify(data.code).replaceAll('"', '&quot;')+';&lt;/script>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;/body>&lt;/html>"></iframe>\n');
 						res.write('\t</div>\n');
 					} else {
 						res.write('</div>\n');
-						res.write('<a href="list/" class="center-text blk">See more</a>');
+						res.write('<a href="list/" class="center-text blk">See more</a>\n');
 						respondPageFooter(res);
 					}
 				});
@@ -527,11 +525,10 @@ http.createServer(function(req, res) {
 		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
-			respondPage(program.title || 'Untitled', req, res, function() {
+			respondPage(program.title || 'Untitled', req, res, function(user) {
 				fs.readFile('dev/canvas.html', function(err, data) {
 					if (err) throw err;
-					console.log(program);
-					res.write(data.toString().replaceAll(['$id', '$title', '$code'], [program._id.toString(), program.title || 'Untitled', html(program.code)]));
+					res.write(data.toString().replaceAll(['$id', '$title', '$code', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.code), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
 					respondPageFooter(res);
 				});
 			});
@@ -598,7 +595,7 @@ http.createServer(function(req, res) {
 						id = i ? parseInt(i[1]) : 0;
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
-						if (id && program && program.user.toString() == user.name.toString()) {
+						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
 							collections.programs.update({_id: id}, {$set: {code: post.code}});
 							res.end('Success');
 						} else {

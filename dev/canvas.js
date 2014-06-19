@@ -38,7 +38,7 @@ var none = 'transparent', trans = none,
 	scale = canvas.width/canvas.offsetWidth;
 addEventListener('resize',function() {
 	scale = canvas.width/canvas.offsetWidth;
-},false);
+});
 var keyCodes = {};
 Object.getOwnPropertyNames(Math).forEach(function(element,index) {
 	window[element] = Math[element];
@@ -214,20 +214,20 @@ var draw = function() {};
 })();
 reset();
 run();
-if (navigator.userAgent.indexOf('Mobile') === -1) {
+if (navigator.userAgent.indexOf('Mobile') == -1) {
 	addEventListener('mousemove',function(e) {
 		var cRect = canvas.getBoundingClientRect();
 		mouseX = (e.clientX - Math.round(cRect.left)) / cRect.width * width;
 		mouseY = (e.clientY - Math.round(cRect.top)) / cRect.height * height;
 		mouseX = mouseX.bound(0,width);
 		mouseY = mouseY.bound(0,height);
-	},false);
+	});
 	document.getElementById('canvas').addEventListener('mousedown', function() {
 		mousePressed = true;
-	},false);
+	});
 	addEventListener('mouseup', function() {
 		mousePressed = false;
-	},false);
+	});
 } else {
 	var times = 0;
 	addEventListener('touchstart', function(e) {
@@ -241,10 +241,8 @@ if (navigator.userAgent.indexOf('Mobile') === -1) {
 				}
 			} catch(e) {}
 			times = 0;
-		} else {
-			mousePressed = false;
-		}
-	},false);
+		} else mousePressed = false;
+	});
 	addEventListener('touchmove', function(e) {
 		if (e.touches.length == 1) {
 			mousePressed = true;
@@ -262,10 +260,8 @@ if (navigator.userAgent.indexOf('Mobile') === -1) {
 				mouseX = mouseX.bound(0,width);
 				mouseY = mouseY.bound(0,height);
 			} catch(e) {}
-		} else {
-			mousePressed = false;
-		}
-	},true);
+		} else mousePressed = false;
+	});
 	addEventListener('touchend', function(e) {
 		mousePressed = false;
 		try {
@@ -275,10 +271,10 @@ if (navigator.userAgent.indexOf('Mobile') === -1) {
 				mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
 			}
 		} catch(e) {}
-	},false);
-	var b = document.createElement('button');
-	b.textContent = 'ABC';
+	});
+	var b = document.createElement('a');
+	b.textContent = '[Keyboard]';
+	b.style.display = 'block';
 	b.onclick = handelTA;
-	b.classList.add('umar');
 	document.body.appendChild(b);
 }

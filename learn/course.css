@@ -32,7 +32,7 @@ h2 {
 #output {
 	background: #fff;
 }
-@media screen and (min-width: 801px) {
+@media (min-width: 801px) {
 	#text {
 		margin-right: 8px;
 	}
@@ -43,7 +43,7 @@ h2 {
 		margin-left: 8px;
 	}
 }
-@media screen and (min-width: 1200px) {
+@media (min-width: 1200px) {
 	.row, #text, #html, #output { height: 100% }
 	#text {
 		width: 400px;
@@ -67,7 +67,7 @@ h2 {
 		width: calc(100% - 12px);
 	}
 }
-@media screen and (min-width: 1501px) {
+@media (min-width: 1501px) {
 	#content {
 		padding-top: 4px;
 	}

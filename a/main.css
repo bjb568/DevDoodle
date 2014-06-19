@@ -32,13 +32,13 @@ body {
 .ib, #logo { display: inline-block }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > :not(.half) { float: left }
+.lft, .row > :not(.rit):not(.half):not(.program) { float: left }
 .rit, .c-sig { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input { margin: 0 }
-.tumar, h1 + *, h2 + *, h3 + *, form * { margin-top: 2px }
+.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form * { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
@@ -58,6 +58,7 @@ body {
 .grey, a.small, .c-sig { color: #555 }
 .large { font-size: 1.2em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
+.row-ib { vertical-align: top }
 small, a.small, footer, .c-sig {
 	font-size: .85em;
 	font-weight: normal;
@@ -67,6 +68,7 @@ h1 small, h2 small {
 	font-size: .85rem;
 }
 h1 small { margin: .5em }
+h2 small { margin: .2em .2em 0 0 }
 .popup {
 	position: absolute;
 	top: 20%; right: 20%; left: 20%;
@@ -74,15 +76,34 @@ h1 small { margin: .5em }
 	box-shadow: 1px 1px 8px #000;
 }
 .program {
-	max-width: 90%;
-	margin-right: 6px;
+	display: inline-block;
+	max-width: 95%;
 }
 .program iframe {
-	width: 400px;
+	width: 600px;
 	max-width: 100%;
-	max-height: 30vmin;
-	height: 22vmax;
+	max-height: 400px;
+	height: 28vw;
 	min-height: 180px;
+}
+.program:nth-child(n+5) { display: none }
+@media (min-width: 500px) {
+	.program { max-width: 49% }
+	.program:nth-child(-n+6) { display: inline-block }
+}
+@media (min-width: 900px) {
+	.program { max-width: 33% }
+	.program:nth-child(-n+9) { display: inline-block }
+}
+@media (min-width: 1300px) {
+	.program { max-width: calc(25% - 4px) }
+	.program iframe { height: 20vw }
+	.program:nth-child(-n+12) { display: inline-block }
+}
+@media (min-width: 1700px) {
+	.program { max-width: calc(20% - 4px) }
+	.program iframe { height: 16vw }
+	.program:nth-child(-n+15) { display: inline-block }
 }
 ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
@@ -128,7 +149,10 @@ a, .ctrl {
 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
-a.blk:hover { background: rgba(255, 255, 255, .2) }
+a.blk:hover {
+	color: #002;
+	background: rgba(255, 255, 255, .2);
+}
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: .8em;
@@ -198,28 +222,28 @@ textarea {
 	display: block;
 	background: #000;
 }
-@media screen and (min-width: 360px) and (max-width: 799px) { 
+@media (min-width: 360px) and (max-width: 799px) { 
 	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
 	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
 		white-space: pre;
 		content: '\a';
 	}
 }
-@media screen and (max-width: 799px) { 
+@media (max-width: 799px) { 
 	#nav input { transition: width 1s }
 	#nav nav > a.active { font-weight: bold }
 }
-@media screen and (max-width: 610px), (min-width: 750px) { 
+@media (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
 }
-@media screen and (min-width: 700px) {
+@media (min-width: 700px) {
 	.half {
 		float: left;
 		width: 49.5%;
 	}
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 }
-@media screen and (min-width: 360px) { 
+@media (min-width: 360px) { 
 	#nav {
 		padding: 4px 4px 0 0;
 		text-align: right;
@@ -239,7 +263,7 @@ textarea {
 		vertical-align: sub;
 	}
 }
-@media screen and (min-width: 800px) {
+@media (min-width: 800px) {
 	#nav {
 		padding: 0;
 		background: #111;
@@ -273,7 +297,7 @@ textarea {
 	}
 	#logo img { padding-bottom: 4px }
 }
-@media screen and (min-width: 800px) and (max-width: 1499px) { 
+@media (min-width: 800px) and (max-width: 1499px) { 
 	#cont { margin: 0 auto }
 	#logo { height: 2rem }
 	#nav > :nth-child(-n+5) { float: left }
@@ -289,7 +313,7 @@ textarea {
 		height: calc(2rem + 6px);
 	}
 }
-@media screen and (min-width: 1500px) { 
+@media (min-width: 1500px) { 
 	#cont { overflow: hidden }
 	#cont::before { display: none }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
