@@ -62,7 +62,7 @@
 	document.getElementById('code').onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
-			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-((false/*Parse!*/)?0:1);
+			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-(('{([:'.indexOf(this.value[oldSelectionStart-1])+1)?0:1);
 			this.value = this.value.substr(0,this.selectionStart)+'\n'+'\t'.repeat(tabs)+this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
@@ -70,34 +70,6 @@
 		}
 		setTimeout(run, 0);
 	};
-	var textarea = document.createElement('textarea');
-	document.body.appendChild(textarea);
-	textarea.style.position = 'fixed';
-	textarea.style.opacity = .001;
-	function handleTA() {
-		if (!document.activeElement) {
-			textarea.focus();
-		} else if (document.activeElement == textarea) {
-			if (textarea.value) {
-				outputWindow.key = textarea.value;
-				textarea.value = '';
-			}
-		}
-	};
-	handleTA();
-	addEventListener('keydown', function(e) {
-		if (document.activeElement == textarea &amp;&amp; outputWindow) {
-			outputWindow.keyCodes[e.keyCode] = true;
-		}
-		handleTA();
-	});
-	addEventListener('keyup', function(e) {
-		if (document.activeElement == textarea &amp;&amp; outputWindow) {
-			delete outputWindow.keyCodes[e.keyCode];
-		}
-		handleTA();
-	});
-	addEventListener('keypress', handleTA);
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	};

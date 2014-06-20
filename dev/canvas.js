@@ -6,7 +6,7 @@ var canvas = document.getElementById("canvas"),
 document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
 textarea.style.opacity = .001;
-function handelTA() {
+function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
 		if (textarea.value) {
@@ -14,17 +14,17 @@ function handelTA() {
 			textarea.value = '';
 		}
 	}
-}
+};
 addEventListener("keydown", function(e) {
 	keyCodes[e.keyCode] = true;
-	handelTA();
+	handleTA();
 });
 addEventListener("keyup", function(e) {
 	delete keyCodes[e.keyCode];
-	handelTA();
+	handleTA();
 });
 addEventListener("keypress", function(e) {
-	handelTA();
+	handleTA();
 	
 });
 //var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl") || null; //3D, anyone?
@@ -258,6 +258,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	var b = document.createElement('a');
 	b.textContent = '[Keyboard]';
 	b.style.display = 'block';
-	b.onclick = handelTA;
+	b.onclick = handleTA;
 	document.body.appendChild(b);
 }
