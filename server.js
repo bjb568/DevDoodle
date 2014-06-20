@@ -476,16 +476,14 @@ http.createServer(function(req, res) {
 			fs.readFile('dev/create.html', function(err, data) {
 				if (err) throw err;
 				res.write('<h1>Programs</h1>\n');
-				res.write('<div class="ib-row">\n');
 				collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
-						res.write('\t<div class="program">\n');
-						res.write('\t\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-						res.write('\t\t<iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script>var code='+JSON.stringify(data.code).replaceAll('"', '&quot;')+';&lt;/script>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;/body>&lt;/html>"></iframe>\n');
-						res.write('\t</div>\n');
-					} else {
+						res.write('<div class="program">\n');
+						res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+						res.write('\t<div><iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(data.code).replaceAll('"', '&quot;') + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 						res.write('</div>\n');
+					} else {
 						res.write('<a href="list/" class="center-text blk">See more</a>\n');
 						respondPageFooter(res);
 					}

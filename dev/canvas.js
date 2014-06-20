@@ -60,19 +60,6 @@ var TAU = 2 * PI;
 Object.getOwnPropertyNames(Math).forEach(function(element,index) {
 	window[element] = Math[element];
 });
-function runC() {
-	arguments[0] = '\'use strict\';' + arguments[0];
-	eval.apply(window, arguments);
-};
-function run() {
-	reset();
-	try {
-		runC('try {\n'+code+'\n} catch(e) {error(e)}');
-		runC('try {\n('+draw.toString()+'\n)()} catch(e) {error(e)}');
-	} catch(e) {
-		error(e);
-	}
-};
 function rgb(r,g,b,a) {
 	return 'rgba('+round(r)+','+round(g)+','+round(b)+','+(a===undefined?1:a)+')';
 };
@@ -197,23 +184,19 @@ function reset(a) {
 		draw = function() {};
 	}
 };
-function error(e,fatal) {
-	document.getElementById('console').insertAdjacentHTML('beforeend','<pre style="color:#f22">'+(fatal?'Parse error':e)+'</pre>');
+function error(e) {
+	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ' + e) + '</pre>');
 };
 var frameRate = 30;
 var draw = function() {};
 (function drawLoop() {
-	try {
-		reset(1);
-		runC('try {\n('+draw.toString()+'\n)()} catch(e) {error(e)}');
-	} catch (e) {
-		error(e);
-	}
+	reset(1);
+	try { draw() }
+	catch(e) { error(e) }
 	key = undefined;
 	setTimeout(drawLoop, 1000 / frameRate);
 })();
 reset();
-run();
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	addEventListener('mousemove',function(e) {
 		var cRect = canvas.getBoundingClientRect();

@@ -75,7 +75,7 @@
 	textarea.style.position = 'fixed';
 	textarea.style.opacity = .001;
 	function handleTA() {
-		if (document.activeElement == document.body) {
+		if (!document.activeElement) {
 			textarea.focus();
 		} else if (document.activeElement == textarea) {
 			if (textarea.value) {
@@ -99,7 +99,7 @@
 	});
 	addEventListener('keypress', handleTA);
 	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script>var code='+JSON.stringify(document.getElementById('code').value)+';&lt;/script>&lt;script src="/dev/canvas.js">&lt;/script>&lt;/body>&lt;/html>';
+		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	};
 	var outputWindow;
 	function run() {
