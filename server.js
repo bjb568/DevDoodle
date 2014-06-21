@@ -1,12 +1,33 @@
+'use strict';
+
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;
-	while ((i = find.shift()) && (j = replace.shift())) t.replaceAll(i, j);
+	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
 	return t;
 };
+String.prototype.repeat = function(num) {
+	return new Array(++num).join(this);
+};
+Number.prototype.bound = function(l, h) {
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
+};
 
-function html(input, flags) {
-	return input.toString().replaceAll(['<','>','"','&'],['&lt;','&gt;','&lt;','&amp;']);
+function html(input, type) {
+	input = input.toString().replaceAll(['<', '>', '"', '&'],['&lt;', '&gt;', '&lt;', '&amp;']);
+	return type == 'attr' ? input.replaceAll('"', '&quot;') : input;
+};
+
+var site = {};
+
+site.name = 'DevDoodle';
+
+site.titles = {
+	learn: 'Courses',
+	dev: 'Programs',
+	qa: 'Q&amp;A',
+	chat: 'Chat',
+	mod: 'Moderation'
 };
 
 var http = require('http');
@@ -40,129 +61,133 @@ var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {
 });
 
 var collections = {};
-db.open(function (err, db) {
+db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function (err, result) {
+	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
 		if (err) throw err;
-		db.collection('users', function (err, collection) {
+		db.collection('users', function(err, collection) {
 			if (err) throw err;
 			collections.users = collection;
 		});
-		db.collection('chat', function (err, collection) {
+		db.collection('chat', function(err, collection) {
 			if (err) throw err;
 			collections.chat = collection;
 		});
-		db.collection('chatusers', function (err, collection) {
+		db.collection('chatusers', function(err, collection) {
 			if (err) throw err;
 			collections.chatusers = collection;
 		});
-		db.collection('chatrooms', function (err, collection) {
+		db.collection('chatrooms', function(err, collection) {
 			if (err) throw err;
 			collections.chatrooms = collection;
+		});
+		db.collection('programs', function(err, collection) {
+			if (err) throw err;
+			collections.programs = collection;
 		});
 	});
 });
 
 var errors = [];
-errors[400] = function (req, res) {
-	respondPage('400 | DevDoodle', req, res, function () {
+errors[400] = function(req, res) {
+	respondPage('400', req, res, function() {
 		res.write('<h1>Error 400 :(</h1>');
 		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 400);
 };
-errors[403] = function (req, res) {
-	respondPage('403 | DevDoodle', req, res, function () {
+errors[403] = function(req, res) {
+	respondPage('403', req, res, function() {
 		res.write('<h1>Error 403</h1>');
-		res.write('<p>Permission denied. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 403);
 };
-errors[404] = function (req, res) {
-	respondPage('404 | DevDoodle', req, res, function () {
+errors[404] = function(req, res) {
+	respondPage('404', req, res, function() {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.replaceAll('/', ' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 404);
 };
-errors[405] = function (req, res) {
-	respondPage('405 | DevDoodle', req, res, function () {
+errors[405] = function(req, res) {
+	respondPage('405', req, res, function() {
 		res.write('<h1>Error 405</h1>');
 		res.write('<p>Method not allowed.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 405);
 };
-errors[413] = function (req, res) {
-	respondPage('413 | DevDoodle', req, res, function () {
+errors[413] = function(req, res) {
+	respondPage('413', req, res, function() {
 		res.write('<h1>Error 413</h1>');
 		res.write('<p>Request entity too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 413);
 };
-errors[414] = function (req, res) {
-	respondPage('414 | DevDoodle', req, res, function () {
+errors[414] = function(req, res) {
+	respondPage('414', req, res, function() {
 		res.write('<h1>Error 414</h1>');
 		res.write('<p>Request URI too long.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 414);
 };
-errors[415] = function (req, res) {
-	respondPage('415 | DevDoodle', req, res, function () {
+errors[415] = function(req, res) {
+	respondPage('415', req, res, function() {
 		res.write('<h1>Error 415</h1>');
-		res.write('<p>Unsupported media type. If you think tws is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p>Unsupported media type. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 415);
 };
-errors[418] = function (req, res) {
-	respondPage('418 | DevDoodle', req, res, function () {
+errors[418] = function(req, res) {
+	respondPage('418', req, res, function() {
 		res.write('<h1>418!</h1>');
 		res.write('<p>I\'m a little teapot, short and stout.</p>');
 		respondPageFooter(res);
 	}, {}, 418);
 };
-errors[429] = function (req, res) {
-	respondPage('429 | DevDoodle', req, res, function () {
+errors[429] = function(req, res) {
+	respondPage('429', req, res, function() {
 		res.write('<h1>Error 429</h1>');
 		res.write('<p>Too many requests.</p>');
 		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 429);
 };
-errors[431] = function (req, res) {
-	respondPage('431 | DevDoodle', req, res, function () {
+errors[431] = function(req, res) {
+	respondPage('431', req, res, function() {
 		res.write('<h1>Error 431</h1>');
 		res.write('<p>Request header fields too large.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 431);
 };
-errors[500] = function (req, res) {
-	respondPage('500 | DevDoodle', req, res, function () {
+errors[500] = function(req, res) {
+	respondPage('500', req, res, function() {
 		res.write('<h1>Error 500 :(</h1>');
-		res.write('<p>Internal server error. tws will be automatically reported.</p>');
+		res.write('<p>Internal server error. This will be automatically reported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 500);
 };
-errors[505] = function (req, res) {
-	respondPage('505 | DevDoodle', req, res, function () {
+errors[505] = function(req, res) {
+	respondPage('505', req, res, function() {
 		res.write('<h1>Error 505</h1>');
 		res.write('<p>HTTP version not supported.</p>');
 		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 505);
 };
-errors[521] = function (req, res) {
-	respondPage('521 | DevDoodle', req, res, function () {
+errors[521] = function(req, res) {
+	respondPage('521 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 521 :(</h1>');
-		res.write('<p>We\'re down. Please wait a few minutes before continuing.</p>');
+		res.write('<p>We\'re down. We should be up soon!</p>');
 		res.write('<p><a href="">Reload</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 521);
@@ -182,7 +207,7 @@ function linkUser(name) {
 };
 
 function respondPage(title, req, res, callback, header, status) {
-	var query = url.parse(req.url, true).query,
+	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
 	var inhead = header.inhead;
@@ -191,23 +216,23 @@ function respondPage(title, req, res, callback, header, status) {
 	delete header.user;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	res.writeHead(status || 200, header);
-	fs.readFile('a/head.html', function (err, data) {
+	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
 		collections.users.findOne({
 			cookie: cookies.id
-		}, function (err, user) {
+		}, function(err, user) {
+			if (err) throw err;
 			data = data.toString();
-			if (user = user || huser) {
-				data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
-			}
-			res.write(data.replace('$title', title).replace('$search', query.q || '').replace('$inhead', inhead));
-			callback();
+			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
+			var dirs = req.url.pathname.split('/');
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
+			callback(user);
 		});
 	});
 };
 
 function respondPageFooter(res) {
-	fs.readFile('a/foot.html', function (err, data) {
+	fs.readFile('a/foot.html', function(err, data) {
 		if (err) throw err;
 		res.end(data);
 	});
@@ -218,11 +243,11 @@ function errorsHTML(errs) {
 }
 
 function respondLoginPage(errs, req, res, post) {
-	respondPage('Login | DevDoodle', req, res, function () {
+	respondPage('Login', req, res, function() {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /><label for="create">Create an account</label>\n');
+		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<input type="text" name="name" placeholder="Name" required="" />\n');
 		res.write('<input type="password" name="pass" placeholder="Password" required="" />\n');
 		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');
@@ -239,7 +264,7 @@ function respondLoginPage(errs, req, res, post) {
 };
 
 function respondCreateRoomPage(errs, req, res, post) {
-	respondPage('Create Room | Chat | DevDoodle', req, res, function () {
+	respondPage('Create Room', req, res, function() {
 		res.write('<h1>Create Room</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
@@ -258,21 +283,22 @@ function respondCreateRoomPage(errs, req, res, post) {
 	});
 };
 
-http.createServer(function (req, res) {
+http.createServer(function(req, res) {
 	console.log('Req ' + req.url);
+	req.url = url.parse(req.url, true);
 	var i;
-	if (req.url == '/') {
-		respondPage('DevDoodle', req, res, function () {
-			res.write('Lorem ipsum. <a>tws is a link</a>');
+	if (req.url.pathname == '/') {
+		respondPage(null, req, res, function() {
+			res.write('Hi');
 			respondPageFooter(res);
 		});
-	} else if (req.url == '/login/') {
+	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'POST') {
 			var post = '';
-			req.on('data', function (data) {
+			req.on('data', function(data) {
 				post += data;
 			});
-			req.on('end', function () {
+			req.on('end', function() {
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.email) {
@@ -280,9 +306,9 @@ http.createServer(function (req, res) {
 					} else if (post.pass != post.passc) {
 						respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					} else {
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function (err, key) {
-							var pass = new Buffer(key).toString('base64');
-							var rstr = crypto.randomBytes(128).toString('base64');
+						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							var pass = new Buffer(key).toString('base64'),
+								rstr = crypto.randomBytes(128).toString('base64');
 							collections.users.insert({
 								name: post.name,
 								pass: pass,
@@ -295,9 +321,9 @@ http.createServer(function (req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for tws email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
 							});
-							respondPage('Account Created | DevDoodle', req, res, function () {
+							respondPage('Account Created', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
 								respondPageFooter(res);
 							});
@@ -310,11 +336,11 @@ http.createServer(function (req, res) {
 						name: post.name,
 						pass: pass,
 						confirm: undefined
-					}, function (err, user) {
+					}, function(err, user) {
 						if (err) throw err;
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
-							respondPage('Login Success | DevDoodle', req, res, function () {
+							respondPage('Login Success', req, res, function() {
 								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' repuatation.');
 								respondPageFooter(res);
 							}, {
@@ -340,10 +366,10 @@ http.createServer(function (req, res) {
 		} else {
 			respondLoginPage([], req, res, {});
 		}
-	} else if (i = req.url.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
+	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({
 			confirm: i[1]
-		}, function (err, user) {
+		}, function(err, user) {
 			if (err) throw err;
 			if (user) {
 				collections.users.update({
@@ -353,21 +379,21 @@ http.createServer(function (req, res) {
 						confirm: ''
 					}
 				});
-				respondPage('Account confirmed | DevDoodle', req, res, function () {
+				respondPage('Account confirmed', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
 				});
 			} else {
-				respondPage('Account confirmation failed | DevDoodle', req, res, function () {
+				respondPage('Account confirmation failed', req, res, function() {
 					res.write('<h1>Account confirmation failed</h1><p>Your token is invalid.</p>');
 					respondPageFooter(res);
 				});
 			}
 		});
-	} else if (req.url == '/user/') {
-		respondPage('Users | DevDoodle', req, res, function () {
+	} else if (req.url.pathname == '/user/') {
+		respondPage('Users', req, res, function() {
 			res.write('<table><tbody>');
-			collections.users.find({}).each(function (err, doc) {
+			collections.users.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<tr>');
@@ -380,10 +406,10 @@ http.createServer(function (req, res) {
 				}
 			});
 		});
-	} else if (req.url == '/chat/') {
-		respondPage('Chat | DevDoodle', req, res, function () {
+	} else if (req.url.pathname == '/chat/') {
+		respondPage('Chat', req, res, function() {
 			res.write('<h1>Chat Rooms</h1>');
-			collections.chatrooms.find().each(function (err, doc) {
+			collections.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
@@ -396,13 +422,13 @@ http.createServer(function (req, res) {
 			});
 			respondPageFooter(res);
 		});
-	} else if (req.url == '/chat/newroom') {
+	} else if (req.url.pathname == '/chat/newroom') {
 		if (req.method == 'POST') {
 			var post = '';
-			req.on('data', function (data) {
+			req.on('data', function(data) {
 				post += data;
 			});
-			req.on('end', function () {
+			req.on('end', function() {
 				post = querystring.parse(post);
 				var errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
@@ -412,9 +438,9 @@ http.createServer(function (req, res) {
 				} else {
 					collections.chatrooms.find().sort({
 						'_id': -1
-					}).limit(1).next(function (err, last) {
+					}).limit(1).next(function(err, last) {
 						if (err) throw err;
-						var i = last ? last._id + 1 : 0;
+						var i = last ? last._id + 1 : 1;
 						collections.chatrooms.insert({
 							name: post.name,
 							desc: post.desc,
@@ -431,57 +457,116 @@ http.createServer(function (req, res) {
 		} else {
 			respondCreateRoomPage([], req, res, {});
 		}
-	} else if (i = req.url.match(/\/chat\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({
 			_id: parseInt(i[1])
-		}, function (err, doc) {
+		}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errors[404](req, res);
-			respondPage(doc.name + ' | Chat | DevDoodle', req, res, function () {
-				fs.readFile('chat/room.html', function (err, data) {
+			respondPage(doc.name, req, res, function() {
+				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
 					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
 		});
-	} else if (req.url == '/dev/') {
-		respondPage('Create | DevDoodle', req, res, function () {
-			fs.readFile('dev/create.html', function (err, data) {
+	} else if (req.url.pathname == '/dev/') {
+		respondPage(null, req, res, function() {
+			fs.readFile('dev/create.html', function(err, data) {
+				if (err) throw err;
+				res.write('<h1>Programs</h1>\n');
+				collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
+					if (err) throw err;
+					if (data) {
+						res.write('<div class="program">\n');
+						res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+						res.write('\t<div><iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(data.code).replaceAll('"', '&quot;') + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+						res.write('</div>\n');
+					} else {
+						res.write('<a href="list/" class="center-text blk">See more</a>\n');
+						respondPageFooter(res);
+					}
+				});
+			});
+		});
+	} else if (req.url.pathname == '/dev/list/') {
+		respondPage('List', req, res, function() {
+			res.write('<h1>Program list</h1>');
+			respondPageFooter(res);
+		});
+	} else if (req.url.pathname == '/dev/new/') {
+		respondPage('New', req, res, function() {
+			fs.readFile('dev/new.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/learn/') {
-		respondPage('Learn | DevDoodle', req, res, function () {
-			fs.readFile('learn/learn.html', function (err, data) {
+	} else if (req.url.pathname == '/dev/new/canvas') {
+		respondPage('Canvas.js Editor', req, res, function() {
+			fs.readFile('dev/canvas.html', function(err, data) {
+				if (err) throw err;
+				res.write(data.toString().replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/dev/new/html') {
+		respondPage('HTML Editor', req, res, function() {
+			fs.readFile('dev/html.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url == '/learn/web/') {
-		respondPage('Web Courses | Learn | DevDoodle', req, res, function () {
-			fs.readFile('learn/web/web.html', function (err, data) {
+	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
+		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
+			if (err) throw err;
+			if (!program) return errors[404](req, res);
+			respondPage(program.title || 'Untitled', req, res, function(user) {
+				fs.readFile('dev/canvas.html', function(err, data) {
+					if (err) throw err;
+					res.write(data.toString().replaceAll(['$id', '$title', '$code', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.code), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+					respondPageFooter(res);
+				});
+			});
+		});
+	} else if (req.url.pathname == '/dev/docs/') {
+		respondPage('New', req, res, function() {
+			fs.readFile('dev/docs.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
+	} else if (req.url.pathname == '/learn/') {
+		respondPage(null, req, res, function() {
+			fs.readFile('learn/learn.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/learn/web/') {
+		respondPage('Web Courses', req, res, function() {
+			fs.readFile('learn/web/web.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
 		res.writeHead(302, {
 			Location: '1/'
 		});
 		res.end();
-	} else if (i = req.url.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		var loc = './learn/' + [i[1], i[2], i[3]].join('/') + '.html';
-		fs.readFile(loc, function (err, data) {
-			if (err) {
-				errors[404](req, res)
-			} else {
+		fs.readFile(loc, function(err, data) {
+			if (err) errors[404](req, res);
+			else {
 				data = data.toString();
-				respondPage(data.substr(0, data.indexOf('\n')), req, res, function () {
+				respondPage(data.substr(0, data.indexOf('\n')), req, res, function() {
 					res.write(data.substr(data.indexOf('\n') + 1));
 					respondPageFooter(res);
 				}, {
@@ -489,17 +574,85 @@ http.createServer(function (req, res) {
 				});
 			}
 		});
+	} else if (req.url.pathname == '/api/program/save') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				var type = parseInt(req.url.query.type);
+				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type'); 
+				collections.users.findOne({
+					cookie: cookie.parse(req.headers.cookie || '').id
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to save a program.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
+							collections.programs.update({_id: id}, {$set: {code: post.code}});
+							res.end('Success');
+						} else {
+							collections.programs.find().sort({
+								'_id': -1
+							}).limit(1).next(function(err, last) {
+								if (err) throw err;
+								var i = last ? last._id + 1 : 1;
+								collections.programs.insert({
+									type: req.url.query.type,
+									code: post.code,
+									user: user.name,
+									_id: i
+								});
+								res.end('Location: /dev/' + i);
+							});
+						}
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/edit-title') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({
+					cookie: cookie.parse(req.headers.cookie || '').id
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to change a program title.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (program.user.toString() == user.name.toString()) {
+							collections.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
+							res.end('Success');
+						} else {
+							res.end('Error: You may only rename your own programs.');
+						}
+					});
+				});
+			});
+		} else errors[405](req, res);
 	} else {
-		fs.stat('.' + req.url, function (err, stats) {
+		fs.stat('.' + req.url.pathname, function(err, stats) {
 			if (err) {
 				errors[404](req, res)
 			} else {
 				res.writeHead(200, {
-					'Content-Type': mime[path.extname(req.url)] || 'text/plain',
+					'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 					'Cache-Control': 'max-age=6012800, public',
 					'Content-Length': stats.size
 				});
-				fs.readFile('.' + req.url, function (err, data) {
+				fs.readFile('.' + req.url.pathname, function(err, data) {
 					if (err) {
 						errors[404](req, res)
 					} else {
@@ -517,87 +670,93 @@ var chatWS = new ws.Server({
 	port: 8125
 });
 
-chatWS.on('connection', function (tws) {
+chatWS.on('connection', function(tws) {
 	var i;
-	if (!(i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) return;
-	if (isNaN(tws.room = parseInt(i[1]))) return;
-	var cursor = collections.chat.find({
-		room: tws.room
-	});
-	cursor.count(function (err, count) {
-		if (err) throw err;
-		var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
-		var skip = Math.max(0, Math.min(count - 92, i));
-		tws.send(JSON.stringify({
-			event: 'info-skipped',
-			body: skip,
-			ts: skip == i
-		}));
-		i = 0;
-		cursor.skip(skip).limit(92).each(function (err, doc) {
-			if (err) throw err;
-			if (!doc) return tws.send(JSON.stringify({
-				event: 'info-complete'
-			}));
-			i++;
-			tws.send(JSON.stringify({
-				event: 'init',
-				body: doc.body,
-				user: doc.user,
-				time: doc.time,
-				num: skip + i
-			}));
-		});
-	});
-	collections.users.findOne({
-		cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-	}, function (err, user) {
-		if (err) throw err;
-		if (!user) user = {};
-		collections.chatusers.remove({
-			name: user.name,
+	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
+		if (isNaN(tws.room = parseInt(i[1]))) return;
+		var cursor = collections.chat.find({
 			room: tws.room
-		}, {
-			w: 1
-		}, function (err, rem) {
+		});
+		cursor.count(function(err, count) {
 			if (err) throw err;
-			collections.chatusers.find({
-				room: tws.room
-			}).each(function (err, doc) {
+			var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
+			var skip = Math.max(0, Math.min(count - 92, i));
+			tws.send(JSON.stringify({
+				event: 'info-skipped',
+				body: skip,
+				ts: skip == i
+			}));
+			i = 0;
+			cursor.skip(skip).limit(92).each(function(err, doc) {
 				if (err) throw err;
-				if (doc) {
-					tws.send(JSON.stringify({
-						event: 'adduser',
-						name: doc.name
-					}));
-				} else if (user.name) {
-					if (rem) {
+				if (!doc) return tws.send(JSON.stringify({
+					event: 'info-complete'
+				}));
+				i++;
+				tws.send(JSON.stringify({
+					event: 'init',
+					body: doc.body,
+					user: doc.user,
+					time: doc.time,
+					num: skip + i
+				}));
+			});
+		});
+		collections.users.findOne({
+			cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
+		}, function(err, user) {
+			if (err) throw err;
+			if (!user) user = {};
+			collections.chatusers.remove({
+				name: user.name,
+				room: tws.room
+			}, {
+				w: 1
+			}, function(err, rem) {
+				if (err) throw err;
+				collections.chatusers.find({
+					room: tws.room
+				}).each(function(err, doc) {
+					if (err) throw err;
+					if (doc) {
 						tws.send(JSON.stringify({
 							event: 'adduser',
-							name: user.name
+							name: doc.name
 						}));
-					} else {
-						for (var i in chatWS.clients)
-							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+					} else if (user.name) {
+						if (rem) {
+							tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name
 							}));
+						} else {
+							for (var i in chatWS.clients)
+								if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+									event: 'adduser',
+									name: user.name
+								}));
+						}
+						collections.chatusers.insert({
+							name: user.name,
+							room: tws.room
+						});
 					}
-					collections.chatusers.insert({
-						name: user.name,
-						room: tws.room
-					});
-				}
+				});
 			});
 		});
-	});
-	tws.on('message', function (message) {
-		console.log(message);
-		try {
-			message = JSON.parse(message);
+		tws.on('message', function(message) {
+			console.log(message);
+			try {
+				message = JSON.parse(message);
+			} catch (e) {
+				return tws.send(JSON.stringify({
+					event: 'err',
+					body: 'JSON error.'
+				}));
+			}
 			collections.users.findOne({
 				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-			}, function (err, user) {
+			}, function(err, user) {
 				if (err) throw err;
 				if (!user) user = {};
 				if (message.event == 'post') {
@@ -643,17 +802,16 @@ chatWS.on('connection', function (tws) {
 					var cursor = collections.chat.find({
 						room: tws.room
 					});
-					cursor.count(function (err, count) {
+					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
 						var num = message.skip - message.to || 1;
 						cursor.sort({
 							$natural: -1
-						}).skip(count - message.skip - 1).limit(num).each(function (err, doc) {
+						}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
 							if (err) throw err;
 							if (!doc) return;
 							i++;
-							console.log(message.skip - i - 1);
 							tws.send(JSON.stringify({
 								event: 'init',
 								body: doc.body,
@@ -671,8 +829,14 @@ chatWS.on('connection', function (tws) {
 						}, {
 							$set: {
 								name: message.name,
-								desc: message.desc,
+								desc: message.desc
 							}
+						});
+						collections.chat.insert({
+							body: 'Room description updated to '+message.name+': '+message.desc,
+							user: 'Bot',
+							time: new Date().getTime(),
+							room: tws.room
 						});
 						for (var i in chatWS.clients)
 							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
@@ -687,32 +851,27 @@ chatWS.on('connection', function (tws) {
 				} else {
 					tws.send(JSON.stringify({
 						event: 'err',
-						body: 'Unsupported or missing event type.'
+						body: 'Invalid event type.'
 					}));
 				}
 			});
-		} catch (e) {
-			tws.send(JSON.stringify({
-				event: 'err',
-				body: 'JSON error.'
-			}));
-		}
-	});
-	tws.on('close', function () {
-		collections.users.findOne({
-			cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-		}, function (err, user) {
-			if (err) throw err;
-			if (!user) return;
-			for (var i in chatWS.clients)
-				if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-					event: 'deluser',
-					name: user.name
-				}));
-			collections.chatusers.remove({
-				name: user.name,
-				room: tws.room
+		});
+		tws.on('close', function() {
+			collections.users.findOne({
+				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
+			}, function(err, user) {
+				if (err) throw err;
+				if (!user) return;
+				for (var i in chatWS.clients)
+					if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+						event: 'deluser',
+						name: user.name
+					}));
+				collections.chatusers.remove({
+					name: user.name,
+					room: tws.room
+				});
 			});
 		});
-	});
+	}
 });

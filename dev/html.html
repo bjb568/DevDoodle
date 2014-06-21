@@ -1,0 +1,107 @@
+<div class="row">
+	<div id="right" class="half rit">
+		<iframe id="output"></iframe>
+		<button onclick="run()">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
+	</div>
+	<div id="left" class="half">
+		<textarea id="html" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML"></textarea>
+		<textarea id="css" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="CSS"></textarea>
+		<textarea id="js" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="JS"></textarea>
+	</div>
+</div>
+<style>
+	*::-webkit-input-placeholder { color: #888 }
+	*::-moz-placeholder { color: #999 }
+	body, #content, #footer { background: #000 }
+	#content { padding-top: 0 }
+	a:hover {
+		color: #4ff;
+	}
+	a:active {
+		color: #06f;
+	}
+	*:not(input):not(button) {
+		color: #fff;
+	}
+	textarea {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		width: 100%;
+		margin: 4px 0;
+	}
+	.half {
+		max-width: 90vw;
+	}
+	textarea, #output {
+		max-width: 100%;
+		border: 1px solid #fff;
+		outline: none;
+		white-space: pre;
+	}
+	#left {
+		height: 900px;
+	}
+	#right {
+		height: 400px
+	}
+	@media (min-width: 700px) {
+		.row { height: 100% }
+		#left, #right {
+			height: 100%;
+			margin-bottom: 0;
+			max-width: 50%;
+		}
+	}
+	#save.p {
+		cursor: progress;
+		pointer-events: none;
+		color: #000;
+	}
+	iframe {
+		width: 100%;
+		height: calc(100% - 24px);
+		background: #fff;
+	}
+	textarea {
+		height: calc(33.33% - 2px);
+		resize: none;
+	}
+</style>
+<script>
+	var footerOff = true, noPageOverflow = 400;
+	var p = '';
+	function createCode() {
+		return '&lt;!DOCTYPE html>&lt;html>&lt;body>'+document.getElementById('html').value+'&lt;style>'+document.getElementById('css').value+'&lt;/style>&lt;script>'+document.getElementById('js').value+'&lt;/script>&lt;/body>&lt;/html>';
+	}
+	function run(f) {
+		if (f == true || (p != createCode() &amp;&amp; document.getElementById('autorun').checked)) {
+			p = document.getElementById('output').srcdoc = createCode();
+		}
+	}
+	document.getElementById('html').onkeypress = function(e) {
+		if (e.keyCode === 13) {
+			var oldSelectionStart = this.selectionStart;
+			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-((false/*Parse!*/)?0:1);
+			this.value = this.value.substr(0,this.selectionStart)+'\n'+'\t'.repeat(tabs)+this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		}
+		setTimeout(run, 0);
+	};
+	document.getElementById('css').onkeypress = document.getElementById('js').onkeypress = function(e) {
+		if (e.keyCode === 13) {
+			var oldSelectionStart = this.selectionStart;
+			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-(this.value[oldSelectionStart-1]==='{'||this.value[oldSelectionStart-1]===':'?0:1);
+			this.value = this.value.substr(0,this.selectionStart)+'\n'+'\t'.repeat(tabs)+this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		}
+		setTimeout(run, 0);
+	};
+	document.getElementById('html').onkeydown = document.getElementById('html').onkeyup = document.getElementById('css').onkeydown = document.getElementById('css').onkeyup = document.getElementById('js').onkeydown = document.getElementById('js').onkeyup = run;
+	run();
+</script>

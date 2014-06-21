@@ -1,4 +1,4 @@
-html { background: linear-gradient(rgba(20, 20, 20, 0.85), rgba(20, 20, 20, 0.85)), url('/a/background.png') no-repeat left center fixed }
+html { background: linear-gradient(rgba(20, 20, 20, .85), rgba(20, 20, 20, .85)), url('/a/background.png') no-repeat left center fixed }
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
@@ -11,7 +11,7 @@ body {
 }
 *::-webkit-input-placeholder {
 	color: #666;
-	font-size: 0.9em;
+	font-size: .9em;
 }
 @keyframes target { 
 	0%, 30% {
@@ -32,14 +32,15 @@ body {
 .ib, #logo { display: inline-block }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > * { float: left }
+.lft, .row > :not(.rit):not(.half):not(.program) { float: left }
 .rit, .c-sig { float: right }
-:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article) > :first-child { margin-top: 0 }
+.nofloat { float: none }
+:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input { margin: 0 }
-.tumar, h1 + *, h2 + *, h3 + * { margin-top: 2px }
-.sumar:not(:first-child), :not(img) + .desc, .blk, form > div:not([class]) { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not(.ib) { margin-top: 6px }
+.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form * { margin-top: 2px }
+.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
@@ -47,29 +48,66 @@ body {
 .lmar { margin-left: 6px }
 .pad, .desc, #content, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
+.noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
 .br, .desc { border-radius: 4px }
-.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, 0.4) }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, 0.8) }
+.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, .4) }
+.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
 .grey, a.small, .c-sig { color: #555 }
 .large { font-size: 1.2em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
 small, a.small, footer, .c-sig {
-	font-size: 0.85em;
+	font-size: .85em;
 	font-weight: normal;
 }
-h1 small {
+h1 small, h2 small {
 	float: right;
-	font-size: 0.65em;
-	margin-top: 0.5em;
+	font-size: .85rem;
 }
+h1 small { margin: .5em }
+h2 small { margin: .2em .2em 0 0 }
 .popup {
 	position: absolute;
 	top: 20%; right: 20%; left: 20%;
-	background: rgba(240, 240, 240, 0.95);
+	background: rgba(240, 240, 240, .95);
 	box-shadow: 1px 1px 8px #000;
+}
+.program {
+	display: inline-block;
+	max-width: 95%;
+}
+.program div {
+	width: 600px;
+	max-width: 100%;
+	max-height: 400px;
+	height: 28vw;
+	min-height: 180px;
+	overflow: auto;
+}
+.program iframe {
+	width: 100%;
+	height: 100%;
+}
+.program:nth-child(n+5) { display: none }
+@media (min-width: 500px) {
+	.program { max-width: 49% }
+	.program:nth-child(-n+6) { display: inline-block }
+}
+@media (min-width: 900px) {
+	.program { max-width: 33% }
+	.program:nth-child(-n+9) { display: inline-block }
+}
+@media (min-width: 1300px) {
+	.program { max-width: calc(25% - 4px) }
+	.program div { height: 20vw }
+	.program:nth-child(-n+12) { display: inline-block }
+}
+@media (min-width: 1700px) {
+	.program { max-width: calc(20% - 4px) }
+	.program div { height: 16vw }
+	.program:nth-child(-n+15) { display: inline-block }
 }
 ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
@@ -78,12 +116,12 @@ ul, p { margin: 6px 0 2px 0 }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
 .clear, .clearfix::after, nav::after, .row::after {
+	content: '';
 	display: block;
 	clear: both;
-	content: '';
 }
 h1, h2, h3, h4, h5, h6 {
-	margin-top: 0.2em; margin-bottom: 0.2em;
+	margin-top: .2em; margin-bottom: .2em;
 	font-family: Tahoma, Helvetica;
 }
 h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
@@ -102,7 +140,7 @@ h2, h1.title, section h1, article h1 {
 	font-size: 1.3em;
 }
 h3, h2.title, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
-	margin-top: 0.5em;
+	margin-top: .5em;
 	font-size: 1em;
 }
 hr { border-bottom: none }
@@ -110,17 +148,21 @@ a, .ctrl {
 	color: #000;
 	font-weight: bold;
 	text-decoration: none;
-	transition: color 0.2s;
+	transition: color .2s;
 	cursor: pointer;
 }
-a:active, .ctrl:active { color: #02d }
 a:hover, .ctrl:hover { color: #15f }
+a:active, .ctrl:active { color: #02d }
+a.blk:hover {
+	color: #002;
+	background: rgba(255, 255, 255, .2);
+}
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
-	font-size: 0.8em;
+	font-size: .8em;
 }
 textarea {
-	font-size: 0.9em;
+	font-size: .9em;
 	display: block;
 }
 #nav {
@@ -129,61 +171,83 @@ textarea {
 	text-align: top;
 	background: #000;
 }
+#nav * {
+	padding: 0 4px;
+	color: #ddd;
+	font-weight: normal;
+	font-size: .9rem;
+	line-height: 1.5;
+}
 #logo {
 	display: block;
 	width: 180px;
 	margin: 0 auto 4px;
-	line-height: normal;
+	line-height: 0;
+	max-width: 100%;
+}
+#nav form {
+	padding: 4px 0;
+	line-height: 1;
+	display: inline-block;
 }
 #nav input {
 	width: 160px;
 	max-width: 100%;
+	font-size: .9rem;
+	color: #000;
 }
 #logo img {
 	max-height: 100%;
-	padding: 4px 6px 2px;
-}
-#nav form { line-height: 1 }
-#nav > * {
-	padding: 0 4px;
-	color: #ddd;
-	font-weight: normal;
-}
-#nav > *, #nav input {
-	font-size: 0.9rem;
-	line-height: 1.5;
-	height: auto;
-	max-width: 100%;
+	padding: 4px 6px;
 }
 #content { padding-bottom: 24px }
-@media screen and (min-width: 350px) and (max-width: 440px) { 
-	#nav a:nth-child(5)::after, #nav a:nth-last-child(2)::after {
+#nav > .active:nth-child(3) { position: relative }
+#nav > .active:nth-child(3)::before {
+	content: '';
+	position: absolute;
+	z-index: 1;
+	width: 10px;
+	height: 10px;
+	background: #000;
+	transform: rotate(45deg);
+	-webkit-transform: scale(1, .6) rotate(45deg);
+	border-top: 2px solid #fff;
+	border-left: 2px solid #fff;
+	top: 100%;
+	margin-top: -1px;
+	left: 50%;
+	margin-left: -5px;
+}
+#nav :not(.active) + nav { display: none }
+#nav .active + nav {
+	margin: 2px 0 6px;
+	border-top: 1px solid #fff;
+	border-bottom: 1px solid #fff;
+	display: block;
+	background: #000;
+}
+@media (min-width: 360px) and (max-width: 799px) { 
+	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
+	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
 		white-space: pre;
 		content: '\a';
 	}
 }
-@media screen and (min-width: 460px) and (max-width: 800px) { 
-	#nav a:nth-child(5) { border-right: 1px solid #aaa }
-}
-@media screen and (min-width: 700px) and (max-width: 800px) { 
+@media (max-width: 799px) { 
 	#nav input { transition: width 1s }
+	#nav nav > a.active { font-weight: bold }
 }
-@media screen and (max-width: 610px), (min-width: 750px) { 
+@media (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
 }
-@media screen and (max-width: 610px) { 
-	#nav form {
-		display: block;
-		padding: 4px 0;
-	}
-}
-@media screen and (min-width: 700px) {
+@media (min-width: 700px) {
 	.half {
-		width: 49%;
-		margin-right: 1%;
+		float: left;
+		width: 49.5%;
 	}
+	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 }
-@media screen and (min-width: 350px) { 
+@media (min-width: 360px) { 
 	#nav {
 		padding: 4px 4px 0 0;
 		text-align: right;
@@ -193,6 +257,9 @@ textarea {
 		width: 144px;
 		margin: -4px 4px 0 -4px;
 	}
+	#nav .active + nav {
+		display: inline-block;
+	}
 	line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
@@ -200,23 +267,20 @@ textarea {
 		vertical-align: sub;
 	}
 }
-@media screen and (min-width: 800px) { 
-	#cont::before {
-		position: absolute;
-		left: 0; right: 0;
-		height: 2rem;
-		background: #000;
-		content: '';
-		z-index: -1;
-	}
+@media (min-width: 800px) {
 	#nav {
 		padding: 0;
 		background: #111;
 	}
-	#nav > a:active { background: #000 }
-	#nav > a:hover { transition: background 0.2s }
+	#nav > a { transition: background .15s }
 	#nav > a:hover { background: #262626 }
-	#nav > *, #nav form {
+	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
+	#nav nav > a {
+		display: inline-block;
+		line-height: 1.5;
+	}
+	#nav nav > a.active { background: #444 }
+	#nav > :not(div), #nav form {
 		display: inline-block;
 		padding: 0 12px;
 		background: #1a1a1a;
@@ -227,46 +291,82 @@ textarea {
 		width: auto; height: 100%;
 		margin: 0;
 	}
-	#logo:hover::before { background: rgba(255, 255, 255, 0.3) }
-	#logo:active::before { background: rgba(0, 0, 0, 0.2) }
-	#logo::before {
+	#logo:hover div { background: rgba(255, 255, 255, .3) }
+	#logo:active div { background: rgba(0, 0, 0, .2) }
+	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background 0.2s;
+		transition: background .2s;
 		content: '';
 	}
 	#logo img { padding-bottom: 4px }
 }
-@media screen and (min-width: 800px) and (max-width: 1499px) { 
+@media (min-width: 800px) and (max-width: 1499px) { 
 	#cont { margin: 0 auto }
-	#nav { height: 2rem }
+	#logo { height: 2rem }
 	#nav > :nth-child(-n+5) { float: left }
 	#nav > :nth-child(6) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
+	#nav .active + nav {
+		position: absolute;
+		top: calc(2rem + 3px);
+		left: 7rem;
+		border-bottom: none;
+	}
+	#nav :nth-child(3).active ~ div {
+		height: calc(2rem + 6px);
+	}
 }
-@media screen and (min-width: 1500px) { 
+@media (min-width: 1500px) { 
 	#cont { overflow: hidden }
 	#cont::before { display: none }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
 	#nav {
 		position: fixed;
+		display: table;
 		left: 0;
 		width: calc(4% + 144px); height: 200px;
 		text-align: left;
 		background: #181818;
 	}
-	#nav > :nth-child(6) { margin-top: 16px }
+	#nav > :nth-child(7) { margin-top: 16px }
 	#nav > *, #nav form {
 		width: 100%;
 		padding-left: 16px;
 		padding-right: 24px;
 	}
-	#nav > ::after {
+	#nav > :not(nav):not(div)::after {
 		position: absolute;
-		right: 0.5em;
+		right: .5em;
 		content: '\276F';
 		color: #999;
 	}
 	#logo { height: 2rem }
 	#nav input { width: 100% }
+	#nav > .active:nth-child(3)::before {
+		left: 32px;
+		margin-top: -4px;
+	}
+	#nav > :not(#logo) {
+		position: relative;
+		padding-left: 16px;
+	}
+	#nav > .active::before {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: 3px;
+		bottom: 3px;
+		width: 3px;
+		background: #777;
+	}
+	#nav > .active + nav::before {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: calc(-2rem + 1px);
+		bottom: calc(2rem + 6px);
+		width: 3px;
+		background: #777;
+	}
 }
