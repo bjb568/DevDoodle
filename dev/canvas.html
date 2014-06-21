@@ -1,4 +1,4 @@
-<h1>$title <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
+<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
 <div id="row" class="row">
 	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off">$code</textarea>
 	<iframe id="output" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -122,7 +122,7 @@
 		}, 200);
 		request('/api/program/save?type=1', function(res) {
 			if (res.indexOf('Error') === 0) {
-				e.textContent = 'Try again?';
+				e.textContent = 'Retry?';
 				alert(res);
 			} else if (res.indexOf('Location') === 0) {
 				onbeforeunload = null;
@@ -155,4 +155,30 @@
 			e.classList.remove('progress');
 		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
 	};
+	document.getElementById('title').onclick = function() {
+		this.hidden = true;
+		var edit = document.getElementById('edit-title');
+		edit.hidden = false;
+		edit.focus();
+	};
+	document.getElementById('edit-title').onblur = function() {
+		request('/api/program/edit-title', function(res) {
+			var edit = document.getElementById('edit-title');
+			if (res.indexOf('Error') === 0) {
+				if (confirm(res + '\n\nRetry?')) edit.onblur();
+				else {
+					edit.hidden = true;
+					document.getElementById('title').hidden = false;
+				}
+			} else if (res == 'Success') {
+				edit.hidden = true;
+				var title = document.getElementById('title');
+				title.textContent = edit.value.substr(0, 92);
+				title.hidden = false;
+			} else alert('Unknown error. Response was: ' + res);
+		}, 'title=' + encodeURIComponent(this.value));
+	};
+	document.getElementById('edit-title').onkeypress = function(e) {
+		if (e.keyCode == 13) this.onblur.call(this);
+	}
 </script>

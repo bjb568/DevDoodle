@@ -480,7 +480,7 @@ http.createServer(function(req, res) {
 					if (err) throw err;
 					if (data) {
 						res.write('<div class="program">\n');
-						res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.name || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+						res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
 						res.write('\t<div><iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(data.code).replaceAll('"', '&quot;') + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 						res.write('</div>\n');
 					} else {
@@ -610,6 +610,33 @@ http.createServer(function(req, res) {
 								});
 								res.end('Location: /dev/' + i);
 							});
+						}
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/edit-title') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({
+					cookie: cookie.parse(req.headers.cookie || '').id
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to change a program title.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (program.user.toString() == user.name.toString()) {
+							collections.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
+							res.end('Success');
+						} else {
+							res.end('Error: You may only rename your own programs.');
 						}
 					});
 				});
