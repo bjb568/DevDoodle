@@ -1,4 +1,4 @@
-Setting up a page - Using a Doctype | Learn | DevDoodle
+Setting up a page - Using a Doctype
 <div class="row">
 	<div id="text">
 		<div id="text-inner">
@@ -16,13 +16,13 @@ Setting up a page - Using a Doctype | Learn | DevDoodle
 				Did you copy the HTML5 doctype correctly?
 			</div>
 		</div>
-		<bl id="cntrls"><a href="../1/" class="lft">Back</a><a href="../3/" class="rit">Next</a></bl>
+		<div id="cntrls"><a href="../1/" class="lft">Back</a><a href="../3/" class="rit">Next</a></div>
 	</div>
 	<textarea id="html"></textarea>
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var noPageOverflow = 520;
+	var footerOff = true, noPageOverflow = 520;
 	function run() {
 		document.getElementById('output').srcdoc = document.getElementById('html').value;
 	}
