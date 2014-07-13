@@ -39,20 +39,20 @@ var querystring = require('querystring');
 var cookie = require('cookie');
 var crypto = require('crypto');
 
-var nodemailer = require("nodemailer");
+var nodemailer = require('nodemailer');
 
-var transport = nodemailer.createTransport("SMTP", {
-	host: "7pnm-mwkh.accessdomain.com",
+var transport = nodemailer.createTransport('SMTP', {
+	host: '7pnm-mwkh.accessdomain.com',
 	secureConnection: true,
 	port: 465,
 	auth: {
-		user: "support@devdoodle.net",
-		pass: "KnT$6D6hF35^75tNyu6t"
+		user: 'support@devdoodle.net',
+		pass: 'KnT$6D6hF35^75tNyu6t'
 	}
 });
 
 var mongo = require('mongodb');
-var db = new mongo.Db('DevDoodle', new mongo.Server("localhost", 27017, {
+var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
 	auto_reconnect: false,
 	poolSize: 4
 }), {
