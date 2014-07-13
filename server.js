@@ -718,24 +718,21 @@ chatWS.on('connection', function(tws) {
 					room: tws.room
 				}).each(function(err, doc) {
 					if (err) throw err;
-					if (doc) {
-						tws.send(JSON.stringify({
+					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
 							name: doc.name
 						}));
-					} else if (user.name) {
-						if (rem) {
-							tws.send(JSON.stringify({
+					else if (user.name) {
+						if (rem) tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name
 							}));
-						} else {
+						else
 							for (var i in chatWS.clients)
 								if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
 									event: 'adduser',
 									name: user.name
 								}));
-						}
 						collections.chatusers.insert({
 							name: user.name,
 							room: tws.room
