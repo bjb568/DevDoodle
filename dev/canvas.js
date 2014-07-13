@@ -185,7 +185,8 @@ function reset(a) {
 	}
 };
 function error(e) {
-	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ' + e) + '</pre>');
+	for (var i in e) console.log(i, e[i]);
+	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + ((navigator.userAgent.indexOf('Safari') != -1 && e.line == 1 && e instanceof SyntaxError ? '' : (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ')) + e) + '</pre>');
 };
 var frameRate = 30;
 var draw = function() {};
