@@ -1,4 +1,4 @@
-<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="restart">Restart</a> <line /> <a id="save">Save</a></small></h1>
+<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
 <div id="row" class="row">
 	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off">$code</textarea>
 	<iframe id="output" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -71,7 +71,7 @@
 		setTimeout(run, 0);
 	};
 	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	};
 	var outputWindow;
 	function run() {
@@ -112,7 +112,6 @@
 		}, 0, this);
 	});
 	run();
-	document.getElementById('restart').onclick = run;
 	document.getElementById('save').onclick = function() {
 		var e = this;
 		if (e.classList.contains('progress')) return;
