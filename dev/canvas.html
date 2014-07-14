@@ -1,7 +1,7 @@
 <h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
 <div id="row" class="row">
 	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off">$code</textarea>
-	<iframe id="output" sandbox="allow-scripts allow-same-origin"></iframe>
+	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
@@ -73,25 +73,9 @@
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	};
-	var outputWindow;
 	function run() {
 		document.getElementById('output').srcdoc = createCode();
-		outputWindow = document.getElementById('output').contentWindow;
 	};
-	if (navigator.userAgent.indexOf('Mobile') == -1) {
-		addEventListener('mousemove',function(e) {
-			try {
-				var cRect = outputWindow.canvas.getBoundingClientRect(), iRect = document.getElementById('output').getBoundingClientRect();
-				outputWindow.mouseX = (e.clientX - Math.round(cRect.left + iRect.left)) / cRect.width * outputWindow.width;
-				outputWindow.mouseY = (e.clientY - Math.round(cRect.top + iRect.top)) / cRect.height * outputWindow.height;
-				outputWindow.mouseX = outputWindow.mouseX.bound(0,outputWindow.width);
-				outputWindow.mouseY = outputWindow.mouseY.bound(0,outputWindow.height);
-			} catch(e) {}
-		});
-		addEventListener('mouseup', function() {
-			outputWindow.mousePressed = false;
-		});
-	}
 	var oldValue = document.getElementById('code').innerHTML;
 	function handleCode() {
 		if (this.value !== oldValue) {
@@ -179,5 +163,5 @@
 	};
 	document.getElementById('edit-title').onkeypress = function(e) {
 		if (e.keyCode == 13) this.onblur.call(this);
-	}
+	};
 </script>
