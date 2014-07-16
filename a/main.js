@@ -18,7 +18,7 @@ var footerOff = false;
 
 function minHeight() {
 	if (noPageOverflow && innerWidth >= 700) {
-		document.getElementById('content').style.height = Math.max(innerHeight - (footerOff ? -28 : document.getElementById('footer').offsetHeight) - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) + 'px';
+		document.getElementById('content').style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) + 'px';
 	} else {
 		document.getElementById('content').style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) + 'px';
 	}

@@ -13,9 +13,8 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-function html(input, type) {
-	input = input.toString().replaceAll(['<', '>', '"', '&'],['&lt;', '&gt;', '&lt;', '&amp;']);
-	return type == 'attr' ? input.replaceAll('"', '&quot;') : input;
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
 
 var site = {};
@@ -437,7 +436,7 @@ http.createServer(function(req, res) {
 					respondCreateRoomPage(errors, req, res, {});
 				} else {
 					collections.chatrooms.find().sort({
-						'_id': -1
+						_id: -1
 					}).limit(1).next(function(err, last) {
 						if (err) throw err;
 						var i = last ? last._id + 1 : 1;
@@ -473,21 +472,19 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
-			fs.readFile('dev/create.html', function(err, data) {
+			res.write('<h1>Programs</h1>\n');
+			collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
-				res.write('<h1>Programs</h1>\n');
-				collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
-					if (err) throw err;
-					if (data) {
-						res.write('<div class="program">\n');
-						res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-						res.write('\t<div><iframe sandbox="allow-scripts allow-same-origin" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;width:100%;}body{background:#000;color:#fff}#canvas{display:block;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}&lt;/style>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(data.code).replaceAll('"', '&quot;') + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
-						res.write('</div>\n');
-					} else {
-						res.write('<a href="list/" class="center-text blk">See more</a>\n');
-						respondPageFooter(res);
-					}
-				});
+				if (data) {
+					res.write('<div class="program">\n');
+					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+					res.write('</div>\n');
+				} else {
+					res.write('<a href="list/" class="center-text blk">See more</a>\n');
+					respondPageFooter(res);
+				}
 			});
 		});
 	} else if (req.url.pathname == '/dev/list/') {
@@ -515,7 +512,7 @@ http.createServer(function(req, res) {
 		respondPage('HTML Editor', req, res, function() {
 			fs.readFile('dev/html.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
+				res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? (html(req.url.query.html || '')) : '', req.url.query ? (html(req.url.query.css || '')) : '', req.url.query ? (html(req.url.query.js || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
@@ -524,11 +521,21 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
 			respondPage(program.title || 'Untitled', req, res, function(user) {
-				fs.readFile('dev/canvas.html', function(err, data) {
-					if (err) throw err;
-					res.write(data.toString().replaceAll(['$id', '$title', '$code', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.code), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
-					respondPageFooter(res);
-				});
+				if (program.type == 1) {
+					fs.readFile('dev/canvas.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replaceAll(['$id', '$title', '$code', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.code), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+						respondPageFooter(res);
+					});
+				} else if (program.type == 2) {
+					fs.readFile('dev/html.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+						respondPageFooter(res);
+					});
+				} else {
+					throw 'Invalid program type for id: ' + program._id;
+				}
 			});
 		});
 	} else if (req.url.pathname == '/dev/docs/') {
@@ -583,7 +590,7 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				var type = parseInt(req.url.query.type);
-				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type'); 
+				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
 				collections.users.findOne({
 					cookie: cookie.parse(req.headers.cookie || '').id
 				}, function(err, user) {
@@ -594,20 +601,43 @@ http.createServer(function(req, res) {
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
-							collections.programs.update({_id: id}, {$set: {code: post.code}});
+							if (type == 2) collections.programs.update({
+									_id: id
+								}, {
+									$set: {
+										html: post.html,
+										css: post.css,
+										js: post.js
+									}
+								});
+							else collections.programs.update({
+									_id: id
+								}, {
+									$set: {
+										code: post.code
+									}
+								});
 							res.end('Success');
 						} else {
 							collections.programs.find().sort({
-								'_id': -1
+								_id: -1
 							}).limit(1).next(function(err, last) {
 								if (err) throw err;
 								var i = last ? last._id + 1 : 1;
-								collections.programs.insert({
-									type: req.url.query.type,
-									code: post.code,
-									user: user.name,
-									_id: i
-								});
+								if (type == 2) collections.programs.insert({
+										type: type,
+										html: post.html,
+										css: post.css,
+										js: post.js,
+										user: user.name,
+										_id: i
+									});
+								else collections.programs.insert({
+										type: type,
+										code: post.code,
+										user: user.name,
+										_id: i
+									});
 								res.end('Location: /dev/' + i);
 							});
 						}
@@ -632,6 +662,7 @@ http.createServer(function(req, res) {
 						id = i ? parseInt(i[1]) : 0;
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() == user.name.toString()) {
 							collections.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 							res.end('Success');
@@ -718,24 +749,21 @@ chatWS.on('connection', function(tws) {
 					room: tws.room
 				}).each(function(err, doc) {
 					if (err) throw err;
-					if (doc) {
-						tws.send(JSON.stringify({
+					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
 							name: doc.name
 						}));
-					} else if (user.name) {
-						if (rem) {
-							tws.send(JSON.stringify({
+					else if (user.name) {
+						if (rem) tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name
 							}));
-						} else {
+						else
 							for (var i in chatWS.clients)
 								if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
 									event: 'adduser',
 									name: user.name
 								}));
-						}
 						collections.chatusers.insert({
 							name: user.name,
 							room: tws.room
