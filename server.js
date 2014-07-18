@@ -498,7 +498,7 @@ http.createServer(function(req, res) {
 			collections.programs.find().sort({score: -1}).limit(720).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
-					res.write('\t<li><a href="../' + data._id + '">' + data.title + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n');
+					res.write('\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n');
 				} else {
 					res.write('</ol>');
 					respondPageFooter(res);
