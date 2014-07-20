@@ -13,14 +13,17 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-var noPageOverflow = noPageOverflow || false;
-var footerOff = false;
+var noPageOverflow = false,
+	footerOff = false,
+	mainContentEl,
+	mainBottomPad = 0;
+
 
 function minHeight() {
 	if (noPageOverflow && innerWidth >= 700) {
-		document.getElementById('content').style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) + 'px';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
 	} else {
-		document.getElementById('content').style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) + 'px';
+		mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
 	}
 };
 
@@ -68,6 +71,7 @@ function agot(d) {
 };
 
 addEventListener('DOMContentLoaded', function() {
+	mainContentEl = mainContentEl || document.getElementById('content');
 	if (navigator.userAgent.indexOf('Trident') === -1 && navigator.userAgent.indexOf('MSIE') === -1) {
 		document.getElementById('err').hidden = true;
 		document.getElementById('cont').style.visibility = '';

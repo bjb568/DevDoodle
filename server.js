@@ -84,6 +84,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.programs = collection;
 		});
+		db.collection('votes', function(err, collection) {
+			if (err) throw err;
+			collections.votes = collection;
+		});
 	});
 });
 
@@ -478,7 +482,7 @@ http.createServer(function(req, res) {
 				if (data) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
@@ -489,8 +493,17 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/dev/list/') {
 		respondPage('List', req, res, function() {
-			res.write('<h1>Program list</h1>');
-			respondPageFooter(res);
+			res.write('<h1>Program list</h1>\n');
+			res.write('<ol>\n');
+			collections.programs.find().sort({score: -1}).limit(720).each(function(err, data) {
+				if (err) throw err;
+				if (data) {
+					res.write('\t<li><a href="../' + data._id + '">' + data.title + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n');
+				} else {
+					res.write('</ol>');
+					respondPageFooter(res);
+				}
+			});
 		});
 	} else if (req.url.pathname == '/dev/new/') {
 		respondPage('New', req, res, function() {
@@ -501,15 +514,15 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname == '/dev/new/canvas') {
-		respondPage('Canvas.js Editor', req, res, function() {
+		respondPage('Canvas Playground', req, res, function() {
 			fs.readFile('dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[\S\s]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname == '/dev/new/html') {
-		respondPage('HTML Editor', req, res, function() {
+		respondPage('HTML Playground', req, res, function() {
 			fs.readFile('dev/html.html', function(err, data) {
 				if (err) throw err;
 				res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? (html(req.url.query.html || '')) : '', req.url.query ? (html(req.url.query.css || '')) : '', req.url.query ? (html(req.url.query.js || '')) : '']));
@@ -521,21 +534,32 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
 			respondPage(program.title || 'Untitled', req, res, function(user) {
-				if (program.type == 1) {
-					fs.readFile('dev/canvas.html', function(err, data) {
+				collections.votes.findOne({
+					user: user.name,
+					collection: 'programs',
+					pid: i
+				}, function(err, vote) {
+					if (err) throw err;
+					if (!vote) vote = {val: 0};
+					collections.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
-						res.write(data.toString().replaceAll(['$id', '$title', '$code', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.code), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
-						respondPageFooter(res);
+						if (program.type == 1) {
+							fs.readFile('dev/canvas.html', function(err, data) {
+								if (err) throw err;
+								res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+								respondPageFooter(res);
+							});
+						} else if (program.type == 2) {
+							fs.readFile('dev/html.html', function(err, data) {
+								if (err) throw err;
+								res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+								respondPageFooter(res);
+							});
+						} else {
+							throw 'Invalid program type for id: ' + program._id;
+						}
 					});
-				} else if (program.type == 2) {
-					fs.readFile('dev/html.html', function(err, data) {
-						if (err) throw err;
-						res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
-						respondPageFooter(res);
-					});
-				} else {
-					throw 'Invalid program type for id: ' + program._id;
-				}
+				});
 			});
 		});
 	} else if (req.url.pathname == '/dev/docs/') {
@@ -607,14 +631,16 @@ http.createServer(function(req, res) {
 									$set: {
 										html: post.html,
 										css: post.css,
-										js: post.js
+										js: post.js,
+										updated: new Date().getTime()
 									}
 								});
 							else collections.programs.update({
 									_id: id
 								}, {
 									$set: {
-										code: post.code
+										code: post.code,
+										updated: new Date().getTime()
 									}
 								});
 							res.end('Success');
@@ -630,12 +656,18 @@ http.createServer(function(req, res) {
 										css: post.css,
 										js: post.js,
 										user: user.name,
+										created: new Date().getTime(),
+										updated: new Date().getTime(),
+										score: 0,
 										_id: i
 									});
 								else collections.programs.insert({
 										type: type,
 										code: post.code,
 										user: user.name,
+										created: new Date().getTime(),
+										updated: new Date().getTime(),
+										score: 0,
 										_id: i
 									});
 								res.end('Location: /dev/' + i);
@@ -666,8 +698,74 @@ http.createServer(function(req, res) {
 						if (program.user.toString() == user.name.toString()) {
 							collections.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 							res.end('Success');
+						} else res.end('Error: You may only rename your own programs.');
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/vote') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				if (!post.val) return res.end('Error: Vote value not specified.');
+				post.val = parseInt(post.val);
+				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
+				collections.users.findOne({
+					cookie: cookie.parse(req.headers.cookie || '').id
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to vote.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
+						if (program.user.toString() == user.name.toString()) {
+							res.end('Error: You can\'t vote for your own post');
 						} else {
-							res.end('Error: You may only rename your own programs.');
+							collections.votes.findOne({
+								collection: 'programs',
+								pid: id,
+								user: user.name
+							}, function(err, current) {
+								if (err) throw err;
+								if (!current) {
+									current = {val: 0};
+									collections.votes.insert({
+										user: user.name,
+										collection: 'programs',
+										pid: id,
+										val: post.val,
+										time: new Date().getTime()
+									});
+								} else {
+									collections.votes.update({
+										collection: 'programs',
+										pid: id,
+										user: user.name
+									}, {
+										$set: {
+											val: post.val,
+											time: new Date().getTime()
+										}
+									});
+								}
+								collections.programs.update({_id: id}, {
+									$inc: {
+										score: post.val - current.val
+									}
+								});
+								collections.users.update({name: program.user}, {
+									$inc: {
+										rep: post.val - current.val
+									}
+								});
+								res.end('Success');
+							});
 						}
 					});
 				});
@@ -675,9 +773,8 @@ http.createServer(function(req, res) {
 		} else errors[405](req, res);
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
-			if (err) {
-				errors[404](req, res)
-			} else {
+			if (err) errors[404](req, res)
+			else {
 				res.writeHead(200, {
 					'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 					'Cache-Control': 'max-age=6012800, public',

@@ -32,7 +32,7 @@ body {
 .ib, #logo { display: inline-block }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > :not(.rit):not(.half):not(.program) { float: left }
+.lft, .row > :not(.rit):not(.half):not(.program), .user > * { float: left }
 .rit, .c-sig { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
@@ -73,6 +73,22 @@ h2 small { margin: .2em .2em 0 0 }
 	top: 20%; right: 20%; left: 20%;
 	background: rgba(240, 240, 240, .95);
 	box-shadow: 1px 1px 8px #000;
+}
+.user {
+	 background: #9ef;
+	 color: #000;
+	 min-width: 140px;
+	 display: inline-block;
+	 padding: 4px 8px 4px 4px;
+	 margin-left: 8px;
+	 float: right;
+	 text-align: left;
+}
+.user div {
+	margin-left: 4px;
+}
+.user a {
+	display: block;
 }
 .program {
 	display: inline-block;
@@ -115,7 +131,7 @@ ul, p { margin: 6px 0 2px 0 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, .clearfix::after, nav::after, .row::after {
+.clear, .clearfix::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -136,10 +152,10 @@ h1 {
 	padding-bottom: 1px;
 	vertical-align: bottom;
 }
-h2, h1.title, section h1, article h1 {
+h2, h1.title, article h1 {
 	font-size: 1.3em;
 }
-h3, h2.title, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
+h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
 	font-size: 1em;
 }
@@ -164,6 +180,11 @@ input[type=text], input[type=password], textarea {
 textarea {
 	font-size: .9em;
 	display: block;
+}
+#err > * {
+	 text-align: center;
+	 margin: 12em 3em;
+	 color: #fff;
 }
 #nav {
 	padding: 0 2px 6px 2px;
@@ -273,7 +294,10 @@ textarea {
 		background: #111;
 	}
 	#nav > a { transition: background .15s }
-	#nav > a:hover { background: #262626 }
+	#nav a:hover {
+		background: #262626;
+		color: #fff;
+	}
 	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
 	#nav nav > a {
 		display: inline-block;

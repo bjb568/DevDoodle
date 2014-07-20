@@ -1,12 +1,29 @@
-<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
-<div id="row" class="row">
-	<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off">$code</textarea>
-	<iframe id="output" sandbox="allow-scripts"></iframe>
-</div>
+<section id="main">
+	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
+	<div id="row" class="row">
+		<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off">$code</textarea>
+		<iframe id="output" sandbox="allow-scripts"></iframe>
+	</div>
+</section>
+<section id="meta">
+	<div class="rit user user-$op">
+		<img src="/ap/pic/?n=$op" width="40" height="40" />
+		<div>
+			<a href="/user/$op/">$op</a>
+			<small class="rep">$op-rep</small>
+		</div>
+	</div>
+	Created <time datetime="$created">67 days ago</time>, Updated <time id="updated" datetime="$updated">67 days ago</time>.
+	<div class="umar">
+		<svg id="up" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23"></polygon></svg>
+		<svg id="dn" xmlns="http://www.w3.org/2000/svg"><polygon points="11,23 1,1 21,1"></polygon></svg>
+		<svg id="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23"></polygon></svg>
+	</div>
+</section>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	body, #content, #footer { background: #000 }
+	body, #content, #footer, #main { background: #000 }
 	#content { padding-top: 0 }
 	a:hover {
 		color: #4ff;
@@ -14,8 +31,17 @@
 	a:active {
 		color: #06f;
 	}
-	*:not(input):not(button) {
+	#main :not(input):not(button), #footer * {
 		color: #fff;
+	}
+	#main {
+		clear: both;
+	}
+	#meta {
+		clear: both;
+		padding: 4px;
+		background: rgba(255, 255, 255, .8);
+		color: #000;
 	}
 	#code, #output {
 		width: 95%;
@@ -56,9 +82,71 @@
 		cursor: progress;
 		color: #4ff;
 	}
+	#up, #dn {
+		width: 22px;
+		height: 24px;
+		fill: #777;
+	}
+	#up:hover, #dn:hover {
+		fill: #888;
+		transition: fill 0.1s;
+	}
+	#up:active, #dn:active {
+		fill: #666;
+		transition: none;
+	}
+	#up.clkd, #dn.clkd {
+		fill: #f90;
+	}
+	#fl {
+		width: 20px;
+		height: 24px;
+		fill: #f44;
+		margin-left: 12px;
+	}
+	#fl:hover {
+		fill: #f55;
+		transition: fill 0.2s;
+	}
+	#fl.clkd {
+		fill: #f00;
+	}
+	#fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	.comment {
+		margin-top: 3px;
+		padding: 4px;
+	}
+	.comment #up, .comment #dn {
+		width: 18px;
+	}
+	.comment .hover {
+		float: left;
+		opacity: 0.3;
+		padding: 2px 2px 0 0;
+		height: 16px;
+	}
+	.comment .hover * {
+		margin: 0;
+	}
+	.comment:hover .hover {
+		opacity: 1;
+	}
+	.comment .rit {
+		color: #666;
+		font-size: 0.9em;
+	}
+	#comment:target + #addcomment {
+		display: none;
+	}
 </style>
 <script>
-	var footerOff = true, noPageOverflow = 400;
+	var footerOff = true,
+		noPageOverflow = 400,
+		mainContentEl = document.getElementById('main'),
+		mainBottomPad = 24;
 	document.getElementById('code').onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
@@ -113,6 +201,7 @@
 			} else if (res == 'Success') {
 				onbeforeunload = null;
 				e.textContent = 'Saved';
+				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 			} else alert('Unknown error. Response was: ' + res);
 			e.classList.remove('progress');
 		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
@@ -147,7 +236,7 @@
 	document.getElementById('edit-title').onblur = function() {
 		request('/api/program/edit-title', function(res) {
 			var edit = document.getElementById('edit-title');
-			if (res.indexOf('Error') === 0) {
+			if (res.indexOf('Error') == 0) {
 				if (confirm(res + '\n\nRetry?')) edit.onblur();
 				else {
 					edit.hidden = true;
@@ -163,5 +252,25 @@
 	};
 	document.getElementById('edit-title').onkeypress = function(e) {
 		if (e.keyCode == 13) this.onblur.call(this);
+	};
+	document.getElementById('up').onclick = function() {
+		request('/api/program/vote', function(res) {
+			if (res.indexOf('Error') == 0) {
+				if (confirm(res + '\n\nRetry?')) document.getElementById('up').onclick();
+			} else if (res == 'Success') {
+				document.getElementById('up').classList.toggle('clkd');
+				document.getElementById('dn').classList.remove('clkd');
+			} else alert('Unknown error. Response was: ' + res);
+		}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
+	};
+	document.getElementById('dn').onclick = function() {
+		request('/api/program/vote', function(res) {
+			if (res.indexOf('Error') == 0) {
+				if (confirm(res + '\n\nRetry?')) document.getElementById('up').onclick();
+			} else if (res == 'Success') {
+				document.getElementById('dn').classList.toggle('clkd');
+				document.getElementById('up').classList.remove('clkd');
+			} else alert('Unknown error. Response was: ' + res);
+		}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
 	};
 </script>
