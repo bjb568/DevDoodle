@@ -53,7 +53,7 @@ body {
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
 .br, .desc { border-radius: 4px }
-.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, .4) }
+.hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
 .grey, a.small, .c-sig { color: #555 }
 .large { font-size: 1.2em }
@@ -125,13 +125,30 @@ h2 small { margin: .2em .2em 0 0 }
 	.program div { height: 16vw }
 	.program:nth-child(-n+15) { display: inline-block }
 }
+.comment {
+	margin-top: 3px;
+	padding: 4px;
+}
+.comment #up, .comment #dn { width: 18px }
+.comment .hover {
+	float: left;
+	opacity: 0.3;
+	padding: 2px 2px 0 0;
+	height: 16px;
+}
+.comment .hover * { margin: 0 }
+.comment:hover .hover { opacity: 1 }
+.comment .rit {
+	color: #666;
+	font-size: 0.9em;
+}
 ul, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, .clearfix::after, nav::after, .row::after, .user::after {
+.clear, .clearfix::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
