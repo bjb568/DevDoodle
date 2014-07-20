@@ -84,6 +84,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.programs = collection;
 		});
+		db.collection('comments', function(err, collection) {
+			if (err) throw err;
+			collections.comments = collection;
+		});
 		db.collection('votes', function(err, collection) {
 			if (err) throw err;
 			collections.votes = collection;
@@ -521,21 +525,28 @@ http.createServer(function(req, res) {
 					if (!vote) vote = {val: 0};
 					collections.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
-						if (program.type == 1) {
-							fs.readFile('dev/canvas.html', function(err, data) {
-								if (err) throw err;
-								res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
-								respondPageFooter(res);
-							});
-						} else if (program.type == 2) {
-							fs.readFile('dev/html.html', function(err, data) {
-								if (err) throw err;
-								res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
-								respondPageFooter(res);
-							});
-						} else {
-							throw 'Invalid program type for id: ' + program._id;
-						}
+						var commentstr = '';
+						collections.comments.find({program: program._id}).each(function(err, comment) {
+							if (err) throw err;
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + html(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							else {
+								if (program.type == 1) {
+									fs.readFile('dev/canvas.html', function(err, data) {
+										if (err) throw err;
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										respondPageFooter(res);
+									});
+								} else if (program.type == 2) {
+									fs.readFile('dev/html.html', function(err, data) {
+										if (err) throw err;
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+										respondPageFooter(res);
+									});
+								} else {
+									throw 'Invalid program type for id: ' + program._id;
+								}
+							}
+						});
 					});
 				});
 			});
@@ -761,12 +772,12 @@ http.createServer(function(req, res) {
 }).listen(8124);
 console.log('Server running at http://localhost:8124/');
 
-var chatWS = new ws.Server({
+var wss = new ws.Server({
 	host: 'localhost',
 	port: 8125
 });
 
-chatWS.on('connection', function(tws) {
+wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
@@ -815,8 +826,8 @@ chatWS.on('connection', function(tws) {
 								name: user.name
 							}));
 						else
-							for (var i in chatWS.clients)
-								if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+							for (var i in wss.clients)
+								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 									event: 'adduser',
 									name: user.name
 								}));
@@ -827,112 +838,179 @@ chatWS.on('connection', function(tws) {
 					}
 				});
 			});
-		});
-		tws.on('message', function(message) {
-			console.log(message);
-			try {
-				message = JSON.parse(message);
-			} catch (e) {
-				return tws.send(JSON.stringify({
-					event: 'err',
-					body: 'JSON error.'
-				}));
-			}
-			if (message.event == 'post') {
-				if (tws.user.name) {
+			tws.on('message', function(message) {
+				console.log(message);
+				try {
+					message = JSON.parse(message);
+				} catch (e) {
+					return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'JSON error.'
+					}));
+				}
+				if (message.event == 'post') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 30 reputation to chat.'
+						}));
+					if (tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 30 reputation to comment.'
+						}));
+					if (!message.body) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message body not submitted.'
+						}));
+					message.body = message.body.toString();
+					if (message.body.length > 2880) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Chat message length may not exceed 2880 characters.'
+						}));
 					collections.chat.insert({
 						body: message.body,
 						user: tws.user.name,
 						time: new Date().getTime(),
 						room: tws.room
 					});
-					for (var i in chatWS.clients)
-						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+					for (var i in wss.clients)
+						if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 							event: 'add',
 							body: message.body,
 							user: tws.user.name
 						}));
-				} else tws.send(JSON.stringify({
-					event: 'err',
-					body: 'You must be logged in to post on chat.'
-				}));
-			} else if (message.event == 'update') {
-				if (tws.user.name) {
-					collections.chatusers.update({
-						name: tws.user.name,
-						room: tws.room
-					}, {$set: {state: message.state}});
-					for (var i in chatWS.clients)
-						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-							event: 'statechange',
-							state: message.state,
-							user: tws.user.name
-						}));
-				}
-			} else if (message.event == 'req') {
-				if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
-					event: 'err',
-					body: 'Could not fetch posts.'
-				}));
-				var cursor = collections.chat.find({room: tws.room});
-				cursor.count(function(err, count) {
-					if (err) throw err;
-					var i = 0;
-					var num = message.skip - message.to || 1;
-					cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+				} else if (message.event == 'update') {
+					if (tws.user.name) {
+						collections.chatusers.update({
+							name: tws.user.name,
+							room: tws.room
+						}, {$set: {state: message.state}});
+						for (var i in wss.clients)
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								event: 'statechange',
+								state: message.state,
+								user: tws.user.name
+							}));
+					}
+				} else if (message.event == 'req') {
+					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'Could not fetch posts.'
+					}));
+					var cursor = collections.chat.find({room: tws.room});
+					cursor.count(function(err, count) {
 						if (err) throw err;
-						if (!doc) return;
-						i++;
-						tws.send(JSON.stringify({
-							event: 'init',
-							body: doc.body,
-							user: doc.tws.user,
-							time: doc.time,
-							num: message.skip - i,
-							before: true
-						}));
+						var i = 0;
+						var num = message.skip - message.to || 1;
+						cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+							if (err) throw err;
+							if (!doc) return;
+							i++;
+							tws.send(JSON.stringify({
+								event: 'init',
+								body: doc.body,
+								user: doc.tws.user,
+								time: doc.time,
+								num: message.skip - i,
+								before: true
+							}));
+						});
 					});
+				} else if (message.event == 'info-update') {
+					if (tws.user.name) {
+						collections.chatrooms.update({_id: tws.room}, {
+							$set: {
+								name: message.name,
+								desc: message.desc
+							}
+						});
+						collections.chat.insert({
+							body: 'Room description updated to ' + message.name + ': ' + message.desc,
+							user: 'Bot',
+							time: new Date().getTime(),
+							room: tws.room
+						});
+						for (var i in wss.clients)
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								event: 'info-update',
+								name: message.name,
+								desc: message.desc,
+							}));
+					} else tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to edit room information.'
+					}));
+				} else {
+					tws.send(JSON.stringify({
+						event: 'err',
+						body: 'Invalid event type.'
+					}));
+				}
+			});
+			tws.on('close', function() {
+				for (var i in wss.clients)
+					if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+						event: 'deluser',
+						name: tws.user.name
+					}));
+				collections.chatusers.remove({
+					name: tws.user.name,
+					room: tws.room
 				});
-			} else if (message.event == 'info-update') {
-				if (tws.user.name) {
-					collections.chatrooms.update({_id: tws.room}, {
-						$set: {
-							name: message.name,
-							desc: message.desc
-						}
-					});
-					collections.chat.insert({
-						body: 'Room description updated to ' + message.name + ': ' + message.desc,
-						user: 'Bot',
-						time: new Date().getTime(),
-						room: tws.room
-					});
-					for (var i in chatWS.clients)
-						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-							event: 'info-update',
-							name: message.name,
-							desc: message.desc,
-						}));
-				} else tws.send(JSON.stringify({
-					event: 'err',
-					body: 'You must be logged in to edit room information.'
-				}));
-			} else {
-				tws.send(JSON.stringify({
-					event: 'err',
-					body: 'Invalid event type.'
-				}));
-			}
+			});
 		});
-		tws.on('close', function() {
-			for (var i in chatWS.clients)
-				if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-					event: 'deluser',
-					name: tws.user.name
-				}));
-			collections.chatusers.remove({
-				name: tws.user.name,
-				room: tws.room
+	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
+		if (isNaN(tws.program = parseInt(i[1]))) return;
+		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+			if (err) throw err;
+			if (!user) user = {};
+			tws.user = user;
+			tws.on('message', function(message) {
+				console.log(message);
+				try {
+					message = JSON.parse(message);
+				} catch (e) {
+					return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'JSON error.'
+					}));
+				}
+				if (message.event == 'post') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 20 reputation to comment.'
+						}));
+					if (tws.user.rep < 20) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 20 reputation to comment.'
+						}));
+					message.body = message.body.toString();
+					if (!message.body) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Comment body not submitted.'
+						}));
+					if (message.body.length > 720) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Comment length may not exceed 720 characters.'
+						}));
+					collections.comments.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
+						collections.comments.insert({
+							_id: id,
+							body: message.body,
+							user: tws.user.name,
+							time: new Date().getTime(),
+							program: tws.program
+						});
+						for (var i in wss.clients)
+							if (wss.clients[i].program == tws.program) wss.clients[i].send(JSON.stringify({
+									event: 'add',
+									body: message.body,
+									id: id,
+									user: tws.user.name
+								}));
+					});
+				}
 			});
 		});
 	}
