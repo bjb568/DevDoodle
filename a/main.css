@@ -142,7 +142,7 @@ h2 small { margin: .2em .2em 0 0 }
 	color: #666;
 	font-size: 0.9em;
 }
-ul, p { margin: 6px 0 2px 0 }
+ul, ol, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
