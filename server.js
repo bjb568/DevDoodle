@@ -306,35 +306,30 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				if (post.create) {
-					if (!post.name || !post.pass || !post.passc || !post.email) {
-						respondLoginPage(['All fields are required.'], req, res, post);
-					} else if (post.pass != post.passc) {
-						respondLoginPage(['Passwords don\'t match.'], req, res, post);
-					} else {
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
-							var pass = new Buffer(key).toString('base64'),
-								rstr = crypto.randomBytes(128).toString('base64');
-							collections.users.insert({
-								name: post.name,
-								pass: pass,
-								email: post.email,
-								confirm: rstr,
-								rep: 0,
-								level: 0
-							});
-							transport.sendMail({
-								from: 'DevDoodle <support@devdoodle.net>',
-								to: post.email,
-								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
-							});
-							respondPage('Account Created', req, res, function() {
-								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
-								respondPageFooter(res);
-							});
-
+					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
+					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
+					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						var pass = new Buffer(key).toString('base64'),
+							rstr = crypto.randomBytes(128).toString('base64');
+						collections.users.insert({
+							name: post.name,
+							pass: pass,
+							email: post.email,
+							confirm: rstr,
+							rep: 0,
+							level: 0
 						});
-					}
+						transport.sendMail({
+							from: 'DevDoodle <support@devdoodle.net>',
+							to: post.email,
+							subject: 'Confirm your account',
+							html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+						});
+						respondPage('Account Created', req, res, function() {
+							res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+							respondPageFooter(res);
+						});
+					});
 				} else {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
 					collections.users.findOne({
@@ -356,15 +351,11 @@ http.createServer(function(req, res) {
 								user: user
 							});
 							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
-						} else {
-							respondLoginPage(['Invalid Credentials.'], req, res, post);
-						}
+						} else respondLoginPage(['Invalid Credentials.'], req, res, post);
 					});
 				}
 			});
-		} else {
-			respondLoginPage([], req, res, {});
-		}
+		} else respondLoginPage([], req, res, {});
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
@@ -424,26 +415,21 @@ http.createServer(function(req, res) {
 				var errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (errors.length) {
-					respondCreateRoomPage(errors, req, res, {});
-				} else {
-					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
-						if (err) throw err;
-						var i = last ? last._id + 1 : 1;
-						collections.chatrooms.insert({
-							name: post.name,
-							desc: post.desc,
-							type: post.type,
-							_id: i
-						});
-						res.writeHead(302, {'Location': i});
-						res.end();
+				if (errors.length) return respondCreateRoomPage(errors, req, res, {});
+				collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+					if (err) throw err;
+					var i = last ? last._id + 1 : 1;
+					collections.chatrooms.insert({
+						name: post.name,
+						desc: post.desc,
+						type: post.type,
+						_id: i
 					});
-				}
+					res.writeHead(302, {'Location': i});
+					res.end();
+				});
 			});
-		} else {
-			respondCreateRoomPage([], req, res, {});
-		}
+		} else respondCreateRoomPage([], req, res, {});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -713,73 +699,68 @@ http.createServer(function(req, res) {
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() == user.name.toString()) {
-							res.end('Error: You can\'t vote for your own post');
-						} else {
-							collections.votes.findOne({
-								program: id,
-								user: user.name
-							}, function(err, current) {
-								if (err) throw err;
-								if (!current) {
-									current = {val: 0};
-									collections.votes.insert({
-										user: user.name,
-										program: id,
+						if (program.user.toString() == user.name.toString()) return res.end('Error: You can\'t vote for your own post');
+						collections.votes.findOne({
+							program: id,
+							user: user.name
+						}, function(err, current) {
+							if (err) throw err;
+							if (!current) {
+								current = {val: 0};
+								collections.votes.insert({
+									user: user.name,
+									program: id,
+									val: post.val,
+									time: new Date().getTime()
+								});
+							} else {
+								collections.votes.update({
+									program: id,
+									user: user.name
+								}, {
+									$set: {
 										val: post.val,
 										time: new Date().getTime()
-									});
-								} else {
-									collections.votes.update({
-										program: id,
-										user: user.name
-									}, {
-										$set: {
-											val: post.val,
-											time: new Date().getTime()
-										}
-									});
+									}
+								});
+							}
+							collections.programs.update({_id: id}, {
+								$inc: {
+									score: post.val - current.val,
+									hotness: post.val - current.val,
+									upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 								}
-								collections.programs.update({_id: id}, {
-									$inc: {
-										score: post.val - current.val,
-										hotness: post.val - current.val,
-										upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
-									}
-								});
-								collections.users.update({name: program.user}, {
-									$inc: {
-										rep: post.val - current.val
-									}
-								});
-								res.end('Success');
 							});
-							collections.votes.find({
-								program: id,
-								time: {$lt: new Date().getTime() - 86400000}
-							})
-						}
+							collections.users.update({name: program.user}, {
+								$inc: {
+									rep: post.val - current.val
+								}
+							});
+							res.end('Success');
+						});
+						collections.votes.find({
+							program: id,
+							time: {$lt: new Date().getTime() - 86400000}
+						});
 					});
 				});
 			});
 		} else errors[405](req, res);
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
-			if (err) errors[404](req, res)
-			else {
-				res.writeHead(200, {
-					'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
-					'Cache-Control': 'max-age=6012800, public',
-					'Content-Length': stats.size
-				});
-				fs.readFile('.' + req.url.pathname, function(err, data) {
-					if (err) {
-						errors[404](req, res)
-					} else {
-						res.end(data);
-					}
-				});
-			}
+			if (err) return errors[404](req, res);
+			res.writeHead(200, {
+				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+				'Cache-Control': 'max-age=6012800, public',
+				'Content-Length': stats.size
+			});
+			fs.readFile('.' + req.url.pathname, function(err, data) {
+				if (err) {
+					errors[404](req, res)
+				} else {
+					res.end(data);
+				}
+			});
 		});
 	}
 }).listen(8124);
