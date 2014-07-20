@@ -72,7 +72,7 @@
 			var data = JSON.parse(e.data);
 		} catch(err) {
 			console.log(err);
-			return alert('JSON Error. Response was: '+e.data);
+			return alert('JSON Error. Response was: ' + e.data);
 		}
 		if (data.event == 'init' || data.event == 'add') {
 			var div = document.createElement('div');
@@ -186,4 +186,5 @@
 		font-weight: bold;
 	}
 	#editform { margin: 0 }
+	#users:empty::after { content: 'No users in room' }
 </style>

@@ -20,11 +20,8 @@ var noPageOverflow = false,
 
 
 function minHeight() {
-	if (noPageOverflow && innerWidth >= 700) {
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
-	} else {
-		mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
-	}
+	if (noPageOverflow && innerWidth >= 700) mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+	else mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
 };
 
 function request(uri, success, params) {
@@ -34,7 +31,7 @@ function request(uri, success, params) {
 	i.send(params);
 	i.onload = function() {
 		success(this.responseText);
-	}
+	};
 	return i;
 };
 
@@ -126,8 +123,6 @@ addEventListener('DOMContentLoaded', function() {
 		}
 	}, 100);
 });
-addEventListener('load', function() {
-	minHeight();
-});
+addEventListener('load', minHeight);
 addEventListener('resize', minHeight);
 if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
