@@ -315,6 +315,7 @@ textarea {
 		background: #262626;
 		color: #fff;
 	}
+	#nav .active { color: #fff }
 	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
 	#nav nav > a {
 		display: inline-block;
