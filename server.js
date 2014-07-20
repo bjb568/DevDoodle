@@ -550,7 +550,7 @@ http.createServer(function(req, res) {
 										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
 										respondPageFooter(res);
 									});
-								} throw 'Invalid program type for id: ' + program._id;
+								} else throw 'Invalid program type for id: ' + program._id;
 							}
 						});
 					});
