@@ -221,9 +221,7 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		collections.users.findOne({
-			cookie: cookies.id
-		}, function(err, user) {
+		collections.users.findOne({cookie: cookies.id}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
@@ -353,13 +351,7 @@ http.createServer(function(req, res) {
 								}),
 								user: user
 							});
-							collections.users.update({
-								name: user.name
-							}, {
-								$set: {
-									cookie: rstr
-								}
-							});
+							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
 						} else {
 							respondLoginPage(['Invalid Credentials.'], req, res, post);
 						}
@@ -370,18 +362,10 @@ http.createServer(function(req, res) {
 			respondLoginPage([], req, res, {});
 		}
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
-		collections.users.findOne({
-			confirm: i[1]
-		}, function(err, user) {
+		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({
-					name: user.name
-				}, {
-					$unset: {
-						confirm: ''
-					}
-				});
+				collections.users.update({name: user.name}, {$unset: {confirm: ''}});
 				respondPage('Account confirmed', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
@@ -439,9 +423,7 @@ http.createServer(function(req, res) {
 				if (errors.length) {
 					respondCreateRoomPage(errors, req, res, {});
 				} else {
-					collections.chatrooms.find().sort({
-						_id: -1
-					}).limit(1).next(function(err, last) {
+					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
 						if (err) throw err;
 						var i = last ? last._id + 1 : 1;
 						collections.chatrooms.insert({
@@ -450,9 +432,7 @@ http.createServer(function(req, res) {
 							type: post.type,
 							_id: i
 						});
-						res.writeHead(302, {
-							Location: i
-						});
+						res.writeHead(302, {'Location': i});
 						res.end();
 					});
 				}
@@ -461,9 +441,7 @@ http.createServer(function(req, res) {
 			respondCreateRoomPage([], req, res, {});
 		}
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
-		collections.chatrooms.findOne({
-			_id: parseInt(i[1])
-		}, function(err, doc) {
+		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errors[404](req, res);
 			respondPage(doc.name, req, res, function() {
@@ -625,9 +603,7 @@ http.createServer(function(req, res) {
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
-							if (type == 2) collections.programs.update({
-									_id: id
-								}, {
+							if (type == 2) collections.programs.update({_id: id}, {
 									$set: {
 										html: post.html,
 										css: post.css,
@@ -635,9 +611,7 @@ http.createServer(function(req, res) {
 										updated: new Date().getTime()
 									}
 								});
-							else collections.programs.update({
-									_id: id
-								}, {
+							else collections.programs.update({_id: id}, {
 									$set: {
 										code: post.code,
 										updated: new Date().getTime()
@@ -645,9 +619,7 @@ http.createServer(function(req, res) {
 								});
 							res.end('Success');
 						} else {
-							collections.programs.find().sort({
-								_id: -1
-							}).limit(1).next(function(err, last) {
+							collections.programs.find().sort({_id: -1}).limit(1).next(function(err, last) {
 								if (err) throw err;
 								var i = last ? last._id + 1 : 1;
 								if (type == 2) collections.programs.insert({
@@ -685,9 +657,7 @@ http.createServer(function(req, res) {
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				collections.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
-				}, function(err, user) {
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to change a program title.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -714,9 +684,7 @@ http.createServer(function(req, res) {
 				if (!post.val) return res.end('Error: Vote value not specified.');
 				post.val = parseInt(post.val);
 				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
-				collections.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
-				}, function(err, user) {
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -802,9 +770,7 @@ chatWS.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		var cursor = collections.chat.find({
-			room: tws.room
-		});
+		var cursor = collections.chat.find({room: tws.room});
 		cursor.count(function(err, count) {
 			if (err) throw err;
 			var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
@@ -817,9 +783,7 @@ chatWS.on('connection', function(tws) {
 			i = 0;
 			cursor.skip(skip).limit(92).each(function(err, doc) {
 				if (err) throw err;
-				if (!doc) return tws.send(JSON.stringify({
-					event: 'info-complete'
-				}));
+				if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
 				i++;
 				tws.send(JSON.stringify({
 					event: 'init',
@@ -830,21 +794,15 @@ chatWS.on('connection', function(tws) {
 				}));
 			});
 		});
-		collections.users.findOne({
-			cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-		}, function(err, user) {
+		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			collections.chatusers.remove({
 				name: user.name,
 				room: tws.room
-			}, {
-				w: 1
-			}, function(err, rem) {
+			}, {w: 1}, function(err, rem) {
 				if (err) throw err;
-				collections.chatusers.find({
-					room: tws.room
-				}).each(function(err, doc) {
+				collections.chatusers.find({room: tws.room}).each(function(err, doc) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
@@ -879,9 +837,7 @@ chatWS.on('connection', function(tws) {
 					body: 'JSON error.'
 				}));
 			}
-			collections.users.findOne({
-				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-			}, function(err, user) {
+			collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 				if (err) throw err;
 				if (!user) user = {};
 				if (message.event == 'post') {
@@ -924,16 +880,12 @@ chatWS.on('connection', function(tws) {
 						event: 'err',
 						body: 'Could not fetch posts.'
 					}));
-					var cursor = collections.chat.find({
-						room: tws.room
-					});
+					var cursor = collections.chat.find({room: tws.room});
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
 						var num = message.skip - message.to || 1;
-						cursor.sort({
-							$natural: -1
-						}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+						cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
 							if (err) throw err;
 							if (!doc) return;
 							i++;
@@ -949,16 +901,14 @@ chatWS.on('connection', function(tws) {
 					});
 				} else if (message.event == 'info-update') {
 					if (user.name) {
-						collections.chatrooms.update({
-							_id: tws.room
-						}, {
+						collections.chatrooms.update({_id: tws.room}, {
 							$set: {
 								name: message.name,
 								desc: message.desc
 							}
 						});
 						collections.chat.insert({
-							body: 'Room description updated to '+message.name+': '+message.desc,
+							body: 'Room description updated to ' + message.name + ': ' + message.desc,
 							user: 'Bot',
 							time: new Date().getTime(),
 							room: tws.room
@@ -982,9 +932,7 @@ chatWS.on('connection', function(tws) {
 			});
 		});
 		tws.on('close', function() {
-			collections.users.findOne({
-				cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
-			}, function(err, user) {
+			collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 				if (err) throw err;
 				if (!user) return;
 				for (var i in chatWS.clients)
