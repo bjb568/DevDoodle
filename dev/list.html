@@ -1,0 +1,15 @@
+<h1>Program list</h1>
+Sort by
+<select id="sort">
+	<option value="hot">Hot</option>
+	<option value="votes">Votes</option>
+	<option value="upvotes">Upvotes</option>
+	<option value="recent">Recent</option>
+	<option value="update">Last Update</option>
+</select>
+<ol>$list</ol>
+<script>
+	document.getElementById('sort').onchange = function() {
+		window.location.href = '?sort=' + this.value;
+	};
+</script>

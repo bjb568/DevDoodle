@@ -475,14 +475,23 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/dev/list/') {
 		respondPage('List', req, res, function() {
-			res.write('<h1>Program list</h1>\n');
-			res.write('<ol>\n');
-			collections.programs.find().sort({score: -1}).limit(720).each(function(err, data) {
+			var liststr = '',
+				sort = (req.url.query || {}).sort || 'hot',
+				sortDict = {
+					default: {hotness: -1},
+					votes: {score: -1},
+					upvotes: {upvotes: -1},
+					recent: {time: -1},
+					update: {updated: -1}
+				};
+			collections.programs.find().sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
-				if (data) {
-					res.write('\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n');
-				} else {
-					res.write('</ol>');
+				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
+				else {
+					fs.readFile('dev/list.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
+					});
 					respondPageFooter(res);
 				}
 			});
@@ -518,8 +527,7 @@ http.createServer(function(req, res) {
 			respondPage(program.title || 'Untitled', req, res, function(user) {
 				collections.votes.findOne({
 					user: user.name,
-					collection: 'programs',
-					pid: i
+					program: i
 				}, function(err, vote) {
 					if (err) throw err;
 					if (!vote) vote = {val: 0};
@@ -542,9 +550,7 @@ http.createServer(function(req, res) {
 										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
 										respondPageFooter(res);
 									});
-								} else {
-									throw 'Invalid program type for id: ' + program._id;
-								}
+								} throw 'Invalid program type for id: ' + program._id;
 							}
 						});
 					});
@@ -642,6 +648,8 @@ http.createServer(function(req, res) {
 										created: new Date().getTime(),
 										updated: new Date().getTime(),
 										score: 0,
+										hotness: 0,
+										upvotes: 0,
 										_id: i
 									});
 								else collections.programs.insert({
@@ -651,6 +659,8 @@ http.createServer(function(req, res) {
 										created: new Date().getTime(),
 										updated: new Date().getTime(),
 										score: 0,
+										hotness: 0,
+										upvotes: 0,
 										_id: i
 									});
 								res.end('Location: /dev/' + i);
@@ -707,8 +717,7 @@ http.createServer(function(req, res) {
 							res.end('Error: You can\'t vote for your own post');
 						} else {
 							collections.votes.findOne({
-								collection: 'programs',
-								pid: id,
+								program: id,
 								user: user.name
 							}, function(err, current) {
 								if (err) throw err;
@@ -716,15 +725,13 @@ http.createServer(function(req, res) {
 									current = {val: 0};
 									collections.votes.insert({
 										user: user.name,
-										collection: 'programs',
-										pid: id,
+										program: id,
 										val: post.val,
 										time: new Date().getTime()
 									});
 								} else {
 									collections.votes.update({
-										collection: 'programs',
-										pid: id,
+										program: id,
 										user: user.name
 									}, {
 										$set: {
@@ -735,7 +742,9 @@ http.createServer(function(req, res) {
 								}
 								collections.programs.update({_id: id}, {
 									$inc: {
-										score: post.val - current.val
+										score: post.val - current.val,
+										hotness: post.val - current.val,
+										upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 									}
 								});
 								collections.users.update({name: program.user}, {
@@ -745,6 +754,10 @@ http.createServer(function(req, res) {
 								});
 								res.end('Success');
 							});
+							collections.votes.find({
+								program: id,
+								time: {$lt: new Date().getTime() - 86400000}
+							})
 						}
 					});
 				});
