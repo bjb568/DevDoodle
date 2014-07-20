@@ -241,7 +241,7 @@ function respondPageFooter(res) {
 
 function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
-}
+};
 
 function respondLoginPage(errs, req, res, post) {
 	respondPage('Login', req, res, function() {
@@ -797,6 +797,7 @@ chatWS.on('connection', function(tws) {
 		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
+			tws.user = user;
 			collections.chatusers.remove({
 				name: user.name,
 				room: tws.room
@@ -837,113 +838,101 @@ chatWS.on('connection', function(tws) {
 					body: 'JSON error.'
 				}));
 			}
-			collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
-				if (err) throw err;
-				if (!user) user = {};
-				if (message.event == 'post') {
-					if (user.name) {
-						collections.chat.insert({
-							body: message.body,
-							user: user.name,
-							time: new Date().getTime(),
-							room: tws.room
-						});
-						for (var i in chatWS.clients)
-							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-								event: 'add',
-								body: message.body,
-								user: user.name
-							}));
-					} else tws.send(JSON.stringify({
-						event: 'err',
-						body: 'You must be logged in to post on chat.'
-					}));
-				} else if (message.event == 'update') {
-					if (user.name) {
-						collections.chatusers.update({
-							name: user.name,
-							room: tws.room
-						}, {
-							$set: {
-								state: message.state
-							}
-						});
-						for (var i in chatWS.clients)
-							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-								event: 'statechange',
-								state: message.state,
-								user: user.name
-							}));
-					}
-				} else if (message.event == 'req') {
-					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'Could not fetch posts.'
-					}));
-					var cursor = collections.chat.find({room: tws.room});
-					cursor.count(function(err, count) {
-						if (err) throw err;
-						var i = 0;
-						var num = message.skip - message.to || 1;
-						cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
-							if (err) throw err;
-							if (!doc) return;
-							i++;
-							tws.send(JSON.stringify({
-								event: 'init',
-								body: doc.body,
-								user: doc.user,
-								time: doc.time,
-								num: message.skip - i,
-								before: true
-							}));
-						});
+			if (message.event == 'post') {
+				if (tws.user.name) {
+					collections.chat.insert({
+						body: message.body,
+						user: tws.user.name,
+						time: new Date().getTime(),
+						room: tws.room
 					});
-				} else if (message.event == 'info-update') {
-					if (user.name) {
-						collections.chatrooms.update({_id: tws.room}, {
-							$set: {
-								name: message.name,
-								desc: message.desc
-							}
-						});
-						collections.chat.insert({
-							body: 'Room description updated to ' + message.name + ': ' + message.desc,
-							user: 'Bot',
-							time: new Date().getTime(),
-							room: tws.room
-						});
-						for (var i in chatWS.clients)
-							if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-								event: 'info-update',
-								name: message.name,
-								desc: message.desc,
-							}));
-					} else tws.send(JSON.stringify({
-						event: 'err',
-						body: 'You must be logged in to edit room information.'
-					}));
-				} else {
-					tws.send(JSON.stringify({
-						event: 'err',
-						body: 'Invalid event type.'
-					}));
+					for (var i in chatWS.clients)
+						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+							event: 'add',
+							body: message.body,
+							user: tws.user.name
+						}));
+				} else tws.send(JSON.stringify({
+					event: 'err',
+					body: 'You must be logged in to post on chat.'
+				}));
+			} else if (message.event == 'update') {
+				if (tws.user.name) {
+					collections.chatusers.update({
+						name: tws.user.name,
+						room: tws.room
+					}, {$set: {state: message.state}});
+					for (var i in chatWS.clients)
+						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+							event: 'statechange',
+							state: message.state,
+							user: tws.user.name
+						}));
 				}
-			});
+			} else if (message.event == 'req') {
+				if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
+					event: 'err',
+					body: 'Could not fetch posts.'
+				}));
+				var cursor = collections.chat.find({room: tws.room});
+				cursor.count(function(err, count) {
+					if (err) throw err;
+					var i = 0;
+					var num = message.skip - message.to || 1;
+					cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+						if (err) throw err;
+						if (!doc) return;
+						i++;
+						tws.send(JSON.stringify({
+							event: 'init',
+							body: doc.body,
+							user: doc.tws.user,
+							time: doc.time,
+							num: message.skip - i,
+							before: true
+						}));
+					});
+				});
+			} else if (message.event == 'info-update') {
+				if (tws.user.name) {
+					collections.chatrooms.update({_id: tws.room}, {
+						$set: {
+							name: message.name,
+							desc: message.desc
+						}
+					});
+					collections.chat.insert({
+						body: 'Room description updated to ' + message.name + ': ' + message.desc,
+						user: 'Bot',
+						time: new Date().getTime(),
+						room: tws.room
+					});
+					for (var i in chatWS.clients)
+						if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+							event: 'info-update',
+							name: message.name,
+							desc: message.desc,
+						}));
+				} else tws.send(JSON.stringify({
+					event: 'err',
+					body: 'You must be logged in to edit room information.'
+				}));
+			} else {
+				tws.send(JSON.stringify({
+					event: 'err',
+					body: 'Invalid event type.'
+				}));
+			}
 		});
 		tws.on('close', function() {
-			collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
-				if (err) throw err;
-				if (!user) return;
-				for (var i in chatWS.clients)
-					if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
-						event: 'deluser',
-						name: user.name
-					}));
-				collections.chatusers.remove({
-					name: user.name,
-					room: tws.room
-				});
+			for (var i in chatWS.clients)
+				if (chatWS.clients[i].room == tws.room) chatWS.clients[i].send(JSON.stringify({
+					event: 'deluser',
+					name: tws.user.name
+				}));
+			collections.chatusers.remove({
+				name: tws.user.name,
+				room: tws.room
 			});
 		});
 	}
