@@ -511,6 +511,7 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
 			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', req, res, function(user) {
+				if (!user) user = {};
 				if (program.deleted) {
 					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
 					else if (user.level >= 4) {
