@@ -29,9 +29,6 @@ h2 {
 	line-height: 125%;
 	resize: none;
 }
-#output {
-	background: #fff;
-}
 @media (min-width: 801px) {
 	#text {
 		margin-right: 8px;
