@@ -38,7 +38,6 @@
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	body, #content, #footer, #main { background: #000 }
-	#content { padding-top: 0 }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -56,6 +55,7 @@
 		width: 100%;
 		margin: 4px 0;
 	}
+	#main textarea:first-child { margin-top: 0 }
 	.half { max-width: 90vw }
 	#main textarea, #output {
 		max-width: 100%;
@@ -127,7 +127,7 @@
 	var footerOff = true,
 		noPageOverflow = 400,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 24;
+		mainBottomPad = 20;
 	var p = '';
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + document.getElementById('html').value + '&lt;style>' + document.getElementById('css').value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + document.getElementById('js').value + '&lt;/script>&lt;/body>&lt;/html>';

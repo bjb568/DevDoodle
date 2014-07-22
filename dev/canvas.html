@@ -31,7 +31,6 @@
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	body, #content, #footer, #main { background: #000 }
-	#content { padding-top: 0 }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -120,7 +119,7 @@
 	var footerOff = true,
 		noPageOverflow = 400,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 24;
+		mainBottomPad = 26;
 	document.getElementById('code').onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;

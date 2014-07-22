@@ -241,30 +241,6 @@ textarea {
 }
 #content { padding-bottom: 24px }
 #nav > .active:nth-child(3) { position: relative }
-#nav > .active:nth-child(3)::before {
-	content: '';
-	position: absolute;
-	z-index: 1;
-	width: 10px;
-	height: 10px;
-	background: #000;
-	transform: rotate(45deg);
-	-webkit-transform: scale(1, .6) rotate(45deg);
-	border-top: 2px solid #fff;
-	border-left: 2px solid #fff;
-	top: 100%;
-	margin-top: -1px;
-	left: 50%;
-	margin-left: -5px;
-}
-#nav :not(.active) + nav { display: none }
-#nav .active + nav {
-	margin: 2px 0 6px;
-	border-top: 1px solid #fff;
-	border-bottom: 1px solid #fff;
-	display: block;
-	background: #000;
-}
 @media (min-width: 360px) and (max-width: 799px) { 
 	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
 	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
@@ -275,6 +251,34 @@ textarea {
 @media (max-width: 799px) { 
 	#nav input { transition: width 1s }
 	#nav nav > a.active { font-weight: bold }
+	#nav :not(.active) + nav { display: none }
+	#nav > .active:nth-child(3)::before {
+		border-top: 1.5px solid #fff;
+		border-left: 1.5px solid #fff;
+	}
+}
+@media (max-width: 799px), (min-width: 1500px) {
+	#nav > .active:nth-child(3)::before {
+		content: '';
+		position: absolute;
+		z-index: 1;
+		width: 10px;
+		height: 10px;
+		background: #000;
+		transform: rotate(45deg);
+		-webkit-transform: scale(1, .6) rotate(45deg);
+		top: 100%;
+		margin-top: -1px;
+		left: 50%;
+		margin-left: -5px;
+	}
+	#nav nav {
+		margin: 2px 0 6px;
+		border-top: 1px solid #fff;
+		border-bottom: 1px solid #fff;
+		display: block;
+		background: #000;
+	}
 }
 @media (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
@@ -296,14 +300,16 @@ textarea {
 		width: 144px;
 		margin: -4px 4px 0 -4px;
 	}
-	#nav .active + nav {
-		display: inline-block;
-	}
+	#nav nav { display: inline-block }
 	line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
 		background: #888;
 		vertical-align: sub;
+	}
+	#nav > .active:nth-child(3)::before {
+		border-top: 2px solid #fff;
+		border-left: 2px solid #fff;
 	}
 }
 @media (min-width: 800px) {
@@ -339,7 +345,7 @@ textarea {
 	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background .2s;
+		transition: background .1s;
 		content: '';
 	}
 	#logo img { padding-bottom: 4px }
@@ -350,15 +356,13 @@ textarea {
 	#nav > :nth-child(-n+5) { float: left }
 	#nav > :nth-child(6) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
-	#nav .active + nav {
+	#nav nav {
 		position: absolute;
-		top: calc(2rem + 3px);
+		top: 2rem;
 		left: 7rem;
-		border-bottom: none;
+		border-top: 1px solid #888;
 	}
-	#nav :nth-child(3).active ~ div {
-		height: calc(2rem + 6px);
-	}
+	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
 @media (min-width: 1500px) { 
 	#cont { overflow: hidden }
@@ -388,7 +392,7 @@ textarea {
 	#nav input { width: 100% }
 	#nav > .active:nth-child(3)::before {
 		left: 32px;
-		margin-top: -4px;
+		margin-top: -5px;
 	}
 	#nav > :not(#logo) {
 		position: relative;
@@ -411,5 +415,10 @@ textarea {
 		bottom: calc(2rem + 6px);
 		width: 3px;
 		background: #777;
+	}
+	#nav :not(.active):not(:hover) + nav:not(:hover) { display: none }
+	#nav > .active:nth-child(3)::before {
+		border-top: 3px solid #fff;
+		border-left: 3px solid #fff;
 	}
 }
