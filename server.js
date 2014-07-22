@@ -539,7 +539,7 @@ http.createServer(function(req, res) {
 				}
 				collections.votes.findOne({
 					user: user.name,
-					program: i
+					program: program._id
 				}, function(err, vote) {
 					if (err) throw err;
 					if (!vote) vote = {val: 0};
@@ -559,7 +559,7 @@ http.createServer(function(req, res) {
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : '')]));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -757,16 +757,15 @@ http.createServer(function(req, res) {
 									upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 								}
 							});
-							collections.users.update({name: program.user}, {
-								$inc: {
-									rep: post.val - current.val
-								}
-							});
+							collections.users.update({name: program.user}, {$inc: {rep: post.val - current.val}});
 							res.end('Success');
 						});
 						collections.votes.find({
 							program: id,
 							time: {$lt: new Date().getTime() - 86400000}
+						}).count(function(err, count) {
+							if (err) throw err;
+							collections.programs.update({_id: id}, {$inc: {hotness: -count}});
 						});
 					});
 				});
