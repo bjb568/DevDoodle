@@ -41,7 +41,7 @@
 	#content { padding-top: 0 }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
-	#main :not(input):not(button), #footer * { color: #fff }
+	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 	#meta {
 		clear: both;
 		padding: 4px;
@@ -293,5 +293,13 @@
 			div.appendChild(sig);
 			document.getElementById('comments').appendChild(div);
 		} else if (data.event == 'err') alert('Error: ' + data.body);
+	};
+	document.getElementById('delete').onclick = function() {
+		if (confirm('Do you want to delete this program?'))
+			request('/api/program/delete', function(res) {
+				if (res.indexOf('Error') == 0) alert(res);
+				else if (res == 'Success') location.reload();
+				else alert('Unknown error. Response was: ' + res);
+			});
 	};
 </script>

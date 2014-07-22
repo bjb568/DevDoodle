@@ -510,7 +510,32 @@ http.createServer(function(req, res) {
 		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
-			respondPage(program.title || 'Untitled', req, res, function(user) {
+			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', req, res, function(user) {
+				if (program.deleted) {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
+					else if (user.level >= 4) {
+						var deletersstr = '',
+							i = program.deleted.by.length;
+						while (i--) {
+							deletestr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
+							if (i == 1) deletestr += ', and ';
+							else if (i != 0) deletestr += ', ';
+						}
+						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
+					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
+					res.write('\n<script>\n');
+					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
+					res.write('\tif (undel) undel.onclick = function() {\n');
+					res.write('\t\tif (confirm(\'Do you want to undelete this program?\'))\n');
+					res.write('\t\t\trequest(\'/api/program/undelete\', function(res) {\n');
+					res.write('\t\t\t\tif (res.indexOf(\'Error\') == 0) alert(res);\n');
+					res.write('\t\t\t\telse if (res == \'Success\') location.reload();\n');
+					res.write('\t\t\t\telse alert(\'Unknown error. Response was: \' + res);\n');
+					res.write('\t\t\t});\n');
+					res.write('\t}\n');
+					res.write('</script>');
+					return respondPageFooter(res);
+				}
 				collections.votes.findOne({
 					user: user.name,
 					program: i
@@ -527,13 +552,13 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : '')]));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -746,6 +771,59 @@ http.createServer(function(req, res) {
 				});
 			});
 		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/delete') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to vote.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only delete your own programs.');
+						collections.programs.update({_id: id}, {
+							$set: {
+								deleted: {
+									by: [user.name],
+									time: new Date().getTime()
+								}
+							}
+						});
+						res.end('Success');
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/undelete') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to vote.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
+						collections.programs.update({_id: id}, {$unset: {deleted: ''}});
+						res.end('Success');
+					});
+				});
+			});
+		} else errors[405](req, res);
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
 			if (err) return errors[404](req, res);
@@ -755,11 +833,8 @@ http.createServer(function(req, res) {
 				'Content-Length': stats.size
 			});
 			fs.readFile('.' + req.url.pathname, function(err, data) {
-				if (err) {
-					errors[404](req, res)
-				} else {
-					res.end(data);
-				}
+				if (err) errors[404](req, res)
+				else res.end(data);
 			});
 		});
 	}
@@ -799,7 +874,7 @@ wss.on('connection', function(tws) {
 				}));
 			});
 		});
-		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;

@@ -56,6 +56,7 @@ body {
 .hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
 .grey, a.small, .c-sig { color: #555 }
+.red { color: #f00 }
 .large { font-size: 1.2em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
 small, a.small, footer, .c-sig {
