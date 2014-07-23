@@ -874,7 +874,7 @@ wss.on('connection', function(tws) {
 				}));
 			});
 		});
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
