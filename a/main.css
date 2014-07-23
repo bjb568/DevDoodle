@@ -226,6 +226,8 @@ textarea {
 	max-width: 100%;
 }
 #nav form {
+	max-width: calc(100% - 12px);
+	margin: 0 4px;
 	padding: 4px 0;
 	line-height: 1;
 	display: inline-block;
@@ -242,23 +244,22 @@ textarea {
 }
 #content { padding-bottom: 24px }
 #nav > .active:nth-child(3) { position: relative }
-@media (min-width: 360px) and (max-width: 799px) { 
-	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
-	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
-		white-space: pre;
-		content: '\a';
-	}
+@media (min-width: 380px) and (max-width: 799px) { 
+	#nav > :not(.active) + nav + a:nth-child(5) { border-right: 1px solid #aaa }
 }
 @media (max-width: 799px) { 
-	#nav input { transition: width 1s }
 	#nav nav > a.active { font-weight: bold }
 	#nav :not(.active) + nav { display: none }
 	#nav > .active:nth-child(3)::before {
 		border-top: 1.5px solid #fff;
 		border-left: 1.5px solid #fff;
 	}
+	#nav nav {
+		background: #333;
+		display: inline-block;
+	}
 }
-@media (max-width: 799px), (min-width: 1500px) {
+@media (min-width: 1500px) {
 	#nav > .active:nth-child(3)::before {
 		content: '';
 		position: absolute;
@@ -277,8 +278,42 @@ textarea {
 		margin: 2px 0 6px;
 		border-top: 1px solid #fff;
 		border-bottom: 1px solid #fff;
-		display: block;
 		background: #000;
+	}
+}
+@media (min-width: 140px) and (max-width: 240px) {
+	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
+		white-space: pre;
+		content: '\a';
+	}
+}
+@media (min-width: 240px) and (max-width: 799px) {
+	#nav > :nth-child(6)::before {
+		white-space: pre;
+		content: ' ';
+	}
+	#nav nav {
+		border-radius: 6px;
+		margin-right: 4px;
+	}
+	#nav > .active:nth-child(3)::before { display: none }
+	#nav > .active:nth-child(3) { padding-right: 14px }
+	#nav > .active:nth-child(3)::after {
+		content: ' ⟨';
+		color: #ddd;
+		position: absolute;
+		left: 100%;
+		margin-left: -9px;
+		bottom: -2px;
+		display: block;
+		transform: scale(2.5, 1.3);
+		-webkit-transform: scale(2.5, 1.3);
+	}
+}
+@media (min-width: 280px) and (max-width: 379px) {
+	#nav > .active + nav + :nth-child(5)::after {
+		white-space: pre;
+		content: '\a';
 	}
 }
 @media (max-width: 610px), (min-width: 750px) { 
@@ -291,7 +326,7 @@ textarea {
 	}
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 }
-@media (min-width: 360px) { 
+@media (min-width: 380px) { 
 	#nav {
 		padding: 4px 4px 0 0;
 		text-align: right;
@@ -360,7 +395,7 @@ textarea {
 	#nav nav {
 		position: absolute;
 		top: 2rem;
-		left: 7rem;
+		left: 14.8rem;
 		border-top: 1px solid #888;
 	}
 	#nav :not(:hover) + nav:not(:hover) { display: none }
