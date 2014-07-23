@@ -119,8 +119,12 @@
 	var footerOff = true,
 		noPageOverflow = 400,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 26;
-	document.getElementById('code').onkeypress = function(e) {
+		mainBottomPad = 26,
+		code = document.getElementById('code'),
+		save = document.getElementById('save')
+		up = document.getElementById('up'),
+		dn = document.getElementById('dn');
+	code.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-(('{([:'.indexOf(this.value[oldSelectionStart-1])+1)?0:1);
@@ -132,23 +136,23 @@
 		setTimeout(run, 0);
 	};
 	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(document.getElementById('code').value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	};
 	function run() {
 		document.getElementById('output').srcdoc = createCode();
 	};
-	var oldValue = document.getElementById('code').innerHTML;
+	var oldValue = code.innerHTML;
 	function handleCode() {
 		if (this.value !== oldValue) {
 			oldValue = this.value;
 			onbeforeunload = function() {
 				return 'You have unsaved code.';
 			};
-			if (!document.getElementById('save').classList.contains('progress')) document.getElementById('save').textContent = 'Save';
+			if (!save.classList.contains('progress')) save.textContent = 'Save';
 			run();
 		}
 	};
-	var code = document.getElementById('code');
+	var code = code;
 	code.addEventListener('keyup', handleCode);
 	code.addEventListener('keydown', handleCode);
 	code.addEventListener('keypress', function() {
@@ -157,27 +161,30 @@
 		}, 0, this);
 	});
 	run();
-	document.getElementById('save').onclick = function() {
-		var e = this;
-		if (e.classList.contains('progress')) return;
-		e.classList.add('progress');
-		setTimeout(function() {
-			if (e.textContent == 'Save') e.textContent = 'Saving…';
+	save.onclick = function() {
+		if (save.classList.contains('progress')) return;
+		save.classList.add('progress');
+		var savingTimeout = setTimeout(function() {
+			if (save.textContent == 'Save') save.textContent = 'Saving…';
 		}, 200);
 		request('/api/program/save?type=1', function(res) {
 			if (res.indexOf('Error') === 0) {
+				clearTimeout(savingTimeout);
 				alert(res);
-				e.textContent = 'Save';
+				save.textContent = 'Save';
 			} else if (res.indexOf('Location') === 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
 			} else if (res == 'Success') {
 				onbeforeunload = null;
-				e.textContent = 'Saved';
+				save.textContent = 'Saved';
 				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
-			} else alert('Unknown error. Response was: ' + res);
-			e.classList.remove('progress');
-		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
+			} else {
+				clearTimeout(savingTimeout);
+				alert('Unknown error. Response was: ' + res);
+			}
+			save.classList.remove('progress');
+		}, 'code=' + encodeURIComponent(code.value));
 	};
 	(document.getElementById('fork') || {}).onclick = function() {
 		var e = this;
@@ -198,7 +205,7 @@
 				location.href = res.split(' ')[1];
 			} else alert('Unknown error. Response was: ' + res);
 			e.classList.remove('progress');
-		}, 'code=' + encodeURIComponent(document.getElementById('code').value));
+		}, 'code=' + encodeURIComponent(code.value));
 	};
 	document.getElementById('title').onclick = function() {
 		this.hidden = true;
@@ -223,21 +230,23 @@
 	document.getElementById('edit-title').onkeypress = function(e) {
 		if (e.keyCode == 13) this.onblur.call(this);
 	};
-	document.getElementById('up').onclick = function() {
+	up.onclick = function() {
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
-				document.getElementById('up').classList.toggle('clkd');
-				document.getElementById('dn').classList.remove('clkd');
+				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
+				up.classList.toggle('clkd');
+				dn.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
 		}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
 	};
-	document.getElementById('dn').onclick = function() {
+	dn.onclick = function() {
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
-				document.getElementById('dn').classList.toggle('clkd');
-				document.getElementById('up').classList.remove('clkd');
+				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+				dn.classList.toggle('clkd');
+				up.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
 		}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
 	};

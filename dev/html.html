@@ -126,10 +126,16 @@
 	var footerOff = true,
 		noPageOverflow = 400,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 20;
+		mainBottomPad = 20
+		html = document.getElementById('html'),
+		css = document.getElementById('css'),
+		js = document.getElementById('js'),
+		save = document.getElementById('save')
+		up = document.getElementById('up'),
+		dn = document.getElementById('dn');
 	var p = '';
 	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + document.getElementById('html').value + '&lt;style>' + document.getElementById('css').value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + document.getElementById('js').value + '&lt;/script>&lt;/body>&lt;/html>';
+		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + html.value + '&lt;style>' + css.value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + js.value + '&lt;/script>&lt;/body>&lt;/html>';
 	}
 	function run(f) {
 		if (f == true || (p != createCode() &amp;&amp; document.getElementById('autorun').checked)) {
@@ -138,10 +144,11 @@
 					return 'You have unsaved code.';
 				};
 			}
+			if (!save.classList.contains('progress')) save.textContent = 'Save';
 			p = document.getElementById('output').srcdoc = createCode();
 		}
 	}
-	document.getElementById('html').onkeypress = function(e) {
+	html.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-((false/*Parse!*/)?0:1);
@@ -152,7 +159,7 @@
 		}
 		setTimeout(run, 0, 2);
 	};
-	document.getElementById('css').onkeypress = document.getElementById('js').onkeypress = function(e) {
+	css.onkeypress = js.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-(this.value[oldSelectionStart-1]==='{'||this.value[oldSelectionStart-1]===':'?0:1);
@@ -163,9 +170,9 @@
 		}
 		setTimeout(run, 0, 2);
 	};
-	document.getElementById('html').onkeydown = document.getElementById('html').onkeyup = document.getElementById('css').onkeydown = document.getElementById('css').onkeyup = document.getElementById('js').onkeydown = document.getElementById('js').onkeyup = run;
+	html.onkeydown = html.onkeyup = css.onkeydown = css.onkeyup = js.onkeydown = js.onkeyup = run;
 	run();
-	document.getElementById('save').onclick = function() {
+	save.onclick = function() {
 		var e = this;
 		if (e.classList.contains('progress')) return;
 		e.classList.add('progress');
@@ -174,6 +181,7 @@
 		}, 200);
 		request('/api/program/save?type=2', function(res) {
 			if (res.indexOf('Error') === 0) {
+				clearTimeout(savingTimeout);
 				alert(res);
 				e.textContent = 'Save';
 			} else if (res.indexOf('Location') === 0) {
@@ -183,9 +191,13 @@
 				onbeforeunload = null;
 				e.textContent = 'Saved';
 				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
-			} else alert('Unknown error. Response was: ' + res);
+			} else {
+				clearTimeout(savingTimeout);
+				alert('Unknown error. Response was: ' + res);
+			}
 			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(document.getElementById('html').value) + '&amp;css=' + encodeURIComponent(document.getElementById('css').value) + '&amp;js=' + encodeURIComponent(document.getElementById('js').value));
+			e.classList.remove('progress');
+		}, 'html=' + encodeURIComponent(html.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
 	};
 	(document.getElementById('fork') || {}).onclick = function() {
 		var e = this;
@@ -206,7 +218,7 @@
 				location.href = res.split(' ')[1];
 			} else alert('Unknown error. Response was: ' + res);
 			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(document.getElementById('html').value) + '&amp;css=' + encodeURIComponent(document.getElementById('css').value) + '&amp;js=' + encodeURIComponent(document.getElementById('js').value));
+		}, 'html=' + encodeURIComponent(html.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
 	};
 	document.getElementById('title').onclick = function() {
 		this.hidden = true;
@@ -231,21 +243,21 @@
 	document.getElementById('edit-title').onkeypress = function(e) {
 		if (e.keyCode == 13) this.onblur.call(this);
 	};
-	document.getElementById('up').onclick = function() {
+	up.onclick = function() {
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
-				document.getElementById('up').classList.toggle('clkd');
-				document.getElementById('dn').classList.remove('clkd');
+				up.classList.toggle('clkd');
+				dn.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
 		}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
 	};
-	document.getElementById('dn').onclick = function() {
+	dn.onclick = function() {
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
-				document.getElementById('dn').classList.toggle('clkd');
-				document.getElementById('up').classList.remove('clkd');
+				dn.classList.toggle('clkd');
+				up.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
 		}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
 	};
