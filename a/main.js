@@ -69,11 +69,18 @@ function agot(d) {
 
 addEventListener('DOMContentLoaded', function() {
 	mainContentEl = mainContentEl || document.getElementById('content');
-	if (navigator.userAgent.indexOf('Trident') === -1 && navigator.userAgent.indexOf('MSIE') === -1) {
-		document.getElementById('err').hidden = true;
-		document.getElementById('cont').style.visibility = '';
-		minHeight();
+	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
+		var div = document.createElement("div");
+		div.innerHTML = "<!--[if lt IE 9]><i></i><![endif]-->";
+		if (div.getElementsByTagName("i").length != 1) {
+			var span = document.createElement('span');
+			span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
+			document.getElementById('err').appendChild(span);
+		}
+		document.getElementById('cont').hidden = true;
+		document.getElementById('cont').style.display = 'none';
 	}
+	minHeight();
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {

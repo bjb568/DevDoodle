@@ -201,9 +201,10 @@ textarea {
 	display: block;
 }
 #err > * {
-	 text-align: center;
-	 margin: 12em 3em;
-	 color: #fff;
+	display: block;
+	text-align: center;
+	margin: 3em;
+	color: #fff;
 }
 #nav {
 	padding: 0 2px 6px 2px;
