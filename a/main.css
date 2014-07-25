@@ -55,7 +55,7 @@ body {
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
-.white, iframe { background: #fff }
+.white, iframe:not([seamless]) { background: #fff }
 .grey, a.small, .c-sig { color: #555 }
 .red { color: #f00 }
 .large { font-size: 1.2em }
