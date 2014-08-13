@@ -72,6 +72,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.chat = collection;
 		});
+		db.collection('chatstars', function(err, collection) {
+			if (err) throw err;
+			collections.chatstars = collection;
+		});
 		db.collection('chatusers', function(err, collection) {
 			if (err) throw err;
 			collections.chatusers = collection;
@@ -850,34 +854,45 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		var cursor = collections.chat.find({room: tws.room});
-		cursor.count(function(err, count) {
-			if (err) throw err;
-			var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
-			var skip = Math.max(0, Math.min(count - 92, i));
-			tws.send(JSON.stringify({
-				event: 'info-skipped',
-				body: skip,
-				ts: skip == i
-			}));
-			i = 0;
-			cursor.skip(skip).limit(92).each(function(err, doc) {
-				if (err) throw err;
-				if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-				i++;
-				tws.send(JSON.stringify({
-					event: 'init',
-					body: doc.body,
-					user: doc.user,
-					time: doc.time,
-					num: skip + i
-				}));
-			});
-		});
 		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
+			var cursor = collections.chat.find({room: tws.room});
+			cursor.count(function(err, count) {
+				if (err) throw err;
+				var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
+				var skip = Math.max(0, Math.min(count - 92, i));
+				tws.send(JSON.stringify({
+					event: 'info-skipped',
+					body: skip,
+					ts: skip == i
+				}));
+				i = 0;
+				cursor.skip(skip).limit(92).each(function(err, doc) {
+					if (err) throw err;
+					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
+					i++;
+					tws.send(JSON.stringify({
+						event: 'init',
+						id: doc._id,
+						body: doc.body,
+						user: doc.user,
+						time: doc.time,
+						stars: parseInt(doc.stars) || 0
+					}));
+					collections.chatstars.findOne({
+						pid: doc._id,
+						user: tws.user.name
+					}, function(err, star) {
+						if (err) throw err;
+						if (star) tws.send(JSON.stringify({
+								event: 'selfstar',
+								id: star.pid
+							}));
+					});
+				});
+			});
 			collections.chatusers.remove({
 				name: user.name,
 				room: tws.room
@@ -924,7 +939,7 @@ wss.on('connection', function(tws) {
 						}));
 					if (tws.user.rep < 30) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You must have 30 reputation to comment.'
+							body: 'You must have 30 reputation to chat.'
 						}));
 					if (!message.body) return tws.send(JSON.stringify({
 							event: 'err',
@@ -935,19 +950,25 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'Chat message length may not exceed 2880 characters.'
 						}));
-					collections.chat.insert({
-						body: message.body,
-						user: tws.user.name,
-						time: new Date().getTime(),
-						room: tws.room
-					});
-					for (var i in wss.clients)
-						if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-							event: 'add',
+					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
+						collections.chat.insert({
+							_id: id,
 							body: message.body,
-							user: tws.user.name
-						}));
-				} else if (message.event == 'update') {
+							user: tws.user.name,
+							time: new Date().getTime(),
+							room: tws.room
+						});
+						for (var i in wss.clients)
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+									event: 'add',
+									body: message.body,
+									user: tws.user.name,
+									id: id
+								}));
+					});
+				} else if (message.event == 'statechange') {
 					if (tws.user.name) {
 						collections.chatusers.update({
 							name: tws.user.name,
@@ -955,16 +976,16 @@ wss.on('connection', function(tws) {
 						}, {$set: {state: message.state}});
 						for (var i in wss.clients)
 							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-								event: 'statechange',
-								state: message.state,
-								user: tws.user.name
-							}));
+									event: 'statechange',
+									state: message.state,
+									user: tws.user.name
+								}));
 					}
 				} else if (message.event == 'req') {
 					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'Could not fetch posts.'
-					}));
+							event: 'err',
+							body: 'Invalid skip value.'
+						}));
 					var cursor = collections.chat.find({room: tws.room});
 					cursor.count(function(err, count) {
 						if (err) throw err;
@@ -976,23 +997,116 @@ wss.on('connection', function(tws) {
 							i++;
 							tws.send(JSON.stringify({
 								event: 'init',
+								id: doc._id,
 								body: doc.body,
 								user: doc.tws.user,
 								time: doc.time,
-								num: message.skip - i,
+								stars: parseInt(doc.stars),
 								before: true
 							}));
+							collections.chatstars.findOne({
+								pid: doc._id,
+								user: tws.user
+							}, function(err, star) {
+								if (err) throw err;
+								if (star) tws.send(JSON.stringify({
+										event: 'selfstar',
+										id: star.pid
+									}));
+							});
+						});
+					});
+				} else if (message.event == 'star') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 30 reputation to star messages.'
+						}));
+					if (tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 30 reputation to star messages.'
+						}));
+					var id = parseInt(message.id);
+					collections.chat.findOne({_id: id}, function(err, doc) {
+						if (err) throw err;
+						if (!doc) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid message id.'
+						}));
+						collections.chatstars.findOne({
+							user: tws.user.name,
+							pid: id
+						}, function(err, star) {
+							if (err) throw err;
+							if (star) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You already stared this post.'
+								}));
+							collections.chatstars.insert({
+								user: tws.user.name,
+								pid: id
+							});
+							collections.chat.update({_id: id}, {$inc: {stars: 1}});
+							for (var i in wss.clients)
+									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+										event: 'star',
+										id: id
+									}));
+						});
+					});
+				} else if (message.event == 'unstar') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 30 reputation to unstar messages.'
+						}));
+					if (tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 30 reputation to unstar messages.'
+						}));
+					var id = parseInt(message.id);
+					collections.chat.findOne({_id: id}, function(err, doc) {
+						if (err) throw err;
+						if (!doc) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid message id.'
+						}));
+						collections.chatstars.findOne({
+							user: tws.user.name,
+							pid: id
+						}, function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You haven\'t stared this post.'
+								}));
+							collections.chatstars.remove({
+								user: tws.user.name,
+								pid: id
+							});
+							collections.chat.update({_id: id}, {$inc: {stars: -1}});
+							for (var i in wss.clients)
+									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+										event: 'unstar',
+										id: id
+									}));
 						});
 					});
 				} else if (message.event == 'info-update') {
-					if (tws.user.name) {
-						collections.chatrooms.update({_id: tws.room}, {
-							$set: {
-								name: message.name,
-								desc: message.desc
-							}
-						});
+					if (!tws.user.name || tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You don\'t have permission to update room information.',
+							revertInfo: 1
+						}));
+					collections.chatrooms.update({_id: tws.room}, {
+						$set: {
+							name: message.name,
+							desc: message.desc
+						}
+					});
+					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
 						collections.chat.insert({
+							_id: id,
 							body: 'Room description updated to ' + message.name + ': ' + message.desc,
 							user: 'Bot',
 							time: new Date().getTime(),
@@ -1003,17 +1117,13 @@ wss.on('connection', function(tws) {
 								event: 'info-update',
 								name: message.name,
 								desc: message.desc,
+								id: id
 							}));
-					} else tws.send(JSON.stringify({
-						event: 'err',
-						body: 'You must be logged in to edit room information.'
-					}));
-				} else {
-					tws.send(JSON.stringify({
+					});
+				} else tws.send(JSON.stringify({
 						event: 'err',
 						body: 'Invalid event type.'
 					}));
-				}
 			});
 			tws.on('close', function() {
 				for (var i in wss.clients)
@@ -1039,9 +1149,9 @@ wss.on('connection', function(tws) {
 					message = JSON.parse(message);
 				} catch (e) {
 					return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'JSON error.'
-					}));
+							event: 'err',
+							body: 'JSON error.'
+						}));
 				}
 				if (message.event == 'post') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
@@ -1075,8 +1185,8 @@ wss.on('connection', function(tws) {
 							if (wss.clients[i].program == tws.program) wss.clients[i].send(JSON.stringify({
 									event: 'add',
 									body: message.body,
-									id: id,
-									user: tws.user.name
+									user: tws.user.name,
+									id: id
 								}));
 					});
 				}

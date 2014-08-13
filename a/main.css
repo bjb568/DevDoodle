@@ -2,6 +2,7 @@ html { background: linear-gradient(rgba(20, 20, 20, .85), rgba(20, 20, 20, .85))
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
+	word-wrap: break-word;
 	tab-size: 4;
 }
 * {
@@ -30,10 +31,12 @@ body {
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
 .ib, #logo { display: inline-block }
+.rel, .comment { position: relative }
+.abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
 .lft, .row > :not(.rit):not(.half):not(.program), .user > * { float: left }
-.rit, .c-sig { float: right }
+.rit, .c-sig, .user, .ctrls, h1 small, h2 small { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
@@ -56,18 +59,30 @@ body {
 .hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
 .shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
 .white, iframe:not([seamless]) { background: #fff }
-.grey, a.small, .c-sig { color: #555 }
+.mono, .ctrls { font-family: monospace }
+.ctrls a { padding: 0 2px }
+.grey, a.small, .c-sig, .ctrls a { color: #444 }
 .red { color: #f00 }
 .large { font-size: 1.2em }
+.larger, .ctrls { font-size: 1.4em }
+.ctrls {
+	bottom: 100%; right: -1px;
+	z-index: 1;
+	background: #cef;
+	line-height: 16px;
+	padding-bottom: 1px;
+}
+.comment:first-child .ctrls { top: 100%; bottom: auto; }
+.ctrls :hover { color: #000 }
+.ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
+.ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
+.ctrls :last-child { font-size: 1.1em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
-small, a.small, footer, .c-sig {
+small, a.small, footer, .c-sig, .ctrls a {
 	font-size: .85em;
 	font-weight: normal;
 }
-h1 small, h2 small {
-	float: right;
-	font-size: .85rem;
-}
+h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
 h2 small { margin: .2em .2em 0 0 }
 .popup {
@@ -83,7 +98,6 @@ h2 small { margin: .2em .2em 0 0 }
 	 display: inline-block;
 	 padding: 4px 8px 4px 4px;
 	 margin-left: 8px;
-	 float: right;
 	 text-align: left;
 }
 .user div {
@@ -209,7 +223,6 @@ textarea {
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
-	text-align: top;
 	background: #000;
 }
 #nav * {
@@ -228,7 +241,7 @@ textarea {
 }
 #nav form {
 	max-width: calc(100% - 12px);
-	margin: 0 4px;
+	margin: 0 3px;
 	padding: 4px 0;
 	line-height: 1;
 	display: inline-block;
@@ -236,7 +249,6 @@ textarea {
 #nav input {
 	width: 160px;
 	max-width: 100%;
-	font-size: .9rem;
 	color: #000;
 }
 #logo img {
@@ -288,10 +300,15 @@ textarea {
 		content: '\a';
 	}
 }
-@media (min-width: 240px) and (max-width: 799px) {
+@media (min-width: 240px) and (max-width: 380px) {
 	#nav > :nth-child(6)::before {
 		white-space: pre;
 		content: ' ';
+	}
+}
+@media (min-width: 240px) and (max-width: 799px) {
+	#nav a:not(#logo) {
+		margin-top: 4px;
 	}
 	#nav nav {
 		border-radius: 6px;
@@ -329,16 +346,16 @@ textarea {
 }
 @media (min-width: 380px) { 
 	#nav {
-		padding: 4px 4px 0 0;
+		padding: 0;
 		text-align: right;
 	}
 	#logo {
 		float: left;
 		width: 144px;
-		margin: -4px 4px 0 -4px;
+		margin: 0;
 	}
 	#nav nav { display: inline-block }
-	line {
+	.line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
 		background: #888;
@@ -395,6 +412,7 @@ textarea {
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
 	#nav nav {
 		position: absolute;
+		z-index: 1;
 		top: 2rem;
 		left: 14.8rem;
 		border-top: 1px solid #888;
