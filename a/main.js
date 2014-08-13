@@ -18,7 +18,6 @@ var noPageOverflow = false,
 	mainContentEl,
 	mainBottomPad = 0;
 
-
 function minHeight() {
 	if (noPageOverflow) {
 		mainContentEl.style.minHeight = '';
@@ -42,8 +41,7 @@ function request(uri, success, params) {
 
 function ago(od) {
 	var d = Math.round((new Date() - od) / 1000);
-	if (d < 60) return '1m ago';
-	else if (d < 3600) return Math.round(d / 60) + 'm ago';
+	if (d < 3600) return Math.round(d / 60) + 'm ago';
 	else if (d < 86400) return Math.round(d / 3600) + 'h ago';
 	else if (d < 2592000) return Math.round(d / 86400) + 'd ago';
 	else {
