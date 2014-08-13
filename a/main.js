@@ -20,8 +20,13 @@ var noPageOverflow = false,
 
 
 function minHeight() {
-	if (noPageOverflow && innerWidth >= 700) mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
-	else mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
+	if (noPageOverflow) {
+		mainContentEl.style.minHeight = '';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+	} else {
+		mainContentEl.style.height = '';
+		mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
+	}
 };
 
 function request(uri, success, params) {
@@ -35,30 +40,16 @@ function request(uri, success, params) {
 	return i;
 };
 
-function ago(d) {
-	d = Math.round((new Date() - d) / 1000);
-	if (d < 60) {
-		d = 'now';
-	} else if (d < 100) {
-		d = 'a minute ago';
-	} else if (d < 3000) {
-		d /= 60;
-		d = Math.round(d);
-		d += ' minutes ago';
-	} else if (d < 6000) {
-		d = 'an hour ago';
-	} else if (d < 85000) {
-		d /= 3600;
-		d = Math.round(d);
-		d += ' hours ago';
-	} else if (d < 150000) {
-		d = 'yesterday';
-	} else {
-		d /= 86400;
-		d = Math.round(d);
-		d += ' days ago';
+function ago(od) {
+	var d = Math.round((new Date() - od) / 1000);
+	if (d < 60) return '1m ago';
+	else if (d < 3600) return Math.round(d / 60) + 'm ago';
+	else if (d < 86400) return Math.round(d / 3600) + 'h ago';
+	else if (d < 2592000) return Math.round(d / 86400) + 'd ago';
+	else {
+		d = new Date(od);
+		return 'on ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + ' \'' + d.getUTCFullYear().toString().substr(2);
 	}
-	return d;
 };
 function agot(d) {
 	var time = document.createElement('time');
@@ -70,9 +61,9 @@ function agot(d) {
 addEventListener('DOMContentLoaded', function() {
 	mainContentEl = mainContentEl || document.getElementById('content');
 	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
-		var div = document.createElement("div");
-		div.innerHTML = "<!--[if lt IE 9]><i></i><![endif]-->";
-		if (div.getElementsByTagName("i").length != 1) {
+		var div = document.createElement('div');
+		div.innerHTML = '<!--[if lt IE 9]><i></i><![endif]-->';
+		if (div.getElementsByTagName('i').length != 1) {
 			var span = document.createElement('span');
 			span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
 			document.getElementById('err').appendChild(span);
