@@ -103,9 +103,7 @@ h2 small { margin: .2em .2em 0 0 }
 .user div {
 	margin-left: 4px;
 }
-.user a {
-	display: block;
-}
+.user a { display: block }
 .program {
 	display: inline-block;
 	max-width: 95%;
@@ -272,28 +270,6 @@ textarea {
 		display: inline-block;
 	}
 }
-@media (min-width: 1500px) {
-	#nav > .active:nth-child(3)::before {
-		content: '';
-		position: absolute;
-		z-index: 1;
-		width: 10px;
-		height: 10px;
-		background: #000;
-		transform: rotate(45deg);
-		-webkit-transform: scale(1, .6) rotate(45deg);
-		top: 100%;
-		margin-top: -1px;
-		left: 50%;
-		margin-left: -5px;
-	}
-	#nav nav {
-		margin: 2px 0 6px;
-		border-top: 1px solid #fff;
-		border-bottom: 1px solid #fff;
-		background: #000;
-	}
-}
 @media (min-width: 140px) and (max-width: 240px) {
 	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
 		white-space: pre;
@@ -383,7 +359,7 @@ textarea {
 		line-height: 1.5;
 	}
 	#nav nav > a.active { background: #444 }
-	#nav > :not(div), #nav form {
+	#nav > *, #nav form {
 		display: inline-block;
 		padding: 0 12px;
 		background: #1a1a1a;
@@ -434,10 +410,9 @@ textarea {
 	#nav > :nth-child(7) { margin-top: 16px }
 	#nav > *, #nav form {
 		width: 100%;
-		padding-left: 16px;
 		padding-right: 24px;
 	}
-	#nav > :not(nav):not(div)::after {
+	#nav > :not(nav)::after {
 		position: absolute;
 		right: .5em;
 		content: '\276F';
@@ -449,27 +424,18 @@ textarea {
 		left: 32px;
 		margin-top: -5px;
 	}
-	#nav > :not(#logo) {
+	#nav > :not(#logo):not(nav) {
 		position: relative;
 		padding-left: 16px;
 	}
-	#nav > .active::before {
-		content: '';
-		position: absolute;
-		left: 5px;
-		top: 3px;
-		bottom: 3px;
-		width: 3px;
-		background: #777;
+	#nav nav {
+		border-top: 1px solid #fff;
+		border-bottom: 1px solid #fff;
+		background: #000;
 	}
-	#nav > .active + nav::before {
-		content: '';
-		position: absolute;
-		left: 5px;
-		top: calc(-2rem + 1px);
-		bottom: calc(2rem + 6px);
-		width: 3px;
-		background: #777;
+	#nav nav::before {
+		content: '＞';
+		color: #999;
 	}
 	#nav :not(.active):not(:hover) + nav:not(:hover) { display: none }
 	#nav > .active:nth-child(3)::before {
