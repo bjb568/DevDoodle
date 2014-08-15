@@ -1139,7 +1139,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
