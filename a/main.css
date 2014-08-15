@@ -331,7 +331,7 @@ textarea {
 		margin: 0;
 	}
 	#nav nav { display: inline-block }
-	.line {
+	line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
 		background: #888;
