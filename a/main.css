@@ -396,7 +396,8 @@ textarea {
 	}
 	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
-@media (min-width: 1500px) { 
+@media (min-width: 1500px) {
+	html { background-size: cover }
 	#cont { overflow: hidden }
 	#cont::before { display: none }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
