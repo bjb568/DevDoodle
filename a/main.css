@@ -49,7 +49,7 @@ body {
 .rmar { margin-right: 6px }
 .bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad, .desc, #content, #footer, .error, .popup { padding: 4px }
+.pad, a.center-text.blk, .desc, #content, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
@@ -424,7 +424,7 @@ textarea {
 		left: 32px;
 		margin-top: -5px;
 	}
-	#nav > :not(#logo):not(nav) {
+	#nav > :not(#logo):not(nav):not(form) {
 		position: relative;
 		padding-left: 16px;
 	}
