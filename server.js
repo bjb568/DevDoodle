@@ -616,6 +616,19 @@ http.createServer(function(req, res) {
 				});
 			}
 		});
+	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
+		collections.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
+			if (err) throw err;
+			if (doc) res.end(JSON.stringify({
+					id: doc._id,
+					body: doc.body,
+					user: doc.user,
+					time: doc.time,
+					stars: doc.stars,
+					room: doc.room
+				}));
+			else res.end('Error: Invalid message id.');
+		});
 	} else if (req.url.pathname == '/api/program/save') {
 		if (req.method == 'POST') {
 			var post = '';
@@ -858,15 +871,27 @@ wss.on('connection', function(tws) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
+			var pids = [];
+			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+				if (err) throw err;
+				if (star && pids.indexOf(star.pid) == -1) {
+					tws.send(JSON.stringify({
+						event: 'star',
+						id: star.pid,
+						board: true
+					}));
+					pids.push(star.pid);
+				}
+			});
 			var cursor = collections.chat.find({room: tws.room});
 			cursor.count(function(err, count) {
 				if (err) throw err;
-				var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
+				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
 				var skip = Math.max(0, Math.min(count - 92, i));
 				tws.send(JSON.stringify({
 					event: 'info-skipped',
 					body: skip,
-					ts: skip == i
+					ts: Math.min(count - 92, i) == i
 				}));
 				i = 0;
 				cursor.skip(skip).limit(92).each(function(err, doc) {
@@ -879,7 +904,7 @@ wss.on('connection', function(tws) {
 						body: doc.body,
 						user: doc.user,
 						time: doc.time,
-						stars: parseInt(doc.stars) || 0
+						stars: doc.stars
 					}));
 					collections.chatstars.findOne({
 						pid: doc._id,
@@ -999,14 +1024,14 @@ wss.on('connection', function(tws) {
 								event: 'init',
 								id: doc._id,
 								body: doc.body,
-								user: doc.tws.user,
+								user: doc.user,
 								time: doc.time,
-								stars: parseInt(doc.stars),
+								stars: doc.stars,
 								before: true
 							}));
 							collections.chatstars.findOne({
 								pid: doc._id,
-								user: tws.user
+								user: tws.user.name
 							}, function(err, star) {
 								if (err) throw err;
 								if (star) tws.send(JSON.stringify({
@@ -1043,7 +1068,9 @@ wss.on('connection', function(tws) {
 								}));
 							collections.chatstars.insert({
 								user: tws.user.name,
-								pid: id
+								pid: id,
+								room: doc.room,
+								time: new Date().getTime()
 							});
 							collections.chat.update({_id: id}, {$inc: {stars: 1}});
 							for (var i in wss.clients)
