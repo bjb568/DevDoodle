@@ -403,10 +403,9 @@ http.createServer(function(req, res) {
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>');
-					respondPageFooter(res);
 				}
+				respondPageFooter(res);
 			});
-			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
 		if (req.method == 'POST') {
@@ -481,8 +480,8 @@ http.createServer(function(req, res) {
 					fs.readFile('dev/list.html', function(err, data) {
 						if (err) throw err;
 						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
+						respondPageFooter(res);
 					});
-					respondPageFooter(res);
 				}
 			});
 		});
