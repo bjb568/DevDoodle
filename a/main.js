@@ -14,12 +14,13 @@ Number.prototype.bound = function(l, h) {
 };
 
 var noPageOverflow = false,
+	pageOverflowMobile = false,
 	footerOff = false,
 	mainContentEl,
 	mainBottomPad = 0;
 
 function minHeight() {
-	if (noPageOverflow) {
+	if (noPageOverflow && !(pageOverflowMobile && innerWidth < 700)) {
 		mainContentEl.style.minHeight = '';
 		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
 	} else {
