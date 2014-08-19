@@ -334,15 +334,17 @@ textarea {
 		margin: 0;
 	}
 	#nav nav { display: inline-block }
+	#nav > .active:nth-child(3)::before {
+		border-top: 2px solid #fff;
+		border-left: 2px solid #fff;
+	}
+}
+@media (min-width: 360px) {
 	line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
 		background: #888;
 		vertical-align: sub;
-	}
-	#nav > .active:nth-child(3)::before {
-		border-top: 2px solid #fff;
-		border-left: 2px solid #fff;
 	}
 }
 @media (min-width: 800px) {
