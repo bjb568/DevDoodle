@@ -321,7 +321,7 @@ textarea {
 	}
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 }
-@media (min-width: 380px) { 
+@media (min-width: 380px) and (max-width: 1499px) { 
 	#nav {
 		padding: 0;
 		text-align: right;
@@ -349,12 +349,12 @@ textarea {
 		background: #111;
 	}
 	#nav > a { transition: background .15s }
-	#nav a:hover {
+	#nav a:not(.active):hover {
 		background: #262626;
 		color: #fff;
 	}
 	#nav .active { color: #fff }
-	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
+	#nav > a:active, #nav > a.active { background: #000 }
 	#nav nav > a {
 		display: inline-block;
 		line-height: 1.5;
@@ -399,7 +399,6 @@ textarea {
 @media (min-width: 1500px) {
 	html { background-size: cover }
 	#cont { overflow: hidden }
-	#cont::before { display: none }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
 	#nav {
 		position: fixed;
@@ -422,9 +421,14 @@ textarea {
 	}
 	#logo { height: 2rem }
 	#nav input { width: 100% }
-	#nav > .active:nth-child(3)::before {
-		left: 32px;
-		margin-top: -5px;
+	#nav > .active::before {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: 3px;
+		bottom: 3px;
+		width: 3px;
+		background: #777;
 	}
 	#nav > :not(#logo):not(nav):not(form) {
 		position: relative;
@@ -440,8 +444,4 @@ textarea {
 		color: #999;
 	}
 	#nav :not(.active):not(:hover) + nav:not(:hover) { display: none }
-	#nav > .active:nth-child(3)::before {
-		border-top: 3px solid #fff;
-		border-left: 3px solid #fff;
-	}
 }
