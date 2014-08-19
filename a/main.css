@@ -239,8 +239,6 @@ textarea {
 	max-width: 100%;
 }
 #nav form {
-	max-width: calc(100% - 12px);
-	margin: 0 3px;
 	padding: 4px 0;
 	line-height: 1;
 	display: inline-block;
@@ -290,6 +288,10 @@ textarea {
 	#nav nav {
 		border-radius: 6px;
 		margin-right: 4px;
+	}
+	#nav form {
+		margin: 0 3px;
+		max-width: calc(100% - 12px);
 	}
 	#nav > .active:nth-child(3)::before { display: none }
 	#nav > .active:nth-child(3) { padding-right: 14px }
@@ -430,7 +432,7 @@ textarea {
 		width: 3px;
 		background: #777;
 	}
-	#nav > :not(#logo):not(nav):not(form) {
+	#nav > :not(#logo):not(nav) {
 		position: relative;
 		padding-left: 16px;
 	}
