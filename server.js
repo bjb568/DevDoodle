@@ -72,6 +72,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.chat = collection;
 		});
+		db.collection('chatstars', function(err, collection) {
+			if (err) throw err;
+			collections.chatstars = collection;
+		});
 		db.collection('chatusers', function(err, collection) {
 			if (err) throw err;
 			collections.chatusers = collection;
@@ -306,35 +310,30 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				if (post.create) {
-					if (!post.name || !post.pass || !post.passc || !post.email) {
-						respondLoginPage(['All fields are required.'], req, res, post);
-					} else if (post.pass != post.passc) {
-						respondLoginPage(['Passwords don\'t match.'], req, res, post);
-					} else {
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
-							var pass = new Buffer(key).toString('base64'),
-								rstr = crypto.randomBytes(128).toString('base64');
-							collections.users.insert({
-								name: post.name,
-								pass: pass,
-								email: post.email,
-								confirm: rstr,
-								rep: 0,
-								level: 0
-							});
-							transport.sendMail({
-								from: 'DevDoodle <support@devdoodle.net>',
-								to: post.email,
-								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
-							});
-							respondPage('Account Created', req, res, function() {
-								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
-								respondPageFooter(res);
-							});
-
+					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
+					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
+					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						var pass = new Buffer(key).toString('base64'),
+							rstr = crypto.randomBytes(128).toString('base64');
+						collections.users.insert({
+							name: post.name,
+							pass: pass,
+							email: post.email,
+							confirm: rstr,
+							rep: 0,
+							level: 0
 						});
-					}
+						transport.sendMail({
+							from: 'DevDoodle <support@devdoodle.net>',
+							to: post.email,
+							subject: 'Confirm your account',
+							html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+						});
+						respondPage('Account Created', req, res, function() {
+							res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+							respondPageFooter(res);
+						});
+					});
 				} else {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
 					collections.users.findOne({
@@ -356,15 +355,11 @@ http.createServer(function(req, res) {
 								user: user
 							});
 							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
-						} else {
-							respondLoginPage(['Invalid Credentials.'], req, res, post);
-						}
+						} else respondLoginPage(['Invalid Credentials.'], req, res, post);
 					});
 				}
 			});
-		} else {
-			respondLoginPage([], req, res, {});
-		}
+		} else respondLoginPage([], req, res, {});
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
@@ -408,10 +403,9 @@ http.createServer(function(req, res) {
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>');
-					respondPageFooter(res);
 				}
+				respondPageFooter(res);
 			});
-			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
 		if (req.method == 'POST') {
@@ -424,26 +418,21 @@ http.createServer(function(req, res) {
 				var errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (errors.length) {
-					respondCreateRoomPage(errors, req, res, {});
-				} else {
-					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
-						if (err) throw err;
-						var i = last ? last._id + 1 : 1;
-						collections.chatrooms.insert({
-							name: post.name,
-							desc: post.desc,
-							type: post.type,
-							_id: i
-						});
-						res.writeHead(302, {'Location': i});
-						res.end();
+				if (errors.length) return respondCreateRoomPage(errors, req, res, {});
+				collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+					if (err) throw err;
+					var i = last ? last._id + 1 : 1;
+					collections.chatrooms.insert({
+						name: post.name,
+						desc: post.desc,
+						type: post.type,
+						_id: i
 					});
-				}
+					res.writeHead(302, {'Location': i});
+					res.end();
+				});
 			});
-		} else {
-			respondCreateRoomPage([], req, res, {});
-		}
+		} else respondCreateRoomPage([], req, res, {});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -464,7 +453,7 @@ http.createServer(function(req, res) {
 				if (data) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
@@ -491,8 +480,8 @@ http.createServer(function(req, res) {
 					fs.readFile('dev/list.html', function(err, data) {
 						if (err) throw err;
 						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
+						respondPageFooter(res);
 					});
-					respondPageFooter(res);
 				}
 			});
 		});
@@ -524,10 +513,36 @@ http.createServer(function(req, res) {
 		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errors[404](req, res);
-			respondPage(program.title || 'Untitled', req, res, function(user) {
+			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', req, res, function(user) {
+				if (!user) user = {};
+				if (program.deleted) {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
+					else if (user.level >= 4) {
+						var deletersstr = '',
+							i = program.deleted.by.length;
+						while (i--) {
+							deletestr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
+							if (i == 1) deletestr += ', and ';
+							else if (i != 0) deletestr += ', ';
+						}
+						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
+					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
+					res.write('\n<script>\n');
+					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
+					res.write('\tif (undel) undel.onclick = function() {\n');
+					res.write('\t\tif (confirm(\'Do you want to undelete this program?\'))\n');
+					res.write('\t\t\trequest(\'/api/program/undelete\', function(res) {\n');
+					res.write('\t\t\t\tif (res.indexOf(\'Error\') == 0) alert(res);\n');
+					res.write('\t\t\t\telse if (res == \'Success\') location.reload();\n');
+					res.write('\t\t\t\telse alert(\'Unknown error. Response was: \' + res);\n');
+					res.write('\t\t\t});\n');
+					res.write('\t}\n');
+					res.write('</script>');
+					return respondPageFooter(res);
+				}
 				collections.votes.findOne({
 					user: user.name,
-					program: i
+					program: program._id
 				}, function(err, vote) {
 					if (err) throw err;
 					if (!vote) vote = {val: 0};
@@ -541,13 +556,13 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>'], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a>' : '')]));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -599,6 +614,19 @@ http.createServer(function(req, res) {
 					inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 				});
 			}
+		});
+	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
+		collections.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
+			if (err) throw err;
+			if (doc) res.end(JSON.stringify({
+					id: doc._id,
+					body: doc.body,
+					user: doc.user,
+					time: doc.time,
+					stars: doc.stars,
+					room: doc.room
+				}));
+			else res.end('Error: Invalid message id.');
 		});
 	} else if (req.url.pathname == '/api/program/save') {
 		if (req.method == 'POST') {
@@ -713,73 +741,117 @@ http.createServer(function(req, res) {
 					collections.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() == user.name.toString()) {
-							res.end('Error: You can\'t vote for your own post');
-						} else {
-							collections.votes.findOne({
-								program: id,
-								user: user.name
-							}, function(err, current) {
-								if (err) throw err;
-								if (!current) {
-									current = {val: 0};
-									collections.votes.insert({
-										user: user.name,
-										program: id,
+						if (program.user.toString() == user.name.toString()) return res.end('Error: You can\'t vote for your own post');
+						collections.votes.findOne({
+							program: id,
+							user: user.name
+						}, function(err, current) {
+							if (err) throw err;
+							if (!current) {
+								current = {val: 0};
+								collections.votes.insert({
+									user: user.name,
+									program: id,
+									val: post.val,
+									time: new Date().getTime()
+								});
+							} else {
+								collections.votes.update({
+									program: id,
+									user: user.name
+								}, {
+									$set: {
 										val: post.val,
 										time: new Date().getTime()
-									});
-								} else {
-									collections.votes.update({
-										program: id,
-										user: user.name
-									}, {
-										$set: {
-											val: post.val,
-											time: new Date().getTime()
-										}
-									});
+									}
+								});
+							}
+							collections.programs.update({_id: id}, {
+								$inc: {
+									score: post.val - current.val,
+									hotness: post.val - current.val,
+									upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 								}
-								collections.programs.update({_id: id}, {
-									$inc: {
-										score: post.val - current.val,
-										hotness: post.val - current.val,
-										upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
-									}
-								});
-								collections.users.update({name: program.user}, {
-									$inc: {
-										rep: post.val - current.val
-									}
-								});
-								res.end('Success');
 							});
-							collections.votes.find({
-								program: id,
-								time: {$lt: new Date().getTime() - 86400000}
-							})
-						}
+							collections.users.update({name: program.user}, {$inc: {rep: post.val - current.val}});
+							res.end('Success');
+						});
+						collections.votes.find({
+							program: id,
+							time: {$lt: new Date().getTime() - 86400000}
+						}).count(function(err, count) {
+							if (err) throw err;
+							collections.programs.update({_id: id}, {$inc: {hotness: -count}});
+						});
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/delete') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to vote.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only delete your own programs.');
+						collections.programs.update({_id: id}, {
+							$set: {
+								deleted: {
+									by: [user.name],
+									time: new Date().getTime()
+								}
+							}
+						});
+						res.end('Success');
+					});
+				});
+			});
+		} else errors[405](req, res);
+	} else if (req.url.pathname == '/api/program/undelete') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to vote.');
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					collections.programs.findOne({_id: id}, function(err, program) {
+						if (err) throw err;
+						if (!program) return res.end('Error: Invalid program id.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
+						collections.programs.update({_id: id}, {$unset: {deleted: ''}});
+						res.end('Success');
 					});
 				});
 			});
 		} else errors[405](req, res);
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
-			if (err) errors[404](req, res)
-			else {
-				res.writeHead(200, {
-					'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
-					'Cache-Control': 'max-age=6012800, public',
-					'Content-Length': stats.size
-				});
-				fs.readFile('.' + req.url.pathname, function(err, data) {
-					if (err) {
-						errors[404](req, res)
-					} else {
-						res.end(data);
-					}
-				});
-			}
+			if (err) return errors[404](req, res);
+			res.writeHead(200, {
+				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+				'Cache-Control': 'max-age=6012800, public',
+				'Content-Length': stats.size
+			});
+			fs.readFile('.' + req.url.pathname, function(err, data) {
+				if (err) errors[404](req, res)
+				else res.end(data);
+			});
 		});
 	}
 }).listen(8124);
@@ -794,34 +866,57 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		var cursor = collections.chat.find({room: tws.room});
-		cursor.count(function(err, count) {
-			if (err) throw err;
-			var i = tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3] - 2 || Infinity;
-			var skip = Math.max(0, Math.min(count - 92, i));
-			tws.send(JSON.stringify({
-				event: 'info-skipped',
-				body: skip,
-				ts: skip == i
-			}));
-			i = 0;
-			cursor.skip(skip).limit(92).each(function(err, doc) {
-				if (err) throw err;
-				if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-				i++;
-				tws.send(JSON.stringify({
-					event: 'init',
-					body: doc.body,
-					user: doc.user,
-					time: doc.time,
-					num: skip + i
-				}));
-			});
-		});
-		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
+			var pids = [];
+			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+				if (err) throw err;
+				if (star && pids.indexOf(star.pid) == -1) {
+					tws.send(JSON.stringify({
+						event: 'star',
+						id: star.pid,
+						board: true
+					}));
+					pids.push(star.pid);
+				}
+			});
+			var cursor = collections.chat.find({room: tws.room});
+			cursor.count(function(err, count) {
+				if (err) throw err;
+				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
+				var skip = Math.max(0, Math.min(count - 92, i));
+				tws.send(JSON.stringify({
+					event: 'info-skipped',
+					body: skip,
+					ts: Math.min(count - 92, i) == i
+				}));
+				i = 0;
+				cursor.skip(skip).limit(92).each(function(err, doc) {
+					if (err) throw err;
+					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
+					i++;
+					tws.send(JSON.stringify({
+						event: 'init',
+						id: doc._id,
+						body: doc.body,
+						user: doc.user,
+						time: doc.time,
+						stars: doc.stars
+					}));
+					collections.chatstars.findOne({
+						pid: doc._id,
+						user: tws.user.name
+					}, function(err, star) {
+						if (err) throw err;
+						if (star) tws.send(JSON.stringify({
+								event: 'selfstar',
+								id: star.pid
+							}));
+					});
+				});
+			});
 			collections.chatusers.remove({
 				name: user.name,
 				room: tws.room
@@ -868,7 +963,7 @@ wss.on('connection', function(tws) {
 						}));
 					if (tws.user.rep < 30) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You must have 30 reputation to comment.'
+							body: 'You must have 30 reputation to chat.'
 						}));
 					if (!message.body) return tws.send(JSON.stringify({
 							event: 'err',
@@ -879,19 +974,25 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'Chat message length may not exceed 2880 characters.'
 						}));
-					collections.chat.insert({
-						body: message.body,
-						user: tws.user.name,
-						time: new Date().getTime(),
-						room: tws.room
-					});
-					for (var i in wss.clients)
-						if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-							event: 'add',
+					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
+						collections.chat.insert({
+							_id: id,
 							body: message.body,
-							user: tws.user.name
-						}));
-				} else if (message.event == 'update') {
+							user: tws.user.name,
+							time: new Date().getTime(),
+							room: tws.room
+						});
+						for (var i in wss.clients)
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+									event: 'add',
+									body: message.body,
+									user: tws.user.name,
+									id: id
+								}));
+					});
+				} else if (message.event == 'statechange') {
 					if (tws.user.name) {
 						collections.chatusers.update({
 							name: tws.user.name,
@@ -899,16 +1000,16 @@ wss.on('connection', function(tws) {
 						}, {$set: {state: message.state}});
 						for (var i in wss.clients)
 							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-								event: 'statechange',
-								state: message.state,
-								user: tws.user.name
-							}));
+									event: 'statechange',
+									state: message.state,
+									user: tws.user.name
+								}));
 					}
 				} else if (message.event == 'req') {
 					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'Could not fetch posts.'
-					}));
+							event: 'err',
+							body: 'Invalid skip value.'
+						}));
 					var cursor = collections.chat.find({room: tws.room});
 					cursor.count(function(err, count) {
 						if (err) throw err;
@@ -920,23 +1021,118 @@ wss.on('connection', function(tws) {
 							i++;
 							tws.send(JSON.stringify({
 								event: 'init',
+								id: doc._id,
 								body: doc.body,
-								user: doc.tws.user,
+								user: doc.user,
 								time: doc.time,
-								num: message.skip - i,
+								stars: doc.stars,
 								before: true
 							}));
+							collections.chatstars.findOne({
+								pid: doc._id,
+								user: tws.user.name
+							}, function(err, star) {
+								if (err) throw err;
+								if (star) tws.send(JSON.stringify({
+										event: 'selfstar',
+										id: star.pid
+									}));
+							});
+						});
+					});
+				} else if (message.event == 'star') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 30 reputation to star messages.'
+						}));
+					if (tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 30 reputation to star messages.'
+						}));
+					var id = parseInt(message.id);
+					collections.chat.findOne({_id: id}, function(err, doc) {
+						if (err) throw err;
+						if (!doc) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid message id.'
+						}));
+						collections.chatstars.findOne({
+							user: tws.user.name,
+							pid: id
+						}, function(err, star) {
+							if (err) throw err;
+							if (star) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You already stared this post.'
+								}));
+							collections.chatstars.insert({
+								user: tws.user.name,
+								pid: id,
+								room: doc.room,
+								time: new Date().getTime()
+							});
+							collections.chat.update({_id: id}, {$inc: {stars: 1}});
+							for (var i in wss.clients)
+									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+										event: 'star',
+										id: id
+									}));
+						});
+					});
+				} else if (message.event == 'unstar') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 30 reputation to unstar messages.'
+						}));
+					if (tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 30 reputation to unstar messages.'
+						}));
+					var id = parseInt(message.id);
+					collections.chat.findOne({_id: id}, function(err, doc) {
+						if (err) throw err;
+						if (!doc) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid message id.'
+						}));
+						collections.chatstars.findOne({
+							user: tws.user.name,
+							pid: id
+						}, function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You haven\'t stared this post.'
+								}));
+							collections.chatstars.remove({
+								user: tws.user.name,
+								pid: id
+							});
+							collections.chat.update({_id: id}, {$inc: {stars: -1}});
+							for (var i in wss.clients)
+									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+										event: 'unstar',
+										id: id
+									}));
 						});
 					});
 				} else if (message.event == 'info-update') {
-					if (tws.user.name) {
-						collections.chatrooms.update({_id: tws.room}, {
-							$set: {
-								name: message.name,
-								desc: message.desc
-							}
-						});
+					if (!tws.user.name || tws.user.rep < 30) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You don\'t have permission to update room information.',
+							revertInfo: 1
+						}));
+					collections.chatrooms.update({_id: tws.room}, {
+						$set: {
+							name: message.name,
+							desc: message.desc
+						}
+					});
+					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
 						collections.chat.insert({
+							_id: id,
 							body: 'Room description updated to ' + message.name + ': ' + message.desc,
 							user: 'Bot',
 							time: new Date().getTime(),
@@ -947,17 +1143,13 @@ wss.on('connection', function(tws) {
 								event: 'info-update',
 								name: message.name,
 								desc: message.desc,
+								id: id
 							}));
-					} else tws.send(JSON.stringify({
-						event: 'err',
-						body: 'You must be logged in to edit room information.'
-					}));
-				} else {
-					tws.send(JSON.stringify({
+					});
+				} else tws.send(JSON.stringify({
 						event: 'err',
 						body: 'Invalid event type.'
 					}));
-				}
 			});
 			tws.on('close', function() {
 				for (var i in wss.clients)
@@ -973,7 +1165,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: decodeURIComponent(!tws.upgradeReq.headers.cookie || tws.upgradeReq.headers.cookie.replace(/(?:(?:^|.*;\s*)id\s*\=\s*([^;]*).*$)|^.*$/, '$1'))}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -983,9 +1175,9 @@ wss.on('connection', function(tws) {
 					message = JSON.parse(message);
 				} catch (e) {
 					return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'JSON error.'
-					}));
+							event: 'err',
+							body: 'JSON error.'
+						}));
 				}
 				if (message.event == 'post') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
@@ -1019,8 +1211,8 @@ wss.on('connection', function(tws) {
 							if (wss.clients[i].program == tws.program) wss.clients[i].send(JSON.stringify({
 									event: 'add',
 									body: message.body,
-									id: id,
-									user: tws.user.name
+									user: tws.user.name,
+									id: id
 								}));
 					});
 				}

@@ -1,6 +1,6 @@
 <div class="row" style="height: calc(100% - 120px)">
-	<div id="chat" class="half scrly hglt pad pre" style="height: 100%; width: 80%;"></div>
-	<div class="half umar" style="width: 19.5%">
+	<div id="chat" class="half hglt pad pre scrly"></div>
+	<aside id="sidebar" class="half umar">
 		<div id="roominfo">
 			<h1><span id="name">$name</span> <small><a id="edit">Edit</a></small></h1>
 			<p id="desc">$desc</p>
@@ -12,28 +12,55 @@
 		</form>
 		<hr />
 		<h2>Users:</h2>
-		<div id="users"></div>
-	</div>
+		<ul id="users"></ul>
+		<hr />
+		<h2>Stars:</h2>
+		<ul id="stars"></ul>
+	</aside>
 </div>
 <textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>
 <p id="ts" hidden="">You are viewing old messages. <a href="/chat/$id">Join room</a>.</p>
 <script>
-	var noPageOverflow = 420;
-	var hash = parseInt(location.hash.substr(1));
-	var socket = new WebSocket('ws://localhost:8125/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
-	var onBottom = true;
-	var state = 1;
-	var skipped;
-	var cont = document.getElementById('chat');
-	var lock = true;
+	var noPageOverflow = 420,
+		hash = parseInt(location.hash.substr(1)),
+		socket = new WebSocket('ws://205.186.144.188:8125/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
+		onBottom = true,
+		state = 1,
+		skipped,
+		cont = document.getElementById('chat'),
+		lock = true,
+		ctrls = document.createElement('div'),
+		ctrlsDelete = document.createElement('a'),
+		ctrlsFlag = document.createElement('a'),
+		ctrlsStar = document.createElement('a'),
+		e;
+	ctrls.classList.add('ctrls');
+	ctrlsStar.textContent = '★';
+	ctrlsStar.onclick = function() {
+		socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id)}));
+		this.classList.toggle('clkd');
+	};
+	ctrlsDelete.textContent = '✕';
+	ctrlsDelete.onclick = function() {
+		
+	};
+	ctrlsFlag.textContent = '⚑';
+	ctrlsFlag.onclick = function() {
+		
+	};
+	ctrls.appendChild(ctrlsStar);
+	ctrls.appendChild(ctrlsDelete);
+	ctrls.appendChild(ctrlsFlag);
 	cont.onscroll = function(e) {
-		if (!lock &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 144) {
-			e.preventDefault();
+		if (e &amp;&amp; !lock &amp;&amp; innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 72) {
 			skipped = Math.max(0, skipped - 1);
 			socket.send(JSON.stringify({event: 'req', skip: skipped}));
 		}
 		onBottom = cont.scrollTop + cont.offsetHeight >= cont.scrollHeight - 2;
 	};
+	addEventListener('resize', function() {
+		if (onBottom) cont.scrollTop = cont.scrollHeight;
+	});
 	function send(value) {
 		if (!(value = value || document.getElementById('ta').value)) return;
 		socket.send(JSON.stringify({event: 'post', body: value}));
@@ -42,21 +69,21 @@
 		cont.scrollTop = cont.scrollHeight;
 		cont.onscroll();
 	};
-	function update(nstate) {
+	function statechange(nstate) {
 		if (nstate == 1 &amp;&amp; document.getElementById('ta').value) nstate = 2;
 		if (state != nstate) {
 			state = nstate;
-			socket.send(JSON.stringify({event: 'update', state: state}));
+			socket.send(JSON.stringify({event: 'statechange', state: state}));
 		}
 	};
 	function inactive() {
-		update(0);
+		statechange(0);
 	};
 	var timeout = setTimeout(inactive, 10000);
 	function active() {
 		clearTimeout(timeout);
 		timeout = setTimeout(inactive, 10000);
-		update(1);
+		statechange(1);
 	};
 	addEventListener('keyup', active);
 	addEventListener('keydown', active);
@@ -76,43 +103,118 @@
 		}
 		if (data.event == 'init' || data.event == 'add') {
 			var div = document.createElement('div');
-			div.classList.add('hglt');
-			div.classList.add('umar');
-			div.classList.add('spad');
-			div.classList.add('scrl');
-			div.classList.add('clearfix');
-			div.textContent = data.body;
+			div.classList.add('comment');
+			div.appendChild(document.createTextNode(data.body));
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
-			sig.textContent = '-' + data.user + ', ';
+			sig.appendChild(document.createTextNode('-' + data.user + ', '));
 			var permalink = document.createElement('a');
 			if (!data.time) data.time = new Date().getTime();
 			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + (div.id = data.num);
+			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
+			sig.appendChild(document.createTextNode(' '));
 			div.appendChild(sig);
-			if (data.before) cont.insertBefore(div, cont.firstChild);
-			else cont.appendChild(div);
+			var starcount = document.createElement('span');
+			starcount.classList.add('starcount');
+			starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
+			sig.appendChild(starcount);
+			if (document.getElementById('nav').childNodes[13].textContent == data.user) {
+				var tCtrls = ctrls.cloneNode(true);
+				tCtrls.children[0].onclick = ctrlsStar.onclick;
+				tCtrls.children[1].onclick = ctrlsDelete.onclick;
+				tCtrls.children[2].onclick = ctrlsFlag.onclick;
+				div.appendChild(tCtrls);
+			}
+			if (data.before) {
+				cont.insertBefore(div, cont.firstChild);
+				cont.scrollTop += div.offsetHeight;
+			} else cont.appendChild(div);
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
-			else cont.scrollTop += div.offsetHeight;
 			cont.onscroll();
+		} else if (data.event == 'selfstar') {
+			var e;
+			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
+		} else if (data.event == 'star') {
+			if (e = document.getElementById(data.id)) {
+				e = e.getElementsByClassName('starcount')[0]
+				e.removeChild(e.firstChild);
+				e.appendChild(document.createTextNode(++e.dataset.count + '★'));
+				if (e = document.getElementById(data.id + 's')) {
+					e = e.firstChild;
+					var f;
+					while (f = e.firstChild) e.removeChild(f);
+					e.appendChild(document.createTextNode(++e.dataset.count + '★ '));
+				} else {
+					var li = document.createElement('li'),
+						div = document.getElementById(data.id),
+						id = div.id;
+					div.id = '';
+					var divClone = div.cloneNode(true);
+					div.id = id;
+					divClone.id = div.id + 's';
+					divClone.removeChild(divClone.getElementsByClassName('ctrls')[0]);
+					var starcountClone = divClone.getElementsByClassName('starcount')[0];
+					starcountClone.appendChild(document.createTextNode(' '));
+					divClone.insertBefore(starcountClone, divClone.firstChild);
+					li.appendChild(divClone);
+					document.getElementById('stars').appendChild(li);
+				}
+			} else request('/api/chat/' + data.id, function(res) {
+					try {
+						var data = JSON.parse(res);
+					} catch(err) {
+						console.log(err);
+						return alert('JSON Error. Response was: ' + e.data);
+					}
+					var li = document.createElement('li'),
+						div = document.createElement('div'),
+						starcount = document.createElement('span'),
+						sig = document.createElement('span');
+					div.id = data.id + 's';
+					div.classList.add('comment');
+					starcount.classList.add('starcount');
+					starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars) + '★ '));
+					div.appendChild(starcount);
+					div.appendChild(document.createTextNode(data.body));
+					sig.classList.add('c-sig');
+					sig.appendChild(document.createTextNode('-' + data.user + ', '));
+					var permalink = document.createElement('a');
+					if (!data.time) data.time = new Date().getTime();
+					permalink.appendChild(agot(data.time));
+					permalink.href = '#' + data.id;
+					sig.appendChild(permalink);
+					sig.appendChild(document.createTextNode(' '));
+					div.appendChild(sig);
+					li.appendChild(div);
+					document.getElementById('stars').appendChild(li);
+				});
+		} else if (data.event == 'unstar') {
+			if (e = document.getElementById(data.id)) {
+				e = e.getElementsByClassName('starcount')[0];
+				e.removeChild(e.firstChild);
+				e.appendChild(document.createTextNode(--e.dataset.count + '★'));
+				if (e = document.getElementById(data.id + 's')) {
+					e = e.firstChild;
+					if (--e.dataset.count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
+					var f;
+					while (f = e.firstChild) e.removeChild(f);
+					e.appendChild(document.createTextNode(e.dataset.count + '★ '));
+				}
+			}
 		} else if (data.event == 'adduser') {
-			var div = document.createElement('div');
-			div.id = 'user-' + (div.textContent = data.name);
-			document.getElementById('users').appendChild(div);
+			var li = document.createElement('li');
+			li.id = 'user-' + (li.textContent = data.name);
+			document.getElementById('users').appendChild(li);
 		} else if (data.event == 'deluser') {
-			var div = document.getElementById('user-' + data.name);
-			div.parentNode.removeChild(div);
+			var li = document.getElementById('user-' + data.name);
+			li.parentNode.removeChild(li);
 		} else if (data.event == 'statechange') {
-			if (data.state == 0)
-				document.getElementById('user-' + data.user).classList.add('inactive');
-			else
-				document.getElementById('user-' + data.user).classList.remove('inactive');
-			if (data.state == 2)
-				document.getElementById('user-' + data.user).classList.add('writing');
-			else
-				document.getElementById('user-' + data.user).classList.remove('writing');
+			if (data.state == 0) document.getElementById('user-' + data.user).classList.add('inactive');
+			else document.getElementById('user-' + data.user).classList.remove('inactive');
+			if (data.state == 2) document.getElementById('user-' + data.user).classList.add('writing');
+			else document.getElementById('user-' + data.user).classList.remove('writing');
 		} else if (data.event == 'info-skipped') {
 			skipped = data.body;
 			if (data.ts) {
@@ -120,49 +222,51 @@
 				document.getElementById('ts').hidden = false;
 			}
 		} else if (data.event == 'info-complete') {
-			complete();
+			lock = false;
+			if (!isNaN(hash)) {
+				location.hash = '';
+				location.hash = '#' + hash;
+			};
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
 			var div = document.createElement('div');
-			div.classList.add('hglt');
-			div.classList.add('umar');
-			div.classList.add('spad');
-			div.classList.add('scrl');
-			div.classList.add('clearfix');
-			div.textContent = 'Room description updated to "'+data.name+'": '+data.desc;
+			div.classList.add('comment');
+			div.appendChild(document.createTextNode('Room description updated to "' + data.name + '": ' + data.desc));
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
-			sig.textContent = '-Bot, ';
+			sig.appendChild(document.createTextNode('-Bot, '));
 			var permalink = document.createElement('a');
-			permalink.appendChild(agot(new Date().getTime()));
-			permalink.href = '#' + data.num;
+			if (!data.time) data.time = new Date().getTime();
+			permalink.appendChild(agot(data.time));
+			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
+			sig.appendChild(document.createTextNode(' '));
+			var starcount = document.createElement('span');
+			starcount.classList.add('starcount');
+			starcount.appendChild(document.createTextNode((starcount.dataset.count = 0) + '★'));
+			sig.appendChild(starcount);
 			div.appendChild(sig);
-			cont.appendChild(div)
+			if (data.before) cont.insertBefore(div, cont.firstChild);
+			else cont.appendChild(div);
+			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
-			else cont.scrollTop += div.offsetHeight;
 			cont.onscroll();
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
+			if (data.revertInfo) {
+				document.getElementById('nameedit').value = document.getElementById('name').textContent;
+				document.getElementById('descedit').value = document.getElementById('desc').textContent;
+			}
 		}
 	};
 	socket.onclose = function() {
-		if (confirm('Connection error. Reload?')) {
-			location.reload();
-		}
+		if (confirm('Connection error. Reload?')) location.reload();
 	};
 	document.getElementById('ta').onkeypress = function(e) {
 		if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 			send();
 			e.preventDefault();
-		}
-	};
-	function complete() {
-		lock = false;
-		if (!isNaN(hash)) {
-			location.hash = '';
-			location.hash = '#' + hash;
 		}
 	};
 	document.getElementById('edit').onclick = function() {
@@ -177,6 +281,15 @@
 	};
 </script>
 <style>
+	#chat { height: 100% }
+	.comment:hover { outline: 1px dotted #000 }
+	.ctrls { border: 1px solid #aaa }
+	.starcount {
+		font-weight: bold;
+		color: #d60;
+		line-height: 1.2;
+	}
+	.starcount[data-count="0"] { display: none }
 	.inactive {
 		color: red;
 		font-style: italic;
@@ -185,6 +298,21 @@
 		color: green;
 		font-weight: bold;
 	}
+	#stars {
+		list-style-type: none;
+		padding: 0;
+	}
+	#stars li { margin: 4px 0 }
 	#editform { margin: 0 }
 	#users:empty::after { content: 'No users in room' }
+	#stars:empty::after { content: 'No starred messages' }
+	.comment:not(:hover) .ctrls:not(:hover) { display: none }
+	@media (max-width: 699px) {
+		#chat { width: 100% }
+		#sidebar { display: none }
+	}
+	@media (min-width: 700px) {
+		#chat { width: 80% }
+		#sidebar { width: 19.5% }
+	}
 </style>
