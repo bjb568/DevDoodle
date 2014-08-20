@@ -855,10 +855,10 @@ http.createServer(function(req, res) {
 		});
 	}
 }).listen(8124);
-console.log('Server running at http://localhost:8124/');
+console.log('Server running at http://205.186.144.188:8124/');
 
 var wss = new ws.Server({
-	host: 'localhost',
+	host: '205.186.144.188',
 	port: 8125
 });
 
