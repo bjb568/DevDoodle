@@ -853,10 +853,10 @@ http.createServer(function(req, res) {
 			});
 		});
 	}
-}).listen(8124);
+}).listen(80);
 console.log('Server running.');
 
-var wss = new ws.Server({port: 8125});
+var wss = new ws.Server({port: 81});
 
 wss.on('connection', function(tws) {
 	var i;
