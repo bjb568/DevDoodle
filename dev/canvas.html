@@ -254,7 +254,7 @@
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket('ws://205.186.144.188:8125/dev/$id');
+	var socket = new WebSocket('ws://' + location.hostname + (location.port ? ':' + (parseInt(location.port) + 1) : '') + '/dev/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
 			event: 'post',

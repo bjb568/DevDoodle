@@ -17,16 +17,15 @@ function html(input) {
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
 
-var site = {};
-
-site.name = 'DevDoodle';
-
-site.titles = {
-	learn: 'Courses',
-	dev: 'Programs',
-	qa: 'Q&amp;A',
-	chat: 'Chat',
-	mod: 'Moderation'
+var site = {
+	name: 'DevDoodle',
+	titles: {
+		learn: 'Courses',
+		dev: 'Programs',
+		qa: 'Q&amp;A',
+		chat: 'Chat',
+		mod: 'Moderation'
+	}
 };
 
 var http = require('http');
@@ -855,12 +854,9 @@ http.createServer(function(req, res) {
 		});
 	}
 }).listen(8124);
-console.log('Server running at http://205.186.144.188:8124/');
+console.log('Server running.');
 
-var wss = new ws.Server({
-	host: '205.186.144.188',
-	port: 8125
-});
+var wss = new ws.Server({port: 8125});
 
 wss.on('connection', function(tws) {
 	var i;
