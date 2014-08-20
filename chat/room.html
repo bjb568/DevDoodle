@@ -23,7 +23,7 @@
 <script>
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
-		socket = new WebSocket('ws://localhost:8125/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
+		socket = new WebSocket('ws://205.186.144.188:8125/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
 		onBottom = true,
 		state = 1,
 		skipped,
