@@ -1216,3 +1216,7 @@ wss.on('connection', function(tws) {
 		});
 	}
 });
+setTimeout(function() {
+	process.setuid(parseInt(process.env.SUDO_UID));
+	console.log('Server\'s UID is now ' + process.getuid());
+}, 1000);
