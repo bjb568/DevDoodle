@@ -297,8 +297,11 @@ http.createServer(function(req, res) {
 	var i;
 	if (req.url.pathname == '/') {
 		respondPage(null, req, res, function() {
-			res.write('Hi');
-			respondPageFooter(res);
+			fs.readFile('home.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
 		});
 	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'POST') {
