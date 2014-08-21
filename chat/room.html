@@ -24,6 +24,7 @@
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
 		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
+		user = document.getElementById('nav').childNodes[13].textContent,
 		onBottom = true,
 		state = 1,
 		skipped,
@@ -34,6 +35,7 @@
 		ctrlsFlag = document.createElement('a'),
 		ctrlsStar = document.createElement('a'),
 		e;
+	if (user == 'Login') user = false;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
@@ -119,13 +121,12 @@
 			starcount.classList.add('starcount');
 			starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
 			sig.appendChild(starcount);
-			if (document.getElementById('nav').childNodes[13].textContent == data.user) {
-				var tCtrls = ctrls.cloneNode(true);
-				tCtrls.children[0].onclick = ctrlsStar.onclick;
-				tCtrls.children[1].onclick = ctrlsDelete.onclick;
-				tCtrls.children[2].onclick = ctrlsFlag.onclick;
-				div.appendChild(tCtrls);
-			}
+			var tCtrls = ctrls.cloneNode(true);
+			tCtrls.children[0].onclick = ctrlsStar.onclick;
+			tCtrls.children[1].onclick = ctrlsDelete.onclick;
+			tCtrls.children[2].onclick = ctrlsFlag.onclick;
+			if (user != data.user) tCtrls.removeChild(tCtrls.children[1]);
+			if (user) div.appendChild(tCtrls);
 			if (data.before) {
 				cont.insertBefore(div, cont.firstChild);
 				cont.scrollTop += div.offsetHeight;
