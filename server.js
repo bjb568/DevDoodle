@@ -326,6 +326,7 @@ http.createServer(function(req, res) {
 							pass: pass,
 							email: post.email,
 							confirm: rstr,
+							joined: new Date().getTime(),
 							rep: 0,
 							level: 0
 						});
