@@ -1,0 +1,33 @@
+<h1>Users</h1>
+<form>
+	Order by <select id="orderby" name="orderby">
+		<option value="rep">Reputation</option>
+		<option value="join">Joined</option>
+		<option value="actv">Last activity</option>
+	</select>
+	<select id="orderdir" name="orderdir">
+		<option value="desc">Descending</option>
+		<option value="asc">Ascending</option>
+	</select>
+	Where the user <select id="where" name="where">
+		<option value="none">Is anybody</option>
+		<option value="actv">Is active</option>
+		<option value="mod">Is a mod</option>
+		<option value="new">Joined today</option>
+		<option value="lowrep">&lt; 10 reputation</option>
+		<option value="trusted">&gt; 200 reputation</option>
+	</select>
+</form>
+<style>
+	.user {
+		float: left;
+		margin-top: 6px;
+	}
+</style>
+<div class="umar clearfix">
+	$users</div>
+<script>
+	document.getElementById('orderby').onchange = document.getElementById('orderdir').onchange = document.getElementById('where').onchange = function() {
+		window.location.href = '?orderby=' + document.getElementById('orderby').value + '&amp;orderdir=' + document.getElementById('orderdir').value + '&amp;where=' + document.getElementById('where').value;
+	};
+</script>

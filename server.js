@@ -220,7 +220,7 @@ function respondPage(title, req, res, callback, header, status) {
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	var inhead = header.inhead;
+	var inhead = header.inhead || '';
 	var huser = header.user;
 	delete header.inhead;
 	delete header.user;
@@ -235,6 +235,7 @@ function respondPage(title, req, res, callback, header, status) {
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
 			callback(user);
+			collections.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
 };
@@ -313,6 +314,9 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
+					if (post.name.length > 16) return respondLoginPage(['Name must be no longer than 16 characters.'], req, res, post);
+					if (post.name.length < 3) return respondLoginPage(['Name must be at least 3 characters long.'], req, res, post);
+					if (!post.name.match(/^[\w-_!$^*]+$/)) return respondLoginPage(['Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."'], req, res, post);
 					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						var pass = new Buffer(key).toString('base64'),
@@ -380,18 +384,50 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/user/') {
 		respondPage('Users', req, res, function() {
-			res.write('<table><tbody>');
-			collections.users.find().each(function(err, doc) {
+			var dstr = '',
+				orderBy = (req.url.query || {}).orderby || 'rep',
+				orderByDict = {
+					default: 'rep',
+					join: 'joined',
+					actv: 'seen'
+				},
+				orderDir = (req.url.query || {}).orderdir || 'desc',
+				orderDirDict = {
+					default: -1,
+					asc: 1
+				},
+				where = (req.url.query || {}).where || 'none',
+				whereDict = {
+					default: {},
+					actv: {seen: {$gt: new Date().getTime() - 300000}},
+					mod: {level: {$gte: 6}},
+					new: {joined: {$gt: new Date().getTime() - 86400000}},
+					lowrep: {rep: {$lt: 10}},
+					trusted: {rep: {$gte: 200}}
+				};
+			var order = {};
+			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
+			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (doc) {
-					res.write('<tr>');
-					res.write('<td>' + doc.name + '</td>');
-					res.write('<td>' + doc.rep + '</td>');
-					res.write('</tr>');
-				} else {
-					res.write('</tbody></table>');
-					respondPageFooter(res);
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t' + linkUser(cUser.name) + '\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				else {
+					fs.readFile('user/userlist.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
+						respondPageFooter(res);
+					})
 				}
+			});
+		});
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})/)) {
+		collections.users.findOne({name: i[1]}, function(err, dispUser) {
+			if (err) throw err;
+			if (!dispUser) return errors[404](req, res);
+			console.log(dispUser);
+			respondPage(dispUser.name, req, res, function() {
+				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + '</h1>\n');
+				res.write(dispUser.rep + ' reputation');
+				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname == '/chat/') {
