@@ -440,7 +440,7 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!dispUser) return errors[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
-				var me = user.name == dispUser.name;
+				var me = user ? user.name == dispUser.name : false;
 				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a></small>' : '') + '</h1>\n');
 				res.write(dispUser.rep + ' reputation');
