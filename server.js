@@ -425,8 +425,11 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!dispUser) return errors[404](req, res);
 			console.log(dispUser);
-			respondPage(dispUser.name, req, res, function() {
-				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + '</h1>\n');
+			respondPage(dispUser.name, req, res, function(user) {
+				var me = user.name == dispUser.name;
+				console.log(user.name)
+				console.log(dispUser.name)
+				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a id="changepass">Change Password</a></small>' : '') + '</h1>\n');
 				res.write(dispUser.rep + ' reputation');
 				respondPageFooter(res);
 			});
@@ -1256,7 +1259,3 @@ wss.on('connection', function(tws) {
 		});
 	}
 });
-setTimeout(function() {
-	process.setuid(parseInt(process.env.SUDO_UID));
-	console.log('Server\'s UID is now ' + process.getuid());
-}, 1000);
