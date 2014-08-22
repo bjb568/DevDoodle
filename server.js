@@ -292,9 +292,23 @@ function respondCreateRoomPage(errs, req, res, post) {
 	});
 };
 
+function respondChangePassPage(errs, req, res, post) {
+	respondPage('Create Room', req, res, function(user) {
+		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
+		res.write(errorsHTML(errs));
+		res.write('<form method="post">\n');
+		res.write('<div>Old password: <input type="password" name="old" required="" /></div>\n');
+		res.write('<div>New password: <input type="password" name="new" required="" /></div>\n');
+		res.write('<div>Confirm new password: <input type="password" name="conf" required="" /></div>\n');
+		res.write('<button type="submit">Submit</button>\n');
+		res.write('</form>\n');
+		respondPageFooter(res);
+	});
+};
+
 http.createServer(function(req, res) {
-	console.log('Req ' + req.url);
 	req.url = url.parse(req.url, true);
+	console.log('Req ' + req.url.pathname);
 	var i;
 	if (req.url.pathname == '/') {
 		respondPage(null, req, res, function() {
@@ -319,6 +333,7 @@ http.createServer(function(req, res) {
 					if (!post.name.match(/^[\w-_!$^*]+$/)) return respondLoginPage(['Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."'], req, res, post);
 					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						if (err) throw err;
 						var pass = new Buffer(key).toString('base64'),
 							rstr = crypto.randomBytes(128).toString('base64');
 						collections.users.insert({
@@ -420,20 +435,51 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})$/)) {
 		collections.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errors[404](req, res);
-			console.log(dispUser);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user.name == dispUser.name;
-				console.log(user.name)
 				console.log(dispUser.name)
-				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a id="changepass">Change Password</a></small>' : '') + '</h1>\n');
+				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a></small>' : '') + '</h1>\n');
 				res.write(dispUser.rep + ' reputation');
 				respondPageFooter(res);
 			});
 		});
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})\/changepass$/)) {
+		var nameGiven = i[1];
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				var errors = [];
+				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
+				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
+				crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					if (err) throw err;
+					var old = new Buffer(key).toString('base64');
+					collections.users.findOne({
+						name: nameGiven,
+						pass: old
+					}, function(err, user) {
+						if (err) throw err;
+						if (!user) return respondChangePassPage(['Incorrect old password.'], req, res, {});
+						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (err) throw err;
+							collections.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
+							respondPage('Password Updated', req, res, function() {
+								res.write('The password for ' + user.name + ' has been updated.');
+								respondPageFooter(res);
+							});
+						});
+					});
+				});
+			});
+		} else respondChangePassPage([], req, res, {});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', req, res, function() {
 			res.write('<h1>Chat Rooms</h1>');
