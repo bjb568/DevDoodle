@@ -367,7 +367,7 @@ http.createServer(function(req, res) {
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success', req, res, function() {
-								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' repuatation.');
+								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
 								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', rstr, {
