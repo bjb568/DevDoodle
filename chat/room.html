@@ -195,13 +195,14 @@
 			if (e = document.getElementById(data.id)) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
-				e.appendChild(document.createTextNode(--e.dataset.count + '★'));
+				var count = --e.dataset.count;
+				e.appendChild(document.createTextNode(count + '★'));
 				if (e = document.getElementById(data.id + 's')) {
+					if (count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
 					e = e.firstChild;
-					if (--e.dataset.count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
 					var f;
 					while (f = e.firstChild) e.removeChild(f);
-					e.appendChild(document.createTextNode(e.dataset.count + '★ '));
+					e.appendChild(document.createTextNode(count + '★ '));
 				}
 			}
 		} else if (data.event == 'adduser') {
