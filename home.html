@@ -1,16 +1,20 @@
 <style>
 	#logo-big {
-		max-height: 150px;
+		max-height: 180px;
 		display: block;
 		margin: 0 auto;
-		font-size: 48px;
-		max-height: 10vmax;
+		font-size: 5vmin;
+	}
+	@media screen and (min-width: 801px) {
+		#logo-big {
+			max-width: 80%;
+		}
 	}
 	@media screen and (min-width: 1501px) {
 		#logo-big {
 			width: 50%;
-			max-width: 800px;
-			max-height: 250px;
+			max-width: 900px;
+			max-height: 200px;
 		}
 	}
 	h2 {
