@@ -491,8 +491,8 @@ http.createServer(function(req, res) {
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>');
+					respondPageFooter(res);
 				}
-				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
