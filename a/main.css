@@ -83,6 +83,12 @@ small, a.small, footer, .c-sig, .ctrls a {
 	font-size: .85em;
 	font-weight: normal;
 }
+.comment > pre:first-child, .comment > blockquote:first-child { margin-bottom: 0 }
+blockquote {
+	margin-left: 8px;
+	border-left: 2px solid #fa0;
+	padding-left: 4px;
+}
 h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
 h2 small { margin: .2em .2em 0 0 }
