@@ -13,6 +13,40 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
+};
+function markdown(src) {
+	var h = '';
+	function inlineEscape(s) {
+		return html(s)
+			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
+			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+	}
+	src.replace(/^\s+|\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+		f = b[0];
+		R = {
+			'*': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			' ': [(/\n    /),'<pre><code>','</pre></code>','\n'],
+			'>': [(/\n> /),'<blockquote>','</blockquote>','\n']
+		}[f];
+		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		h +=
+			R ? R[1] + ('\n' + b)
+				.split(R[0])
+				.slice(1)
+				.map(R[3] ? html : inlineEscape)
+				.join(R[3]||'</li>\n<li>') + R[2]:
+			f == '#' ? '<h' + (f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + f + '>':
+			f == '<' ? b:
+			'<p>' + inlineEscape(b) + '</p>';
+	});
+	return h;
+};
+
 var noPageOverflow = false,
 	pageOverflowMobile = false,
 	footerOff = false,
@@ -21,16 +55,16 @@ var noPageOverflow = false,
 
 function minHeight() {
 	var footer = document.getElementById('footer').offsetHeight,
-		sidebar;
-	if (innerWidth <= 1500 && (sidebar = document.getElementById('sidebar'))) footer += sidebar.offsetHeight + 6;
+		sidebar = document.getElementById('sidebar');
+	if (innerWidth <= 1500 && sidebar) footer += sidebar.offsetHeight + 6;
 	if (noPageOverflow && !(pageOverflowMobile && innerWidth <= 800)) {
 		mainContentEl.style.minHeight = '';
 		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
-		sidebar.style.height = '';
+		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
 		mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12) - mainBottomPad + 'px';
-		if (innerWidth > 1500 && (sidebar = document.getElementById('sidebar'))) sidebar.style.height = mainContentEl.style.minHeight;
+		if (innerWidth > 1500 && sidebar) sidebar.style.height = mainContentEl.style.minHeight;
 		else sidebar.style.height = '';
 	}
 };

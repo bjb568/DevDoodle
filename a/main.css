@@ -30,7 +30,7 @@ body {
 }
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
-.ib, #logo { display: inline-block }
+.ib, #logo, .comment > p:first-child { display: inline-block }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }

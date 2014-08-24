@@ -16,6 +16,36 @@ Number.prototype.bound = function(l, h) {
 function html(input) {
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
+function markdown(src) {
+	var h = '';
+	function inlineEscape(s) {
+		return html(s)
+			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
+			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+	}
+	src.replace(/^\s+|\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+		f = b[0];
+		R = {
+			'*': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			' ': [(/\n    /),'<pre><code>','</pre></code>','\n'],
+			'>': [(/\n> /),'<blockquote>','</blockquote>','\n']
+		}[f];
+		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		h +=
+			R ? R[1] + ('\n' + b)
+				.split(R[0])
+				.slice(1)
+				.map(R[3] ? html : inlineEscape)
+				.join(R[3]||'</li>\n<li>') + R[2]:
+			f == '#' ? '<h' + (f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + f + '>':
+			f == '<' ? b:
+			'<p>' + inlineEscape(b) + '</p>';
+	});
+	return h;
+};
 
 var site = {
 	name: 'DevDoodle',
@@ -487,7 +517,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
-					res.write('<p>' + doc.desc + '</p>\n');
+					res.write(markdown(doc.desc) + '\n');
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>\n');
@@ -496,7 +526,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + html(doc.body) + '<span class="c-sig">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -535,7 +565,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replaceAll('$desc', markdown(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
@@ -646,7 +676,7 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						collections.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + html(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {

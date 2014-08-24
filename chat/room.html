@@ -106,7 +106,7 @@
 		if (data.event == 'init' || data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.appendChild(document.createTextNode(data.body));
+			div.innerHTML = markdown(data.body);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			sig.appendChild(document.createTextNode('-' + data.user + ', '));
@@ -234,7 +234,7 @@
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.appendChild(document.createTextNode('Room description updated to "' + data.name + '": ' + data.desc));
+			div.innerHTML = 'Room description updated to "' + html(data.name) + '": ' + markdown(data.desc);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			sig.appendChild(document.createTextNode('-Bot, '));
