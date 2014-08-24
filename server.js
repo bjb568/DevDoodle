@@ -27,12 +27,13 @@ function markdown(src) {
 			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 	}
 	src.replace(/^\s+|\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
-		f = b[0];
+		f = b.substr(0, 2);
 		R = {
-			'*': [(/\n\* /), '<ul><li>', '</li></ul>'],
-			' ': [(/\n    /),'<pre><code>','</pre></code>','\n'],
-			'>': [(/\n> /),'<blockquote>','</blockquote>','\n']
+			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			'  ': [(/\n    /),'<pre><code>','</pre></code>','\n'],
+			'> ': [(/\n> /),'<blockquote>','</blockquote>','\n']
 		}[f];
+		console.log(f, R);
 		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
 		h +=
 			R ? R[1] + ('\n' + b)

@@ -30,7 +30,11 @@ body {
 }
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
-.ib, #logo, .comment > p:first-child { display: inline-block }
+.ib, #logo, .comment > * { display: inline }
+.comment > :not(:nth-last-child(2)):not(:nth-last-child(3))::after {
+	content: '\a';
+	white-space: pre;
+}
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
