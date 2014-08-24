@@ -35,7 +35,7 @@ body {
 .abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > :not(.rit):not(.half):not(.program), .user > * { float: left }
+.lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
 .rit, .c-sig, .user, .ctrls, h1 small, h2 small { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
@@ -43,21 +43,21 @@ body {
 .nomar, body, input { margin: 0 }
 .tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form * { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .lmar, #content, p { margin-bottom: 6px }
 .rmar { margin-right: 6px }
 .bmar, .error, .half { margin-bottom: 6px }
 .lmar { margin-left: 6px }
-.pad, a.center-text.blk, .desc, #content, #footer, .error, .popup { padding: 4px }
+.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
-.scrly { overflow-y: auto }
+.scrly, #sidebar { overflow-y: auto }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
+.shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
 .white, iframe:not([seamless]) { background: #fff }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
@@ -163,7 +163,7 @@ ul, ol, p { margin: 6px 0 2px 0 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, .clearfix::after, .comment::after, nav::after, .row::after, .user::after {
+.clear, footer, .clearfix::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -316,12 +316,15 @@ textarea {
 @media (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
 }
-@media (min-width: 700px) {
-	.half {
-		float: left;
-		width: 49.5%;
-	}
+@media (max-width: 700px) {
+	.main { width: 100% }
+	.sidebar.nonvital { display: none }
+	.sidebar { margin-top: 8px }
+}
+@media (min-width: 701px) {
+	.half { float: left }
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
+	.half { width: 49.5% }
 }
 @media (min-width: 380px) and (max-width: 1499px) { 
 	#nav {
@@ -404,6 +407,15 @@ textarea {
 	html { background-size: cover }
 	#cont { overflow: hidden }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
+	#content:nth-child(2):nth-last-child(3) {
+		float: left;
+		width: calc(-250px + 80%);
+	}
+	#sidebar {
+		float: right;
+		width: calc(86px + 16%);
+		margin: 6px 6px 6px 0;
+	}
 	#nav {
 		position: fixed;
 		display: table;

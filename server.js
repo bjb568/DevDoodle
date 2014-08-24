@@ -240,10 +240,10 @@ function respondPage(title, req, res, callback, header, status) {
 	});
 };
 
-function respondPageFooter(res) {
+function respondPageFooter(res, aside) {
 	fs.readFile('a/foot.html', function(err, data) {
 		if (err) throw err;
-		res.end(data);
+		res.end(data.toString().replace('</div>', aside ? '</aside>' : '</div>'));
 	});
 };
 
@@ -482,7 +482,7 @@ http.createServer(function(req, res) {
 		} else respondChangePassPage([], req, res, {});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', req, res, function() {
-			res.write('<h1>Chat Rooms</h1>');
+			res.write('<h1>Chat Rooms</h1>\n');
 			collections.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
@@ -490,8 +490,15 @@ http.createServer(function(req, res) {
 					res.write('<p>' + doc.desc + '</p>\n');
 				} else {
 					res.write('<hr />\n');
-					res.write('<a href="newroom" class="small">Create Room</a>');
-					respondPageFooter(res);
+					res.write('<a href="newroom" class="small">Create Room</a>\n');
+					res.write('</div>\n');
+					res.write('<aside id="sidebar">\n');
+					res.write('<h2>Recent Posts</h2>\n');
+					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
+						if (err) throw err;
+						if (doc) res.write('<div class="comment">' + html(doc.body) + '<span class="c-sig">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						else respondPageFooter(res, true);
+					});
 				}
 			});
 		});
