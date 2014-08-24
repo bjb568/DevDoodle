@@ -198,6 +198,7 @@
 				var count = --e.dataset.count;
 				e.appendChild(document.createTextNode(count + '★'));
 				if (e = document.getElementById(data.id + 's')) {
+					e.firstChild.dataset.count--;
 					if (count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
 					e = e.firstChild;
 					var f;
