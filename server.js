@@ -473,11 +473,18 @@ http.createServer(function(req, res) {
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
 				console.log(dispUser.name)
-				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a></small>' : '') + '</h1>\n');
+				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write(dispUser.rep + ' reputation');
 				respondPageFooter(res);
 			});
 		});
+	} else if (req.url.pathname.match('/logout')) {
+		res.writeHead(303, {
+			location: '/',
+			'Set-Cookie': 'id='
+		});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
+		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})\/changepass$/)) {
 		var nameGiven = i[1];
 		if (req.method == 'POST') {
@@ -554,7 +561,7 @@ http.createServer(function(req, res) {
 						type: post.type,
 						_id: i
 					});
-					res.writeHead(302, {'Location': i});
+					res.writeHead(303, {'Location': i});
 					res.end();
 				});
 			});
@@ -723,7 +730,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
-		res.writeHead(302, {
+		res.writeHead(303, {
 			Location: '1/'
 		});
 		res.end();
