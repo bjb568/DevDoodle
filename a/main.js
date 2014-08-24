@@ -26,21 +26,22 @@ function markdown(src) {
 			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 	}
-	src.replace(/^\s+|\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+	src.replace(/\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
 		f = b.substr(0, 2);
 		R = {
 			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
-			'  ': [(/\n    /),'<pre><code>','</pre></code>','\n'],
-			'> ': [(/\n> /),'<blockquote>','</blockquote>','\n']
+			'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
+			'  ': [(/\n    /),'<pre><code>', '</code></pre>', '\n'],
+			'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
 		}[f];
-		console.log(f, R);
 		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
 		h +=
 			R ? R[1] + ('\n' + b)
 				.split(R[0])
 				.slice(1)
 				.map(R[3] ? html : inlineEscape)
-				.join(R[3]||'</li>\n<li>') + R[2]:
+				.join(R[3] || '</li>\n<li>') + R[2]:
 			f == '#' ? '<h' + (f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + f + '>':
 			f == '<' ? b:
 			'<p>' + inlineEscape(b) + '</p>';

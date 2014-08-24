@@ -30,11 +30,8 @@ body {
 }
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
-.ib, #logo, .comment > * { display: inline }
-.comment > :not(:nth-last-child(2)):not(:nth-last-child(3))::after {
-	content: '\a';
-	white-space: pre;
-}
+.ib, #logo, .comment > * { float: left }
+.comment > :not(:first-child):not(:last-child):not(:nth-last-child(2)) { clear: left }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
@@ -57,7 +54,7 @@ body {
 .spad { padding: 3px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
-.scrlx { overflow-x: auto }
+.scrlx, .comment { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, section, article, blockquote { background: rgba(255, 255, 255, .4) }
