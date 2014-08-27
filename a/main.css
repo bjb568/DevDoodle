@@ -2,13 +2,16 @@ html { background: linear-gradient(rgba(20, 20, 20, .85), rgba(20, 20, 20, .85))
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
-	word-wrap: break-word;
 	tab-size: 4;
 }
 * {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
 }
 *::-webkit-input-placeholder {
 	color: #666;
