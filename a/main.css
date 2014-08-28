@@ -44,7 +44,7 @@ body {
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input, .comment > :first-child { margin: 0 }
-.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2) { margin-top: 2px }
+.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
