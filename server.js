@@ -543,31 +543,38 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
-		if (req.method == 'POST') {
-			var post = '';
-			req.on('data', function(data) {
-				post += data;
-			});
-			req.on('end', function() {
-				post = querystring.parse(post);
-				var errors = [];
-				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
-				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (errors.length) return respondCreateRoomPage(errors, req, res, {});
-				collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
-					if (err) throw err;
-					var i = last ? last._id + 1 : 1;
-					collections.chatrooms.insert({
-						name: post.name,
-						desc: post.desc,
-						type: post.type,
-						_id: i
-					});
-					res.writeHead(303, {'Location': i});
-					res.end();
+		collections.users.findOne({
+			cookie: cookie.parse(req.headers.cookie || '').id
+		}, function(err, user) {
+			if (err) throw err;
+			if (!user) return res.end('You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return res.end('You must have 200 reputation to create a room.');
+			if (req.method == 'POST') {
+				var post = '';
+				req.on('data', function(data) {
+					post += data;
 				});
-			});
-		} else respondCreateRoomPage([], req, res, {});
+				req.on('end', function() {
+					post = querystring.parse(post);
+					var errors = [];
+					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
+					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
+					if (errors.length) return respondCreateRoomPage(errors, req, res, {});
+					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+						if (err) throw err;
+						var i = last ? last._id + 1 : 1;
+						collections.chatrooms.insert({
+							name: post.name,
+							desc: post.desc,
+							type: post.type,
+							_id: i
+						});
+						res.writeHead(303, {'Location': i});
+						res.end();
+					});
+				});
+			} else respondCreateRoomPage([], req, res, {});
+		});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -575,7 +582,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replaceAll('$desc', markdown(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
@@ -1249,7 +1256,7 @@ wss.on('connection', function(tws) {
 						});
 					});
 				} else if (message.event == 'info-update') {
-					if (!tws.user.name || tws.user.rep < 30) return tws.send(JSON.stringify({
+					if (!tws.user.name || tws.user.rep < 200) return tws.send(JSON.stringify({
 							event: 'err',
 							body: 'You don\'t have permission to update room information.',
 							revertInfo: 1
@@ -1265,7 +1272,7 @@ wss.on('connection', function(tws) {
 						var id = doc ? doc._id + 1 : 1;
 						collections.chat.insert({
 							_id: id,
-							body: 'Room description updated to ' + message.name + ': ' + message.desc,
+							body: 'Room description updated by ' + tws.user.name + ' to ' + message.name + ': ' + message.desc,
 							user: 'Bot',
 							time: new Date().getTime(),
 							room: tws.room
