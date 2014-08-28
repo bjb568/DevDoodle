@@ -36,6 +36,7 @@ function markdown(src) {
 		}[f];
 		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
 		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+		f = b[0];
 		h +=
 			R ? R[1] + ('\n' + b)
 				.split(R[0])

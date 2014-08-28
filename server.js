@@ -36,6 +36,7 @@ function markdown(src) {
 		}[f];
 		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
 		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+		f = b[0];
 		h +=
 			R ? R[1] + ('\n' + b)
 				.split(R[0])
@@ -535,7 +536,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
