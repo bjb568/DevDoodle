@@ -1269,21 +1269,30 @@ wss.on('connection', function(tws) {
 					});
 					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
-						var id = doc ? doc._id + 1 : 1;
+						var id = doc ? doc._id + 1 : 1,
+							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
 						collections.chat.insert({
 							_id: id,
-							body: 'Room description updated by ' + tws.user.name + ' to ' + message.name + ': ' + message.desc,
-							user: 'Bot',
+							body: newMessage,
+							user: tws.user.name,
 							time: new Date().getTime(),
 							room: tws.room
 						});
 						for (var i in wss.clients)
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-								event: 'info-update',
-								name: message.name,
-								desc: message.desc,
-								id: id
-							}));
+							if (wss.clients[i].room == tws.room) {
+								wss.clients[i].send(JSON.stringify({
+									event: 'info-update',
+									name: message.name,
+									desc: message.desc,
+									id: id
+								}));
+								wss.clients[i].send(JSON.stringify({
+									event: 'add',
+									body: newMessage,
+									user: tws.user.name,
+									id: id
+								}));
+							}
 					});
 				} else tws.send(JSON.stringify({
 						event: 'err',

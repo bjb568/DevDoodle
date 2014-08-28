@@ -24,7 +24,7 @@
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
 		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
-		user = document.getElementById('nav').childNodes[13].textContent,
+		username = document.getElementById('nav').childNodes[13].textContent,
 		onBottom = true,
 		state = 1,
 		skipped,
@@ -35,7 +35,7 @@
 		ctrlsFlag = document.createElement('a'),
 		ctrlsStar = document.createElement('a'),
 		e;
-	if (user == 'Login') user = false;
+	if (username == 'Login') username = false;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
@@ -109,6 +109,11 @@
 			div.innerHTML = markdown(data.body);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
+			var starcount = document.createElement('span');
+			starcount.classList.add('starcount');
+			starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
+			sig.appendChild(starcount);
+			sig.appendChild(document.createTextNode(' '));
 			var user = document.createElement('a');
 			user.href = '/user/' + data.user;
 			user.appendChild(document.createTextNode(data.user));
@@ -121,16 +126,12 @@
 			sig.appendChild(permalink);
 			sig.appendChild(document.createTextNode(': '));
 			div.insertBefore(sig, div.firstChild);
-			var starcount = document.createElement('span');
-			starcount.classList.add('starcount');
-			starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
-			sig.appendChild(starcount);
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
 			tCtrls.children[1].onclick = ctrlsDelete.onclick;
 			tCtrls.children[2].onclick = ctrlsFlag.onclick;
-			if (user != data.user) tCtrls.removeChild(tCtrls.children[1]);
-			if (user) div.appendChild(tCtrls);
+			if (username != data.user) tCtrls.removeChild(tCtrls.children[1]);
+			if (username) div.appendChild(tCtrls);
 			if (data.before) {
 				cont.insertBefore(div, cont.firstChild);
 				cont.scrollTop += div.offsetHeight;
@@ -142,30 +143,15 @@
 			var e;
 			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
 		} else if (data.event == 'star') {
-			if (e = document.getElementById(data.id)) {
-				e = e.getElementsByClassName('starcount')[0]
+			var f;
+			if ((e = document.getElementById(data.id)) &amp;&amp; (f = document.getElementById(data.id + 's'))) {
+				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
 				e.appendChild(document.createTextNode(++e.dataset.count + '★'));
-				if (e = document.getElementById(data.id + 's')) {
-					e = e.firstChild;
-					var f;
-					while (f = e.firstChild) e.removeChild(f);
-					e.appendChild(document.createTextNode(++e.dataset.count + '★ '));
-				} else {
-					var li = document.createElement('li'),
-						div = document.getElementById(data.id),
-						id = div.id;
-					div.id = '';
-					var divClone = div.cloneNode(true);
-					div.id = id;
-					divClone.id = div.id + 's';
-					divClone.removeChild(divClone.getElementsByClassName('ctrls')[0]);
-					var starcountClone = divClone.getElementsByClassName('starcount')[0];
-					starcountClone.appendChild(document.createTextNode(' '));
-					divClone.insertBefore(starcountClone, divClone.firstChild);
-					li.appendChild(divClone);
-					document.getElementById('stars').appendChild(li);
-				}
+				f = f.firstChild;
+				var g;
+				while (g = f.firstChild) f.removeChild(g);
+				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
 			} else request('/api/chat/' + data.id, function(res) {
 					try {
 						var data = JSON.parse(res);
@@ -176,15 +162,20 @@
 					var li = document.createElement('li'),
 						div = document.createElement('div'),
 						starcount = document.createElement('span'),
-						sig = document.createElement('span');
+						sig = document.createElement('span'),
+						e = document.getElementById(data.id);
+					if (e) {
+						e = e.getElementsByClassName('starcount')[0];
+						e.removeChild(e.firstChild);
+						e.appendChild(document.createTextNode(++e.dataset.count + '★'));
+					}
 					div.id = data.id + 's';
 					div.classList.add('comment');
+					div.classList.add('pre');
 					starcount.classList.add('starcount');
 					starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars) + '★ '));
 					div.appendChild(starcount);
-					div.appendChild(document.createTextNode(data.body));
 					sig.classList.add('c-sig');
-					sig.appendChild(document.createTextNode('-' + data.user + ', '));
 					var permalink = document.createElement('a');
 					if (!data.time) data.time = new Date().getTime();
 					permalink.appendChild(agot(data.time));
@@ -192,6 +183,7 @@
 					sig.appendChild(permalink);
 					sig.appendChild(document.createTextNode(' '));
 					div.appendChild(sig);
+					div.appendChild(document.createTextNode(data.body));
 					li.appendChild(div);
 					document.getElementById('stars').appendChild(li);
 				});
@@ -237,28 +229,6 @@
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
-			var div = document.createElement('div');
-			div.classList.add('comment');
-			div.innerHTML = 'Room description updated to "' + html(data.name) + '": ' + markdown(data.desc);
-			var sig = document.createElement('span');
-			sig.classList.add('c-sig');
-			sig.appendChild(document.createTextNode('-Bot, '));
-			var permalink = document.createElement('a');
-			if (!data.time) data.time = new Date().getTime();
-			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + (div.id = data.id);
-			sig.appendChild(permalink);
-			sig.appendChild(document.createTextNode(' '));
-			var starcount = document.createElement('span');
-			starcount.classList.add('starcount');
-			starcount.appendChild(document.createTextNode((starcount.dataset.count = 0) + '★'));
-			sig.appendChild(starcount);
-			div.appendChild(sig);
-			if (data.before) cont.insertBefore(div, cont.firstChild);
-			else cont.appendChild(div);
-			if (data.event == 'add') new Audio('/a/beep.mp3').play();
-			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
-			cont.onscroll();
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.revertInfo) {
