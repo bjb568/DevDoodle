@@ -590,7 +590,7 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Programs</h1>\n');
-			collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
+			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
@@ -615,7 +615,7 @@ http.createServer(function(req, res) {
 					recent: {time: -1},
 					update: {updated: -1}
 				};
-			collections.programs.find().sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
+			collections.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
