@@ -33,7 +33,6 @@ body {
 }
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
-.inline, .comment > p:nth-child(2):nth-last-child(2) { display: inline }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
