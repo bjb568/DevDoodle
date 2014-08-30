@@ -13,6 +13,44 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
+};
+function markdown(src) {
+	var h = '',
+		i = 0;
+	function inlineEscape(s) {
+		return html(s)
+			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
+			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
+			.replace(/([^"])(https?:\/\/([^\s"]+))/g, '$1$3'.link('$1$2'))
+			.replace(/^(https?:\/\/([^\s"]+))/g, '$2'.link('$1'))
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+	}
+	src.replace(/\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+		f = b.substr(0, 2);
+		R = {
+			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
+			'  ': [(/\n    /),'<pre><code>', '</code></pre>', '\n'],
+			'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
+		}[f];
+		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+		f = b[0];
+		if (R) h += R[1] + ('\n' + b).split(R[0]).slice(1).map(R[3] ? html : inlineEscape).join(R[3] || '</li>\n<li>') + R[2];
+		else if (f == '#') h += '<h' + Math.min(6, f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + Math.min(6, f) + '>';
+		else {
+			h += '<p>' + inlineEscape(b) + '</p>';
+			i++;
+		}
+	});
+	if (i == 1) return inlineEscape(src);
+	return h;
+};
+
 var noPageOverflow = false,
 	pageOverflowMobile = false,
 	footerOff = false,
@@ -20,12 +58,18 @@ var noPageOverflow = false,
 	mainBottomPad = 0;
 
 function minHeight() {
-	if (noPageOverflow && !(pageOverflowMobile && innerWidth < 700)) {
+	var footer = document.getElementById('footer').offsetHeight,
+		sidebar = document.getElementById('sidebar');
+	if (innerWidth <= 1500 && sidebar) footer += sidebar.offsetHeight + 6;
+	if (noPageOverflow && !(pageOverflowMobile && innerWidth <= 800)) {
 		mainContentEl.style.minHeight = '';
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : document.getElementById('footer').offsetHeight) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
-		mainContentEl.style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
+		mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12) - mainBottomPad + 'px';
+		if (innerWidth > 1500 && sidebar) sidebar.style.height = mainContentEl.style.minHeight;
+		else sidebar.style.height = '';
 	}
 };
 

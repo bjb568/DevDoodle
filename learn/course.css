@@ -3,10 +3,7 @@ html, #content, #footer {
 	color: #fff;
 }
 a { color: inherit }
-#text-inner h1 {
-	border-bottom: none;
-	margin-top: .2em;
-}
+#text-inner h1 { margin-top: .2em }
 h2 { margin-top: 0 }
 #html, #output {
 	width: 100%;

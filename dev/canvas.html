@@ -152,7 +152,6 @@
 			run();
 		}
 	};
-	var code = code;
 	code.addEventListener('keyup', handleCode);
 	code.addEventListener('keydown', handleCode);
 	code.addEventListener('keypress', function() {
@@ -255,7 +254,7 @@
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket('ws://205.186.144.188:8125/dev/$id');
+	var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
 			event: 'post',

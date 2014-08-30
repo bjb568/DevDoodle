@@ -16,17 +16,50 @@ Number.prototype.bound = function(l, h) {
 function html(input) {
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
+function markdown(src) {
+	var h = '',
+		i = 0;
+	function inlineEscape(s) {
+		return html(s)
+			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
+			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
+			.replace(/([^"])(https?:\/\/([^\s"]+))/g, '$1$3'.link('$1$2'))
+			.replace(/^(https?:\/\/([^\s"]+))/g, '$2'.link('$1'))
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+	}
+	src.replace(/\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+		f = b.substr(0, 2);
+		R = {
+			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
+			'  ': [(/\n    /),'<pre><code>', '</code></pre>', '\n'],
+			'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
+		}[f];
+		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+		f = b[0];
+		if (R) h += R[1] + ('\n' + b).split(R[0]).slice(1).map(R[3] ? html : inlineEscape).join(R[3] || '</li>\n<li>') + R[2];
+		else if (f == '#') h += '<h' + Math.min(6, f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + Math.min(6, f) + '>';
+		else {
+			h += '<p>' + inlineEscape(b) + '</p>';
+			i++;
+		}
+	});
+	if (i == 1) return inlineEscape(src);
+	return h;
+};
 
-var site = {};
-
-site.name = 'DevDoodle';
-
-site.titles = {
-	learn: 'Courses',
-	dev: 'Programs',
-	qa: 'Q&amp;A',
-	chat: 'Chat',
-	mod: 'Moderation'
+var site = {
+	name: 'DevDoodle',
+	titles: {
+		learn: 'Courses',
+		dev: 'Programs',
+		qa: 'Q&amp;A',
+		chat: 'Chat',
+		mod: 'Moderation'
+	}
 };
 
 var http = require('http');
@@ -221,7 +254,7 @@ function respondPage(title, req, res, callback, header, status) {
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	var inhead = header.inhead;
+	var inhead = header.inhead || '';
 	var huser = header.user;
 	delete header.inhead;
 	delete header.user;
@@ -236,14 +269,15 @@ function respondPage(title, req, res, callback, header, status) {
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
 			callback(user);
+			if (user) collections.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
 };
 
-function respondPageFooter(res) {
+function respondPageFooter(res, aside) {
 	fs.readFile('a/foot.html', function(err, data) {
 		if (err) throw err;
-		res.end(data);
+		res.end(data.toString().replace('</div>', aside ? '</aside>' : '</div>'));
 	});
 };
 
@@ -292,14 +326,31 @@ function respondCreateRoomPage(errs, req, res, post) {
 	});
 };
 
+function respondChangePassPage(errs, req, res, post) {
+	respondPage('Create Room', req, res, function(user) {
+		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
+		res.write(errorsHTML(errs));
+		res.write('<form method="post">\n');
+		res.write('<div>Old password: <input type="password" name="old" required="" /></div>\n');
+		res.write('<div>New password: <input type="password" name="new" required="" /></div>\n');
+		res.write('<div>Confirm new password: <input type="password" name="conf" required="" /></div>\n');
+		res.write('<button type="submit">Submit</button>\n');
+		res.write('</form>\n');
+		respondPageFooter(res);
+	});
+};
+
 http.createServer(function(req, res) {
-	console.log('Req ' + req.url);
 	req.url = url.parse(req.url, true);
+	console.log('Req ' + req.url.pathname);
 	var i;
 	if (req.url.pathname == '/') {
 		respondPage(null, req, res, function() {
-			res.write('Hi');
-			respondPageFooter(res);
+			fs.readFile('home.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
 		});
 	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'POST') {
@@ -311,8 +362,12 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
+					if (post.name.length > 16) return respondLoginPage(['Name must be no longer than 16 characters.'], req, res, post);
+					if (post.name.length < 3) return respondLoginPage(['Name must be at least 3 characters long.'], req, res, post);
+					if (!post.name.match(/^[\w-_!$^*]+$/)) return respondLoginPage(['Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."'], req, res, post);
 					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						if (err) throw err;
 						var pass = new Buffer(key).toString('base64'),
 							rstr = crypto.randomBytes(128).toString('base64');
 						collections.users.insert({
@@ -320,6 +375,7 @@ http.createServer(function(req, res) {
 							pass: pass,
 							email: post.email,
 							confirm: rstr,
+							joined: new Date().getTime(),
 							rep: 0,
 							level: 0
 						});
@@ -345,7 +401,7 @@ http.createServer(function(req, res) {
 						if (user) {
 							var rstr = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success', req, res, function() {
-								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' repuatation.');
+								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
 								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', rstr, {
@@ -378,36 +434,62 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/user/') {
 		respondPage('Users', req, res, function() {
-			res.write('<table><tbody>');
-			collections.users.find().each(function(err, doc) {
+			var dstr = '',
+				orderBy = (req.url.query || {}).orderby || 'rep',
+				orderByDict = {
+					default: 'rep',
+					join: 'joined',
+					actv: 'seen'
+				},
+				orderDir = (req.url.query || {}).orderdir || 'desc',
+				orderDirDict = {
+					default: -1,
+					asc: 1
+				},
+				where = (req.url.query || {}).where || 'none',
+				whereDict = {
+					default: {},
+					actv: {seen: {$gt: new Date().getTime() - 300000}},
+					mod: {level: {$gte: 6}},
+					new: {joined: {$gt: new Date().getTime() - 86400000}},
+					lowrep: {rep: {$lt: 10}},
+					trusted: {rep: {$gte: 200}}
+				};
+			var order = {};
+			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
+			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (doc) {
-					res.write('<tr>');
-					res.write('<td>' + doc.name + '</td>');
-					res.write('<td>' + doc.rep + '</td>');
-					res.write('</tr>');
-				} else {
-					res.write('</tbody></table>');
-					respondPageFooter(res);
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t' + linkUser(cUser.name) + '\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				else {
+					fs.readFile('user/userlist.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
+						respondPageFooter(res);
+					})
 				}
 			});
 		});
-	} else if (req.url.pathname == '/chat/') {
-		respondPage('Chat', req, res, function() {
-			res.write('<h1>Chat Rooms</h1>');
-			collections.chatrooms.find().each(function(err, doc) {
-				if (err) throw err;
-				if (doc) {
-					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
-					res.write('<p>' + doc.desc + '</p>\n');
-				} else {
-					res.write('<hr />\n');
-					res.write('<a href="newroom" class="small">Create Room</a>');
-				}
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})$/)) {
+		collections.users.findOne({name: i[1]}, function(err, dispUser) {
+			if (err) throw err;
+			if (!dispUser) return errors[404](req, res);
+			respondPage(dispUser.name, req, res, function(user) {
+				var me = user ? user.name == dispUser.name : false;
+				console.log(dispUser.name)
+				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write(dispUser.rep + ' reputation');
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url.pathname == '/chat/newroom') {
+	} else if (req.url.pathname.match('/logout')) {
+		res.writeHead(303, {
+			location: '/',
+			'Set-Cookie': 'id='
+		});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
+		res.end();
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})\/changepass$/)) {
+		var nameGiven = i[1];
 		if (req.method == 'POST') {
 			var post = '';
 			req.on('data', function(data) {
@@ -416,23 +498,84 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				post = querystring.parse(post);
 				var errors = [];
-				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
-				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (errors.length) return respondCreateRoomPage(errors, req, res, {});
-				collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
+				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
+				crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 					if (err) throw err;
-					var i = last ? last._id + 1 : 1;
-					collections.chatrooms.insert({
-						name: post.name,
-						desc: post.desc,
-						type: post.type,
-						_id: i
+					var old = new Buffer(key).toString('base64');
+					collections.users.findOne({
+						name: nameGiven,
+						pass: old
+					}, function(err, user) {
+						if (err) throw err;
+						if (!user) return respondChangePassPage(['Incorrect old password.'], req, res, {});
+						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (err) throw err;
+							collections.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
+							respondPage('Password Updated', req, res, function() {
+								res.write('The password for ' + user.name + ' has been updated.');
+								respondPageFooter(res);
+							});
+						});
 					});
-					res.writeHead(302, {'Location': i});
-					res.end();
 				});
 			});
-		} else respondCreateRoomPage([], req, res, {});
+		} else respondChangePassPage([], req, res, {});
+	} else if (req.url.pathname == '/chat/') {
+		respondPage('Chat', req, res, function() {
+			res.write('<h1>Chat Rooms</h1>\n');
+			collections.chatrooms.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) {
+					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
+					res.write(markdown(doc.desc) + '\n');
+				} else {
+					res.write('<hr />\n');
+					res.write('<a href="newroom" class="small">Create Room</a>\n');
+					res.write('</div>\n');
+					res.write('<aside id="sidebar">\n');
+					res.write('<h2>Recent Posts</h2>\n');
+					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
+						if (err) throw err;
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						else respondPageFooter(res, true);
+					});
+				}
+			});
+		});
+	} else if (req.url.pathname == '/chat/newroom') {
+		collections.users.findOne({
+			cookie: cookie.parse(req.headers.cookie || '').id
+		}, function(err, user) {
+			if (err) throw err;
+			if (!user) return res.end('You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return res.end('You must have 200 reputation to create a room.');
+			if (req.method == 'POST') {
+				var post = '';
+				req.on('data', function(data) {
+					post += data;
+				});
+				req.on('end', function() {
+					post = querystring.parse(post);
+					var errors = [];
+					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
+					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
+					if (errors.length) return respondCreateRoomPage(errors, req, res, {});
+					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+						if (err) throw err;
+						var i = last ? last._id + 1 : 1;
+						collections.chatrooms.insert({
+							name: post.name,
+							desc: post.desc,
+							type: post.type,
+							_id: i
+						});
+						res.writeHead(303, {'Location': i});
+						res.end();
+					});
+				});
+			} else respondCreateRoomPage([], req, res, {});
+		});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -440,7 +583,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', html(doc._id)).replaceAll('$name', html(doc.name)).replaceAll('$desc', html(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)));
 					respondPageFooter(res);
 				});
 			});
@@ -448,7 +591,7 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Programs</h1>\n');
-			collections.programs.find().sort({score: -1}).limit(15).each(function(err, data) {
+			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
@@ -473,7 +616,7 @@ http.createServer(function(req, res) {
 					recent: {time: -1},
 					update: {updated: -1}
 				};
-			collections.programs.find().sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
+			collections.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
@@ -551,7 +694,7 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						collections.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + html(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
@@ -597,7 +740,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
-		res.writeHead(302, {
+		res.writeHead(303, {
 			Location: '1/'
 		});
 		res.end();
@@ -854,13 +997,10 @@ http.createServer(function(req, res) {
 			});
 		});
 	}
-}).listen(8124);
-console.log('Server running at http://localhost:8124/');
+}).listen(80);
+console.log('Server running.');
 
-var wss = new ws.Server({
-	host: 'localhost',
-	port: 8125
-});
+var wss = new ws.Server({port: 81});
 
 wss.on('connection', function(tws) {
 	var i;
@@ -1117,7 +1257,7 @@ wss.on('connection', function(tws) {
 						});
 					});
 				} else if (message.event == 'info-update') {
-					if (!tws.user.name || tws.user.rep < 30) return tws.send(JSON.stringify({
+					if (!tws.user.name || tws.user.rep < 200) return tws.send(JSON.stringify({
 							event: 'err',
 							body: 'You don\'t have permission to update room information.',
 							revertInfo: 1
@@ -1130,21 +1270,30 @@ wss.on('connection', function(tws) {
 					});
 					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
-						var id = doc ? doc._id + 1 : 1;
+						var id = doc ? doc._id + 1 : 1,
+							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
 						collections.chat.insert({
 							_id: id,
-							body: 'Room description updated to ' + message.name + ': ' + message.desc,
-							user: 'Bot',
+							body: newMessage,
+							user: tws.user.name,
 							time: new Date().getTime(),
 							room: tws.room
 						});
 						for (var i in wss.clients)
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-								event: 'info-update',
-								name: message.name,
-								desc: message.desc,
-								id: id
-							}));
+							if (wss.clients[i].room == tws.room) {
+								wss.clients[i].send(JSON.stringify({
+									event: 'info-update',
+									name: message.name,
+									desc: message.desc,
+									id: id
+								}));
+								wss.clients[i].send(JSON.stringify({
+									event: 'add',
+									body: newMessage,
+									user: tws.user.name,
+									id: id
+								}));
+							}
 					});
 				} else tws.send(JSON.stringify({
 						event: 'err',
