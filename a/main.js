@@ -13,14 +13,63 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-var noPageOverflow = noPageOverflow || false;
-var footerOff = false;
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
+};
+function markdown(src) {
+	var h = '',
+		i = 0;
+	function inlineEscape(s) {
+		return html(s)
+			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
+			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
+			.replace(/([^"])(https?:\/\/([^\s"]+))/g, '$1$3'.link('$1$2'))
+			.replace(/^(https?:\/\/([^\s"]+))/g, '$2'.link('$1'))
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+	}
+	src.replace(/\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
+		f = b.substr(0, 2);
+		R = {
+			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
+			'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
+			'  ': [(/\n    /),'<pre><code>', '</code></pre>', '\n'],
+			'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
+		}[f];
+		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+		f = b[0];
+		if (R) h += R[1] + ('\n' + b).split(R[0]).slice(1).map(R[3] ? html : inlineEscape).join(R[3] || '</li>\n<li>') + R[2];
+		else if (f == '#') h += '<h' + Math.min(6, f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + Math.min(6, f) + '>';
+		else {
+			h += '<p>' + inlineEscape(b) + '</p>';
+			i++;
+		}
+	});
+	if (i == 1) return inlineEscape(src);
+	return h;
+};
+
+var noPageOverflow = false,
+	pageOverflowMobile = false,
+	footerOff = false,
+	mainContentEl,
+	mainBottomPad = 0;
 
 function minHeight() {
-	if (noPageOverflow && innerWidth >= 700) {
-		document.getElementById('content').style.height = Math.max(innerHeight - (footerOff ? -28 : document.getElementById('footer').offsetHeight) - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12), noPageOverflow) + 'px';
+	var footer = document.getElementById('footer').offsetHeight,
+		sidebar = document.getElementById('sidebar');
+	if (innerWidth <= 1500 && sidebar) footer += sidebar.offsetHeight + 6;
+	if (noPageOverflow && !(pageOverflowMobile && innerWidth <= 800)) {
+		mainContentEl.style.minHeight = '';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+		if (sidebar) sidebar.style.height = '';
 	} else {
-		document.getElementById('content').style.minHeight = innerHeight - document.getElementById('footer').offsetHeight - document.getElementById('content').getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) + 'px';
+		mainContentEl.style.height = '';
+		mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12) - mainBottomPad + 'px';
+		if (innerWidth > 1500 && sidebar) sidebar.style.height = mainContentEl.style.minHeight;
+		else sidebar.style.height = '';
 	}
 };
 
@@ -31,34 +80,19 @@ function request(uri, success, params) {
 	i.send(params);
 	i.onload = function() {
 		success(this.responseText);
-	}
+	};
 	return i;
 };
 
-function ago(d) {
-	d = Math.round((new Date() - d) / 1000);
-	if (d < 60) {
-		d = 'now';
-	} else if (d < 100) {
-		d = 'a minute ago';
-	} else if (d < 3000) {
-		d /= 60;
-		d = Math.round(d);
-		d += ' minutes ago';
-	} else if (d < 6000) {
-		d = 'an hour ago';
-	} else if (d < 85000) {
-		d /= 3600;
-		d = Math.round(d);
-		d += ' hours ago';
-	} else if (d < 150000) {
-		d = 'yesterday';
-	} else {
-		d /= 86400;
-		d = Math.round(d);
-		d += ' days ago';
+function ago(od) {
+	var d = Math.round((new Date() - od) / 1000);
+	if (d < 3600) return Math.round(d / 60) + 'm ago';
+	else if (d < 86400) return Math.round(d / 3600) + 'h ago';
+	else if (d < 2592000) return Math.round(d / 86400) + 'd ago';
+	else {
+		d = new Date(od);
+		return 'on ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + ' \'' + d.getUTCFullYear().toString().substr(2);
 	}
-	return d;
 };
 function agot(d) {
 	var time = document.createElement('time');
@@ -68,11 +102,19 @@ function agot(d) {
 };
 
 addEventListener('DOMContentLoaded', function() {
-	if (navigator.userAgent.indexOf('Trident') === -1 && navigator.userAgent.indexOf('MSIE') === -1) {
-		document.getElementById('err').hidden = true;
-		document.getElementById('cont').style.visibility = '';
-		minHeight();
+	mainContentEl = mainContentEl || document.getElementById('content');
+	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
+		var div = document.createElement('div');
+		div.innerHTML = '<!--[if lt IE 9]><i></i><![endif]-->';
+		if (div.getElementsByTagName('i').length != 1) {
+			var span = document.createElement('span');
+			span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
+			document.getElementById('err').appendChild(span);
+		}
+		document.getElementById('cont').hidden = true;
+		document.getElementById('cont').style.display = 'none';
 	}
+	minHeight();
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {
@@ -122,8 +164,6 @@ addEventListener('DOMContentLoaded', function() {
 		}
 	}, 100);
 });
-addEventListener('load', function() {
-	minHeight();
-});
+addEventListener('load', minHeight);
 addEventListener('resize', minHeight);
 if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
