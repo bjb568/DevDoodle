@@ -39,7 +39,7 @@ Basic Tags
 		setTimeout(run, 0);
 	});
 	function submit() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>&lt\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('passed').classList.add('show');
 			document.getElementById('failed').classList.remove('show');
 		} else {
