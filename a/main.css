@@ -8,6 +8,10 @@ body {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
+	-webkit-hyphens: auto;
 }
 *::-webkit-input-placeholder {
 	color: #666;
@@ -29,43 +33,61 @@ body {
 }
 .blk { display: block }
 [hidden], .target:not(:target) { display: none }
-.ib, #logo { display: inline-block }
+.rel, .comment { position: relative }
+.abs, .ctrls { position: absolute }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
-.lft, .row > :not(.rit):not(.half):not(.program) { float: left }
-.rit, .c-sig { float: right }
+.lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
+.rit, .user, .ctrls, h1 small, h2 small { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
-.nomar, body, input { margin: 0 }
-.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form * { margin-top: 2px }
+.nomar, body, input, .comment > :first-child { margin: 0 }
+.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
-.lmar, #content, p { margin-bottom: 6px }
-.rmar { margin-right: 6px }
-.bmar, .error, .half { margin-bottom: 6px }
-.lmar { margin-left: 6px }
-.pad, .desc, #content, #footer, .error, .popup { padding: 4px }
+.bmar, .error, .half, #content { margin-bottom: 6px }
+.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
-.scrly { overflow-y: auto }
+.scrly, #sidebar { overflow-y: auto }
 .br, .desc { border-radius: 4px }
-.hglt, .desc, section, article, blockquote { background: rgba(255, 255, 255, .4) }
-.shglt, #content, #aside, #footer { background: rgba(255, 255, 255, .8) }
-.grey, a.small, .c-sig { color: #555 }
+.hglt, .desc, .comment, section, article { background: rgba(255, 255, 255, .4) }
+.shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
+.white, iframe:not([seamless]) { background: #fff }
+.mono, .ctrls { font-family: monospace }
+.ctrls a { padding: 0 2px }
+.grey, a.small, .c-sig, .ctrls a { color: #444 }
+.red { color: #f00 }
 .large { font-size: 1.2em }
+.larger, .ctrls { font-size: 1.4em }
+.ctrls {
+	bottom: 100%; right: -1px;
+	z-index: 1;
+	background: #cef;
+	line-height: 16px;
+	padding-bottom: 1px;
+}
+.comment:first-child .ctrls { top: 100%; bottom: auto; }
+.ctrls :hover { color: #000 }
+.ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
+.ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
+.ctrls :last-child { font-size: 1.1em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
-small, a.small, footer, .c-sig {
+small, a.small, footer, .c-sig, .ctrls a {
 	font-size: .85em;
 	font-weight: normal;
 }
-h1 small, h2 small {
-	float: right;
-	font-size: .85rem;
+.comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
+blockquote {
+	margin-left: 8px;
+	border-left: 2px solid #fa0;
+	padding-left: 4px;
 }
+h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
 h2 small { margin: .2em .2em 0 0 }
 .popup {
@@ -74,8 +96,22 @@ h2 small { margin: .2em .2em 0 0 }
 	background: rgba(240, 240, 240, .95);
 	box-shadow: 1px 1px 8px #000;
 }
+.user {
+	 background: #9ef;
+	 color: #000;
+	 min-width: 140px;
+	 display: inline-block;
+	 padding: 4px 8px 4px 4px;
+	 margin-left: 8px;
+	 text-align: left;
+}
+.user div {
+	margin-left: 4px;
+}
+.user a { display: block }
 .program {
 	display: inline-block;
+	vertical-align: top;
 	max-width: 95%;
 }
 .program div {
@@ -88,7 +124,7 @@ h2 small { margin: .2em .2em 0 0 }
 }
 .program iframe {
 	width: 100%;
-	height: 100%;
+	height: calc(100% - 4px);
 }
 .program:nth-child(n+5) { display: none }
 @media (min-width: 500px) {
@@ -109,13 +145,30 @@ h2 small { margin: .2em .2em 0 0 }
 	.program div { height: 16vw }
 	.program:nth-child(-n+15) { display: inline-block }
 }
-ul, p { margin: 6px 0 2px 0 }
+.comment {
+	margin-top: 3px;
+	padding: 4px;
+}
+.comment #up, .comment #dn { width: 18px }
+.comment .hover {
+	float: left;
+	opacity: 0.3;
+	padding: 2px 2px 0 0;
+	height: 16px;
+}
+.comment .hover * { margin: 0 }
+.comment:hover .hover { opacity: 1 }
+.comment .rit {
+	color: #666;
+	font-size: 0.9em;
+}
+ul, ol, p { margin: 6px 0 2px 0 }
 .error { background: #f00 }
 .white, .error { color: #fff }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, .clearfix::after, nav::after, .row::after {
+.clear, footer, .clearfix::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -136,14 +189,12 @@ h1 {
 	padding-bottom: 1px;
 	vertical-align: bottom;
 }
-h2, h1.title, section h1, article h1 {
-	font-size: 1.3em;
-}
-h3, h2.title, section h2, article h2, section section h1, section article h1, article section h1, article article h1 {
+.comment h1, hr { border-bottom: none }
+h2, h1.title, article h1 { font-size: 1.3em }
+h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
 	font-size: 1em;
 }
-hr { border-bottom: none }
 a, .ctrl {
 	color: #000;
 	font-weight: bold;
@@ -165,10 +216,15 @@ textarea {
 	font-size: .9em;
 	display: block;
 }
+#err > * {
+	display: block;
+	text-align: center;
+	margin: 3em;
+	color: #fff;
+}
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
-	text-align: top;
 	background: #000;
 }
 #nav * {
@@ -193,7 +249,6 @@ textarea {
 #nav input {
 	width: 160px;
 	max-width: 100%;
-	font-size: .9rem;
 	color: #000;
 }
 #logo img {
@@ -202,64 +257,95 @@ textarea {
 }
 #content { padding-bottom: 24px }
 #nav > .active:nth-child(3) { position: relative }
-#nav > .active:nth-child(3)::before {
-	content: '';
-	position: absolute;
-	z-index: 1;
-	width: 10px;
-	height: 10px;
-	background: #000;
-	transform: rotate(45deg);
-	-webkit-transform: scale(1, .6) rotate(45deg);
-	border-top: 2px solid #fff;
-	border-left: 2px solid #fff;
-	top: 100%;
-	margin-top: -1px;
-	left: 50%;
-	margin-left: -5px;
+@media (min-width: 380px) and (max-width: 799px) { 
+	#nav > :not(.active) + nav + a:nth-child(5) { border-right: 1px solid #aaa }
 }
-#nav :not(.active) + nav { display: none }
-#nav .active + nav {
-	margin: 2px 0 6px;
-	border-top: 1px solid #fff;
-	border-bottom: 1px solid #fff;
-	display: block;
-	background: #000;
+@media (max-width: 799px) { 
+	#nav nav > a.active { font-weight: bold }
+	#nav :not(.active) + nav { display: none }
+	#nav > .active:nth-child(3)::before {
+		border-top: 1.5px solid #fff;
+		border-left: 1.5px solid #fff;
+	}
+	#nav nav {
+		background: #333;
+		display: inline-block;
+	}
 }
-@media (min-width: 360px) and (max-width: 799px) { 
-	#nav > a:nth-child(6) { border-right: 1px solid #aaa }
-	#nav > .active:nth-child(3)::after, #nav > .active + nav + *::before {
+@media (min-width: 140px) and (max-width: 240px) {
+	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
 		white-space: pre;
 		content: '\a';
 	}
 }
-@media (max-width: 799px) { 
-	#nav input { transition: width 1s }
-	#nav nav > a.active { font-weight: bold }
+@media (min-width: 240px) and (max-width: 380px) {
+	#nav > :nth-child(6)::before {
+		white-space: pre;
+		content: ' ';
+	}
+}
+@media (min-width: 240px) and (max-width: 799px) {
+	#nav a:not(#logo) {
+		margin-top: 4px;
+	}
+	#nav nav {
+		border-radius: 6px;
+		margin-right: 4px;
+	}
+	#nav form {
+		margin: 0 3px;
+		max-width: calc(100% - 12px);
+	}
+	#nav > .active:nth-child(3)::before { display: none }
+	#nav > .active:nth-child(3) { padding-right: 14px }
+	#nav > .active:nth-child(3)::after {
+		content: ' ⟨';
+		color: #ddd;
+		position: absolute;
+		left: 100%;
+		margin-left: -9px;
+		bottom: -2px;
+		display: block;
+		transform: scale(2.5, 1.3);
+		-webkit-transform: scale(2.5, 1.3);
+	}
+}
+@media (min-width: 280px) and (max-width: 379px) {
+	#nav > .active + nav + :nth-child(5)::after {
+		white-space: pre;
+		content: '\a';
+	}
 }
 @media (max-width: 610px), (min-width: 750px) { 
 	#nav input { width: 184px }
 }
-@media (min-width: 700px) {
-	.half {
-		float: left;
-		width: 49.5%;
-	}
-	.half.rit, .half:not(.rit) + .half:last-child { float: right }
+@media (max-width: 700px) {
+	.main { width: 100% }
+	.sidebar.nonvital { display: none }
+	.sidebar { margin-top: 8px }
 }
-@media (min-width: 360px) { 
+@media (min-width: 701px) {
+	.half { float: left }
+	.half.rit, .half:not(.rit) + .half:last-child { float: right }
+	.half { width: 49.5% }
+}
+@media (min-width: 380px) and (max-width: 1499px) { 
 	#nav {
-		padding: 4px 4px 0 0;
+		padding: 0;
 		text-align: right;
 	}
 	#logo {
 		float: left;
 		width: 144px;
-		margin: -4px 4px 0 -4px;
+		margin: 0;
 	}
-	#nav .active + nav {
-		display: inline-block;
+	#nav nav { display: inline-block }
+	#nav > .active:nth-child(3)::before {
+		border-top: 2px solid #fff;
+		border-left: 2px solid #fff;
 	}
+}
+@media (min-width: 360px) {
 	line {
 		display: inline-block;
 		width: 1px; height: 1.2em;
@@ -273,14 +359,18 @@ textarea {
 		background: #111;
 	}
 	#nav > a { transition: background .15s }
-	#nav > a:hover { background: #262626 }
-	#nav > a:active, #nav > a.active:not(:hover) { background: #000 }
+	#nav a:not(.active):hover {
+		background: #262626;
+		color: #fff;
+	}
+	#nav .active { color: #fff }
+	#nav > a:active, #nav > a.active { background: #000 }
 	#nav nav > a {
 		display: inline-block;
 		line-height: 1.5;
 	}
 	#nav nav > a.active { background: #444 }
-	#nav > :not(div), #nav form {
+	#nav > *, #nav form {
 		display: inline-block;
 		padding: 0 12px;
 		background: #1a1a1a;
@@ -296,7 +386,7 @@ textarea {
 	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background .2s;
+		transition: background .1s;
 		content: '';
 	}
 	#logo img { padding-bottom: 4px }
@@ -307,20 +397,28 @@ textarea {
 	#nav > :nth-child(-n+5) { float: left }
 	#nav > :nth-child(6) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
-	#nav .active + nav {
+	#nav nav {
 		position: absolute;
-		top: calc(2rem + 3px);
-		left: 7rem;
-		border-bottom: none;
+		z-index: 1;
+		top: 2rem;
+		left: 14.8rem;
+		border-top: 1px solid #888;
 	}
-	#nav :nth-child(3).active ~ div {
-		height: calc(2rem + 6px);
-	}
+	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
-@media (min-width: 1500px) { 
+@media (min-width: 1500px) {
+	html { background-size: cover }
 	#cont { overflow: hidden }
-	#cont::before { display: none }
 	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
+	#content:nth-child(2):nth-last-child(3) {
+		float: left;
+		width: calc(-250px + 80%);
+	}
+	#sidebar {
+		float: right;
+		width: calc(86px + 16%);
+		margin: 6px 6px 6px 0;
+	}
 	#nav {
 		position: fixed;
 		display: table;
@@ -332,10 +430,9 @@ textarea {
 	#nav > :nth-child(7) { margin-top: 16px }
 	#nav > *, #nav form {
 		width: 100%;
-		padding-left: 16px;
 		padding-right: 24px;
 	}
-	#nav > :not(nav):not(div)::after {
+	#nav > :not(nav)::after {
 		position: absolute;
 		right: .5em;
 		content: '\276F';
@@ -343,14 +440,6 @@ textarea {
 	}
 	#logo { height: 2rem }
 	#nav input { width: 100% }
-	#nav > .active:nth-child(3)::before {
-		left: 32px;
-		margin-top: -4px;
-	}
-	#nav > :not(#logo) {
-		position: relative;
-		padding-left: 16px;
-	}
 	#nav > .active::before {
 		content: '';
 		position: absolute;
@@ -360,13 +449,24 @@ textarea {
 		width: 3px;
 		background: #777;
 	}
-	#nav > .active + nav::before {
-		content: '';
-		position: absolute;
-		left: 5px;
-		top: calc(-2rem + 1px);
-		bottom: calc(2rem + 6px);
-		width: 3px;
-		background: #777;
+	#nav > :not(#logo):not(nav) {
+		position: relative;
+		padding-left: 16px;
+	}
+	#nav nav {
+		border-top: 1px solid #fff;
+		border-bottom: 1px solid #fff;
+		background: #000;
+		overflow: hidden;
+		height: 2rem;
+		transition: height 0.2s, border 0.3s;
+	}
+	#nav nav::before {
+		content: '＞';
+		color: #999;
+	}
+	#nav :not(.active):not(:hover) + nav:not(:hover) {
+		height: 0;
+		border: none;
 	}
 }
