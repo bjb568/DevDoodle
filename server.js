@@ -246,10 +246,6 @@ var mime = {
 	'.mp3': 'audio/mpeg'
 };
 
-function linkUser(name) {
-	return '<a href="/user/' + name + '">' + name + '</a>';
-};
-
 function respondPage(title, req, res, callback, header, status) {
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
@@ -265,7 +261,7 @@ function respondPage(title, req, res, callback, header, status) {
 		collections.users.findOne({cookie: cookies.id}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
-			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', linkUser(user.name));
+			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
 			callback(user);
@@ -459,7 +455,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t' + linkUser(cUser.name) + '\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -477,7 +473,11 @@ http.createServer(function(req, res) {
 				var me = user ? user.name == dispUser.name : false;
 				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write(dispUser.rep + ' reputation');
+				res.write(dispUser.rep + ' reputation\n');
+				if (me) {
+					res.write('<h2>Private</h2>\n');
+					res.write('Email: ' + user.email);
+				}
 				respondPageFooter(res);
 			});
 		});

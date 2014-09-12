@@ -48,7 +48,7 @@ body {
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .bmar, .error, .half, #content { margin-bottom: 6px }
-.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup { padding: 4px }
+.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
@@ -56,6 +56,7 @@ body {
 .scrly, #sidebar { overflow-y: auto }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, section, article { background: rgba(255, 255, 255, .4) }
+code { background: rgba(255, 255, 255, 0.6) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
 .white, iframe:not([seamless]) { background: #fff }
 .mono, .ctrls { font-family: monospace }
@@ -86,6 +87,15 @@ blockquote {
 	margin-left: 8px;
 	border-left: 2px solid #fa0;
 	padding-left: 4px;
+}
+code.blk {
+	white-space: pre;
+	max-height: 600px;
+	max-width: 100%;
+	overflow: auto;
+	word-break: normal;
+	hyphens: none;
+	-webkit-hyphens: none;
 }
 h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
@@ -145,10 +155,7 @@ h2 small { margin: .2em .2em 0 0 }
 	.program div { height: 16vw }
 	.program:nth-child(-n+15) { display: inline-block }
 }
-.comment {
-	margin-top: 3px;
-	padding: 4px;
-}
+.comment { margin-top: 3px }
 .comment #up, .comment #dn { width: 18px }
 .comment .hover {
 	float: left;
