@@ -273,6 +273,13 @@
 </script>
 <style>
 	#chat { height: 100% }
+	#chat img { height: 300px }
+	@media (max-width: 600px) {
+		#chat img { height: 200px }
+	}
+	@media (max-width: 400px) {
+		#chat img { height: 50px }
+	}
 	.comment:hover { outline: 1px dotted #000 }
 	.ctrls { border: 1px solid #aaa }
 	.starcount {
