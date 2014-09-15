@@ -455,7 +455,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/a/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
