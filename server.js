@@ -473,6 +473,7 @@ http.createServer(function(req, res) {
 				var me = user ? user.name == dispUser.name : false;
 				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<img src="/a/pic/' + user.name + '" width="400" height="400" />\n');
 				res.write(dispUser.rep + ' reputation\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
