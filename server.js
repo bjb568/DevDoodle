@@ -19,7 +19,7 @@ function html(input) {
 function markdown(src) {
 	var h = '';
 	function inlineEscape(s) {
-		return html(s).split('`').map(function(val, i, arr) {
+		return s.split('`').map(function(val, i, arr) {
 			if (i % 2) return '<code>' + html(val) + '</code>';
 			else {
 				return html(val)
