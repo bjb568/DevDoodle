@@ -72,6 +72,7 @@ code { background: rgba(255, 255, 255, 0.6) }
 	line-height: 16px;
 	padding-bottom: 1px;
 }
+.comment img { max-height: 200px }
 .comment:first-child .ctrls { top: 100%; bottom: auto; }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }

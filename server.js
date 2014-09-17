@@ -17,37 +17,37 @@ function html(input) {
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
 function markdown(src) {
-	var h = '',
-		i = 0;
+	var h = '';
 	function inlineEscape(s) {
-		return html(s)
-			.replace(/!\[([^\]]*)]\(([^(]+)\)/g, '<img alt="$1" src="$2">')
-			.replace(/\[([^\]]+)]\(([^(]+)\)/g, '$1'.link('$2'))
-			.replace(/([^"])(https?:\/\/([^\s"]+))/g, '$1$3'.link('$1$2'))
-			.replace(/^(https?:\/\/([^\s"]+))/g, '$2'.link('$1'))
-			.replace(/`([^`]+)`/g, '<code>$1</code>')
-			.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-			.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+		return s.split('`').map(function(val, i, arr) {
+			if (i % 2) return '<code>' + html(val) + '</code>';
+			else {
+				return html(val)
+					.replace(/!\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '<img alt="$1" src="$2" />')
+					.replace(/\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '$1'.link('$2'))
+					.replace(/([^;["])(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$1' + '$3'.link('$2'))
+					.replace(/^(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$2'.link('$1'))
+					.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+					.replace(/\*([^*]+)\*/g, '<em>$1</em>') + (i == arr.length - 1 && i != 0 ? '</code>' : '');
+			}
+		}).join('');
 	}
-	src.replace(/\r|\s+$/g, '').replace(/\t/g, '    ').split(/\n\n+/).forEach(function(b, f, R) {
-		f = b.substr(0, 2);
-		R = {
-			'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
-			'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
-			'  ': [(/\n    /),'<pre><code>', '</code></pre>', '\n'],
-			'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
-		}[f];
-		if (b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
-		if (b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
+	if (!src.match(/\n\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
+	src.replace(/\r|\s+$/g, '').replace(/\t/g, '	').split(/\n\n+/).forEach(function(b, f, R) {
+		var f = b.substr(0, 2),
+			R = {
+				'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
+				'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
+				'	': [(/\n		/),'<pre><code>', '</code></pre>', '\n'],
+				'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
+			}[f];
+		if (!R && b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
+		else if (!R && b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
 		f = b[0];
 		if (R) h += R[1] + ('\n' + b).split(R[0]).slice(1).map(R[3] ? html : inlineEscape).join(R[3] || '</li>\n<li>') + R[2];
 		else if (f == '#') h += '<h' + Math.min(6, f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + Math.min(6, f) + '>';
-		else {
-			h += '<p>' + inlineEscape(b) + '</p>';
-			i++;
-		}
+		else h += '<p>' + inlineEscape(b) + '</p>';
 	});
-	if (i == 1) return inlineEscape(src);
 	return h;
 };
 
@@ -455,7 +455,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/ap/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/a/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -473,6 +473,7 @@ http.createServer(function(req, res) {
 				var me = user ? user.name == dispUser.name : false;
 				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<img src="/a/pic/' + dispUser.name + '" width="400" height="400" />\n');
 				res.write(dispUser.rep + ' reputation\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
