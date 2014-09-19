@@ -8,10 +8,6 @@ body {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
-	word-break: break-all;
-	word-break: break-word;
-	hyphens: auto;
-	-webkit-hyphens: auto;
 }
 *::-webkit-input-placeholder {
 	color: #666;
@@ -51,6 +47,7 @@ body {
 .pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
+.comment { overflow: hidden }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
