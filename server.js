@@ -62,6 +62,8 @@ var site = {
 	}
 };
 
+var sensitivePaths = ['README.md', 'server.js', '.git', 'package.json', '/data/', 'node_modules'];
+
 var http = require('http');
 var ws = require('ws');
 var fs = require('fs');
@@ -987,6 +989,8 @@ http.createServer(function(req, res) {
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
 			if (err) return errors[404](req, res);
+			var i = sensitivePaths.length;
+			while (i--) if (req.url.pathname.indexOf(sensitivePaths[i]) != -1) return errors[403](req, res);
 			res.writeHead(200, {
 				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 				'Cache-Control': 'max-age=6012800, public',
