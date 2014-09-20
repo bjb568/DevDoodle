@@ -362,7 +362,7 @@ textarea {
 		color: #fff;
 	}
 	#nav .active { color: #fff }
-	#nav > a:active, #nav > a.active { background: #000 }
+	#nav > a:active:not(.active), #nav > a.active { background: #000 }
 	#nav nav > a {
 		display: inline-block;
 		line-height: 1.5;
