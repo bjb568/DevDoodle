@@ -473,7 +473,6 @@ http.createServer(function(req, res) {
 			if (!dispUser) return errors[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
-				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img src="/a/pic/' + dispUser.name + '" width="400" height="400" />\n');
 				res.write(dispUser.rep + ' reputation\n');
@@ -1119,7 +1118,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'Chat message length may not exceed 2880 characters.'
 						}));
-					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+					collections.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
 						collections.chat.insert({
@@ -1160,7 +1159,7 @@ wss.on('connection', function(tws) {
 						if (err) throw err;
 						var i = 0;
 						var num = message.skip - message.to || 1;
-						cursor.sort({$natural: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+						cursor.sort({_id: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
 							if (err) throw err;
 							if (!doc) return;
 							i++;
@@ -1273,7 +1272,7 @@ wss.on('connection', function(tws) {
 							desc: message.desc
 						}
 					});
-					collections.chat.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+					collections.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1,
 							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
@@ -1351,7 +1350,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'Comment length may not exceed 720 characters.'
 						}));
-					collections.comments.find().sort({$natural: -1}).limit(1).next(function(err, doc) {
+					collections.comments.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
 						collections.comments.insert({
