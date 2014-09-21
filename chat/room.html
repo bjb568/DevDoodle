@@ -20,6 +20,7 @@
 </div>
 <textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>
 <p id="ts" hidden="">You are viewing old messages. <a href="/chat/$id">Join room</a>.</p>
+<p id="loginmsg" hidden="">You must be <a href="/login/">logged in</a> to post to chat.</p>
 <script>
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
@@ -35,7 +36,11 @@
 		ctrlsFlag = document.createElement('a'),
 		ctrlsStar = document.createElement('a'),
 		e;
-	if (username == 'Login') username = false;
+	if (username == 'Login') {
+		username = false;
+		document.getElementById('ta').hidden = document.getElementById('btn').hidden = true;
+		document.getElementById('loginmsg').hidden = false;
+	}
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
