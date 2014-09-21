@@ -457,7 +457,7 @@ textarea {
 		background: #000;
 		overflow: hidden;
 		height: 2rem;
-		transition: height 0.2s, border 0.3s;
+		transition: height 0.2s, border 0.15s;
 	}
 	#nav nav::before {
 		content: '＞';
