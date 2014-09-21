@@ -642,7 +642,7 @@ http.createServer(function(req, res) {
 		respondPage('Canvas Playground', req, res, function() {
 			fs.readFile('dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[\S\s]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
