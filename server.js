@@ -473,7 +473,6 @@ http.createServer(function(req, res) {
 			if (!dispUser) return errors[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
-				console.log(dispUser.name)
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img src="/a/pic/' + dispUser.name + '" width="400" height="400" />\n');
 				res.write(dispUser.rep + ' reputation\n');
