@@ -44,6 +44,7 @@ body {
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .bmar, .error, .half, #content { margin-bottom: 6px }
+.lftpad, .user, blockquote { margin-left: 6px }
 .pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
@@ -81,7 +82,6 @@ small, a.small, footer, .c-sig, .ctrls a {
 }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
-	margin-left: 8px;
 	border-left: 2px solid #fa0;
 	padding-left: 4px;
 }
@@ -100,7 +100,6 @@ h2 small { margin: .2em .2em 0 0 }
 	 min-width: 140px;
 	 display: inline-block;
 	 padding: 4px 8px 4px 4px;
-	 margin-left: 8px;
 	 text-align: left;
 }
 .user div {

@@ -475,8 +475,9 @@ http.createServer(function(req, res) {
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write('<img src="//gravatar.com/avatar/' + dispUser.emailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
-				res.write('<div><span style="font-size: 1.4em">' + dispUser.rep + '</span> reputation</div>\n');
+				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.emailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
+				res.write('<div class="lft lftpad">\n\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a>\n</div>\n');
+				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
 					res.write('Email: ' + user.email);
