@@ -68,8 +68,10 @@ function minHeight() {
 	} else {
 		mainContentEl.style.height = '';
 		mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12) - mainBottomPad + 'px';
-		if (innerWidth > 1500 && sidebar) sidebar.style.height = mainContentEl.style.minHeight;
-		else sidebar.style.height = '';
+		if (sidebar) {
+			if (innerWidth > 1500) sidebar.style.height = mainContentEl.style.minHeight;
+			else sidebar.style.height = '';
+		}
 	}
 };
 
