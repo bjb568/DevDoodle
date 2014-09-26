@@ -75,13 +75,13 @@ function minHeight() {
 	}
 };
 
-function request(uri, success, params) {
+function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
 	i.open('POST', uri, true);
 	i.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	i.send(params);
 	i.onload = function() {
-		success(this.responseText);
+		callback(this.status == 200 ? this.responseText : 'Error: HTTP ' + this.status + ' ' + this.statusText);
 	};
 	return i;
 };
