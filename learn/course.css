@@ -74,7 +74,7 @@ h2 { margin-top: 0 }
 	transition: background-color .2s;
 	background: rgba(0, 200, 0, .6);
 }
-#passed, #failed {
+.passed, .failed {
 	margin: 4px 0;
 	position: absolute;
 	width: 100%;
@@ -86,10 +86,10 @@ h2 { margin-top: 0 }
 	transition: transform .3s;
 	-webkit-transition: -webkit-transform .3s;
 }
-#passed.show, #failed.show {
+.passed.show, .failed.show {
 	transform: none;
 	-webkit-transform: none;
 	position: static;
 }
-#passed { background: rgba(100, 220, 100, .6) }
-#failed { background: rgba(220, 100, 100, .6) }
+.passed { background: rgba(100, 220, 100, .6) }
+.failed { background: rgba(220, 100, 100, .6) }

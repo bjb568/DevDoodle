@@ -3,17 +3,31 @@ Basic Tags
 	<div id="text">
 		<div id="text-inner">
 			<h1>Basic Tags</h1>
+			<h2>Introduction</h2>
+			<div>In this section, we're going to learn about the basic tags that are the building blocks of HTML.</div>
+			<h3>P is for Paragraph</h3>
+			<div>One of the most basic and fundamental tags in HTML is the p tag. P is (really) short for paragraph. As shown in lesson 3, it looks like this: </div>
+			<code class="blk">&lt;p>This is a paragraph.&lt;/p></code>
+			<p>To move on, write a set of paragraph tags in between the body tags. You can put any text you want in them.</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+			</div>
+			<div id="failed1" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p>Did you write the tags correctly? They look like this: <code>&lt;p>&lt;/p></code></p>
+			</div>
+			<div id="failed2" class="failed clearfix">
+				<h2>Almost!</h2>
+				<p>Don't put anything like tags or the <code>&lt;</code> character between the p tags, just simple text. Also, the <code>&amp;</code> character can cause problems, so avoid that for now too.</p>
+			</div>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></div>
 	</div>
 	<textarea id="html">&lt;!DOCTYPE html>
 &lt;html>
-	&lt;head>
-		&lt;title>This is the document title&lt;/title>
-	&lt;/head>
-	&lt;body>
-		&lt;p>This is a paragraph&lt;/p>
-	&lt;/body>
+	&lt;head>&lt;/head>
+	&lt;body>&lt;/body>
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
@@ -28,4 +42,20 @@ Basic Tags
 	document.getElementById('html').addEventListener('keypress', function() {
 		setTimeout(run, 0);
 	});
+	function submit() {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[^&amp;&lt;]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed2').classList.remove('show');
+		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[\s\S]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+			document.getElementById('failed2').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+			document.getElementById('failed1').classList.remove('show');
+		} else {
+			document.getElementById('failed1').classList.add('show');
+			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
 </script>
