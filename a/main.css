@@ -44,6 +44,7 @@ body {
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
 .bmar, .error, .half, #content { margin-bottom: 6px }
+.lftpad, .user { margin-left: 6px }
 .pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 4px }
 .spad { padding: 3px }
 .noborder, iframe { border: none }
@@ -206,10 +207,10 @@ a, .ctrl {
 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
-a.blk:hover {
-	color: #002;
-	background: rgba(255, 255, 255, .2);
-}
+a.blk:hover { background: rgba(255, 255, 255, .2) }
+a.blk:hover:not(:active) { color: #002 }
+p a, .comment a { text-decoration: underline }
+.comment .c-sig a { text-decoration: none }
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: .8em;
