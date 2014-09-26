@@ -364,6 +364,7 @@ http.createServer(function(req, res) {
 					if (post.name.length < 3) return respondLoginPage(['Name must be at least 3 characters long.'], req, res, post);
 					if (!post.name.match(/^[\w-_!$^*]+$/)) return respondLoginPage(['Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."'], req, res, post);
 					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
+					if (post.email.length > 256) return respondLoginPage(['Email address must be no longer than 256 characters.'], req, res, post);
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						var pass = new Buffer(key).toString('base64'),
@@ -372,6 +373,7 @@ http.createServer(function(req, res) {
 							name: post.name,
 							pass: pass,
 							email: post.email,
+							emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
 							confirm: rstr,
 							joined: new Date().getTime(),
 							rep: 0,
@@ -457,7 +459,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="/a/pic/' + cUser.name + '" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.emailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -474,11 +476,12 @@ http.createServer(function(req, res) {
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write('<img src="/a/pic/' + dispUser.name + '" width="400" height="400" />\n');
-				res.write(dispUser.rep + ' reputation\n');
+				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.emailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
+				res.write('<div class="lft lftpad">\n\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (if you don\'t have a gravatar account, you must create one)\n</div>\n');
+				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
-					res.write('Email: ' + user.email);
+					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changeemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var email = document.getElementById(\'email\'); email.hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true; email.removeChild(email.firstChild); email.appendChild(document.createTextNode(document.getElementById(\'emailinput\').value)); }, \'newemail=\' + encodeURIComponent(document.getElementById(\'emailinput\').value));"><span id="email">Email: ' + html(user.email) + '</span> <input type="text" id="emailinput" hidden="" value="' + html(user.email) + '" placeholder="email" style="width: 240px; max-width: 100%;" /> <button type="submit" id="emailsave" hidden="">Save</button> <button type="reset" id="emailcancel" hidden="" onclick="document.getElementById(\'email\').hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true;">Cancel</button> <button type="button" id="emailedit" onclick="document.getElementById(\'email\').hidden = this.hidden = true; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = false; document.getElementById(\'emailinput\').focus();">edit</button></form>');
 				}
 				respondPageFooter(res);
 			});
@@ -642,7 +645,7 @@ http.createServer(function(req, res) {
 		respondPage('Canvas Playground', req, res, function() {
 			fs.readFile('dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[\S\s]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
@@ -701,13 +704,13 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -760,6 +763,25 @@ http.createServer(function(req, res) {
 				});
 			}
 		});
+	} else if (req.url.pathname == '/api/me/changeemail') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				var newemail = post.newemail;
+				if (!newemail) return res.end('Error: No email specified.');
+				if (newemail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
+				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You are not logged in.');
+					collections.users.update({name: user.name}, {$set: {email: newemail}});
+					res.end('Success');
+				});
+			});
+		} else errors[405](req, res);
 	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
 		collections.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
