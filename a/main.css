@@ -74,7 +74,7 @@ code { background: rgba(255, 255, 255, 0.6) }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
-.ctrls :last-child { font-size: 1.1em }
+.ctrls :last-child { font-size: 0.9em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
 small, a.small, footer, .c-sig, .ctrls a {
 	font-size: .85em;
@@ -210,7 +210,7 @@ a:active, .ctrl:active { color: #02d }
 a.blk:hover { background: rgba(255, 255, 255, .2) }
 a.blk:hover:not(:active) { color: #002 }
 p a, .comment a { text-decoration: underline }
-.comment .c-sig a { text-decoration: none }
+.c-sig a, .ctrls a { text-decoration: none }
 input[type=text], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: .8em;
