@@ -469,7 +469,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})$/)) {
 		collections.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errors[404](req, res);
@@ -497,27 +497,23 @@ http.createServer(function(req, res) {
 		});
 		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})\/changepass$/)) {
-		var nameGiven = i[1];
-		if (req.method == 'POST') {
-			var post = '';
-			req.on('data', function(data) {
-				post += data;
-			});
-			req.on('end', function() {
-				post = querystring.parse(post);
-				var errors = [];
-				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
-				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-				crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
-					if (err) throw err;
-					var old = new Buffer(key).toString('base64');
-					collections.users.findOne({
-						name: nameGiven,
-						pass: old
-					}, function(err, user) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+			if (err) throw err;
+			if (user.name != i[1]) return errors[403](req, res);
+			if (req.method == 'POST') {
+				var post = '';
+				req.on('data', function(data) {
+					post += data;
+				});
+				req.on('end', function() {
+					post = querystring.parse(post);
+					var errors = [];
+					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
+					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
+					crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
-						if (!user) return respondChangePassPage(['Incorrect old password.'], req, res, {});
+						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
 						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							collections.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
@@ -528,8 +524,8 @@ http.createServer(function(req, res) {
 						});
 					});
 				});
-			});
-		} else respondChangePassPage([], req, res, {});
+			} else respondChangePassPage([], req, res, {});
+		});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
