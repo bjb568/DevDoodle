@@ -1046,11 +1046,13 @@ wss.on('connection', function(tws) {
 			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
 				if (err) throw err;
 				if (star && pids.indexOf(star.pid) == -1) {
-					tws.send(JSON.stringify({
-						event: 'star',
-						id: star.pid,
-						board: true
-					}));
+					try {
+						tws.send(JSON.stringify({
+							event: 'star',
+							id: star.pid,
+							board: true
+						}));
+					} catch (e) {}
 					pids.push(star.pid);
 				}
 			});
