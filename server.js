@@ -134,8 +134,8 @@ db.open(function(err, db) {
 	});
 });
 
-var errors = [];
-errors[400] = function(req, res) {
+var errorPage = [];
+errorPage[400] = function(req, res) {
 	respondPage('400', req, res, function() {
 		res.write('<h1>Error 400 :(</h1>');
 		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
@@ -143,7 +143,7 @@ errors[400] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 400);
 };
-errors[403] = function(req, res) {
+errorPage[403] = function(req, res) {
 	respondPage('403', req, res, function() {
 		res.write('<h1>Error 403</h1>');
 		res.write('<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
@@ -151,7 +151,7 @@ errors[403] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 403);
 };
-errors[404] = function(req, res) {
+errorPage[404] = function(req, res) {
 	respondPage('404', req, res, function() {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
@@ -159,7 +159,7 @@ errors[404] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 404);
 };
-errors[405] = function(req, res) {
+errorPage[405] = function(req, res) {
 	respondPage('405', req, res, function() {
 		res.write('<h1>Error 405</h1>');
 		res.write('<p>Method not allowed.</p>');
@@ -167,7 +167,7 @@ errors[405] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 405);
 };
-errors[413] = function(req, res) {
+errorPage[413] = function(req, res) {
 	respondPage('413', req, res, function() {
 		res.write('<h1>Error 413</h1>');
 		res.write('<p>Request entity too large.</p>');
@@ -175,7 +175,7 @@ errors[413] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 413);
 };
-errors[414] = function(req, res) {
+errorPage[414] = function(req, res) {
 	respondPage('414', req, res, function() {
 		res.write('<h1>Error 414</h1>');
 		res.write('<p>Request URI too long.</p>');
@@ -183,7 +183,7 @@ errors[414] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 414);
 };
-errors[415] = function(req, res) {
+errorPage[415] = function(req, res) {
 	respondPage('415', req, res, function() {
 		res.write('<h1>Error 415</h1>');
 		res.write('<p>Unsupported media type. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
@@ -191,14 +191,14 @@ errors[415] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 415);
 };
-errors[418] = function(req, res) {
+errorPage[418] = function(req, res) {
 	respondPage('418', req, res, function() {
 		res.write('<h1>418!</h1>');
 		res.write('<p>I\'m a little teapot, short and stout.</p>');
 		respondPageFooter(res);
 	}, {}, 418);
 };
-errors[429] = function(req, res) {
+errorPage[429] = function(req, res) {
 	respondPage('429', req, res, function() {
 		res.write('<h1>Error 429</h1>');
 		res.write('<p>Too many requests.</p>');
@@ -206,7 +206,7 @@ errors[429] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 429);
 };
-errors[431] = function(req, res) {
+errorPage[431] = function(req, res) {
 	respondPage('431', req, res, function() {
 		res.write('<h1>Error 431</h1>');
 		res.write('<p>Request header fields too large.</p>');
@@ -214,7 +214,7 @@ errors[431] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 431);
 };
-errors[500] = function(req, res) {
+errorPage[500] = function(req, res) {
 	respondPage('500', req, res, function() {
 		res.write('<h1>Error 500 :(</h1>');
 		res.write('<p>Internal server error. This will be automatically reported.</p>');
@@ -222,7 +222,7 @@ errors[500] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 500);
 };
-errors[505] = function(req, res) {
+errorPage[505] = function(req, res) {
 	respondPage('505', req, res, function() {
 		res.write('<h1>Error 505</h1>');
 		res.write('<p>HTTP version not supported.</p>');
@@ -230,7 +230,7 @@ errors[505] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 505);
 };
-errors[521] = function(req, res) {
+errorPage[521] = function(req, res) {
 	respondPage('521 | DevDoodle', req, res, function() {
 		res.write('<h1>Error 521 :(</h1>');
 		res.write('<p>We\'re down. We should be up soon!</p>');
@@ -360,34 +360,39 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
-					if (post.name.length > 16) return respondLoginPage(['Name must be no longer than 16 characters.'], req, res, post);
-					if (post.name.length < 3) return respondLoginPage(['Name must be at least 3 characters long.'], req, res, post);
-					if (!post.name.match(/^[\w-_!$^*]+$/)) return respondLoginPage(['Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."'], req, res, post);
-					if (post.pass != post.passc) return respondLoginPage(['Passwords don\'t match.'], req, res, post);
-					if (post.email.length > 256) return respondLoginPage(['Email address must be no longer than 256 characters.'], req, res, post);
-					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
-						if (err) throw err;
-						var pass = new Buffer(key).toString('base64'),
-							rstr = crypto.randomBytes(128).toString('base64');
-						collections.users.insert({
-							name: post.name,
-							pass: pass,
-							email: post.email,
-							emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
-							confirm: rstr,
-							joined: new Date().getTime(),
-							rep: 0,
-							level: 0
-						});
-						transport.sendMail({
-							from: 'DevDoodle <support@devdoodle.net>',
-							to: post.email,
-							subject: 'Confirm your account',
-							html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
-						});
-						respondPage('Account Created', req, res, function() {
-							res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
-							respondPageFooter(res);
+					var errors = [];
+					if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
+					if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
+					if (!post.name.match(/^[\w-_!$^*]+$/)) errors.push('Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."');
+					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
+					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
+					if (errors.length) return respondLoginPage(errors, req, res, post);
+					collections.users.findOne({name: post.name}, function(err, existingUser) {
+						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
+						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (err) throw err;
+							var pass = new Buffer(key).toString('base64'),
+								rstr = crypto.randomBytes(128).toString('base64');
+							collections.users.insert({
+								name: post.name,
+								pass: pass,
+								email: post.email,
+								emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
+								confirm: rstr,
+								joined: new Date().getTime(),
+								rep: 0,
+								level: 0
+							});
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: post.email,
+								subject: 'Confirm your account',
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+							});
+							respondPage('Account Created', req, res, function() {
+								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+								respondPageFooter(res);
+							});
 						});
 					});
 				} else {
@@ -472,7 +477,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})$/)) {
 		collections.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
-			if (!dispUser) return errors[404](req, res);
+			if (!dispUser) return errorPage[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
@@ -500,7 +505,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
 		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
-			if (user.name != i[1]) return errors[403](req, res);
+			if (user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
 				var post = '';
 				req.on('data', function(data) {
@@ -586,7 +591,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
-			if (!doc) return errors[404](req, res);
+			if (!doc) return errorPage[404](req, res);
 			respondPage(doc.name, req, res, function() {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
@@ -662,7 +667,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
-			if (!program) return errors[404](req, res);
+			if (!program) return errorPage[404](req, res);
 			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', req, res, function(user) {
 				if (!user) user = {};
 				if (program.deleted) {
@@ -754,7 +759,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		var loc = './learn/' + [i[1], i[2], i[3]].join('/') + '.html';
 		fs.readFile(loc, function(err, data) {
-			if (err) errors[404](req, res);
+			if (err) errorPage[404](req, res);
 			else {
 				data = data.toString();
 				respondPage(data.substr(0, data.indexOf('\n')), req, res, function() {
@@ -783,7 +788,7 @@ http.createServer(function(req, res) {
 					res.end('Success');
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
 		collections.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -866,7 +871,7 @@ http.createServer(function(req, res) {
 					});
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/edit-title') {
 		if (req.method == 'POST') {
 			var post = '';
@@ -890,7 +895,7 @@ http.createServer(function(req, res) {
 					});
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/vote') {
 		if (req.method == 'POST') {
 			var post = '';
@@ -955,7 +960,7 @@ http.createServer(function(req, res) {
 					});
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/delete') {
 		if (req.method == 'POST') {
 			var post = '';
@@ -985,7 +990,7 @@ http.createServer(function(req, res) {
 					});
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/undelete') {
 		if (req.method == 'POST') {
 			var post = '';
@@ -1008,19 +1013,19 @@ http.createServer(function(req, res) {
 					});
 				});
 			});
-		} else errors[405](req, res);
+		} else errorPage[405](req, res);
 	} else {
 		fs.stat('.' + req.url.pathname, function(err, stats) {
-			if (err) return errors[404](req, res);
+			if (err) return errorPage[404](req, res);
 			var i = sensitivePaths.length;
-			while (i--) if (req.url.pathname.indexOf(sensitivePaths[i]) != -1) return errors[403](req, res);
+			while (i--) if (req.url.pathname.indexOf(sensitivePaths[i]) != -1) return errorPage[403](req, res);
 			res.writeHead(200, {
 				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 				'Cache-Control': 'max-age=6012800, public',
 				'Content-Length': stats.size
 			});
 			fs.readFile('.' + req.url.pathname, function(err, data) {
-				if (err) errors[404](req, res)
+				if (err) errorPage[404](req, res)
 				else res.end(data);
 			});
 		});
