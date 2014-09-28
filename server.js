@@ -533,11 +533,13 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
+			var roomnames = {};
 			collections.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
+					roomnames[doc._id] = doc.name;
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>\n');
@@ -546,7 +548,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
