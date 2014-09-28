@@ -469,7 +469,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})$/)) {
 		collections.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errors[404](req, res);
@@ -497,27 +497,23 @@ http.createServer(function(req, res) {
 		});
 		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{1,16})\/changepass$/)) {
-		var nameGiven = i[1];
-		if (req.method == 'POST') {
-			var post = '';
-			req.on('data', function(data) {
-				post += data;
-			});
-			req.on('end', function() {
-				post = querystring.parse(post);
-				var errors = [];
-				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
-				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-				crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
-					if (err) throw err;
-					var old = new Buffer(key).toString('base64');
-					collections.users.findOne({
-						name: nameGiven,
-						pass: old
-					}, function(err, user) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+			if (err) throw err;
+			if (user.name != i[1]) return errors[403](req, res);
+			if (req.method == 'POST') {
+				var post = '';
+				req.on('data', function(data) {
+					post += data;
+				});
+				req.on('end', function() {
+					post = querystring.parse(post);
+					var errors = [];
+					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
+					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
+					crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
-						if (!user) return respondChangePassPage(['Incorrect old password.'], req, res, {});
+						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
 						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							collections.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
@@ -528,16 +524,18 @@ http.createServer(function(req, res) {
 						});
 					});
 				});
-			});
-		} else respondChangePassPage([], req, res, {});
+			} else respondChangePassPage([], req, res, {});
+		});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage('Chat', req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
+			var roomnames = {};
 			collections.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
+					roomnames[doc._id] = doc.name;
 				} else {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>\n');
@@ -546,7 +544,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-' + doc.user + ', <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time></a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -1044,11 +1042,13 @@ wss.on('connection', function(tws) {
 			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
 				if (err) throw err;
 				if (star && pids.indexOf(star.pid) == -1) {
-					tws.send(JSON.stringify({
-						event: 'star',
-						id: star.pid,
-						board: true
-					}));
+					try {
+						tws.send(JSON.stringify({
+							event: 'star',
+							id: star.pid,
+							board: true
+						}));
+					} catch (e) {}
 					pids.push(star.pid);
 				}
 			});

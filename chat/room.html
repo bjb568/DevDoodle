@@ -275,6 +275,10 @@
 		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
 		return false;
 	};
+	addEventListener('hashchange', function(e) {
+		var hash = e.newURL.split('#', 2)[1];
+		if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
+	});
 </script>
 <style>
 	#chat {
