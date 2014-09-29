@@ -126,6 +126,13 @@
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			div.innerHTML = markdown(data.body);
+			if (data.event == 'init') {
+				var imgs = div.getElementsByTagName('img'),
+					i = imgs.length;
+				while (i--) imgs[i].onload = function() {
+					cont.scrollTop = cont.scrollHeight;
+				}
+			}
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			var starcount = document.createElement('span');
