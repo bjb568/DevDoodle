@@ -282,9 +282,12 @@
 		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
 		return false;
 	};
+	var hashchangeready = false;
 	addEventListener('hashchange', function(e) {
-		var hash = e.newURL.split('#', 2)[1];
-		if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
+		if (hashchangeready) {
+			var hash = e.newURL.split('#', 2)[1];
+			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
+		} else haschangeready = true;
 	});
 </script>
 <style>

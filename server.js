@@ -505,7 +505,7 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
 		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
-			if (user.name != i[1]) return errorPage[403](req, res);
+			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
 				var post = '';
 				req.on('data', function(data) {
@@ -1062,16 +1062,17 @@ wss.on('connection', function(tws) {
 				if (err) throw err;
 				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
 				var skip = Math.max(0, Math.min(count - 92, i));
-				tws.send(JSON.stringify({
-					event: 'info-skipped',
-					body: skip,
-					ts: Math.min(count - 92, i) == i
-				}));
-				i = 0;
+				try {
+					tws.send(JSON.stringify({
+						event: 'info-skipped',
+						body: skip,
+						ts: Math.min(count - 92, i) == i
+					}));
+				} catch(e) {}
 				cursor.skip(skip).limit(92).each(function(err, doc) {
 					if (err) throw err;
 					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-					i++;
+					console.log(doc._id);
 					tws.send(JSON.stringify({
 						event: 'init',
 						id: doc._id,
@@ -1085,10 +1086,12 @@ wss.on('connection', function(tws) {
 						user: tws.user.name
 					}, function(err, star) {
 						if (err) throw err;
-						if (star) tws.send(JSON.stringify({
-								event: 'selfstar',
-								id: star.pid
-							}));
+						try {
+							if (star) tws.send(JSON.stringify({
+									event: 'selfstar',
+									id: star.pid
+								}));
+						} catch(e) {}
 					});
 				});
 			});
@@ -1194,15 +1197,17 @@ wss.on('connection', function(tws) {
 							if (err) throw err;
 							if (!doc) return;
 							i++;
-							tws.send(JSON.stringify({
-								event: 'init',
-								id: doc._id,
-								body: doc.body,
-								user: doc.user,
-								time: doc.time,
-								stars: doc.stars,
-								before: true
-							}));
+							try {
+								tws.send(JSON.stringify({
+									event: 'init',
+									id: doc._id,
+									body: doc.body,
+									user: doc.user,
+									time: doc.time,
+									stars: doc.stars,
+									before: true
+								}));
+							} catch(e) {}
 							collections.chatstars.findOne({
 								pid: doc._id,
 								user: tws.user.name
