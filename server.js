@@ -32,7 +32,7 @@ function markdown(src) {
 			}
 		}).join('');
 	}
-	if (!src.match(/\n\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
+	if (!src.match(/\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
 	src.replace(/\r|\s+$/g, '').replace(/\t/g, '	').split(/\n\n+/).forEach(function(b, f, R) {
 		var f = b.substr(0, 2),
 			R = {
