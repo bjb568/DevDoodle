@@ -32,7 +32,7 @@ function markdown(src) {
 			}
 		}).join('');
 	}
-	if (!src.match(/\n\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
+	if (!src.match(/\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
 	src.replace(/\r|\s+$/g, '').replace(/\t/g, '	').split(/\n\n+/).forEach(function(b, f, R) {
 		var f = b.substr(0, 2),
 			R = {
@@ -1069,10 +1069,9 @@ wss.on('connection', function(tws) {
 						ts: Math.min(count - 92, i) == i
 					}));
 				} catch(e) {}
-				cursor.skip(skip).limit(92).each(function(err, doc) {
+				cursor.skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 					if (err) throw err;
 					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-					console.log(doc._id);
 					tws.send(JSON.stringify({
 						event: 'init',
 						id: doc._id,
