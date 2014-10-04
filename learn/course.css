@@ -2,6 +2,7 @@ html, #content, #footer {
 	background: #000;
 	color: #fff;
 }
+#content { padding: 0 }
 a { color: inherit }
 #text-inner h1 { margin-top: .2em }
 h2 { margin-top: 0 }
@@ -54,7 +55,6 @@ h2 { margin-top: 0 }
 	}
 }
 @media (min-width: 1500px) {
-	#content { padding-top: 4px }
 	#text, #html, #output { margin-top: 2px }
 }
 #check {
