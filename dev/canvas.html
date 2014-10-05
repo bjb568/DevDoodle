@@ -121,7 +121,7 @@
 		mainContentEl = document.getElementById('main'),
 		mainBottomPad = 26,
 		code = document.getElementById('code'),
-		save = document.getElementById('save')
+		save = document.getElementById('save'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
 	code.onkeypress = function(e) {
@@ -280,10 +280,15 @@
 		if (data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.textContent = data.body;
+			div.innerHTML = markdown(data.body);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
-			sig.textContent = '-' + data.user + ', ';
+			sig.appendChild(document.createTextNode('-'));
+			var a = document.createElement('a');
+			a.href = '/user/' + data.user;
+			a.appendChild(document.createTextNode(data.user))
+			sig.appendChild(a);
+			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			if (!data.time) data.time = new Date().getTime();
 			permalink.appendChild(agot(data.time));
@@ -293,12 +298,16 @@
 			document.getElementById('comments').appendChild(div);
 		} else if (data.event == 'err') alert('Error: ' + data.body);
 	};
-	document.getElementById('delete').onclick = function() {
-		if (confirm('Do you want to delete this program?'))
-			request('/api/program/delete', function(res) {
-				if (res.indexOf('Error') == 0) alert(res);
-				else if (res == 'Success') location.reload();
-				else alert('Unknown error. Response was: ' + res);
-			});
-	};
+	var deletebutton = document.getElementById('delete');
+	if (deletebutton) {
+		deletebutton.onclick = function() {
+			if (confirm('Do you want to delete this program?')) {
+				request('/api/program/delete', function(res) {
+					if (res.indexOf('Error') == 0) alert(res);
+					else if (res == 'Success') location.reload();
+					else alert('Unknown error. Response was: ' + res);
+				});
+			}
+		};
+	}
 </script>

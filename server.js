@@ -549,7 +549,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -706,7 +706,7 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						collections.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
@@ -1043,20 +1043,6 @@ wss.on('connection', function(tws) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var pids = [];
-			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
-				if (err) throw err;
-				if (star && pids.indexOf(star.pid) == -1) {
-					try {
-						tws.send(JSON.stringify({
-							event: 'star',
-							id: star.pid,
-							board: true
-						}));
-					} catch (e) {}
-					pids.push(star.pid);
-				}
-			});
 			var cursor = collections.chat.find({room: tws.room});
 			cursor.count(function(err, count) {
 				if (err) throw err;
@@ -1071,27 +1057,44 @@ wss.on('connection', function(tws) {
 				} catch(e) {}
 				cursor.skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 					if (err) throw err;
-					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-					tws.send(JSON.stringify({
-						event: 'init',
-						id: doc._id,
-						body: doc.body,
-						user: doc.user,
-						time: doc.time,
-						stars: doc.stars
-					}));
-					collections.chatstars.findOne({
-						pid: doc._id,
-						user: tws.user.name
-					}, function(err, star) {
-						if (err) throw err;
-						try {
-							if (star) tws.send(JSON.stringify({
-									event: 'selfstar',
-									id: star.pid
-								}));
-						} catch(e) {}
-					});
+					if (doc) {
+						tws.send(JSON.stringify({
+							event: 'init',
+							id: doc._id,
+							body: doc.body,
+							user: doc.user,
+							time: doc.time,
+							stars: doc.stars
+						}));
+						collections.chatstars.findOne({
+							pid: doc._id,
+							user: tws.user.name
+						}, function(err, star) {
+							if (err) throw err;
+							try {
+								if (star) tws.send(JSON.stringify({
+										event: 'selfstar',
+										id: star.pid
+									}));
+							} catch(e) {}
+						});
+					} else {
+						var pids = [];
+						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
+							if (pids.indexOf(star.pid) == -1) {
+								try {
+									tws.send(JSON.stringify({
+										event: 'star',
+										id: star.pid,
+										board: true
+									}));
+								} catch (e) {}
+								pids.push(star.pid);
+							}
+						});
+					}
 				});
 			});
 			collections.chatusers.remove({
