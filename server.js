@@ -260,7 +260,7 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		collections.users.findOne({cookie: cookies.id}, function(err, user) {
+		collections.users.findOne({cookie: cookies.id || undefined}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a href="/user/' + user.name + '">' + user.name + '</a>');
@@ -500,10 +500,10 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id || undefined}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || undefined}, function(err, user) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
@@ -549,7 +549,7 @@ http.createServer(function(req, res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -706,7 +706,7 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						collections.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
@@ -1039,24 +1039,10 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || undefined}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var pids = [];
-			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
-				if (err) throw err;
-				if (star && pids.indexOf(star.pid) == -1) {
-					try {
-						tws.send(JSON.stringify({
-							event: 'star',
-							id: star.pid,
-							board: true
-						}));
-					} catch (e) {}
-					pids.push(star.pid);
-				}
-			});
 			var cursor = collections.chat.find({room: tws.room});
 			cursor.count(function(err, count) {
 				if (err) throw err;
@@ -1071,27 +1057,44 @@ wss.on('connection', function(tws) {
 				} catch(e) {}
 				cursor.skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 					if (err) throw err;
-					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-					tws.send(JSON.stringify({
-						event: 'init',
-						id: doc._id,
-						body: doc.body,
-						user: doc.user,
-						time: doc.time,
-						stars: doc.stars
-					}));
-					collections.chatstars.findOne({
-						pid: doc._id,
-						user: tws.user.name
-					}, function(err, star) {
-						if (err) throw err;
-						try {
-							if (star) tws.send(JSON.stringify({
-									event: 'selfstar',
-									id: star.pid
-								}));
-						} catch(e) {}
-					});
+					if (doc) {
+						tws.send(JSON.stringify({
+							event: 'init',
+							id: doc._id,
+							body: doc.body,
+							user: doc.user,
+							time: doc.time,
+							stars: doc.stars
+						}));
+						collections.chatstars.findOne({
+							pid: doc._id,
+							user: tws.user.name
+						}, function(err, star) {
+							if (err) throw err;
+							try {
+								if (star) tws.send(JSON.stringify({
+										event: 'selfstar',
+										id: star.pid
+									}));
+							} catch(e) {}
+						});
+					} else {
+						var pids = [];
+						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
+							if (pids.indexOf(star.pid) == -1) {
+								try {
+									tws.send(JSON.stringify({
+										event: 'star',
+										id: star.pid,
+										board: true
+									}));
+								} catch (e) {}
+								pids.push(star.pid);
+							}
+						});
+					}
 				});
 			});
 			collections.chatusers.remove({
@@ -1353,7 +1356,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || undefined}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;

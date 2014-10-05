@@ -116,8 +116,9 @@
 	cont.addEventListener('scroll', active);
 	socket.onmessage = function(e) {
 		console.log(e.data);
+		var data;
 		try {
-			var data = JSON.parse(e.data);
+			data = JSON.parse(e.data);
 		} catch(err) {
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
@@ -139,7 +140,7 @@
 			starcount.classList.add('starcount');
 			starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
 			sig.appendChild(starcount);
-			sig.appendChild(document.createTextNode(' '));
+			sig.appendChild(document.createTextNode(' -'));
 			var user = document.createElement('a');
 			user.href = '/user/' + data.user;
 			user.appendChild(document.createTextNode(data.user));
@@ -150,8 +151,7 @@
 			permalink.appendChild(agot(data.time));
 			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
-			sig.appendChild(document.createTextNode(': '));
-			div.insertBefore(sig, div.firstChild);
+			div.appendChild(sig);
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
 			tCtrls.children[1].onclick = ctrlsDelete.onclick;
@@ -179,37 +179,42 @@
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
 			} else request('/api/chat/' + data.id, function(res) {
+					var reqdata;
 					try {
-						var data = JSON.parse(res);
+						reqdata = JSON.parse(res);
 					} catch(err) {
 						console.log(err);
-						return alert('JSON Error. Response was: ' + e.data);
+						return alert('JSON Error. Response was: ' + res);
 					}
 					var li = document.createElement('li'),
 						div = document.createElement('div'),
-						starcount = document.createElement('span'),
-						sig = document.createElement('span'),
-						e = document.getElementById(data.id);
-					if (e) {
+						e = document.getElementById(reqdata.id);
+					if (e &amp;&amp; !data.board) {
 						e = e.getElementsByClassName('starcount')[0];
 						e.removeChild(e.firstChild);
 						e.appendChild(document.createTextNode(++e.dataset.count + '★'));
 					}
-					div.id = data.id + 's';
+					div.id = reqdata.id + 's';
 					div.classList.add('comment');
-					div.classList.add('pre');
-					starcount.classList.add('starcount');
-					starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars) + '★ '));
-					div.appendChild(starcount);
+					div.innerHTML = markdown(reqdata.body);
+					var sig = document.createElement('span');
 					sig.classList.add('c-sig');
+					var starcount = document.createElement('span');
+					starcount.classList.add('starcount');
+					starcount.appendChild(document.createTextNode((starcount.dataset.count = reqdata.stars || 0) + '★'));
+					sig.appendChild(starcount);
+					sig.appendChild(document.createTextNode(' -'));
+					var user = document.createElement('a');
+					user.href = '/user/' + reqdata.user;
+					user.appendChild(document.createTextNode(reqdata.user));
+					sig.appendChild(user);
+					sig.appendChild(document.createTextNode(', '));
 					var permalink = document.createElement('a');
-					if (!data.time) data.time = new Date().getTime();
-					permalink.appendChild(agot(data.time));
-					permalink.href = '#' + data.id;
+					if (!reqdata.time) reqdata.time = new Date().getTime();
+					permalink.appendChild(agot(reqdata.time));
+					permalink.href = '#' + (div.id = reqdata.id);
 					sig.appendChild(permalink);
-					sig.appendChild(document.createTextNode(' '));
 					div.appendChild(sig);
-					div.appendChild(document.createTextNode(data.body));
 					li.appendChild(div);
 					document.getElementById('stars').appendChild(li);
 				});

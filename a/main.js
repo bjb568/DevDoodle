@@ -63,7 +63,7 @@ function minHeight() {
 	if (innerWidth <= 1500 && sidebar) footer += sidebar.offsetHeight + 6;
 	if (noPageOverflow && !(pageOverflowMobile && innerWidth <= 800)) {
 		mainContentEl.style.minHeight = '';
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12), noPageOverflow) - mainBottomPad + 'px';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 12, noPageOverflow) - mainBottomPad + 'px';
 		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
@@ -116,7 +116,6 @@ addEventListener('DOMContentLoaded', function() {
 		document.getElementById('cont').hidden = true;
 		document.getElementById('cont').style.display = 'none';
 	}
-	minHeight();
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {
@@ -165,6 +164,8 @@ addEventListener('DOMContentLoaded', function() {
 			if (times[i].textContent != t) times[i].textContent = t;
 		}
 	}, 100);
+	
+	minHeight();
 });
 addEventListener('load', minHeight);
 addEventListener('resize', minHeight);
