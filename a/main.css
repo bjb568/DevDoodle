@@ -132,24 +132,24 @@ h2 small { margin: .2em .2em 0 0 }
 	width: 100%;
 	height: calc(100% - 4px);
 }
-.program:nth-child(n+5) { display: none }
+.program:nth-child(n+6) { display: none }
 @media (min-width: 500px) {
 	.program { max-width: 49% }
-	.program:nth-child(-n+6) { display: inline-block }
+	.program:nth-child(-n+7) { display: inline-block }
 }
 @media (min-width: 900px) {
 	.program { max-width: 33% }
-	.program:nth-child(-n+9) { display: inline-block }
+	.program:nth-child(-n+10) { display: inline-block }
 }
 @media (min-width: 1300px) {
 	.program { max-width: calc(25% - 4px) }
 	.program div { height: 20vw }
-	.program:nth-child(-n+12) { display: inline-block }
+	.program:nth-child(-n+13) { display: inline-block }
 }
 @media (min-width: 1700px) {
 	.program { max-width: calc(20% - 4px) }
 	.program div { height: 16vw }
-	.program:nth-child(-n+15) { display: inline-block }
+	.program:nth-child(-n+16) { display: inline-block }
 }
 .comment { margin-top: 3px }
 .comment #up, .comment #dn { width: 18px }
