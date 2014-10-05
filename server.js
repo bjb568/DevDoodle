@@ -260,7 +260,7 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		collections.users.findOne({cookie: cookies.id || undefined}, function(err, user) {
+		collections.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a href="/user/' + user.name + '">' + user.name + '</a>');
@@ -500,10 +500,10 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id || undefined}, {$unset: {cookie: 1}});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || undefined}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
@@ -1039,7 +1039,7 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || undefined}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -1356,7 +1356,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || undefined}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
