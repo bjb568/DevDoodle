@@ -500,7 +500,7 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
 		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
