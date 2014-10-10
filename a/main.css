@@ -31,7 +31,7 @@ body {
 .ib { display: inline-block }
 [hidden], .target:not(:target) { display: none }
 .rel, .comment { position: relative }
-.abs, .ctrls { position: absolute }
+.abs, .ctrls:not(.star-flag) { position: absolute }
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
