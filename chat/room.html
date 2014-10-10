@@ -235,16 +235,22 @@
 			}
 		} else if (data.event == 'adduser') {
 			var li = document.createElement('li');
-			li.id = 'user-' + (li.textContent = data.name);
+			li.id = 'user-' + data.name;
+			var a = document.createElement('a');
+			a.appendChild(document.createTextNode(data.name));
+			a.href = '/user/' + data.name;
+			li.appendChild(a);
 			document.getElementById('users').appendChild(li);
 		} else if (data.event == 'deluser') {
 			var li = document.getElementById('user-' + data.name);
-			li.parentNode.removeChild(li);
+			if (li) li.parentNode.removeChild(li);
 		} else if (data.event == 'statechange') {
-			if (data.state == 0) document.getElementById('user-' + data.user).classList.add('inactive');
-			else document.getElementById('user-' + data.user).classList.remove('inactive');
-			if (data.state == 2) document.getElementById('user-' + data.user).classList.add('writing');
-			else document.getElementById('user-' + data.user).classList.remove('writing');
+			var li = document.getElementById('user-' + data.user);
+			if (!li) return;
+			if (data.state == 0) li.classList.add('inactive');
+			else li.classList.remove('inactive');
+			if (data.state == 2) li.classList.add('writing');
+			else li.classList.remove('writing');
 		} else if (data.event == 'info-skipped') {
 			skipped = data.body;
 			if (data.ts) {
@@ -329,6 +335,7 @@
 	}
 	#stars li { margin: 4px 0 }
 	#editform { margin: 0 }
+	#users a { font-weight: normal }
 	#users:empty::after { content: 'No users in room' }
 	#stars:empty::after { content: 'No starred messages' }
 	.comment:not(:hover) .ctrls:not(:hover) { display: none }

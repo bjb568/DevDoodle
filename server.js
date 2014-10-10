@@ -24,11 +24,12 @@ function markdown(src) {
 			else {
 				return html(val)
 					.replace(/!\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '<img alt="$1" src="$2" />')
-					.replace(/\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '$1'.link('$2'))
+					.replace(/\[([^\]]+)]\((https?:\/\/[^\s("]+\.[^\s("]+)\)/g, '$1'.link('$2'))
 					.replace(/([^;["])(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$1' + '$3'.link('$2'))
 					.replace(/^(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$2'.link('$1'))
-					.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-					.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+					.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+					.replace(/\*(.+?)\*/g, '<em>$1</em>')
+					.replace(/---(.*?)---/g, '<s>$1</s>');
 			}
 		}).join('');
 	}
@@ -50,6 +51,7 @@ function markdown(src) {
 	});
 	return h;
 };
+
 
 var site = {
 	name: 'DevDoodle',
