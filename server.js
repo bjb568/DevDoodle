@@ -405,7 +405,7 @@ http.createServer(function(req, res) {
 					}, function(err, user) {
 						if (err) throw err;
 						if (user) {
-							if (!user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
 							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
 							var rstr = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success', req, res, function() {
