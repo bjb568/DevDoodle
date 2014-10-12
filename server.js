@@ -1023,7 +1023,7 @@ http.createServer(function(req, res) {
 				'Content-Length': stats.size
 			});
 			fs.readFile('.' + req.url.pathname, function(err, data) {
-				if (err) errorPage[404](req, res)
+				if (err) errorPage[404](req, res);
 				else res.end(data);
 			});
 		});
