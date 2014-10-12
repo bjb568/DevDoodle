@@ -42,7 +42,6 @@
 		document.getElementById('loginmsg').hidden = false;
 	}
 	ctrls.classList.add('ctrls');
-	ctrls.classList.add('star-flag');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
 		socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id)}));
