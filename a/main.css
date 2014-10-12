@@ -64,7 +64,7 @@ code { background: rgba(255, 255, 255, 0.6) }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
 .ctrls {
-	bottom: 100%; right: -1px;
+	bottom: 0; right: 0;
 	z-index: 1;
 	background: #cef;
 	line-height: 16px;
