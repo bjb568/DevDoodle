@@ -78,11 +78,10 @@ var crypto = require('crypto');
 var nodemailer = require('nodemailer');
 
 var transport = nodemailer.createTransport('SMTP', {
-	host: '7pnm-mwkh.accessdomain.com',
-	secureConnection: true,
-	port: 465,
+	host: 'localhost',
+	port: 25,
 	auth: {
-		user: 'support@devdoodle.net',
+		user: 'support',
 		pass: 'KnT$6D6hF35^75tNyu6t'
 	}
 });
