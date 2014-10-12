@@ -420,7 +420,10 @@ http.createServer(function(req, res) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({name: user.name}, {$unset: {confirm: ''}});
+				collections.users.update({name: user.name}, {
+					$set: {level: 1},
+					$unset: {confirm: ''}
+				});
 				respondPage('Account confirmed', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
