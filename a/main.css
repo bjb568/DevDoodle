@@ -35,7 +35,7 @@ body {
 .fullwidth { width: 100% }
 .maxwidth, img { max-width: 100% }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
-.rit, .user, .ctrls, h1 small, h2 small, .c-sig { float: right }
+.rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
@@ -64,14 +64,13 @@ code { background: rgba(255, 255, 255, 0.6) }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
 .ctrls {
-	bottom: 0; right: 0;
+	bottom: -1px; right: -1px;
 	z-index: 1;
 	background: #cef;
 	line-height: 16px;
 	padding-bottom: 1px;
 }
 .comment img { max-height: 200px }
-.comment:first-child .ctrls { top: 100%; bottom: auto; }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
