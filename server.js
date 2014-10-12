@@ -76,15 +76,15 @@ var cookie = require('cookie');
 var crypto = require('crypto');
 
 var nodemailer = require('nodemailer');
-
-var transport = nodemailer.createTransport('SMTP', {
+var smtpPool = require('nodemailer-smtp-pool');
+var transport = nodemailer.createTransport(smtpPool({
 	host: 'localhost',
 	port: 25,
 	auth: {
 		user: 'support',
 		pass: 'KnT$6D6hF35^75tNyu6t'
 	}
-});
+}));
 
 var mongo = require('mongodb');
 var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
