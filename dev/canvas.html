@@ -30,7 +30,7 @@
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	body, #content, #footer, #main { background: #000 }
+	html, #content, #footer, #main { background: #000 }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -38,14 +38,16 @@
 	#meta {
 		clear: both;
 		padding: 4px;
+		margin-top: 8px;
 		background: rgba(255, 255, 255, .8);
 		color: #000;
 	}
 	#code, #output {
 		width: 95%;
-		height: 500px;
 		outline: none;
 	}
+	#main { height: 500px }
+	#row { height: calc(100% - 2rem - 2px) }
 	#code {
 		color: #fff;
 		background: #000;
@@ -55,12 +57,12 @@
 		resize: none;
 		margin-bottom: 8px;
 	}
-	@media (min-width: 650px) {
+	#code, #output { height: calc(50% - 4px) }
+	@media (min-width: 600px) {
 		h1 {
 			height: 1.65rem;
 			margin-bottom: .35em;
 		}
-		#row { height: calc(100% - 2rem) }
 		#code, #output { height: 100% }
 		#code { width: 60% }
 		#output {
@@ -68,9 +70,12 @@
 			float: right;
 		}
 	}
-	@media (min-width: 650px) and (max-width: 800px) {
+	@media (min-width: 600px) and (max-width: 800px) {
 		#code { width: 55% }
 		#output { width: 44% }
+	}
+	@media (min-width: 1500px) {
+		#code { margin-bottom: 0 }
 	}
 	@media (min-width: 1600px) {
 		#code { width: 65% }
@@ -118,8 +123,8 @@
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,
+		pageOverflowMobile = true,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 26,
 		code = document.getElementById('code'),
 		save = document.getElementById('save'),
 		up = document.getElementById('up'),
