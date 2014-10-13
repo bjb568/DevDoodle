@@ -7,19 +7,19 @@ Basic Tags
 			<div>If you look at a newspaper, you'll most likely notice the big black letters that spell out the headline. In HTML, these are called headers, and they're quite useful.</div>
 			<h3>H is for Header</h3>
 			<div>A headers' size can vary. Let's imagine you write headlines for newspapers. You're going to want your text to be able to be visible from outer space! In this case, you would want the biggest header there is! But how would we specify size? Well, we use numbers from 1-6, where 1 is the largest, and 6 is the smallest. So, for your headline to be huge, you'll need to use the <code>&lt;h1>&lt;/h1><code> tag. But what if you had a subtitle to the headline, and you want to make it slightly smaller than the headline, so that people can see it's a subtitle. You decide to use the </code>&lt;h2>&lt;/h2></code>tag. Starting to see a pattern? <code>&lt;h1></code> is the largest header, and <code>&lt;h2></code> is the smallest.</div>
-			<code class="blk">&lt;p>This is a paragraph.&lt;/p></code>
-			<p>To move on, write a set of paragraph tags in between the body tags. You can put any text you want in them.</p>
+			<code class="blk">&lt;h1>I'm going to be big! :D&lt;/h1>&lt;h2>I'm going to be tiny. :(&lt;/h2></code>
+			<p>To move on, write all the possible header tags from largest to smallest, and in each one, put "Smaller".</p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
 			</div>
 			<div id="failed1" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the tags correctly? They look like this: <code>&lt;p>&lt;/p></code></p>
+				<p>Did you write the tags correctly? Remember, there are 6 sizes, and they look like this: <code>&lt;h1>&lt;/h1>&lt;h2>&lt;/h2>&lt;h3>&lt;/h3>&lt;/h3>&lt;h4>&lt;/h4>&lt;h5>&lt;/h5>&lt;h6>&lt;/h6></code></p>
 			</div>
 			<div id="failed2" class="failed clearfix">
 				<h2>Almost!</h2>
-				<p>Don't put anything like tags or the <code>&lt;</code> character between the p tags, just simple text. Also, the <code>&amp;</code> character can cause problems, so avoid that for now too.</p>
+				<p>Make sure to write "smaller" in between the header tags, like this: <code>&lt;h1>&lt;/h1></code></p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></div>
@@ -27,7 +27,9 @@ Basic Tags
 	<textarea id="html">&lt;!DOCTYPE html>
 &lt;html>
 	&lt;head>&lt;/head>
-	&lt;body>&lt;/body>
+	&lt;body>
+		&lt;!-- Hi! I'm a comment, you're going to learn about me in the next lesson, so go ahead and delete me, and replace me with the header tags.-->
+	&lt;/body>
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
@@ -43,11 +45,11 @@ Basic Tags
 		setTimeout(run, 0);
 	});
 	function submit() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[^&amp;&lt;]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;h1>&lt;\/h1>&lt;h2>&lt;\/h2>&lt;h3>&lt;\/h3>&lt;\/h3>&lt;h4>&lt;\/h4>&lt;h5>&lt;\/h5>&lt;h6>&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('passed').classList.add('show');
 			document.getElementById('failed1').classList.remove('show');
 			document.getElementById('failed2').classList.remove('show');
-		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[\s\S]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s&lt;h1>&lt;\/h1>&lt;h2>&lt;\/h2>&lt;h3>&lt;\/h3>&lt;\/h3>&lt;h4>&lt;\/h4>&lt;h5>&lt;\/h5>&lt;h6>&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('failed2').classList.add('show');
 			document.getElementById('passed').classList.remove('show');
 			document.getElementById('failed1').classList.remove('show');
