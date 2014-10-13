@@ -43,11 +43,11 @@ Basic Tags
 		setTimeout(run, 0);
 	});
 	function submit() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[^&amp;&lt;]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;p>[^&amp;&lt;]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('passed').classList.add('show');
 			document.getElementById('failed1').classList.remove('show');
 			document.getElementById('failed2').classList.remove('show');
-		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[\s\S]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;p>[\s\S]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('failed2').classList.add('show');
 			document.getElementById('passed').classList.remove('show');
 			document.getElementById('failed1').classList.remove('show');
