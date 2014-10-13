@@ -4,20 +4,16 @@ Basic Tags
 		<div id="text-inner">
 			<h1>Basic Tags</h1>
 			<h2>Comments</h2>
-			<div>Before we move on to more advanced tags, we need to go over comments. As you saw in the last lesson, a comment is used to comment (no joke!) on the code. Why would we need to comment on the code? Although it is optional to write comments, and they don't really do anything, it helps to stay organized.</div>
-			<code class="blk">&lt!--This is what a comment looks like. It doesn't do anything.--></code>
-			<p>To move on, write "Hi, i'm a comment." in a comment.</p>
+			<p>As you saw in the last lesson, a comment is used to comment (no joke!) in the code. Why would we need to comment on the code? Altho comments don't affect the browser and what the end user will see, it helps you, the developer, stay organized. Unlike most HTML tags, comments start with <code>&lt;!--</code> and end with <code>--></code>. You can put anything in a comment.</p>
+			<code class="blk">&lt;!-- This is what a comment looks like. It doesn't functionally do anything. --></code>
+			<p>To move on, write a comment containing anything you want!</p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
 			</div>
-			<div id="failed1" class="failed clearfix">
+			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the comment correctly? It looks like this: <code>&lt!--Hi, I'm a comment.--></code></p>
-			</div>
-			<div id="failed2" class="failed clearfix">
-				<h2>Almost!</h2>
-				<p>Did you write the comment correctly? It looks like this: <code>&lt!--Hi, I'm a comment.--></code></p>
+				<p>Did you write the comment correctly? It looks like this: <code>&lt;!-- --></code></p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></div>
@@ -41,17 +37,11 @@ Basic Tags
 		setTimeout(run, 0);
 	});
 	function submit() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[^&amp;&lt;]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		if (document.getElementById('html').value.match(/&lt;!--.*-->/i)) {
 			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed1').classList.remove('show');
-			document.getElementById('failed2').classList.remove('show');
-		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>&lt;p>[\s\S]*&lt;\/p>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
-			document.getElementById('failed2').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed').classList.remove('show');
 		} else {
-			document.getElementById('failed1').classList.add('show');
-			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('failed').classList.add('show');
 			document.getElementById('passed').classList.remove('show');
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
