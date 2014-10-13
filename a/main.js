@@ -60,17 +60,19 @@ var noPageOverflow = false,
 function minHeight() {
 	var footer = document.getElementById('footer').offsetHeight,
 		sidebar = document.getElementById('sidebar');
-	if (innerWidth <= 1500 && sidebar) footer += sidebar.offsetHeight + 6;
-	if (noPageOverflow && !(pageOverflowMobile && innerWidth <= 800)) {
+	if (innerWidth < 1500 && sidebar) footer += sidebar.offsetHeight + 6;
+	if (noPageOverflow && !(pageOverflowMobile && innerWidth < 800)) {
 		mainContentEl.style.minHeight = '';
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 12, noPageOverflow) - mainBottomPad + 'px';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 32, noPageOverflow) - mainBottomPad + 'px';
 		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
-		mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth <= 1500 ? 6 : 12) - mainBottomPad + 'px';
+		if (innerWidth >= 800) mainContentEl.style.minHeight = innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
+		else mainContentEl.style.minHeight = '';
 		if (sidebar) {
-			if (innerWidth > 1500) sidebar.style.height = mainContentEl.style.minHeight;
+			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.style.minHeight;
 			else sidebar.style.height = '';
+			if (mainContentEl.style.minHeight != innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px') minHeight();
 		}
 	}
 };
