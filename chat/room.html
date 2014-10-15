@@ -41,6 +41,9 @@
 		document.getElementById('ta').hidden = document.getElementById('btn').hidden = true;
 		document.getElementById('loginmsg').hidden = false;
 	}
+	if (username) {
+		adduser(username);
+	}
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
@@ -90,6 +93,9 @@
 		cont.scrollTop = cont.scrollHeight;
 		cont.onscroll();
 	};
+	function adduser(nuser) {
+	    socket.send(JSON.stringify({event: 'adduser', name: nuser}));
+	}
 	function statechange(nstate) {
 		if (nstate == 1 &amp;&amp; document.getElementById('ta').value) nstate = 2;
 		if (state != nstate) {
@@ -234,13 +240,15 @@
 				}
 			}
 		} else if (data.event == 'adduser') {
-			var li = document.createElement('li');
-			li.id = 'user-' + data.name;
-			var a = document.createElement('a');
-			a.appendChild(document.createTextNode(data.name));
-			a.href = '/user/' + data.name;
-			li.appendChild(a);
-			document.getElementById('users').appendChild(li);
+			if (!document.getElementById('user-' + data.name)) {
+				var li = document.createElement('li');
+				li.id = 'user-' + data.name;
+				var a = document.createElement('a');
+				a.appendChild(document.createTextNode(data.name));
+				a.href = '/user/' + data.name;
+				li.appendChild(a);
+				document.getElementById('users').appendChild(li);
+			}
 		} else if (data.event == 'deluser') {
 			var li = document.getElementById('user-' + data.name);
 			if (li) li.parentNode.removeChild(li);
