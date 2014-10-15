@@ -1107,7 +1107,7 @@ wss.on('connection', function(tws) {
 							name: doc.name
 						}));
 					else if (user.name) {
-						if (rem) tws.send(JSON.stringify({
+						if (rem.result.n) tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name
 							}));
