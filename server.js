@@ -1104,22 +1104,26 @@ wss.on('connection', function(tws) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
-							name: doc.name
+							name: doc.name,
+							state: doc.state
 						}));
 					else if (user.name) {
 						if (rem.result.n) tws.send(JSON.stringify({
 								event: 'adduser',
-								name: user.name
+								name: user.name,
+								state: 1
 							}));
 						else
 							for (var i in wss.clients)
 								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 									event: 'adduser',
-									name: user.name
+									name: user.name,
+									state: 1
 								}));
 						collections.chatusers.insert({
 							name: user.name,
-							room: tws.room
+							room: tws.room,
+							state: 1
 						});
 					}
 				});

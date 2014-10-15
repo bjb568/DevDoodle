@@ -235,6 +235,8 @@
 			}
 		} else if (data.event == 'adduser') {
 			var li = document.createElement('li');
+			if (data.state == 0) li.classList.add('inactive');
+			if (data.state == 2) li.classList.add('writing');
 			li.id = 'user-' + data.name;
 			var a = document.createElement('a');
 			a.appendChild(document.createTextNode(data.name));
