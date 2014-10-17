@@ -178,46 +178,39 @@
 				var g;
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
-			} else request('/api/chat/' + data.id, function(res) {
-					var reqdata;
-					try {
-						reqdata = JSON.parse(res);
-					} catch(err) {
-						console.log(err);
-						return alert('JSON Error. Response was: ' + res);
-					}
-					var li = document.createElement('li'),
-						div = document.createElement('div'),
-						e = document.getElementById(reqdata.id);
-					if (e &amp;&amp; !data.board) {
-						e = e.getElementsByClassName('starcount')[0];
-						e.removeChild(e.firstChild);
-						e.appendChild(document.createTextNode(++e.dataset.count + '★'));
-					}
-					div.id = reqdata.id + 's';
-					div.classList.add('comment');
-					div.innerHTML = markdown(reqdata.body);
-					var sig = document.createElement('span');
-					sig.classList.add('c-sig');
-					var starcount = document.createElement('span');
-					starcount.classList.add('starcount');
-					starcount.appendChild(document.createTextNode((starcount.dataset.count = reqdata.stars || 0) + '★'));
-					sig.appendChild(starcount);
-					sig.appendChild(document.createTextNode(' -'));
-					var user = document.createElement('a');
-					user.href = '/user/' + reqdata.user;
-					user.appendChild(document.createTextNode(reqdata.user));
-					sig.appendChild(user);
-					sig.appendChild(document.createTextNode(', '));
-					var permalink = document.createElement('a');
-					if (!reqdata.time) reqdata.time = new Date().getTime();
-					permalink.appendChild(agot(reqdata.time));
-					permalink.href = '#' + (div.id = reqdata.id);
-					sig.appendChild(permalink);
-					div.appendChild(sig);
-					li.appendChild(div);
-					document.getElementById('stars').appendChild(li);
-				});
+			} else {
+				var li = document.createElement('li'),
+					div = document.createElement('div'),
+					e = document.getElementById(data.id);
+				if (e &amp;&amp; !data.board) {
+					e = e.getElementsByClassName('starcount')[0];
+					e.removeChild(e.firstChild);
+					e.appendChild(document.createTextNode(++e.dataset.count + '★'));
+				}
+				div.id = data.id + 's';
+				div.classList.add('comment');
+				div.innerHTML = markdown(data.body);
+				var sig = document.createElement('span');
+				sig.classList.add('c-sig');
+				var starcount = document.createElement('span');
+				starcount.classList.add('starcount');
+				starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
+				sig.appendChild(starcount);
+				sig.appendChild(document.createTextNode(' -'));
+				var user = document.createElement('a');
+				user.href = '/user/' + data.user;
+				user.appendChild(document.createTextNode(data.user));
+				sig.appendChild(user);
+				sig.appendChild(document.createTextNode(', '));
+				var permalink = document.createElement('a');
+				if (!data.time) data.time = new Date().getTime();
+				permalink.appendChild(agot(data.time));
+				permalink.href = '#' + (div.id = data.id);
+				sig.appendChild(permalink);
+				div.appendChild(sig);
+				li.appendChild(div);
+				document.getElementById('stars').appendChild(li);
+			};
 		} else if (data.event == 'unstar') {
 			if (e = document.getElementById(data.id)) {
 				e = e.getElementsByClassName('starcount')[0];
