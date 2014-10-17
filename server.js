@@ -1080,17 +1080,31 @@ wss.on('connection', function(tws) {
 						var pids = [];
 						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
 							if (err) throw err;
-							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
-							if (pids.indexOf(star.pid) == -1) {
-								try {
-									tws.send(JSON.stringify({
-										event: 'star',
-										id: star.pid,
-										board: true
-									}));
-								} catch (e) {}
-								pids.push(star.pid);
+							if (star) {
+								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+							} else {
+								collections.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
+									try {
+										tws.send(JSON.stringify({
+											event: 'star',
+											id: post.id,
+											board: true,
+											body: post.body,
+											stars: post.stars,
+											user: post.user,
+											time: post.time
+										}));
+									} catch (e) {
+										console.log(e);
+									}
+								});
+								return tws.send(JSON.stringify({event: 'info-complete'}));
 							}
+						});
+						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
+							if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
 						});
 					}
 				});
@@ -1104,22 +1118,26 @@ wss.on('connection', function(tws) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
-							name: doc.name
+							name: doc.name,
+							state: doc.state
 						}));
 					else if (user.name) {
-						if (rem) tws.send(JSON.stringify({
+						if (rem.result.n) tws.send(JSON.stringify({
 								event: 'adduser',
-								name: user.name
+								name: user.name,
+								state: 1
 							}));
 						else
 							for (var i in wss.clients)
 								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 									event: 'adduser',
-									name: user.name
+									name: user.name,
+									state: 1
 								}));
 						collections.chatusers.insert({
 							name: user.name,
-							room: tws.room
+							room: tws.room,
+							state: 1
 						});
 					}
 				});
