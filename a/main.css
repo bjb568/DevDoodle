@@ -196,7 +196,7 @@ h1 {
 h2, h1.title, article h1 { font-size: 1.3em }
 h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
-	font-size: 1em;
+	font-size: 1.1em;
 }
 a, .ctrl {
 	color: #000;

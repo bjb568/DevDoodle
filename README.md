@@ -4,4 +4,6 @@ DevDoodle is a programmers' network where you can do tutorials, ask questions, a
 
 You can visit [here](http://devdoodle.net).
 
+Need help? Make sure to visit our [wiki](https://github.com/bjb568/DevDoodle/wiki).
+
 This code is licensed under a do-not-use-me-or-you-will-be-sued license.
