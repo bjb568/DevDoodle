@@ -97,7 +97,7 @@ function ago(od) {
 	else if (d < 2592000) return Math.round(d / 86400) + 'd ago';
 	else {
 		d = new Date(od);
-		return 'on ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + ' \'' + d.getUTCFullYear().toString().substr(2);
+		return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + ' \'' + d.getUTCFullYear().toString().substr(2);
 	}
 };
 function agot(d) {
