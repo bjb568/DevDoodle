@@ -65,7 +65,7 @@ function minHeight() {
 	if (innerWidth < 1500 && sidebar) footer += sidebar.offsetHeight + 6;
 	if (noPageOverflow && !(pageOverflowMobile && innerWidth < 800)) {
 		mainContentEl.style.minHeight = '';
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -24 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 32, noPageOverflow) - mainBottomPad + 'px';
+		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 12, noPageOverflow) - mainBottomPad + 'px';
 		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
