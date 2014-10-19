@@ -543,7 +543,7 @@ http.createServer(function(req, res) {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>\n');
 					res.write('</div>\n');
-					res.write('<aside id="sidebar">\n');
+					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
