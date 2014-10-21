@@ -1084,18 +1084,21 @@ wss.on('connection', function(tws) {
 								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
 							} else {
 								collections.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
-									try {
-										tws.send(JSON.stringify({
-											event: 'star',
-											id: post.id,
-											board: true,
-											body: post.body,
-											stars: post.stars,
-											user: post.user,
-											time: post.time
-										}));
-									} catch (e) {
-										console.log(e);
+									if (err) throw err;
+									if (post) {
+										try {
+											tws.send(JSON.stringify({
+												event: 'star',
+												id: post._id,
+												board: true,
+												body: post.body,
+												stars: post.stars,
+												user: post.user,
+												time: post.time
+											}));
+										} catch (e) {
+											console.log(e);
+										}
 									}
 								});
 								return tws.send(JSON.stringify({event: 'info-complete'}));
