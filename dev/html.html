@@ -178,7 +178,7 @@
 		var e = this;
 		if (e.classList.contains('progress')) return;
 		e.classList.add('progress');
-		setTimeout(function() {
+		var savingTimeout = setTimeout(function() {
 			if (e.textContent == 'Save') e.textContent = 'Saving…';
 		}, 200);
 		request('/api/program/save?type=2', function(res) {
