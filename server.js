@@ -487,7 +487,7 @@ http.createServer(function(req, res) {
 				res.write('<div class="lft lftpad">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (if you don\'t have a gravatar account, you must create one)\n');
+				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
@@ -803,7 +803,7 @@ http.createServer(function(req, res) {
 				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
-					collections.users.update({name: user.name}, {$set: {email: newemail}});
+					collections.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
 					res.end('Success');
 				});
 			});
@@ -1105,18 +1105,21 @@ wss.on('connection', function(tws) {
 								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
 							} else {
 								collections.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
-									try {
-										tws.send(JSON.stringify({
-											event: 'star',
-											id: post.id,
-											board: true,
-											body: post.body,
-											stars: post.stars,
-											user: post.user,
-											time: post.time
-										}));
-									} catch (e) {
-										console.log(e);
+									if (err) throw err;
+									if (post) {
+										try {
+											tws.send(JSON.stringify({
+												event: 'star',
+												id: post._id,
+												board: true,
+												body: post.body,
+												stars: post.stars,
+												user: post.user,
+												time: post.time
+											}));
+										} catch (e) {
+											console.log(e);
+										}
 									}
 								});
 								return tws.send(JSON.stringify({event: 'info-complete'}));
