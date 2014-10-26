@@ -97,6 +97,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.users = collection;
 		});
+		db.collection('questions', function(err, collection) {
+			if (err) throw err;
+			collections.questions = collection;
+		});
 		db.collection('chat', function(err, collection) {
 			if (err) throw err;
 			collections.chat = collection;
@@ -529,8 +533,25 @@ http.createServer(function(req, res) {
 				});
 			} else respondChangePassPage([], req, res, {});
 		});
+	} else if (req.url.pathname == '/qa/') {
+		respondPage(null, req, res, function() {
+			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
+			collections.questions.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
+				else respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/ask') {
+		respondPage('New Question', req, res, function() {
+			fs.readFile('qa/ask.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
 	} else if (req.url.pathname == '/chat/') {
-		respondPage('Chat', req, res, function() {
+		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
 			collections.chatrooms.find().each(function(err, doc) {
@@ -600,7 +621,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
-			res.write('<h1>Programs</h1>\n');
+			res.write('<h1>Programs <small><a href="ask">New Program</a></small></h1>\n');
 			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {

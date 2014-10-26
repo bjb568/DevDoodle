@@ -9,9 +9,10 @@ body {
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
 }
-*::-webkit-input-placeholder {
-	color: #666;
-	font-size: .9em;
+::-webkit-input-placeholder {
+	color: #555;
+	font-size: .85em;
+	line-height: 1.5em;
 }
 @keyframes target { 
 	0%, 30% {
@@ -39,20 +40,20 @@ body {
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
-.nomar, body, input, .comment > :first-child { margin: 0 }
+.nomar, body, input, .comment > :first-child, .comment .hover *, fieldset, textarea { margin: 0 }
 .tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
-.bumar:not(:first-child), h1:not(:first-child) { margin-top: 8px }
-.bmar, .error, .half, #content { margin-bottom: 6px }
+.bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
+.bmar, .error, .half, #content, aside.rit { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
-.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 4px }
-.spad { padding: 3px }
+.indt { margin-left: 32px }
+.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
-.br, .desc { border-radius: 4px }
+.br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, section, article { background: rgba(255, 255, 255, .4) }
 code { background: rgba(255, 255, 255, 0.6) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
@@ -97,6 +98,10 @@ code.blk {
 h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
 h2 small { margin: .2em .2em 0 0 }
+fieldset {
+	padding: 0;
+	border: none;
+}
 .popup {
 	position: absolute;
 	top: 20%; right: 20%; left: 20%;
@@ -159,7 +164,6 @@ h2 small { margin: .2em .2em 0 0 }
 	padding: 2px 2px 0 0;
 	height: 16px;
 }
-.comment .hover * { margin: 0 }
 .comment:hover .hover { opacity: 1 }
 .comment .rit {
 	color: #666;
@@ -171,7 +175,7 @@ ul, ol, p { margin: 6px 0 2px 0 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, footer, .clearfix::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
+.clear, footer, .clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -259,24 +263,22 @@ textarea {
 	padding: 4px 6px;
 }
 #content { padding-bottom: 24px }
-#nav > .active:nth-child(3) { position: relative }
+#nav > .active { position: relative }
 @media (min-width: 380px) and (max-width: 799px) { 
-	#nav > :not(.active) + nav + a:nth-child(5) { border-right: 1px solid #aaa }
+	#nav > :not(.active) + nav + a:nth-child(5):not(.active) { border-right: 1px solid #aaa }
 }
-@media (max-width: 799px) { 
+@media (max-width: 799px) {
+	#nav > a.active { text-decoration: underline }
 	#nav nav > a.active { font-weight: bold }
 	#nav :not(.active) + nav { display: none }
-	#nav > .active:nth-child(3)::before {
-		border-top: 1.5px solid #fff;
-		border-left: 1.5px solid #fff;
-	}
 	#nav nav {
 		background: #333;
 		display: inline-block;
 	}
 }
 @media (min-width: 140px) and (max-width: 240px) {
-	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
+	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after,
+	#nav > .active + nav + :nth-child(7)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
 		white-space: pre;
 		content: '\a';
 	}
@@ -291,26 +293,10 @@ textarea {
 	#nav a:not(#logo) {
 		margin-top: 4px;
 	}
-	#nav nav {
-		border-radius: 6px;
-		margin-right: 4px;
-	}
+	#nav nav { margin-right: 6px }
 	#nav form {
 		margin: 0 3px;
 		max-width: calc(100% - 12px);
-	}
-	#nav > .active:nth-child(3)::before { display: none }
-	#nav > .active:nth-child(3) { padding-right: 14px }
-	#nav > .active:nth-child(3)::after {
-		content: ' ⟨';
-		color: #ddd;
-		position: absolute;
-		left: 100%;
-		margin-left: -9px;
-		bottom: -2px;
-		display: block;
-		transform: scale(2.5, 1.3);
-		-webkit-transform: scale(2.5, 1.3);
 	}
 }
 @media (min-width: 280px) and (max-width: 379px) {
@@ -327,10 +313,15 @@ textarea {
 	.sidebar.nonvital { display: none }
 	.sidebar { margin-top: 8px }
 }
+aside.rit { background: rgba(255, 255, 100, 0.5) }
 @media (min-width: 701px) {
 	.half { float: left }
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 	.half { width: 49.5% }
+	aside.rit {
+		width: calc(10% + 300px);
+		margin-left: 6px;
+	}
 }
 @media (min-width: 380px) and (max-width: 1499px) { 
 	#nav {
@@ -343,10 +334,6 @@ textarea {
 		margin: 0;
 	}
 	#nav nav { display: inline-block }
-	#nav > .active:nth-child(3)::before {
-		border-top: 2px solid #fff;
-		border-left: 2px solid #fff;
-	}
 }
 @media (min-width: 360px) {
 	line {
@@ -398,15 +385,16 @@ textarea {
 	#cont { margin: 0 auto }
 	#logo { height: 2rem }
 	#nav > :nth-child(-n+5) { float: left }
-	#nav > :nth-child(6) { border-left: 1px solid #444 }
+	#nav > :nth-child(7) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
 	#nav nav {
 		position: absolute;
 		z-index: 1;
 		top: 2rem;
-		left: 14.8rem;
 		border-top: 1px solid #888;
 	}
+	#nav nav:nth-child(4) { left: calc(14.125rem + 11px) }
+	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
 @media (min-width: 1500px) {
