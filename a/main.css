@@ -451,6 +451,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		overflow: hidden;
 		height: 2rem;
 		transition: height 0.2s, border 0.15s;
+		padding-left: 32px;
 	}
 	#nav nav::before {
 		content: '＞';
