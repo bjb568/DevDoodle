@@ -631,13 +631,13 @@ http.createServer(function(req, res) {
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
-					res.write('<a href="list/" class="center-text blk">See more</a>\n');
+					res.write('<a href="search/" class="center-text blk">See more</a>\n');
 					respondPageFooter(res);
 				}
 			});
 		});
-	} else if (req.url.pathname == '/dev/list/') {
-		respondPage('List', req, res, function() {
+	} else if (req.url.pathname == '/dev/search/') {
+		respondPage('Search', req, res, function() {
 			var liststr = '',
 				sort = (req.url.query || {}).sort || 'hot',
 				sortDict = {
@@ -651,7 +651,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
-					fs.readFile('dev/list.html', function(err, data) {
+					fs.readFile('dev/search.html', function(err, data) {
 						if (err) throw err;
 						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
 						respondPageFooter(res);
