@@ -1,5 +1,5 @@
 <h1>New Question</h1>
-<form onsubmit="javascript:!arguments[0].preventDefault() &amp;&amp; formSubmit()">
+<form id="form" onsubmit="javascript:!arguments[0].preventDefault() &amp;&amp; formSubmit()" method="post" action="preview">
 	<aside class="rit">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title should try to efficiently capture the essence of the question. Try to avoid titles like:</p>
@@ -16,10 +16,11 @@
 		<p>Remember to keep it as short and concise as possible while still accurately describing the problem.</p>
 	</aside>
 	<fieldset id="step0">
-		<h2><input type="text" name="title" autofocus="" placeholder="Title" class="fullwidth" /></h2>
-		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
+		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" required="" maxlength="144" /></h2>
+		<h2><input type="text" name="lang" placeholder="Language" id="lang" required="" /></h2>
 		<div id="langsug" hidden="" class="abs"></div>
 		<button type="submit" id="submit1">Next</button>
+		<div id="err1" class="err"></div>
 	</fieldset>
 	<fieldset id="step1" class="hidden">
 		<h2>Has your question already been asked before?</h2>
@@ -40,8 +41,9 @@
 	<fieldset id="step2" class="hidden">
 		<h2>Question Body</h2>
 		<textarea name="description" id="description" placeholder="Description"></textarea>
-		<h2><input type="text" name="question" placeholder="Core Question" /></h2>
+		<h2><input type="text" name="question" id="question" placeholder="Core Question" class="fullwidth" maxlength="144" /></h2>
 		<button type="submit" id="submit3">Next</button>
+		<div id="err3" class="err"></div>
 	</fieldset>
 	<aside id="codehelp" class="rit" hidden="">
 		<h2>Adding relevant code</h2>
@@ -56,7 +58,7 @@
 		<h2>Categorization</h2>
 		<h3>My question is about…</h3>
 		<div id="types">
-			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" /> fixing non-working code</label>
+			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" checked="" /> fixing non-working code</label>
 			<label for="type-bug"><input type="radio" name="type" value="bug" id="type-bug" /> unexpected behavior in working code</label>
 			<label for="type-imp"><input type="radio" name="type" value="imp" id="type-imp" /> improving working code</label>
 			<label for="type-how"><input type="radio" name="type" value="how" id="type-how" /> how to achieve an end result</label>
@@ -149,6 +151,14 @@
 	}
 	#step4 > * { overflow: hidden }
 	label { display: table }
+	.err {
+		position: absolute;
+		padding: 8px;
+		width: 300px;
+		min-height: 64px;
+		background: #f00;
+	}
+	.err:empty { opacity: 0 }
 </style>
 <script>
 	var step = 0,
@@ -180,35 +190,61 @@
 			}
 		}
 	});
+	document.getElementById('lang').addEventListener('blur', function() {
+		langsug.hidden = true;
+	});
+	document.getElementById('lang').addEventListener('focus', function() {
+		langsug.hidden = !this.value;
+	});
 	function formSubmit() {
 		if (waiting) return;
 		if (step == 0) {
+			if (document.getElementById('title').value.length &lt; 12) {
+				document.getElementById('title').focus();
+				document.getElementById('err1').textContent = 'Title must be at least 12 characters long.';
+				return;
+			}
+			document.getElementById('err1').hidden = true;
 			step = 1;
 			document.getElementById('submit1').hidden = true;
 			document.getElementById('submit2').hidden = false;
-			document.getElementById('lang').focus();
+			if (document.activeElement) document.activeElement.blur();
 			document.getElementById('step1').classList.remove('hidden');
 			document.getElementById('step1').scrollIntoView(true);
 			waiting = true;
 			setTimeout(function() {
 				waiting = document.getElementById('submit2').disabled = false;
-			}, 1000);
+			}, 10000);
 		} else if (step == 1) {
 			step = 2;
 			document.getElementById('submit2').hidden = true;
 			document.getElementById('submit3').hidden = false;
 			document.getElementById('step2').classList.remove('hidden');
 			document.getElementById('step2').scrollIntoView(true);
+			document.getElementById('description').required = document.getElementById('question').required = true;
+			document.getElementById('question').pattern = "[^\\?]{11,}\\?";
 			setTimeout(function() {
 				document.getElementById('description').focus();
 			}, 400);
 			document.getElementById('explainhelp').hidden = false;
 		} else if (step == 2) {
+			if (document.getElementById('description').value.length &lt; 144) {
+				document.getElementById('description').focus();
+				document.getElementById('err3').textContent = 'Question description must be at least 144 characters long.';
+				return;
+			}
+			if (document.getElementById('question').value.length &lt; 12) {
+				document.getElementById('question').focus();
+				document.getElementById('err3').textContent = 'Core question must be at least 12 characters long.';
+				return;
+			}
+			document.getElementById('err3').hidden = true;
 			step = 3;
 			document.getElementById('submit3').hidden = true;
 			document.getElementById('submit4').hidden = false;
 			document.getElementById('step3').classList.remove('hidden');
 			document.getElementById('step3').scrollIntoView(true);
+			document.getElementById('code').required = true;
 			setTimeout(function() {
 				document.getElementById('code').focus();
 			}, 400);
@@ -222,7 +258,7 @@
 			setTimeout(function() {
 				document.getElementById('tags').focus();
 			}, 400);
-			//document.getElementById('codehelp').hidden = false;
+			document.getElementById('form').onsubmit = null;
 		}
 	};
 	var e = document.getElementById('sublangs').getElementsByTagName('div');
