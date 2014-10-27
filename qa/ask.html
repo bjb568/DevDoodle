@@ -68,15 +68,21 @@
 		</div>
 		<h3>This question is specific to…</h3>
 		<div id="sublangs">
-			<label for="ck0"><input type="checkbox" id="ck0" /> Node.js</label>
+			<label for="ck0"><input type="checkbox" name="ck0" id="ck0" /> Node.js</label>
 			<div class="indt">
-				<label for="ck0-0"><input type="checkbox" id="ck0-0" /> Express</label>
-				<label for="ck0-1"><input type="checkbox" id="ck0-1" /> hapi</label>
+				<label for="ck0-0"><input type="checkbox" name="ck0-0" id="ck0-0" /> Express</label>
+				<label for="ck0-1"><input type="checkbox" name="ck0-1" id="ck0-1" /> hapi</label>
 			</div>
-			<label for="ck1"><input type="checkbox" id="ck1" /> jQuery</label>
+			<label for="ck1"><input type="checkbox" name="ck1" id="ck1" /> jQuery</label>
 			<div class="indt">
-				<label for="ck1-0"><input type="checkbox" id="ck1-0" /> jQuery UI</label>
+				<label for="ck1-0"><input type="checkbox" name="ck1-0" id="ck1-0" /> jQuery UI</label>
 			</div>
+		</div>
+		<h3>Options</h3>
+		<div id="options">
+			<label for="gr"><input type="checkbox" name="gr" id="gr" /> General Reference</label> <small>(broad question with one community-edited answer with no ownership or reputation reward)</small>
+			<label for="self"><input type="checkbox" name="self" id="self" /> Self-answer</label> <small>(you can still add an answer later if you don't check this)</small>
+			<label for="bounty"><input type="checkbox" name="bounty" id="bounty" /> Bounty</label> <small>(make question featured, costs 50 reputation per day which can be awarded to an answerer)</small>
 		</div>
 		<button type="submit" id="submit5" class="umar">Submit</button>
 	</fieldset>
@@ -149,13 +155,16 @@
 		height: 9em;
 		padding-left: 32px;
 	}
+	#options {
+		transition: height .5s .8s;
+		height: 7em;
+	}
 	#step4 > * { overflow: hidden }
 	label { display: table }
 	.err {
 		position: absolute;
 		padding: 8px;
 		width: 300px;
-		min-height: 64px;
 		background: #f00;
 	}
 	.err:empty { opacity: 0 }
@@ -163,7 +172,7 @@
 <script>
 	var step = 0,
 		langsug = document.getElementById('langsug'),
-		langs = ['javascript', 'html', 'css', 'c++'],
+		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
 		waiting = false;
 	document.getElementById('lang').addEventListener('keyup', function() {
 		if (!(langsug.hidden = !this.value)) {
@@ -204,6 +213,16 @@
 				document.getElementById('err1').textContent = 'Title must be at least 12 characters long.';
 				return;
 			}
+			if (document.getElementById('title').value.length > 144) {
+				document.getElementById('title').focus();
+				document.getElementById('err1').textContent = 'Title must be at most 144 characters long.';
+				return;
+			}
+			if (!document.getElementById('lang').value) {
+				document.getElementById('lang').focus();
+				document.getElementById('err1').textContent = 'Please choose a language.';
+				return;
+			}
 			document.getElementById('err1').hidden = true;
 			step = 1;
 			document.getElementById('submit1').hidden = true;
@@ -236,6 +255,11 @@
 			if (document.getElementById('question').value.length &lt; 12) {
 				document.getElementById('question').focus();
 				document.getElementById('err3').textContent = 'Core question must be at least 12 characters long.';
+				return;
+			}
+			if (document.getElementById('question').value.length > 144) {
+				document.getElementById('question').focus();
+				document.getElementById('err3').textContent = 'Core question must be at most 144 characters long.';
 				return;
 			}
 			document.getElementById('err3').hidden = true;
