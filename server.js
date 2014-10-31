@@ -247,6 +247,7 @@ var mime = {
 };
 
 function respondPage(title, req, res, callback, header, status) {
+	if (title) title = html(title);
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
@@ -550,6 +551,24 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		});
+	} else if (req.url.pathname == '/qa/preview') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				respondPage(post.lang + ': ' + post.title, req, res, function() {
+					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
+					res.write(markdown(post.description));
+					res.write('<code class="blk">' + html(post.code) + '</code>');
+					res.write('<p>' + post.question + '</p>')
+					res.write('<small>(type: ' + post.type + ')</small>');
+					respondPageFooter(res);
+				});
+			});
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/chat/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
