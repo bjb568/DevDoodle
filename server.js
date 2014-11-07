@@ -630,10 +630,10 @@ http.createServer(function(req, res) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage(doc.name, req, res, function() {
+			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
