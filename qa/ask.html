@@ -80,11 +80,11 @@
 		</div>
 		<h3>Options</h3>
 		<div id="options">
-			<label for="gr"><input type="checkbox" name="gr" id="gr" /> General Reference</label> <small>(broad question with one community-edited answer with no ownership or reputation reward)</small>
-			<label for="self"><input type="checkbox" name="self" id="self" /> Self-answer</label> <small>(you can still add an answer later if you don't check this)</small>
-			<label for="bounty"><input type="checkbox" name="bounty" id="bounty" /> Bounty</label> <small>(make question featured, costs 50 reputation per day which can be awarded to an answerer)</small>
+			<div><label for="gr"><input type="checkbox" name="gr" id="gr" /> General Reference</label> <small>(a broad question with only a single community-owned answer)</small></div>
+			<div><label for="self"><input type="checkbox" name="self" id="self" /> Self-answered</label> <small>(share your knowledge by answering your own question – you can still add an answer later if you don't check this)</small></div>
+			<div><label for="bounty"><input type="checkbox" name="bounty" id="bounty" /> Bounty</label> <small>(make question featured, costs 50 reputation per day which can be awarded to an answerer)</small></div>
+			<button type="submit" id="submit5" class="umar">Submit</button>
 		</div>
-		<button type="submit" id="submit5" class="umar">Submit</button>
 	</fieldset>
 </form>
 <style>
@@ -109,6 +109,7 @@
 		transition: height .5s;
 		height: 1.3em;
 	}
+	#options label { display: inline }
 	#duplist {
 		transition: height 1s .2s;
 		height: 400px;
@@ -146,20 +147,27 @@
 	}
 	#code { height: 320px }
 	#step4 h3 {
-		transition: height .7s .2s;
+		transition: height .3s .2s;
 		height: 1.3em;
 		margin-bottom: 4px;
+		overflow: hidden;
 	}
 	#types {
-		transition: height .5s .3s;
+		transition: height .5s .4s;
 		height: 9em;
 		padding-left: 32px;
+		overflow: auto;
+	}
+	#sublangs {
+		transition: max-height .5s .6s;
+		max-height: 400px;
+		overflow: auto;
 	}
 	#options {
 		transition: height .5s .8s;
-		height: 7em;
+		height: 10em;
+		overflow: auto;
 	}
-	#step4 > * { overflow: hidden }
 	label { display: table }
 	.err {
 		position: absolute;
