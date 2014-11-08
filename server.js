@@ -13,42 +13,214 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-function html(input) {
+function html(input, replaceQuoteOff) {
+	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
-function markdown(src) {
-	var h = '';
-	function inlineEscape(s) {
-		return s.split('`').map(function(val, i, arr) {
-			if (i % 2) return '<code>' + html(val) + '</code>';
-			else {
-				return html(val)
-					.replace(/!\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '<img alt="$1" src="$2" />')
-					.replace(/\[([^\]]+)]\(([^\s("&]+\.[^\s("&]+)\)/g, '$1'.link('$2'))
-					.replace(/([^;["])(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$1' + '$3'.link('$2'))
-					.replace(/^(https?:\/\/([^\s("&]+\.[^\s("&]+))/g, '$2'.link('$1'))
-					.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-					.replace(/\*([^*]+)\*/g, '<em>$1</em>') + (i == arr.length - 1 && i != 0 ? '</code>' : '');
+function inlineMarkdown(input) {
+	var backslash = Math.random().toString();
+	while (input.indexOf(backslash) != -1) backslash = Math.random().toString();
+	input = input.replaceAll('\\\\', backslash);
+	var graveaccent = Math.random().toString();
+	while (input.indexOf(graveaccent) != -1 || [backslash].indexOf(graveaccent) != -1) graveaccent = Math.random().toString();
+	input = input.replaceAll('\\`', graveaccent);
+	var asterisk = Math.random().toString();
+	while (input.indexOf(asterisk) != -1 || [backslash, graveaccent].indexOf(asterisk) != -1) asterisk = Math.random().toString();
+	input = input.replaceAll('\\*', asterisk);
+	var underscore = Math.random().toString();
+	while (input.indexOf(underscore) != -1 || [backslash, graveaccent, asterisk].indexOf(underscore) != -1) underscore = Math.random().toString();
+	input = input.replaceAll('\\_', underscore);
+	var dash = Math.random().toString();
+	while (input.indexOf(dash) != -1 || [backslash, graveaccent, asterisk, underscore].indexOf(dash) != -1) dash = Math.random().toString();
+	input = input.replaceAll('\\-', dash);
+	var plus = Math.random().toString();
+	while (input.indexOf(plus) != -1 || [backslash, graveaccent, asterisk, underscore, dash].indexOf(plus) != -1) plus = Math.random().toString();
+	input = input.replaceAll('\\+', plus);
+	var dot = Math.random().toString();
+	while (input.indexOf(dot) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus].indexOf(dot) != -1) dot = Math.random().toString();
+	input = input.replaceAll('\\.', dot);
+	var hash = Math.random().toString();
+	while (input.indexOf(hash) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus, dot].indexOf(hash) != -1) hash = Math.random().toString();
+	input = input.replaceAll('\\#', hash);
+	var gt = Math.random().toString();
+	while (input.indexOf(gt) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash].indexOf(gt) != -1) gt = Math.random().toString();
+	input = input.replaceAll('\\>', gt);
+	var paren = '#' + Math.random().toString();
+	while (input.indexOf(paren) != -1) paren = '#' + Math.random().toString();
+	input = input.replaceAll('\\(', paren);
+	var cparen = '#' + Math.random().toString();
+	while (input.indexOf(cparen) != -1 || [paren].indexOf(cparen) != -1) cparen = '#' + Math.random().toString();
+	input = input.replaceAll('\\)', cparen);
+	var carrot = '#' + Math.random().toString();
+	while (input.indexOf(carrot) != -1 || [paren, cparen].indexOf(carrot) != -1) carrot = '#' + Math.random().toString();
+	input = input.replaceAll('\\^', carrot);
+	var dollar = '#' + Math.random().toString();
+	while (input.indexOf(dollar) != -1 || [paren, cparen, carrot].indexOf(dollar) != -1) dollar = '#' + Math.random().toString();
+	input = input.replaceAll('\\$', dollar);
+	var open = [];
+	return input.split('`').map(function(val, i, arr) {
+		if (i % 2) return '<code>' + html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt, paren, cparen, carrot, dollar], ['\\\\', '\\`', '\\*', '\\_', '\\-', '\\+', '\\.', '\\#', '\\>', '\\(', '\\)', '\\^'])) + '</code>';
+		var parsed = val.split('*').map(function(val, i, arr) {
+			var parsed = val.split('_').map(function(val, i, arr) {
+				var parsed = val.split('---').map(function(val, i, arr) {
+					var parsed = val.split('+++').map(function(val, i, arr) {
+						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
+							.replace(/!\[([^\]]+)]\(([^\s("\\]+\.[^\s()"\\]+)\)/g, '<img alt="$1" src="$2" />')
+							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '$1'.link('$2'))
+							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$1' + '$3'.link('$2'))
+							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
+							.replace(/\^(\w+)/g, '<sup>$1</sup>');
+						if (i % 2) {
+							var p = open.indexOf('</ins>')
+							if (p != -1) {
+								open.splice(p, 1);
+								return '</ins>' + parsed;
+							} else if (arr[i + 1] === undefined) {
+								open.push('</ins>');
+								return '<ins>' + parsed;
+							}
+						}
+						return i % 2 ? '<ins>' + parsed + '</ins>' : parsed;
+					}).join('');
+					if (i % 2) {
+						var p = open.indexOf('</del>');
+						if (p != -1) {
+							open.splice(p, 1);
+							return '</del>' + parsed;
+						} else if (arr[i + 1] === undefined) {
+							open.push('</del>');
+							return '<del>' + parsed;
+						}
+					}
+					return i % 2 ? '<del>' + parsed + '</del>' : parsed;
+				}).join('');
+				if (i % 2) {
+					var p = open.indexOf('</strong>');
+					if (p != -1) {
+						open.splice(p, 1);
+						return '</strong>' + parsed;
+					} else if (arr[i + 1] === undefined) {
+						open.push('</strong>');
+						return '<strong>' + parsed;
+					}
+				}
+				return i % 2 ? '<strong>' + parsed + '</strong>' : parsed;
+			}).join('');
+			if (i % 2) {
+				var p = open.indexOf('</em>');
+				if (p != -1) {
+					open.splice(p, 1);
+					return '</em>' + parsed;
+				} else if (arr[i + 1] === undefined) {
+					open.push('</em>');
+					return '<em>' + parsed;
+				}
 			}
+			return i % 2 ? '<em>' + parsed + '</em>' : parsed;
 		}).join('');
-	}
-	if (!src.match(/\n+/) && src.substr(0, 2) != '> ') return inlineEscape(src);
-	src.replace(/\r|\s+$/g, '').replace(/\t/g, '	').split(/\n\n+/).forEach(function(b, f, R) {
-		var f = b.substr(0, 2),
-			R = {
-				'* ': [(/\n\* /), '<ul><li>', '</li></ul>'],
-				'- ': [(/\n- /), '<ul><li>', '</li></ul>'],
-				'	': [(/\n		/),'<pre><code>', '</code></pre>', '\n'],
-				'> ': [(/\n> /),'<blockquote>', '</blockquote>', '\n']
-			}[f];
-		if (!R && b.match(/\n[1-9]\d*\. /)) R = [(/\n[1-9]\d*\. /), '<ol><li>', '</li></ol>'];
-		else if (!R && b.match(/\n[1-9]\d*\) /)) R = [(/\n[1-9]\d*\) /), '<ol><li>', '</li></ol>'];
-		f = b[0];
-		if (R) h += R[1] + ('\n' + b).split(R[0]).slice(1).map(R[3] ? html : inlineEscape).join(R[3] || '</li>\n<li>') + R[2];
-		else if (f == '#') h += '<h' + Math.min(6, f = b.indexOf(' ')) + '>' + inlineEscape(b.slice(f + 1)) + '</h' + Math.min(6, f) + '>';
-		else h += '<p>' + inlineEscape(b) + '</p>';
-	});
-	return h;
+		return parsed.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\$\(([^)]+)\)/g, '<sub>$1</sub>').replaceAll([paren, cparen, carrot, dollar], ['(', ')', '^', '$']);
+	}).join('') + open.join('');
+};
+function markdown(input) {
+	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^(\w+[.)]|#{1,6}) /)) return inlineMarkdown(input);
+	var blockquote = '',
+		ul = '',
+		ol = '',
+		li = '',
+		code = '';
+	return input.split('\n').map(function(val, i, arr) {
+		if (!val) return '';
+		var f;
+		if (val.substr(0, 2) == '> ') {
+			val = val.substr(2);
+			if (arr[i + 1] && arr[i + 1].substr(0, 2) == '> ') {
+				blockquote += val + '\n';
+				return '';
+			} else {
+				var arg = blockquote + val;
+				blockquote = '';
+				return '<blockquote>' + markdown(arg) + '</blockquote>';
+			}
+		} else if (val.substr(0, 2) == '- ' || val.substr(0, 2) == '* ') {
+			if (!ul) ul = '<ul>';
+			val = val.substr(2);
+			if (li) {
+				ul += '<li>' + markdown(li) + '</li>';
+				li = '';
+			};
+			if (arr[i + 1] && (arr[i + 1].substr(0, 2) == '- ' || arr[i + 1] && arr[i + 1].substr(0, 2) == '* ')) {
+				ul += '<li>' + inlineMarkdown(val) + '</li>';
+				return '';
+			} else if (arr[i + 1] && (arr[i + 1][0] == '\t' || arr[i + 1] && arr[i + 1].substr(0, 4) == '    ')) {
+				li += val + '\n';
+				return '';
+			} else {
+				var arg = ul + '<li>' + markdown(val) + '</li>';
+				ul = '';
+				return arg + '</ul>';
+			}
+		} else if (f = val.match(/^\w+[.)] /)) {
+			if (!ol) ol = '<ol>';
+			val = val.substr(f[0].length);
+			if (li) {
+				ol += '<li>' + markdown(li) + '</li>';
+				li = '';
+			};
+			if (arr[i + 1] && arr[i + 1].match(/^\w+[.)] /)) {
+				ol += '<li>' + inlineMarkdown(val) + '</li>';
+				return '';
+			} else if (arr[i + 1] && (arr[i + 1][0] == '\t' || arr[i + 1] && arr[i + 1].substr(0, 4) == '    ')) {
+				li += val + '\n';
+				return '';
+			} else {
+				var arg = ol + '<li>' + inlineMarkdown(val) + '</li>';
+				ol = '';
+				return arg + '</ol>';
+			}
+		} else if (li && val[0] == '\t') {
+			li += val.substr(1) + '\n';
+			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
+				var arg = ul + '<li>' + markdown(li) + '</li>';
+				li = '';
+				return arg + '</ul>';
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
+				var arg = ol + '<li>' + markdown(li) + '</li>';
+				li = '';
+				return arg + '</ol>';
+			}
+			return '';
+		} else if (li && val.substr(0, 4) == '    ') {
+			li += val.substr(4) + '\n';
+			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
+				var arg = ul + '<li>' + markdown(li) + '</li>';
+				li = '';
+				return arg + '</ul>';
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
+				var arg = ol + '<li>' + markdown(li) + '</li>';
+				li = '';
+				return arg + '</ol>';
+			}
+			return '';
+		} else if (val[0] == '\t') {
+			code += val.substr(1);
+			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
+				var arg = html(code);
+				code = '';
+				return '<code class="blk">' + arg + '</code>';
+			} else code += '\n';
+			return '';
+		} else if (val.substr(0, 4) == '    ') {
+			code += val.substr(4);
+			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
+				var arg = html(code);
+				code = '';
+				return '<code class="blk">' + arg + '</code>';
+			} else code += '\n';
+			return '';
+		} else if ((f = val.match(/^#{1,6} /)) && (f = f[0].length - 1)) {
+			return '<h' + f + '>' + inlineMarkdown(val.substr(f + 1)) + '</h' + f + '>';
+		} else return '<p>' + inlineMarkdown(val) + '</p>';
+	}).join('');
 };
 
 var site = {
@@ -74,16 +246,8 @@ var cookie = require('cookie');
 var crypto = require('crypto');
 
 var nodemailer = require('nodemailer');
-
-var transport = nodemailer.createTransport('SMTP', {
-	host: '7pnm-mwkh.accessdomain.com',
-	secureConnection: true,
-	port: 465,
-	auth: {
-		user: 'support@devdoodle.net',
-		pass: 'KnT$6D6hF35^75tNyu6t'
-	}
-});
+var sendmailTransport = require('nodemailer-sendmail-transport');
+var transport = nodemailer.createTransport(sendmailTransport());
 
 var mongo = require('mongodb');
 var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
@@ -102,6 +266,10 @@ db.open(function(err, db) {
 		db.collection('users', function(err, collection) {
 			if (err) throw err;
 			collections.users = collection;
+		});
+		db.collection('questions', function(err, collection) {
+			if (err) throw err;
+			collections.questions = collection;
 		});
 		db.collection('chat', function(err, collection) {
 			if (err) throw err;
@@ -249,6 +417,7 @@ var mime = {
 };
 
 function respondPage(title, req, res, callback, header, status) {
+	if (title) title = html(title);
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
@@ -260,7 +429,7 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		collections.users.findOne({cookie: cookies.id}, function(err, user) {
+		collections.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a href="/user/' + user.name + '">' + user.name + '</a>');
@@ -399,11 +568,12 @@ http.createServer(function(req, res) {
 					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
 					collections.users.findOne({
 						name: post.name,
-						pass: pass,
-						confirm: undefined
+						pass: pass
 					}, function(err, user) {
 						if (err) throw err;
 						if (user) {
+							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
 							var rstr = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success', req, res, function() {
 								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
@@ -425,7 +595,10 @@ http.createServer(function(req, res) {
 		collections.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({name: user.name}, {$unset: {confirm: ''}});
+				collections.users.update({name: user.name}, {
+					$set: {level: 1},
+					$unset: {confirm: ''}
+				});
 				respondPage('Account confirmed', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
 					respondPageFooter(res);
@@ -485,7 +658,7 @@ http.createServer(function(req, res) {
 				res.write('<div class="lft lftpad">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (if you don\'t have a gravatar account, you must create one)\n');
+				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
@@ -500,10 +673,10 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id}, {$set: {cookie: 'none'}});
+		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
@@ -531,8 +704,43 @@ http.createServer(function(req, res) {
 				});
 			} else respondChangePassPage([], req, res, {});
 		});
+	} else if (req.url.pathname == '/qa/') {
+		respondPage(null, req, res, function() {
+			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
+			collections.questions.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
+				else respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/ask') {
+		respondPage('New Question', req, res, function() {
+			fs.readFile('qa/ask.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/preview') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				respondPage(post.lang + ': ' + post.title, req, res, function() {
+					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
+					res.write(markdown(post.description));
+					res.write('<code class="blk">' + html(post.code) + '</code>');
+					res.write('<p>' + post.question + '</p>')
+					res.write('<small>(type: ' + post.type + ')</small>');
+					respondPageFooter(res);
+				});
+			});
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/chat/') {
-		respondPage('Chat', req, res, function() {
+		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
 			collections.chatrooms.find().each(function(err, doc) {
@@ -545,11 +753,11 @@ http.createServer(function(req, res) {
 					res.write('<hr />\n');
 					res.write('<a href="newroom" class="small">Create Room</a>\n');
 					res.write('</div>\n');
-					res.write('<aside id="sidebar">\n');
+					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
 					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig rit">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -592,17 +800,17 @@ http.createServer(function(req, res) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage(doc.name, req, res, function() {
+			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
-			res.write('<h1>Programs</h1>\n');
+			res.write('<h1>Programs <small><a href="ask">New Program</a></small></h1>\n');
 			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
@@ -612,13 +820,13 @@ http.createServer(function(req, res) {
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
-					res.write('<a href="list/" class="center-text blk">See more</a>\n');
+					res.write('<a href="search/" class="center-text blk">See more</a>\n');
 					respondPageFooter(res);
 				}
 			});
 		});
-	} else if (req.url.pathname == '/dev/list/') {
-		respondPage('List', req, res, function() {
+	} else if (req.url.pathname == '/dev/search/') {
+		respondPage('Search', req, res, function() {
 			var liststr = '',
 				sort = (req.url.query || {}).sort || 'hot',
 				sortDict = {
@@ -632,7 +840,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
-					fs.readFile('dev/list.html', function(err, data) {
+					fs.readFile('dev/search.html', function(err, data) {
 						if (err) throw err;
 						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
 						respondPageFooter(res);
@@ -706,7 +914,7 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						collections.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-' + comment.user + ', <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
@@ -784,7 +992,7 @@ http.createServer(function(req, res) {
 				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
-					collections.users.update({name: user.name}, {$set: {email: newemail}});
+					collections.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
 					res.end('Success');
 				});
 			});
@@ -1025,7 +1233,7 @@ http.createServer(function(req, res) {
 				'Content-Length': stats.size
 			});
 			fs.readFile('.' + req.url.pathname, function(err, data) {
-				if (err) errorPage[404](req, res)
+				if (err) errorPage[404](req, res);
 				else res.end(data);
 			});
 		});
@@ -1039,24 +1247,10 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var pids = [];
-			collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
-				if (err) throw err;
-				if (star && pids.indexOf(star.pid) == -1) {
-					try {
-						tws.send(JSON.stringify({
-							event: 'star',
-							id: star.pid,
-							board: true
-						}));
-					} catch (e) {}
-					pids.push(star.pid);
-				}
-			});
 			var cursor = collections.chat.find({room: tws.room});
 			cursor.count(function(err, count) {
 				if (err) throw err;
@@ -1071,27 +1265,61 @@ wss.on('connection', function(tws) {
 				} catch(e) {}
 				cursor.skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 					if (err) throw err;
-					if (!doc) return tws.send(JSON.stringify({event: 'info-complete'}));
-					tws.send(JSON.stringify({
-						event: 'init',
-						id: doc._id,
-						body: doc.body,
-						user: doc.user,
-						time: doc.time,
-						stars: doc.stars
-					}));
-					collections.chatstars.findOne({
-						pid: doc._id,
-						user: tws.user.name
-					}, function(err, star) {
-						if (err) throw err;
-						try {
-							if (star) tws.send(JSON.stringify({
-									event: 'selfstar',
-									id: star.pid
-								}));
-						} catch(e) {}
-					});
+					if (doc) {
+						tws.send(JSON.stringify({
+							event: 'init',
+							id: doc._id,
+							body: doc.body,
+							user: doc.user,
+							time: doc.time,
+							stars: doc.stars
+						}));
+						collections.chatstars.findOne({
+							pid: doc._id,
+							user: tws.user.name
+						}, function(err, star) {
+							if (err) throw err;
+							try {
+								if (star) tws.send(JSON.stringify({
+										event: 'selfstar',
+										id: star.pid
+									}));
+							} catch(e) {}
+						});
+					} else {
+						var pids = [];
+						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							if (err) throw err;
+							if (star) {
+								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+							} else {
+								collections.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
+									if (err) throw err;
+									if (post) {
+										try {
+											tws.send(JSON.stringify({
+												event: 'star',
+												id: post._id,
+												board: true,
+												body: post.body,
+												stars: post.stars,
+												user: post.user,
+												time: post.time
+											}));
+										} catch (e) {
+											console.log(e);
+										}
+									}
+								});
+								return tws.send(JSON.stringify({event: 'info-complete'}));
+							}
+						});
+						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							if (err) throw err;
+							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
+							if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+						});
+					}
 				});
 			});
 			collections.chatusers.remove({
@@ -1103,22 +1331,26 @@ wss.on('connection', function(tws) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
-							name: doc.name
+							name: doc.name,
+							state: doc.state
 						}));
 					else if (user.name) {
-						if (rem) tws.send(JSON.stringify({
+						if (rem.result.n) tws.send(JSON.stringify({
 								event: 'adduser',
-								name: user.name
+								name: user.name,
+								state: 1
 							}));
 						else
 							for (var i in wss.clients)
 								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 									event: 'adduser',
-									name: user.name
+									name: user.name,
+									state: 1
 								}));
 						collections.chatusers.insert({
 							name: user.name,
-							room: tws.room
+							room: tws.room,
+							state: 1
 						});
 					}
 				});
@@ -1353,7 +1585,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id}, function(err, user) {
+		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;

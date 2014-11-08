@@ -2,7 +2,7 @@
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
 	<div class="row">
 		<div id="right" class="half">
-			<iframe id="output" sandbox="allow-scripts"></iframe>
+			<div id="outputbox" class="scrl"><iframe id="output" sandbox="allow-scripts"></iframe></div>
 			<button onclick="run(1)">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
 		</div>
 		<div id="left" class="half">
@@ -37,13 +37,14 @@
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	body, #content, #footer, #main { background: #000 }
+	html, #content, #footer, #main { background: #000 }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 	#meta {
 		clear: both;
 		padding: 4px;
+		margin-top: 8px;
 		background: rgba(255, 255, 255, .8);
 		color: #000;
 	}
@@ -63,6 +64,11 @@
 		outline: none;
 		white-space: pre;
 	}
+	#output {
+		width: 100%;
+		height: calc(100% - 4px);
+	}
+	#outputbox { height: calc(100% - 24px) }
 	#left { height: 900px }
 	#right { height: 400px }
 	@media (min-width: 700px) {
@@ -74,10 +80,6 @@
 		}
 		#left { float: left }
 		#right { float: right }
-	}
-	iframe {
-		width: 100%;
-		height: calc(100% - 24px);
 	}
 	textarea {
 		height: calc(33.33% - 2px);
@@ -127,7 +129,6 @@
 		noPageOverflow = 400,
 		pageOverflowMobile = true,
 		mainContentEl = document.getElementById('main'),
-		mainBottomPad = 20,
 		html = document.getElementById('html'),
 		css = document.getElementById('css'),
 		js = document.getElementById('js'),
@@ -177,7 +178,7 @@
 		var e = this;
 		if (e.classList.contains('progress')) return;
 		e.classList.add('progress');
-		setTimeout(function() {
+		var savingTimeout = setTimeout(function() {
 			if (e.textContent == 'Save') e.textContent = 'Saving…';
 		}, 200);
 		request('/api/program/save?type=2', function(res) {
@@ -267,7 +268,7 @@
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket('ws://' + location.hostname + ':8125/dev/$id');
+	var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
 			event: 'post',
@@ -293,10 +294,15 @@
 		if (data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.textContent = data.body;
+			div.innerHTML = markdown(data.body);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
-			sig.textContent = '-' + data.user + ', ';
+			sig.appendChild(document.createTextNode('-'));
+			var a = document.createElement('a');
+			a.href = '/user/' + data.user;
+			a.appendChild(document.createTextNode(data.user))
+			sig.appendChild(a);
+			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			if (!data.time) data.time = new Date().getTime();
 			permalink.appendChild(agot(data.time));
@@ -306,12 +312,16 @@
 			document.getElementById('comments').appendChild(div);
 		} else if (data.event == 'err') alert('Error: ' + data.body);
 	};
-	document.getElementById('delete').onclick = function() {
-		if (confirm('Do you want to delete this program?'))
-			request('/api/program/delete', function(res) {
-				if (res.indexOf('Error') == 0) alert(res);
-				else if (res == 'Success') location.reload();
-				else alert('Unknown error. Response was: ' + res);
-			});
-	};
+	var deletebutton = document.getElementById('delete');
+	if (deletebutton) {
+		deletebutton.onclick = function() {
+			if (confirm('Do you want to delete this program?')) {
+				request('/api/program/delete', function(res) {
+					if (res.indexOf('Error') == 0) alert(res);
+					else if (res == 'Success') location.reload();
+					else alert('Unknown error. Response was: ' + res);
+				});
+			}
+		};
+	}
 </script>
