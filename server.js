@@ -565,28 +565,31 @@ http.createServer(function(req, res) {
 						});
 					});
 				} else {
-					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
-					collections.users.findOne({
-						name: post.name,
-						pass: pass
-					}, function(err, user) {
+					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
-						if (user) {
-							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
-							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
-							var rstr = crypto.randomBytes(128).toString('base64');
-							respondPage('Login Success', req, res, function() {
-								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
-								respondPageFooter(res);
-							}, {
-								'Set-Cookie': cookie.serialize('id', rstr, {
-									path: '/',
-									expires: new Date(new Date().setDate(new Date().getDate() + 30))
-								}),
-								user: user
-							});
-							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
-						} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+						var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
+						collections.users.findOne({
+							name: post.name,
+							pass: pass
+						}, function(err, user) {
+							if (err) throw err;
+							if (user) {
+								if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+								if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
+								var rstr = crypto.randomBytes(128).toString('base64');
+								respondPage('Login Success', req, res, function() {
+									res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
+									respondPageFooter(res);
+								}, {
+									'Set-Cookie': cookie.serialize('id', rstr, {
+										path: '/',
+										expires: new Date(new Date().setDate(new Date().getDate() + 30))
+									}),
+									user: user
+								});
+								collections.users.update({name: user.name}, {$set: {cookie: rstr}});
+							} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+						});
 					});
 				}
 			});
