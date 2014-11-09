@@ -97,6 +97,10 @@ db.open(function(err, db) {
 			if (err) throw err;
 			collections.users = collection;
 		});
+		db.collection('questions', function(err, collection) {
+			if (err) throw err;
+			collections.questions = collection;
+		});
 		db.collection('chat', function(err, collection) {
 			if (err) throw err;
 			collections.chat = collection;
@@ -243,6 +247,7 @@ var mime = {
 };
 
 function respondPage(title, req, res, callback, header, status) {
+	if (title) title = html(title);
 	var query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
@@ -529,8 +534,43 @@ http.createServer(function(req, res) {
 				});
 			} else respondChangePassPage([], req, res, {});
 		});
+	} else if (req.url.pathname == '/qa/') {
+		respondPage(null, req, res, function() {
+			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
+			collections.questions.find().each(function(err, doc) {
+				if (err) throw err;
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
+				else respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/ask') {
+		respondPage('New Question', req, res, function() {
+			fs.readFile('qa/ask.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/preview') {
+		if (req.method == 'POST') {
+			var post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				respondPage(post.lang + ': ' + post.title, req, res, function() {
+					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
+					res.write(markdown(post.description));
+					res.write('<code class="blk">' + html(post.code) + '</code>');
+					res.write('<p>' + post.question + '</p>')
+					res.write('<small>(type: ' + post.type + ')</small>');
+					respondPageFooter(res);
+				});
+			});
+		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/chat/') {
-		respondPage('Chat', req, res, function() {
+		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
 			collections.chatrooms.find().each(function(err, doc) {
@@ -590,17 +630,17 @@ http.createServer(function(req, res) {
 		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage(doc.name, req, res, function() {
+			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
-			res.write('<h1>Programs</h1>\n');
+			res.write('<h1>Programs <small><a href="ask">New Program</a></small></h1>\n');
 			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
@@ -610,13 +650,13 @@ http.createServer(function(req, res) {
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
-					res.write('<a href="list/" class="center-text blk">See more</a>\n');
+					res.write('<a href="search/" class="center-text blk">See more</a>\n');
 					respondPageFooter(res);
 				}
 			});
 		});
-	} else if (req.url.pathname == '/dev/list/') {
-		respondPage('List', req, res, function() {
+	} else if (req.url.pathname == '/dev/search/') {
+		respondPage('Search', req, res, function() {
 			var liststr = '',
 				sort = (req.url.query || {}).sort || 'hot',
 				sortDict = {
@@ -630,7 +670,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
-					fs.readFile('dev/list.html', function(err, data) {
+					fs.readFile('dev/search.html', function(err, data) {
 						if (err) throw err;
 						res.write(data.toString().replace('$list', liststr).replace('"' + sort + '"', '"' + sort + '" selected=""'));
 						respondPageFooter(res);

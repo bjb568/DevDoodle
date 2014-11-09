@@ -25,7 +25,7 @@
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
 		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
-		username = document.getElementById('nav').childNodes[13].textContent,
+		username = document.getElementById('nav').childNodes[15].textContent,
 		onBottom = true,
 		state = 1,
 		skipped,
