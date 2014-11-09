@@ -18,14 +18,13 @@
 		<ul id="stars"></ul>
 	</aside>
 </div>
-<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>
+$textarea
 <p id="ts" hidden="">You are viewing old messages. <a href="/chat/$id">Join room</a>.</p>
-<p id="loginmsg" hidden="">You must be <a href="/login/">logged in</a> to post to chat.</p>
 <script>
 	var noPageOverflow = 420,
 		hash = parseInt(location.hash.substr(1)),
 		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
-		username = document.getElementById('nav').childNodes[15].textContent,
+		username = '$user',
 		onBottom = true,
 		state = 1,
 		skipped,
@@ -36,11 +35,6 @@
 		ctrlsFlag = document.createElement('a'),
 		ctrlsStar = document.createElement('a'),
 		e;
-	if (username == 'Login') {
-		username = false;
-		document.getElementById('ta').hidden = document.getElementById('btn').hidden = true;
-		document.getElementById('loginmsg').hidden = false;
-	}
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
@@ -126,7 +120,7 @@
 		if (data.event == 'init' || data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.innerHTML = markdown(data.body);
+			div.innerHTML = username ? markdown(data.body).replaceAll('@' + username, '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 			if (data.event == 'init') {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
@@ -189,7 +183,7 @@
 				}
 				div.id = data.id + 's';
 				div.classList.add('comment');
-				div.innerHTML = markdown(data.body);
+				div.innerHTML = username ? markdown(data.body).replaceAll('@' + username, '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 				var sig = document.createElement('span');
 				sig.classList.add('c-sig');
 				var starcount = document.createElement('span');
@@ -278,10 +272,13 @@
 			e.preventDefault();
 		}
 	};
-	document.getElementById('edit').onclick = function() {
-		document.getElementById('roominfo').hidden = true;
-		document.getElementById('editform').hidden = false;
-	};
+	var edit = document.getElementById('edit');
+	if (edit) {
+		edit.onclick = function() {
+			document.getElementById('roominfo').hidden = true;
+			document.getElementById('editform').hidden = false;
+		};
+	}
 	document.getElementById('editform').onsubmit = function() {
 		document.getElementById('roominfo').hidden = false;
 		document.getElementById('editform').hidden = true;
@@ -341,5 +338,9 @@
 	@media (min-width: 700px) {
 		#chat { width: 80% }
 		#aside { width: 19.5% }
+	}
+	.mention {
+		background: #faa;
+		border-radius: 4px;
 	}
 </style>

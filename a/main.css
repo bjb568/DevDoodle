@@ -45,7 +45,7 @@ body {
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, .half, #content, aside.rit { margin-bottom: 6px }
+.bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
 .pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
@@ -84,7 +84,9 @@ small, a.small, footer, .c-sig, .ctrls a {
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
 	border-left: 2px solid #fa0;
-	padding-left: 4px;
+	padding: 4px;
+	margin-top: 6px;
+	margin-bottom: 6px;
 }
 code.blk {
 	white-space: pre;
@@ -264,6 +266,12 @@ textarea {
 }
 #content { padding-bottom: 24px }
 #nav > .active { position: relative }
+#nav .unread:not(.active) {
+	background: #d00;
+	color: #fff;
+}
+#nav .unread:not(.active):hover { background: #f00 }
+#nav .unread:not(.active):active { background: #c00 }
 @media (min-width: 380px) and (max-width: 799px) { 
 	#nav > :not(.active) + nav + a:nth-child(5):not(.active) { border-right: 1px solid #aaa }
 }
@@ -290,9 +298,7 @@ textarea {
 	}
 }
 @media (min-width: 240px) and (max-width: 799px) {
-	#nav a:not(#logo) {
-		margin-top: 4px;
-	}
+	#nav a:not(#logo) { margin-top: 4px }
 	#nav nav { margin-right: 6px }
 	#nav form {
 		margin: 0 3px;

@@ -311,10 +311,10 @@ errorPage[400] = function(req, res) {
 		respondPageFooter(res);
 	}, {}, 400);
 };
-errorPage[403] = function(req, res) {
+errorPage[403] = function(req, res, msg) {
 	respondPage('403', req, res, function() {
 		res.write('<h1>Error 403</h1>');
-		res.write('<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write(msg || '<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		respondPageFooter(res);
 	}, {}, 403);
@@ -423,8 +423,10 @@ function respondPage(title, req, res, callback, header, status) {
 	if (!header) header = {};
 	var inhead = header.inhead || '';
 	var huser = header.user;
+	var nonotif = header.nonotif;
 	delete header.inhead;
 	delete header.user;
+	delete header.nonotif;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
@@ -432,9 +434,9 @@ function respondPage(title, req, res, callback, header, status) {
 		collections.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
-			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a href="/user/' + user.name + '">' + user.name + '</a>');
+			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead));
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user.unread && !nonotif) ? ' class="unread"' : ''));
 			callback(user);
 			if (user) collections.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
@@ -565,28 +567,31 @@ http.createServer(function(req, res) {
 						});
 					});
 				} else {
-					var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
-					collections.users.findOne({
-						name: post.name,
-						pass: pass
-					}, function(err, user) {
+					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
-						if (user) {
-							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
-							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
-							var rstr = crypto.randomBytes(128).toString('base64');
-							respondPage('Login Success', req, res, function() {
-								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
-								respondPageFooter(res);
-							}, {
-								'Set-Cookie': cookie.serialize('id', rstr, {
-									path: '/',
-									expires: new Date(new Date().setDate(new Date().getDate() + 30))
-								}),
-								user: user
-							});
-							collections.users.update({name: user.name}, {$set: {cookie: rstr}});
-						} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+						var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
+						collections.users.findOne({
+							name: post.name,
+							pass: pass
+						}, function(err, user) {
+							if (err) throw err;
+							if (user) {
+								if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+								if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
+								var rstr = crypto.randomBytes(128).toString('base64');
+								respondPage('Login Success', req, res, function() {
+									res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
+									respondPageFooter(res);
+								}, {
+									'Set-Cookie': cookie.serialize('id', rstr, {
+										path: '/',
+										expires: new Date(new Date().setDate(new Date().getDate() + 30))
+									}),
+									user: user
+								});
+								collections.users.update({name: user.name}, {$set: {cookie: rstr}});
+							} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+						});
 					});
 				}
 			});
@@ -663,12 +668,48 @@ http.createServer(function(req, res) {
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
-					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changeemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var email = document.getElementById(\'email\'); email.hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true; email.removeChild(email.firstChild); email.appendChild(document.createTextNode(document.getElementById(\'emailinput\').value)); }, \'newemail=\' + encodeURIComponent(document.getElementById(\'emailinput\').value));"><span id="email">Email: ' + html(user.email) + '</span> <input type="text" id="emailinput" hidden="" value="' + html(user.email) + '" placeholder="email" style="width: 240px; max-width: 100%;" /> <button type="submit" id="emailsave" hidden="">Save</button> <button type="reset" id="emailcancel" hidden="" onclick="document.getElementById(\'email\').hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true;">Cancel</button> <button type="button" id="emailedit" onclick="document.getElementById(\'email\').hidden = this.hidden = true; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = false; document.getElementById(\'emailinput\').focus();">edit</button></form>');
+					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changeemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var email = document.getElementById(\'email\'); email.hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true; email.removeChild(email.firstChild); email.appendChild(document.createTextNode(document.getElementById(\'emailinput\').value)); }, \'newemail=\' + encodeURIComponent(document.getElementById(\'emailinput\').value));"><span id="email">Email: ' + html(user.email) + '</span> <input type="text" id="emailinput" hidden="" value="' + html(user.email) + '" placeholder="email" style="width: 240px; max-width: 100%;" /> <button type="submit" id="emailsave" hidden="">Save</button> <button type="reset" id="emailcancel" hidden="" onclick="document.getElementById(\'email\').hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true;">Cancel</button> <button type="button" id="emailedit" onclick="document.getElementById(\'email\').hidden = this.hidden = true; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = false; document.getElementById(\'emailinput\').focus();">edit</button></form>\n');
+					if (user.notifs) {
+						var notifs = [];
+						for (var i = 0; i < user.notifs.length; i++) {
+							if (user.notifs[i].unread) notifs.push(user.notifs[i]);
+							user.notifs[i].unread = false;
+						}
+						console.log(user.notifs)
+						if (notifs.length) {
+							res.write('<h2>Notifications</h2>\n');
+							res.write('<ul id="notifs">\n');
+							for (var i = 0; i < notifs.length; i++) {
+								res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
+							};
+							res.write('</ul>');
+							collections.users.update({name: user.name}, {
+								$set: {
+									unread: 0,
+									notifs: user.notifs
+								}
+							});
+						} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+					}
 				}
+				respondPageFooter(res);
+			}, {nonotif: true});
+		});
+	} else if (req.url.pathname == '/notifs') {
+		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+			if (err) throw err;
+			if (!user) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
+			respondPage('Notifications', req, res, function() {
+				res.write('<h1>Notifications</h1>\n');
+				res.write('<ul id="notifs">\n');
+				for (var i = user.notifs.length - 1; i >= 0; i--) {
+					res.write('\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n');
+				};
+				res.write('</ul>\n');
 				respondPageFooter(res);
 			});
 		});
-	} else if (req.url.pathname.match('/logout')) {
+	} else if (req.url.pathname == '/logout') {
 		res.writeHead(303, {
 			location: '/',
 			'Set-Cookie': 'id='
@@ -803,7 +844,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user.name).replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1400,6 +1441,38 @@ wss.on('connection', function(tws) {
 									user: tws.user.name,
 									id: id
 								}));
+						var matches = message.body.match(/@[\w-_!$^*]{3,16}/g);
+						if (!matches) return;
+						for (var i = 0; i < matches.length; i++) {
+							collections.users.findOne({name: matches[i].substr(1)}, function(err, user) {
+								if (err) throw err;
+								if (!user) return;
+								collections.chatusers.findOne({
+									name: user.name,
+									room: tws.room
+								}, function(err, userinroom) {
+									if (err) throw err;
+									if (userinroom) return;
+									collections.chatrooms.findOne({_id: tws.room}, function(err, room) {
+										if (err) throw err;
+										if (!room) throw new TypeError('Undefined room object');
+										collections.users.update({name: user.name}, {
+											$push: {
+												notifs: {
+													type: 'Chat message',
+													on: room.name.link('/chat/' + tws.room + '#' + id),
+													body: message.body,
+													from: tws.user.name,
+													unread: true,
+													time: new Date().getTime()
+												}
+											},
+											$inc: {unread: 1}
+										});
+									});
+								});
+							});
+						};
 					});
 				} else if (message.event == 'statechange') {
 					if (tws.user.name) {
