@@ -632,7 +632,7 @@ http.createServer(function(req, res) {
 				where = (req.url.query || {}).where || 'none',
 				whereDict = {
 					default: {},
-					actv: {seen: {$gt: new Date().getTime() - 300000}},
+					bactv: {seen: {$gt: new Date().getTime() - 300000}},
 					mod: {level: {$gte: 6}},
 					new: {joined: {$gt: new Date().getTime() - 86400000}},
 					lowrep: {rep: {$lt: 10}},
