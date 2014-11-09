@@ -436,7 +436,7 @@ function respondPage(title, req, res, callback, header, status) {
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
-			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user.unread && !nonotif) ? ' class="unread"' : ''));
+			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user && user.unread && !nonotif) ? ' class="unread"' : ''));
 			callback(user);
 			if (user) collections.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
@@ -632,7 +632,7 @@ http.createServer(function(req, res) {
 				where = (req.url.query || {}).where || 'none',
 				whereDict = {
 					default: {},
-					actv: {seen: {$gt: new Date().getTime() - 300000}},
+					bactv: {seen: {$gt: new Date().getTime() - 300000}},
 					mod: {level: {$gte: 6}},
 					new: {joined: {$gt: new Date().getTime() - 86400000}},
 					lowrep: {rep: {$lt: 10}},
@@ -844,7 +844,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user.name).replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
