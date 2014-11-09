@@ -120,7 +120,7 @@ $textarea
 		if (data.event == 'init' || data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.innerHTML = markdown(data.body);
+			div.innerHTML = username ? markdown(data.body).replaceAll('@' + username, '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 			if (data.event == 'init') {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
@@ -183,7 +183,7 @@ $textarea
 				}
 				div.id = data.id + 's';
 				div.classList.add('comment');
-				div.innerHTML = markdown(data.body);
+				div.innerHTML = username ? markdown(data.body).replaceAll('@' + username, '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 				var sig = document.createElement('span');
 				sig.classList.add('c-sig');
 				var starcount = document.createElement('span');
@@ -338,5 +338,9 @@ $textarea
 	@media (min-width: 700px) {
 		#chat { width: 80% }
 		#aside { width: 19.5% }
+	}
+	.mention {
+		background: #faa;
+		border-radius: 4px;
 	}
 </style>
