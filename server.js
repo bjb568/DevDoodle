@@ -1447,21 +1447,28 @@ wss.on('connection', function(tws) {
 							collections.users.findOne({name: matches[i].substr(1)}, function(err, user) {
 								if (err) throw err;
 								if (!user) return;
-								collections.chatrooms.findOne({_id: tws.room}, function(err, room) {
+								collections.chatusers.findOne({
+									name: user.name,
+									room: tws.room
+								}, function(err, userinroom) {
 									if (err) throw err;
-									if (!room) throw new TypeError('Undefined room object');
-									collections.users.update({name: user.name}, {
-										$push: {
-											notifs: {
-												type: 'Chat message',
-												on: room.name.link('/chat/' + tws.room + '#' + id),
-												body: message.body,
-												from: tws.user.name,
-												unread: true,
-												time: new Date().getTime()
-											}
-										},
-										$inc: {unread: 1}
+									if (userinroom) return;
+									collections.chatrooms.findOne({_id: tws.room}, function(err, room) {
+										if (err) throw err;
+										if (!room) throw new TypeError('Undefined room object');
+										collections.users.update({name: user.name}, {
+											$push: {
+												notifs: {
+													type: 'Chat message',
+													on: room.name.link('/chat/' + tws.room + '#' + id),
+													body: message.body,
+													from: tws.user.name,
+													unread: true,
+													time: new Date().getTime()
+												}
+											},
+											$inc: {unread: 1}
+										});
 									});
 								});
 							});
