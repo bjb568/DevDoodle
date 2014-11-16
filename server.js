@@ -1542,9 +1542,9 @@ wss.on('connection', function(tws) {
 							body: 'You must have 30 reputation to star messages.'
 						}));
 					var id = parseInt(message.id);
-					collections.chat.findOne({_id: id}, function(err, doc) {
+					collections.chat.findOne({_id: id}, function(err, post) {
 						if (err) throw err;
-						if (!doc) return tws.send(JSON.stringify({
+						if (!post) return tws.send(JSON.stringify({
 							event: 'err',
 							body: 'Invalid message id.'
 						}));
@@ -1560,15 +1560,22 @@ wss.on('connection', function(tws) {
 							collections.chatstars.insert({
 								user: tws.user.name,
 								pid: id,
-								room: doc.room,
+								room: post.room,
 								time: new Date().getTime()
 							});
 							collections.chat.update({_id: id}, {$inc: {stars: 1}});
-							for (var i in wss.clients)
-									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							for (var i in wss.clients) {
+								if (wss.clients[i].room == tws.room) {
+									tws.send(JSON.stringify({
 										event: 'star',
-										id: id
+										id: post._id,
+										body: post.body,
+										stars: post.stars + 1,
+										user: post.user,
+										time: post.time
 									}));
+								}
+							}
 						});
 					});
 				} else if (message.event == 'unstar') {

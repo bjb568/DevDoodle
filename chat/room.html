@@ -163,12 +163,12 @@ $textarea
 			var e;
 			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
 		} else if (data.event == 'star') {
-			var f;
+			var e, f;
 			if ((e = document.getElementById(data.id)) &amp;&amp; (f = document.getElementById(data.id + 's'))) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
 				e.appendChild(document.createTextNode(++e.dataset.count + '★'));
-				f = f.firstChild;
+				f = f.getElementsByClassName('starcount')[0];
 				var g;
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
@@ -199,26 +199,27 @@ $textarea
 				var permalink = document.createElement('a');
 				if (!data.time) data.time = new Date().getTime();
 				permalink.appendChild(agot(data.time));
-				permalink.href = '#' + (div.id = data.id);
+				permalink.href = '#' + data.id;
 				sig.appendChild(permalink);
 				div.appendChild(sig);
 				li.appendChild(div);
 				document.getElementById('stars').appendChild(li);
 			};
 		} else if (data.event == 'unstar') {
+			var e;
 			if (e = document.getElementById(data.id)) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
 				var count = --e.dataset.count;
 				e.appendChild(document.createTextNode(count + '★'));
-				if (e = document.getElementById(data.id + 's')) {
-					e.firstChild.dataset.count--;
-					if (count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
-					e = e.firstChild;
-					var f;
-					while (f = e.firstChild) e.removeChild(f);
-					e.appendChild(document.createTextNode(count + '★ '));
-				}
+			}
+			if (e = document.getElementById(data.id + 's')) {
+				if (count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
+				e = e.getElementsByClassName('starcount')[0];
+				e.dataset.count--;
+				var f;
+				while (f = e.firstChild) e.removeChild(f);
+				e.appendChild(document.createTextNode(count + '★ '));
 			}
 		} else if (data.event == 'adduser') {
 			var li = document.createElement('li');
