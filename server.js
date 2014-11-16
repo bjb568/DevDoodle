@@ -993,8 +993,16 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname == '/learn/web/') {
-		respondPage('Web Courses', req, res, function() {
+		respondPage('Web', req, res, function() {
 			fs.readFile('learn/web/web.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/learn/debug/') {
+		respondPage('Debugging', req, res, function() {
+			fs.readFile('learn/debug/debug.html', function(err, data) {
 				if (err) throw err;
 				res.write(data);
 				respondPageFooter(res);

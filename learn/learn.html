@@ -39,14 +39,28 @@
 			<ul class="umar">
 				<li>Use logs, stack traces, and breakpoints</li>
 				<li>Learn how to rubber-duck debug</li>
-				<li>Make a minimal, self-contained, complete example from long complex code</li>
+				<li>Make a minimal, self-contained, complete example from long code</li>
+			</ul>
+		</div>
+	</div>
+	<div class="pad br">
+		<a href="debug/">
+			<h2>Code Quality</h2>
+			<img src="quality.png" />
+		</a>
+		<div class="desc shglt">
+			Improve code quality to avoid future errors and reduce maintaining cost.
+			<ul class="umar">
+				<li>Avoid common readability problems</li>
+				<li>Increase efficiency of your code</li>
+				<li>Avoid security issues</li>
 			</ul>
 		</div>
 	</div>
 </div>
 <style>
 	h2 { text-align: center }
-	#courses { max-width: 1800px }
+	#courses { max-width: 3200px }
 	#courses > div {
 		background: rgba(16, 140, 255, .8);
 		transition: background .2s;
@@ -57,14 +71,20 @@
 	#content a:active { color: #100 }
 	#courses img { border-radius: 4px }
 	@media (min-width: 700px) {
-		#courses > div { width: 49% }
+		#courses > div { width: calc(50% - 4px) }
 		#courses > div:nth-child(2) { margin-top: 0 }
-		#courses > div:not(:last-child) { margin-right: 1% }
-		#courses > div:not(:last-child) > div { min-height: 7.8em }
+		#courses > div:nth-child(2n+1) { margin-right: 6px }
 	}
-	@media (min-width: 1400px) {
-		#courses > div { width: 32.5% }
+	@media (min-width: 700px) and (max-width: 1080px) {
+		#courses > div > div { min-height: 7.8em }
+	}
+	@media (min-width: 1080px) and (max-width: 1800px) {
+		#courses > div:nth-child(-1n+2) > div { min-height: 6.6em }
+	}
+	@media (min-width: 1800px) {
+		#courses > div { width: calc(25% - 5px) }
 		#courses > div:nth-child(3) { margin-top: 0 }
-		#courses > div:not(:last-child) { margin-right: 1% }
+		#courses > div:not(:last-child) { margin-right: 6px }
+		#courses > div:last-child { margin-top: 0 }
 	}
 </style>
