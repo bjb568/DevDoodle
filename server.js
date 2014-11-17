@@ -16,7 +16,7 @@ Number.prototype.bound = function(l, h) {
 function html(input, replaceQuoteOff) {
 	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
-};
+}
 function inlineMarkdown(input) {
 	var backslash = Math.random().toString();
 	while (input.indexOf(backslash) != -1) backslash = Math.random().toString();
@@ -71,7 +71,7 @@ function inlineMarkdown(input) {
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
 							.replace(/\^(\w+)/g, '<sup>$1</sup>');
 						if (i % 2) {
-							var p = open.indexOf('</ins>')
+							var p = open.indexOf('</ins>');
 							if (p != -1) {
 								open.splice(p, 1);
 								return '</ins>' + parsed;
@@ -120,7 +120,7 @@ function inlineMarkdown(input) {
 		}).join('');
 		return parsed.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\$\(([^)]+)\)/g, '<sub>$1</sub>').replaceAll([paren, cparen, carrot, dollar], ['(', ')', '^', '$']);
 	}).join('') + open.join('');
-};
+}
 function markdown(input) {
 	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^(\w+[.)]|#{1,6}) /)) return inlineMarkdown(input);
 	var blockquote = '',
@@ -130,14 +130,14 @@ function markdown(input) {
 		code = '';
 	return input.split('\n').map(function(val, i, arr) {
 		if (!val) return '';
-		var f;
+		var f, arg;
 		if (val.substr(0, 2) == '> ') {
 			val = val.substr(2);
 			if (arr[i + 1] && arr[i + 1].substr(0, 2) == '> ') {
 				blockquote += val + '\n';
 				return '';
 			} else {
-				var arg = blockquote + val;
+				arg = blockquote + val;
 				blockquote = '';
 				return '<blockquote>' + markdown(arg) + '</blockquote>';
 			}
@@ -147,7 +147,7 @@ function markdown(input) {
 			if (li) {
 				ul += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && (arr[i + 1].substr(0, 2) == '- ' || arr[i + 1] && arr[i + 1].substr(0, 2) == '* ')) {
 				ul += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -155,7 +155,7 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				var arg = ul + '<li>' + markdown(val) + '</li>';
+				arg = ul + '<li>' + markdown(val) + '</li>';
 				ul = '';
 				return arg + '</ul>';
 			}
@@ -165,7 +165,7 @@ function markdown(input) {
 			if (li) {
 				ol += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && arr[i + 1].match(/^\w+[.)] /)) {
 				ol += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -173,18 +173,18 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				var arg = ol + '<li>' + inlineMarkdown(val) + '</li>';
+				arg = ol + '<li>' + inlineMarkdown(val) + '</li>';
 				ol = '';
 				return arg + '</ol>';
 			}
 		} else if (li && val[0] == '\t') {
 			li += val.substr(1) + '\n';
 			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
-				var arg = ul + '<li>' + markdown(li) + '</li>';
+				arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
 			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
-				var arg = ol + '<li>' + markdown(li) + '</li>';
+				arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
 			}
@@ -192,11 +192,11 @@ function markdown(input) {
 		} else if (li && val.substr(0, 4) == '    ') {
 			li += val.substr(4) + '\n';
 			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
-				var arg = ul + '<li>' + markdown(li) + '</li>';
+				arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
 			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
-				var arg = ol + '<li>' + markdown(li) + '</li>';
+				arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
 			}
@@ -204,7 +204,7 @@ function markdown(input) {
 		} else if (val[0] == '\t') {
 			code += val.substr(1);
 			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
-				var arg = html(code);
+				arg = html(code);
 				code = '';
 				return '<code class="blk">' + arg + '</code>';
 			} else code += '\n';
@@ -212,7 +212,7 @@ function markdown(input) {
 		} else if (val.substr(0, 4) == '    ') {
 			code += val.substr(4);
 			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
-				var arg = html(code);
+				arg = html(code);
 				code = '';
 				return '<code class="blk">' + arg + '</code>';
 			} else code += '\n';
@@ -221,7 +221,7 @@ function markdown(input) {
 			return '<h' + f + '>' + inlineMarkdown(val.substr(f + 1)) + '</h' + f + '>';
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
-};
+}
 
 var site = {
 	name: 'DevDoodle',
@@ -413,18 +413,18 @@ function respondPage(title, req, res, callback, header, status) {
 			if (user) dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
-};
+}
 
 function respondPageFooter(res, aside) {
 	fs.readFile('a/foot.html', function(err, data) {
 		if (err) throw err;
 		res.end(data.toString().replace('</div>', aside ? '</aside>' : '</div>'));
 	});
-};
+}
 
 function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
-};
+}
 
 function respondLoginPage(errs, req, res, post) {
 	respondPage('Login', req, res, function() {
@@ -445,7 +445,7 @@ function respondLoginPage(errs, req, res, post) {
 		res.write('</style>');
 		respondPageFooter(res);
 	});
-};
+}
 
 function respondCreateRoomPage(errs, req, res, post) {
 	respondPage('Create Room', req, res, function() {
@@ -465,7 +465,7 @@ function respondCreateRoomPage(errs, req, res, post) {
 		res.write('</form>\n');
 		respondPageFooter(res);
 	});
-};
+}
 
 function respondChangePassPage(errs, req, res, post) {
 	respondPage('Create Room', req, res, function(user) {
@@ -479,12 +479,12 @@ function respondChangePassPage(errs, req, res, post) {
 		res.write('</form>\n');
 		respondPageFooter(res);
 	});
-};
+}
 
 http.createServer(function(req, res) {
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
-	var i;
+	var i, post;
 	if (req.url.pathname == '/') {
 		respondPage(null, req, res, function() {
 			fs.readFile('home.html', function(err, data) {
@@ -495,7 +495,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -511,8 +511,9 @@ http.createServer(function(req, res) {
 					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
 					if (errors.length) return respondLoginPage(errors, req, res, post);
 					dbcs.users.findOne({name: post.name}, function(err, existingUser) {
+						if (err) throw err;
 						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							var pass = new Buffer(key).toString('base64'),
 								rstr = crypto.randomBytes(128).toString('base64');
@@ -539,9 +540,9 @@ http.createServer(function(req, res) {
 						});
 					});
 				} else {
-					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
-						var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
+						var pass = key.toString('base64');
 						dbcs.users.findOne({
 							name: post.name,
 							pass: pass
@@ -620,7 +621,7 @@ http.createServer(function(req, res) {
 						if (err) throw err;
 						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
 						respondPageFooter(res);
-					})
+					});
 				}
 			});
 		});
@@ -647,13 +648,10 @@ http.createServer(function(req, res) {
 							if (user.notifs[i].unread) notifs.push(user.notifs[i]);
 							user.notifs[i].unread = false;
 						}
-						console.log(user.notifs)
 						if (notifs.length) {
 							res.write('<h2>Notifications</h2>\n');
 							res.write('<ul id="notifs">\n');
-							for (var i = 0; i < notifs.length; i++) {
-								res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
-							};
+							for (var i = 0; i < notifs.length; i++) res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
 							res.write('</ul>');
 							dbcs.users.update({name: user.name}, {
 								$set: {
@@ -674,9 +672,7 @@ http.createServer(function(req, res) {
 			respondPage('Notifications', req, res, function() {
 				res.write('<h1>Notifications</h1>\n');
 				res.write('<ul id="notifs">\n');
-				for (var i = user.notifs.length - 1; i >= 0; i--) {
-					res.write('\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n');
-				};
+				for (var i = user.notifs.length - 1; i >= 0; i--) res.write('\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n');
 				res.write('</ul>\n');
 				respondPageFooter(res);
 			});
@@ -693,19 +689,18 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
-				var post = '';
+				post = '';
 				req.on('data', function(data) {
 					post += data;
 				});
 				req.on('end', function() {
 					post = querystring.parse(post);
-					var errors = [];
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-					crypto.pbkdf2(post.old, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					crypto.pbkdf2(post.old, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
-						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						crypto.pbkdf2(post.new, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							dbcs.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
 							respondPage('Password Updated', req, res, function() {
@@ -736,7 +731,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/qa/preview') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -746,7 +741,7 @@ http.createServer(function(req, res) {
 					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
 					res.write(markdown(post.description));
 					res.write('<code class="blk">' + html(post.code) + '</code>');
-					res.write('<p>' + post.question + '</p>')
+					res.write('<p>' + post.question + '</p>');
 					res.write('<small>(type: ' + post.type + ')</small>');
 					respondPageFooter(res);
 				});
@@ -784,7 +779,7 @@ http.createServer(function(req, res) {
 			if (!user) return res.end('You must be logged in and have 200 reputation to create a room.');
 			if (user.rep < 200) return res.end('You must have 200 reputation to create a room.');
 			if (req.method == 'POST') {
-				var post = '';
+				post = '';
 				req.on('data', function(data) {
 					post += data;
 				});
@@ -1017,7 +1012,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/api/me/changeemail') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1049,7 +1044,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/api/program/save') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1119,7 +1114,7 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/edit-title') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1143,7 +1138,7 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/vote') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1208,7 +1203,7 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/delete') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1238,7 +1233,7 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/undelete') {
 		if (req.method == 'POST') {
-			var post = '';
+			post = '';
 			req.on('data', function(data) {
 				post += data;
 			});
@@ -1361,23 +1356,26 @@ wss.on('connection', function(tws) {
 				dbcs.chatusers.find({room: tws.room}).each(function(err, doc) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
-							event: 'adduser',
-							name: doc.name,
-							state: doc.state
-						}));
+						event: 'adduser',
+						name: doc.name,
+						state: doc.state
+					}));
 					else if (user.name) {
-						if (rem.result.n) tws.send(JSON.stringify({
+						if (rem.result.n) {
+							tws.send(JSON.stringify({
 								event: 'adduser',
 								name: user.name,
 								state: 1
 							}));
-						else
-							for (var i in wss.clients)
+						} else {
+							for (var i in wss.clients) {
 								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 									event: 'adduser',
 									name: user.name,
 									state: 1
 								}));
+							}
+						}
 						dbcs.chatusers.insert({
 							name: user.name,
 							room: tws.room,
@@ -1398,22 +1396,22 @@ wss.on('connection', function(tws) {
 				}
 				if (message.event == 'post') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must be logged in and have 30 reputation to chat.'
-						}));
+						event: 'err',
+						body: 'You must be logged in and have 30 reputation to chat.'
+					}));
 					if (tws.user.rep < 30) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must have 30 reputation to chat.'
-						}));
+						event: 'err',
+						body: 'You must have 30 reputation to chat.'
+					}));
 					if (!message.body) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'Message body not submitted.'
-						}));
+						event: 'err',
+						body: 'Message body not submitted.'
+					}));
 					message.body = message.body.toString();
 					if (message.body.length > 2880) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'Chat message length may not exceed 2880 characters.'
-						}));
+						event: 'err',
+						body: 'Chat message length may not exceed 2880 characters.'
+					}));
 					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
@@ -1424,13 +1422,14 @@ wss.on('connection', function(tws) {
 							time: new Date().getTime(),
 							room: tws.room
 						});
-						for (var i in wss.clients)
+						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-									event: 'add',
-									body: message.body,
-									user: tws.user.name,
-									id: id
-								}));
+								event: 'add',
+								body: message.body,
+								user: tws.user.name,
+								id: id
+							}));
+						}
 						var matches = message.body.match(/@[\w-_!$^*]{3,16} /g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
@@ -1462,7 +1461,7 @@ wss.on('connection', function(tws) {
 									});
 								});
 							});
-						};
+						}
 					});
 				} else if (message.event == 'edit') {
 					dbcs.chat.findOne({_id: message.id}, function(err, post) {
