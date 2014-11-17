@@ -12,6 +12,7 @@ String.prototype.repeat = function(num) {
 Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
+HTMLCollection.prototype.indexOf = NodeList.prototype.indexOf = Array.prototype.indexOf;
 
 function html(input, replaceQuoteOff) {
 	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);

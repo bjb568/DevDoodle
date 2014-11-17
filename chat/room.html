@@ -28,18 +28,38 @@ $textarea
 		onBottom = true,
 		state = 1,
 		skipped,
+		ta = document.getElementById('ta'),
 		cont = document.getElementById('chat'),
+		starwall = document.getElementById('stars'),
 		lock = true,
 		ctrls = document.createElement('div'),
 		ctrlsDelete = document.createElement('a'),
 		ctrlsFlag = document.createElement('a'),
+		ctrlsLink = document.createElement('a'),
+		ctrlsEdit = document.createElement('a'),
 		ctrlsStar = document.createElement('a'),
+		source = {},
+		editing = false,
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
 	ctrlsStar.onclick = function() {
 		socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id)}));
 		this.classList.toggle('clkd');
+	};
+	ctrlsLink.textContent = '#';
+	ctrlsLink.onclick = function() {
+		open('message/' + this.parentNode.parentNode.id);
+	};
+	ctrlsEdit.textContent = '✎';
+	ctrlsEdit.onclick = function() {
+		var msg = this.parentNode.parentNode;
+		msg.classList.add('editing');
+		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top
+		ta.focus();
+		ta.value = source[msg.id];
+		ta.selectionStart = ta.selectionEnd = ta.value.length;
+		editing = msg.id;
 	};
 	ctrlsDelete.textContent = '✕';
 	ctrlsDelete.onclick = function() {
@@ -50,6 +70,8 @@ $textarea
 		
 	};
 	ctrls.appendChild(ctrlsStar);
+	ctrls.appendChild(ctrlsLink);
+	ctrls.appendChild(ctrlsEdit);
 	ctrls.appendChild(ctrlsDelete);
 	ctrls.appendChild(ctrlsFlag);
 	cont.onscroll = function(e) {
@@ -76,16 +98,8 @@ $textarea
 	addEventListener('resize', function() {
 		if (onBottom) cont.scrollTop = cont.scrollHeight;
 	});
-	function send(value) {
-		if (!(value = value || document.getElementById('ta').value)) return;
-		socket.send(JSON.stringify({event: 'post', body: value}));
-		location.hash = '';
-		document.getElementById('ta').value = '';
-		cont.scrollTop = cont.scrollHeight;
-		cont.onscroll();
-	};
 	function statechange(nstate) {
-		if (nstate == 1 &amp;&amp; document.getElementById('ta').value) nstate = 2;
+		if (nstate == 1 &amp;&amp; ta.value) nstate = 2;
 		if (state != nstate) {
 			state = nstate;
 			socket.send(JSON.stringify({event: 'statechange', state: state}));
@@ -94,20 +108,22 @@ $textarea
 	function inactive() {
 		statechange(0);
 	};
-	var timeout = setTimeout(inactive, 10000);
-	function active() {
-		clearTimeout(timeout);
-		timeout = setTimeout(inactive, 10000);
-		statechange(1);
-	};
-	addEventListener('keyup', active);
-	addEventListener('keydown', active);
-	addEventListener('click', active);
-	addEventListener('mousemove', active);
-	addEventListener('touchstart', active);
-	addEventListener('scroll', active);
-	addEventListener('resize', active);
-	cont.addEventListener('scroll', active);
+	if (ta) {
+		var timeout = setTimeout(inactive, 10000);
+		function active() {
+			clearTimeout(timeout);
+			timeout = setTimeout(inactive, 10000);
+			statechange(1);
+		};
+		addEventListener('keyup', active);
+		addEventListener('keydown', active);
+		addEventListener('click', active);
+		addEventListener('mousemove', active);
+		addEventListener('touchstart', active);
+		addEventListener('scroll', active);
+		addEventListener('resize', active);
+		cont.addEventListener('scroll', active);
+	}
 	socket.onmessage = function(e) {
 		console.log(e.data);
 		var data;
@@ -118,9 +134,10 @@ $textarea
 			return alert('JSON Error. Response was: ' + e.data);
 		}
 		if (data.event == 'init' || data.event == 'add') {
+			source[data.id] = data.body;
 			var div = document.createElement('div');
 			div.classList.add('comment');
-			div.innerHTML = username ? markdown(data.body).replaceAll('@' + username, '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
+			div.innerHTML = username ? markdown(data.body).replaceAll('@' + username + ' ', '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 			if (data.event == 'init') {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
@@ -148,9 +165,14 @@ $textarea
 			div.appendChild(sig);
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
-			tCtrls.children[1].onclick = ctrlsDelete.onclick;
-			tCtrls.children[2].onclick = ctrlsFlag.onclick;
-			if (username != data.user) tCtrls.removeChild(tCtrls.children[1]);
+			tCtrls.children[1].onclick = ctrlsLink.onclick;
+			tCtrls.children[2].onclick = ctrlsEdit.onclick;
+			tCtrls.children[3].onclick = ctrlsDelete.onclick;
+			tCtrls.children[4].onclick = ctrlsFlag.onclick;
+			if (username != data.user) {
+				tCtrls.removeChild(tCtrls.children[2]);
+				tCtrls.removeChild(tCtrls.children[2]);
+			}
 			if (username) div.appendChild(tCtrls);
 			if (data.before) {
 				cont.insertBefore(div, cont.firstChild);
@@ -159,6 +181,14 @@ $textarea
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
+		} else if (data.event == 'edit') {
+			source[data.id] = data.body;
+			var msg = document.getElementById(data.id),
+				msgCsig = msg.getElementsByClassName('c-sig')[0],
+				msgCtrls = msg.getElementsByClassName('ctrls')[0];
+			msg.innerHTML = username ? markdown(data.body).replaceAll('@' + username + ' ', '&lt;span class="mention">@' + username + '&lt;/span> ') : markdown(data.body);
+			msg.appendChild(msgCsig);
+			msg.appendChild(msgCtrls);
 		} else if (data.event == 'selfstar') {
 			var e;
 			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
@@ -203,7 +233,8 @@ $textarea
 				sig.appendChild(permalink);
 				div.appendChild(sig);
 				li.appendChild(div);
-				document.getElementById('stars').appendChild(li);
+				if (starwall.firstChild) starwall.insertBefore(li, starwall.firstChild);
+				else starwall.appendChild(li);
 			};
 		} else if (data.event == 'unstar') {
 			var e;
@@ -244,7 +275,7 @@ $textarea
 		} else if (data.event == 'info-skipped') {
 			skipped = data.body;
 			if (data.ts) {
-				document.getElementById('ta').hidden = document.getElementById('btn').hidden = true;
+				ta.hidden = document.getElementById('btn').hidden = true;
 				document.getElementById('ts').hidden = false;
 			}
 		} else if (data.event == 'info-complete') {
@@ -267,10 +298,62 @@ $textarea
 	socket.onclose = function() {
 		if (confirm('Connection error. Reload?')) location.reload();
 	};
-	document.getElementById('ta').onkeypress = function(e) {
+	if (ta) ta.onkeypress = ta.onkeydown = function(e) {
 		if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
-			send();
 			e.preventDefault();
+			if (editing) {
+				socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+				document.getElementsByClassName('editing')[0].classList.remove('editing');
+				editing = false;
+				this.value = '';
+				cont.scrollTop = cont.scrollHeight;
+			} else {
+				socket.send(JSON.stringify({event: 'post', body: ta.value}));
+				location.hash = '';
+				ta.value = '';
+				cont.scrollTop = cont.scrollHeight;
+			};
+		} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
+			e.preventDefault();
+			document.getElementsByClassName('editing')[0].classList.remove('editing');
+			editing = false;
+			this.value = '';
+			cont.scrollTop = cont.scrollHeight;
+		} else if (e.keyCode == 38 &amp;&amp; !ta.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			e.preventDefault();
+			var i = cont.children.length;
+			while (i--) {
+				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					return e.onclick.apply(e);
+				}
+			}
+		} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			e.preventDefault();
+			var i = cont.children.indexOf(document.getElementById(editing));
+			while (i--) {
+				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					editing = false;
+					document.getElementsByClassName('editing')[0].classList.remove('editing');
+					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					return e.onclick.apply(e);
+				}
+			}
+		} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			e.preventDefault();
+			var i = cont.children.indexOf(document.getElementById(editing));
+			while (++i &lt; cont.children.length) {
+				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					editing = false;
+					document.getElementsByClassName('editing')[0].classList.remove('editing');
+					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					return e.onclick.apply(e);
+				}
+			}
+			document.getElementsByClassName('editing')[0].classList.remove('editing');
+			editing = false;
+			this.value = '';
+			cont.scrollTop = cont.scrollHeight;
 		}
 	};
 	var edit = document.getElementById('edit');
@@ -344,4 +427,5 @@ $textarea
 		background: #faa;
 		border-radius: 4px;
 	}
+	.editing { background: #4af }
 </style>

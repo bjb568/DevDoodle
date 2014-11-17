@@ -258,47 +258,19 @@ var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
 	native_parser: false
 });
 
-var collections = {};
+var dbcs = {},
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'comments', 'votes'];
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
 		if (err) throw err;
-		db.collection('users', function(err, collection) {
-			if (err) throw err;
-			collections.users = collection;
-		});
-		db.collection('questions', function(err, collection) {
-			if (err) throw err;
-			collections.questions = collection;
-		});
-		db.collection('chat', function(err, collection) {
-			if (err) throw err;
-			collections.chat = collection;
-		});
-		db.collection('chatstars', function(err, collection) {
-			if (err) throw err;
-			collections.chatstars = collection;
-		});
-		db.collection('chatusers', function(err, collection) {
-			if (err) throw err;
-			collections.chatusers = collection;
-		});
-		db.collection('chatrooms', function(err, collection) {
-			if (err) throw err;
-			collections.chatrooms = collection;
-		});
-		db.collection('programs', function(err, collection) {
-			if (err) throw err;
-			collections.programs = collection;
-		});
-		db.collection('comments', function(err, collection) {
-			if (err) throw err;
-			collections.comments = collection;
-		});
-		db.collection('votes', function(err, collection) {
-			if (err) throw err;
-			collections.votes = collection;
-		});
+		var i = usedDBCs.length;
+		while (i--) {
+			db.collection(usedDBCs[i], function(err, collection) {
+				if (err) throw err;
+				dbcs[usedDBCs[i]] = collection;
+			});
+		}
 	});
 });
 
@@ -431,14 +403,14 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		collections.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user && user.unread && !nonotif) ? ' class="unread"' : ''));
 			callback(user);
-			if (user) collections.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
+			if (user) dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
 };
@@ -538,13 +510,13 @@ http.createServer(function(req, res) {
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
 					if (errors.length) return respondLoginPage(errors, req, res, post);
-					collections.users.findOne({name: post.name}, function(err, existingUser) {
+					dbcs.users.findOne({name: post.name}, function(err, existingUser) {
 						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
 						crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							var pass = new Buffer(key).toString('base64'),
 								rstr = crypto.randomBytes(128).toString('base64');
-							collections.users.insert({
+							dbcs.users.insert({
 								name: post.name,
 								pass: pass,
 								email: post.email,
@@ -570,7 +542,7 @@ http.createServer(function(req, res) {
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						var pass = new Buffer(crypto.pbkdf2Sync(post.pass, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128)).toString('base64');
-						collections.users.findOne({
+						dbcs.users.findOne({
 							name: post.name,
 							pass: pass
 						}, function(err, user) {
@@ -589,7 +561,7 @@ http.createServer(function(req, res) {
 									}),
 									user: user
 								});
-								collections.users.update({name: user.name}, {$set: {cookie: rstr}});
+								dbcs.users.update({name: user.name}, {$set: {cookie: rstr}});
 							} else respondLoginPage(['Invalid Credentials.'], req, res, post);
 						});
 					});
@@ -597,10 +569,10 @@ http.createServer(function(req, res) {
 			});
 		} else respondLoginPage([], req, res, {});
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
-		collections.users.findOne({confirm: i[1]}, function(err, user) {
+		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
-				collections.users.update({name: user.name}, {
+				dbcs.users.update({name: user.name}, {
 					$set: {level: 1},
 					$unset: {confirm: ''}
 				});
@@ -640,7 +612,7 @@ http.createServer(function(req, res) {
 				};
 			var order = {};
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
-			collections.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
+			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
 				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.emailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
@@ -653,7 +625,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})$/)) {
-		collections.users.findOne({name: i[1]}, function(err, dispUser) {
+		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
@@ -683,7 +655,7 @@ http.createServer(function(req, res) {
 								res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
 							};
 							res.write('</ul>');
-							collections.users.update({name: user.name}, {
+							dbcs.users.update({name: user.name}, {
 								$set: {
 									unread: 0,
 									notifs: user.notifs
@@ -696,7 +668,7 @@ http.createServer(function(req, res) {
 			}, {nonotif: true});
 		});
 	} else if (req.url.pathname == '/notifs') {
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 			if (err) throw err;
 			if (!user) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
 			respondPage('Notifications', req, res, function() {
@@ -714,10 +686,10 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		collections.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
+		dbcs.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
-		collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
 			if (req.method == 'POST') {
@@ -735,7 +707,7 @@ http.createServer(function(req, res) {
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
 						crypto.pbkdf2(post.new, 'KJ:C5A;_\?F!00S\(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
-							collections.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
+							dbcs.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
 							respondPage('Password Updated', req, res, function() {
 								res.write('The password for ' + user.name + ' has been updated.');
 								respondPageFooter(res);
@@ -748,7 +720,7 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
-			collections.questions.find().each(function(err, doc) {
+			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
 				else respondPageFooter(res);
@@ -784,7 +756,7 @@ http.createServer(function(req, res) {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
-			collections.chatrooms.find().each(function(err, doc) {
+			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
@@ -796,7 +768,7 @@ http.createServer(function(req, res) {
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
-					collections.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
+					dbcs.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
@@ -805,7 +777,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
-		collections.users.findOne({
+		dbcs.users.findOne({
 			cookie: cookie.parse(req.headers.cookie || '').id
 		}, function(err, user) {
 			if (err) throw err;
@@ -822,10 +794,10 @@ http.createServer(function(req, res) {
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
 					if (errors.length) return respondCreateRoomPage(errors, req, res, {});
-					collections.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+					dbcs.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
 						if (err) throw err;
 						var i = last ? last._id + 1 : 1;
-						collections.chatrooms.insert({
+						dbcs.chatrooms.insert({
 							name: post.name,
 							desc: post.desc,
 							type: post.type,
@@ -838,7 +810,7 @@ http.createServer(function(req, res) {
 			} else respondCreateRoomPage([], req, res, {});
 		});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
-		collections.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
+		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
 			respondPage(doc.name, req, res, function(user) {
@@ -849,10 +821,26 @@ http.createServer(function(req, res) {
 				});
 			});
 		});
+	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
+		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
+			if (err) throw err;
+			if (!doc) return errorPage[404](req, res);
+			respondPage('Message History', req, res, function() {
+				res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
+				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
+				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
+					if (err) throw err;
+					if (data) {
+						res.write('Edited <time datetime="' + new Date(data.time).toISOString() + '"></time> to:\n');
+						res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
+					} respondPageFooter(res);
+				});
+			});
+		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Programs <small><a href="ask">New Program</a></small></h1>\n');
-			collections.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
@@ -877,7 +865,7 @@ http.createServer(function(req, res) {
 					recent: {time: -1},
 					update: {updated: -1}
 				};
-			collections.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
 				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
@@ -914,7 +902,7 @@ http.createServer(function(req, res) {
 			});
 		});
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
-		collections.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
+		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errorPage[404](req, res);
 			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', req, res, function(user) {
@@ -944,16 +932,16 @@ http.createServer(function(req, res) {
 					res.write('</script>');
 					return respondPageFooter(res);
 				}
-				collections.votes.findOne({
+				dbcs.votes.findOne({
 					user: user.name,
 					program: program._id
 				}, function(err, vote) {
 					if (err) throw err;
 					if (!vote) vote = {val: 0};
-					collections.users.findOne({name: program.user}, function(err, op) {
+					dbcs.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
 						var commentstr = '';
-						collections.comments.find({program: program._id}).each(function(err, comment) {
+						dbcs.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
 							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
@@ -1038,16 +1026,16 @@ http.createServer(function(req, res) {
 				var newemail = post.newemail;
 				if (!newemail) return res.end('Error: No email specified.');
 				if (newemail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
-				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
-					collections.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
+					dbcs.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
 					res.end('Success');
 				});
 			});
 		} else errorPage[405](req, res);
 	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
-		collections.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
+		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (doc) res.end(JSON.stringify({
 					id: doc._id,
@@ -1069,17 +1057,17 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				var type = parseInt(req.url.query.type);
 				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
-				collections.users.findOne({
+				dbcs.users.findOne({
 					cookie: cookie.parse(req.headers.cookie || '').id
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to save a program.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
-					collections.programs.findOne({_id: id}, function(err, program) {
+					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
-							if (type == 2) collections.programs.update({_id: id}, {
+							if (type == 2) dbcs.programs.update({_id: id}, {
 									$set: {
 										html: post.html,
 										css: post.css,
@@ -1087,7 +1075,7 @@ http.createServer(function(req, res) {
 										updated: new Date().getTime()
 									}
 								});
-							else collections.programs.update({_id: id}, {
+							else dbcs.programs.update({_id: id}, {
 									$set: {
 										code: post.code,
 										updated: new Date().getTime()
@@ -1095,10 +1083,10 @@ http.createServer(function(req, res) {
 								});
 							res.end('Success');
 						} else {
-							collections.programs.find().sort({_id: -1}).limit(1).next(function(err, last) {
+							dbcs.programs.find().sort({_id: -1}).limit(1).next(function(err, last) {
 								if (err) throw err;
 								var i = last ? last._id + 1 : 1;
-								if (type == 2) collections.programs.insert({
+								if (type == 2) dbcs.programs.insert({
 										type: type,
 										html: post.html,
 										css: post.css,
@@ -1111,7 +1099,7 @@ http.createServer(function(req, res) {
 										upvotes: 0,
 										_id: i
 									});
-								else collections.programs.insert({
+								else dbcs.programs.insert({
 										type: type,
 										code: post.code,
 										user: user.name,
@@ -1137,16 +1125,16 @@ http.createServer(function(req, res) {
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to change a program title.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
-					collections.programs.findOne({_id: id}, function(err, program) {
+					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() == user.name.toString()) {
-							collections.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
+							dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 							res.end('Success');
 						} else res.end('Error: You may only rename your own programs.');
 					});
@@ -1164,30 +1152,30 @@ http.createServer(function(req, res) {
 				if (!post.val) return res.end('Error: Vote value not specified.');
 				post.val = parseInt(post.val);
 				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
-				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
-					collections.programs.findOne({_id: id}, function(err, program) {
+					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() == user.name.toString()) return res.end('Error: You can\'t vote for your own post');
-						collections.votes.findOne({
+						dbcs.votes.findOne({
 							program: id,
 							user: user.name
 						}, function(err, current) {
 							if (err) throw err;
 							if (!current) {
 								current = {val: 0};
-								collections.votes.insert({
+								dbcs.votes.insert({
 									user: user.name,
 									program: id,
 									val: post.val,
 									time: new Date().getTime()
 								});
 							} else {
-								collections.votes.update({
+								dbcs.votes.update({
 									program: id,
 									user: user.name
 								}, {
@@ -1197,22 +1185,22 @@ http.createServer(function(req, res) {
 									}
 								});
 							}
-							collections.programs.update({_id: id}, {
+							dbcs.programs.update({_id: id}, {
 								$inc: {
 									score: post.val - current.val,
 									hotness: post.val - current.val,
 									upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 								}
 							});
-							collections.users.update({name: program.user}, {$inc: {rep: post.val - current.val}});
+							dbcs.users.update({name: program.user}, {$inc: {rep: post.val - current.val}});
 							res.end('Success');
 						});
-						collections.votes.find({
+						dbcs.votes.find({
 							program: id,
 							time: {$lt: new Date().getTime() - 86400000}
 						}).count(function(err, count) {
 							if (err) throw err;
-							collections.programs.update({_id: id}, {$inc: {hotness: -count}});
+							dbcs.programs.update({_id: id}, {$inc: {hotness: -count}});
 						});
 					});
 				});
@@ -1226,16 +1214,16 @@ http.createServer(function(req, res) {
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
-					collections.programs.findOne({_id: id}, function(err, program) {
+					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only delete your own programs.');
-						collections.programs.update({_id: id}, {
+						dbcs.programs.update({_id: id}, {
 							$set: {
 								deleted: {
 									by: [user.name],
@@ -1256,16 +1244,16 @@ http.createServer(function(req, res) {
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				collections.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
-					collections.programs.findOne({_id: id}, function(err, program) {
+					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
-						collections.programs.update({_id: id}, {$unset: {deleted: ''}});
+						dbcs.programs.update({_id: id}, {$unset: {deleted: ''}});
 						res.end('Success');
 					});
 				});
@@ -1296,11 +1284,11 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var cursor = collections.chat.find({room: tws.room});
+			var cursor = dbcs.chat.find({room: tws.room});
 			cursor.count(function(err, count) {
 				if (err) throw err;
 				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
@@ -1323,7 +1311,7 @@ wss.on('connection', function(tws) {
 							time: doc.time,
 							stars: doc.stars
 						}));
-						collections.chatstars.findOne({
+						dbcs.chatstars.findOne({
 							pid: doc._id,
 							user: tws.user.name
 						}, function(err, star) {
@@ -1337,12 +1325,11 @@ wss.on('connection', function(tws) {
 						});
 					} else {
 						var pids = [];
-						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+						dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
 							if (err) throw err;
-							if (star) {
-								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
-							} else {
-								collections.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
+							if (star) if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+							else {
+								dbcs.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
 									if (err) throw err;
 									if (post) {
 										try {
@@ -1363,20 +1350,15 @@ wss.on('connection', function(tws) {
 								return tws.send(JSON.stringify({event: 'info-complete'}));
 							}
 						});
-						collections.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
-							if (err) throw err;
-							if (!star) return tws.send(JSON.stringify({event: 'info-complete'}));
-							if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
-						});
 					}
 				});
 			});
-			collections.chatusers.remove({
+			dbcs.chatusers.remove({
 				name: user.name,
 				room: tws.room
 			}, {w: 1}, function(err, rem) {
 				if (err) throw err;
-				collections.chatusers.find({room: tws.room}).each(function(err, doc) {
+				dbcs.chatusers.find({room: tws.room}).each(function(err, doc) {
 					if (err) throw err;
 					if (doc) tws.send(JSON.stringify({
 							event: 'adduser',
@@ -1396,7 +1378,7 @@ wss.on('connection', function(tws) {
 									name: user.name,
 									state: 1
 								}));
-						collections.chatusers.insert({
+						dbcs.chatusers.insert({
 							name: user.name,
 							room: tws.room,
 							state: 1
@@ -1432,10 +1414,10 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'Chat message length may not exceed 2880 characters.'
 						}));
-					collections.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
-						collections.chat.insert({
+						dbcs.chat.insert({
 							_id: id,
 							body: message.body,
 							user: tws.user.name,
@@ -1449,22 +1431,22 @@ wss.on('connection', function(tws) {
 									user: tws.user.name,
 									id: id
 								}));
-						var matches = message.body.match(/@[\w-_!$^*]{3,16}/g);
+						var matches = message.body.match(/@[\w-_!$^*]{3,16} /g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
-							collections.users.findOne({name: matches[i].substr(1)}, function(err, user) {
+							dbcs.users.findOne({name: matches[i].substr(1)}, function(err, user) {
 								if (err) throw err;
 								if (!user) return;
-								collections.chatusers.findOne({
+								dbcs.chatusers.findOne({
 									name: user.name,
 									room: tws.room
 								}, function(err, userinroom) {
 									if (err) throw err;
 									if (userinroom) return;
-									collections.chatrooms.findOne({_id: tws.room}, function(err, room) {
+									dbcs.chatrooms.findOne({_id: tws.room}, function(err, room) {
 										if (err) throw err;
 										if (!room) throw new TypeError('Undefined room object');
-										collections.users.update({name: user.name}, {
+										dbcs.users.update({name: user.name}, {
 											$push: {
 												notifs: {
 													type: 'Chat message',
@@ -1482,25 +1464,51 @@ wss.on('connection', function(tws) {
 							});
 						};
 					});
+				} else if (message.event == 'edit') {
+					dbcs.chat.findOne({_id: message.id}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message not found.'
+						}));
+						if (post.user != tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You may only edit your own messages.'
+						}));
+						dbcs.chathistory.insert({
+							message: post._id,
+							time: new Date().getTime(),
+							body: post.body
+						});
+						dbcs.chat.update({_id: post._id}, {$set: {body: message.body}});
+						for (var i in wss.clients) {
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								event: 'edit',
+								id: post._id,
+								body: message.body
+							}));
+						}
+					});
 				} else if (message.event == 'statechange') {
 					if (tws.user.name) {
-						collections.chatusers.update({
+						dbcs.chatusers.update({
 							name: tws.user.name,
 							room: tws.room
 						}, {$set: {state: message.state}});
-						for (var i in wss.clients)
+						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-									event: 'statechange',
-									state: message.state,
-									user: tws.user.name
-								}));
+								event: 'statechange',
+								state: message.state,
+								user: tws.user.name
+							}));
+						}
 					}
 				} else if (message.event == 'req') {
 					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'Invalid skip value.'
-						}));
-					var cursor = collections.chat.find({room: tws.room});
+						event: 'err',
+						body: 'Invalid skip value.'
+					}));
+					var cursor = dbcs.chat.find({room: tws.room});
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
@@ -1520,50 +1528,50 @@ wss.on('connection', function(tws) {
 									before: true
 								}));
 							} catch(e) {}
-							collections.chatstars.findOne({
+							dbcs.chatstars.findOne({
 								pid: doc._id,
 								user: tws.user.name
 							}, function(err, star) {
 								if (err) throw err;
 								if (star) tws.send(JSON.stringify({
-										event: 'selfstar',
-										id: star.pid
-									}));
+									event: 'selfstar',
+									id: star.pid
+								}));
 							});
 						});
 					});
 				} else if (message.event == 'star') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must be logged in and have 30 reputation to star messages.'
-						}));
+						event: 'err',
+						body: 'You must be logged in and have 30 reputation to star messages.'
+					}));
 					if (tws.user.rep < 30) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must have 30 reputation to star messages.'
-						}));
+						event: 'err',
+						body: 'You must have 30 reputation to star messages.'
+					}));
 					var id = parseInt(message.id);
-					collections.chat.findOne({_id: id}, function(err, post) {
+					dbcs.chat.findOne({_id: id}, function(err, post) {
 						if (err) throw err;
 						if (!post) return tws.send(JSON.stringify({
 							event: 'err',
 							body: 'Invalid message id.'
 						}));
-						collections.chatstars.findOne({
+						dbcs.chatstars.findOne({
 							user: tws.user.name,
 							pid: id
 						}, function(err, star) {
 							if (err) throw err;
 							if (star) return tws.send(JSON.stringify({
-									event: 'err',
-									body: 'You already stared this post.'
-								}));
-							collections.chatstars.insert({
+								event: 'err',
+								body: 'You already stared this post.'
+							}));
+							dbcs.chatstars.insert({
 								user: tws.user.name,
 								pid: id,
 								room: post.room,
 								time: new Date().getTime()
 							});
-							collections.chat.update({_id: id}, {$inc: {stars: 1}});
+							dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
 							for (var i in wss.clients) {
 								if (wss.clients[i].room == tws.room) {
 									tws.send(JSON.stringify({
@@ -1580,65 +1588,66 @@ wss.on('connection', function(tws) {
 					});
 				} else if (message.event == 'unstar') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must be logged in and have 30 reputation to unstar messages.'
-						}));
+						event: 'err',
+						body: 'You must be logged in and have 30 reputation to unstar messages.'
+					}));
 					if (tws.user.rep < 30) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must have 30 reputation to unstar messages.'
-						}));
+						event: 'err',
+						body: 'You must have 30 reputation to unstar messages.'
+					}));
 					var id = parseInt(message.id);
-					collections.chat.findOne({_id: id}, function(err, doc) {
+					dbcs.chat.findOne({_id: id}, function(err, doc) {
 						if (err) throw err;
 						if (!doc) return tws.send(JSON.stringify({
 							event: 'err',
 							body: 'Invalid message id.'
 						}));
-						collections.chatstars.findOne({
+						dbcs.chatstars.findOne({
 							user: tws.user.name,
 							pid: id
 						}, function(err, star) {
 							if (err) throw err;
 							if (!star) return tws.send(JSON.stringify({
-									event: 'err',
-									body: 'You haven\'t stared this post.'
-								}));
-							collections.chatstars.remove({
+								event: 'err',
+								body: 'You haven\'t stared this post.'
+							}));
+							dbcs.chatstars.remove({
 								user: tws.user.name,
 								pid: id
 							});
-							collections.chat.update({_id: id}, {$inc: {stars: -1}});
-							for (var i in wss.clients)
-									if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
-										event: 'unstar',
-										id: id
-									}));
+							dbcs.chat.update({_id: id}, {$inc: {stars: -1}});
+							for (var i in wss.clients) {
+								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+									event: 'unstar',
+									id: id
+								}));
+							}
 						});
 					});
 				} else if (message.event == 'info-update') {
 					if (!tws.user.name || tws.user.rep < 200) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You don\'t have permission to update room information.',
-							revertInfo: 1
-						}));
-					collections.chatrooms.update({_id: tws.room}, {
+						event: 'err',
+						body: 'You don\'t have permission to update room information.',
+						revertInfo: 1
+					}));
+					dbcs.chatrooms.update({_id: tws.room}, {
 						$set: {
 							name: message.name,
 							desc: message.desc
 						}
 					});
-					collections.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1,
 							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
-						collections.chat.insert({
+						dbcs.chat.insert({
 							_id: id,
 							body: newMessage,
 							user: tws.user.name,
 							time: new Date().getTime(),
 							room: tws.room
 						});
-						for (var i in wss.clients)
+						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room) {
 								wss.clients[i].send(JSON.stringify({
 									event: 'info-update',
@@ -1653,19 +1662,21 @@ wss.on('connection', function(tws) {
 									id: id
 								}));
 							}
+						}
 					});
 				} else tws.send(JSON.stringify({
-						event: 'err',
-						body: 'Invalid event type.'
-					}));
+					event: 'err',
+					body: 'Invalid event type.'
+				}));
 			});
 			tws.on('close', function() {
-				for (var i in wss.clients)
+				for (var i in wss.clients) {
 					if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
 						event: 'deluser',
 						name: tws.user.name
 					}));
-				collections.chatusers.remove({
+				}
+				dbcs.chatusers.remove({
 					name: tws.user.name,
 					room: tws.room
 				});
@@ -1673,7 +1684,7 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		collections.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -1683,45 +1694,46 @@ wss.on('connection', function(tws) {
 					message = JSON.parse(message);
 				} catch (e) {
 					return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'JSON error.'
-						}));
+						event: 'err',
+						body: 'JSON error.'
+					}));
 				}
 				if (message.event == 'post') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must be logged in and have 20 reputation to comment.'
-						}));
+						event: 'err',
+						body: 'You must be logged in and have 20 reputation to comment.'
+					}));
 					if (tws.user.rep < 20) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'You must have 20 reputation to comment.'
-						}));
+						event: 'err',
+						body: 'You must have 20 reputation to comment.'
+					}));
 					message.body = message.body.toString();
 					if (!message.body) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'Comment body not submitted.'
-						}));
+						event: 'err',
+						body: 'Comment body not submitted.'
+					}));
 					if (message.body.length > 720) return tws.send(JSON.stringify({
-							event: 'err',
-							body: 'Comment length may not exceed 720 characters.'
-						}));
-					collections.comments.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+						event: 'err',
+						body: 'Comment length may not exceed 720 characters.'
+					}));
+					dbcs.comments.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
-						collections.comments.insert({
+						dbcs.comments.insert({
 							_id: id,
 							body: message.body,
 							user: tws.user.name,
 							time: new Date().getTime(),
 							program: tws.program
 						});
-						for (var i in wss.clients)
+						for (var i in wss.clients) {
 							if (wss.clients[i].program == tws.program) wss.clients[i].send(JSON.stringify({
-									event: 'add',
-									body: message.body,
-									user: tws.user.name,
-									id: id
-								}));
+								event: 'add',
+								body: message.body,
+								user: tws.user.name,
+								id: id
+							}));
+						}
 					});
 				}
 			});
