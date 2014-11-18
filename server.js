@@ -575,7 +575,7 @@ http.createServer(function(req, res) {
 			if (user) {
 				dbcs.users.update({name: user.name}, {
 					$set: {level: 1},
-					$unset: {confirm: ''}
+					$unset: {confirm: 1}
 				});
 				respondPage('Account confirmed', req, res, function() {
 					res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
@@ -763,7 +763,7 @@ http.createServer(function(req, res) {
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
-					dbcs.chat.find().sort({_id: -1}).limit(12).each(function(err, doc) {
+					dbcs.chat.find({deleted: {$exists: false}}).sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
@@ -820,14 +820,29 @@ http.createServer(function(req, res) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage('Message History', req, res, function() {
+			respondPage('Message History', req, res, function(user) {
+				if (doc.deleted && doc.user != user.name) {
+					res.write('This message has been deleted.');
+					return respondPageFooter(res);
+				}
 				res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
 				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
-						res.write('Edited <time datetime="' + new Date(data.time).toISOString() + '"></time> to:\n');
-						res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
+						if (data.event == 'edit') {
+							res.write('Edited <time datetime="' + new Date(data.time).toISOString() + '"></time> to:\n');
+							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
+						} else if (data.event == 'delete' || data.event == 'undelete') {
+							var deletersstr = '',
+								i = data.by.length;
+							while (i--) {
+								deletersstr += '<a href="/user/' + data.by[i] + '">' + data.by[i] + '</a>';
+								if (i == 1) deletersstr += ', and ';
+								else if (i != 0) deletersstr += ', ';
+							}
+							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
+						}
 					} respondPageFooter(res);
 				});
 			});
@@ -908,9 +923,9 @@ http.createServer(function(req, res) {
 						var deletersstr = '',
 							i = program.deleted.by.length;
 						while (i--) {
-							deletestr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
-							if (i == 1) deletestr += ', and ';
-							else if (i != 0) deletestr += ', ';
+							deletersstr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
+							if (i == 1) deletersstr += ', and ';
+							else if (i != 0) deletersstr += ', ';
 						}
 						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
 					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
@@ -1032,14 +1047,15 @@ http.createServer(function(req, res) {
 	} else if (i = req.url.pathname.match(/\/api\/chat\/(\d+)/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
+			if (doc.deleted) return res.end('Error: Message has been deleted.');
 			if (doc) res.end(JSON.stringify({
-					id: doc._id,
-					body: doc.body,
-					user: doc.user,
-					time: doc.time,
-					stars: doc.stars,
-					room: doc.room
-				}));
+				id: doc._id,
+				body: doc.body,
+				user: doc.user,
+				time: doc.time,
+				stars: doc.stars,
+				room: doc.room
+			}));
 			else res.end('Error: Invalid message id.');
 		});
 	} else if (req.url.pathname == '/api/program/save') {
@@ -1248,7 +1264,7 @@ http.createServer(function(req, res) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
 						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
-						dbcs.programs.update({_id: id}, {$unset: {deleted: ''}});
+						dbcs.programs.update({_id: id}, {$unset: {deleted: 1}});
 						res.end('Success');
 					});
 				});
@@ -1283,7 +1299,13 @@ wss.on('connection', function(tws) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var cursor = dbcs.chat.find({room: tws.room});
+			var cursor = dbcs.chat.find({
+				room: tws.room,
+				$or: [
+					{deleted: {$exists: false}},
+					{user: tws.user.name}
+				]
+			});
 			cursor.count(function(err, count) {
 				if (err) throw err;
 				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
@@ -1304,7 +1326,8 @@ wss.on('connection', function(tws) {
 							body: doc.body,
 							user: doc.user,
 							time: doc.time,
-							stars: doc.stars
+							stars: doc.stars,
+							deleted: doc.deleted
 						}));
 						dbcs.chatstars.findOne({
 							pid: doc._id,
@@ -1324,7 +1347,10 @@ wss.on('connection', function(tws) {
 							if (err) throw err;
 							if (star) if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
 							else {
-								dbcs.chat.find({_id: {$in: pids}}).sort({_id: -1}).each(function(err, post) {
+								dbcs.chat.find({
+									_id: {$in: pids},
+									deleted: {$exists: false}
+								}).sort({_id: -1}).each(function(err, post) {
 									if (err) throw err;
 									if (post) {
 										try {
@@ -1337,9 +1363,7 @@ wss.on('connection', function(tws) {
 												user: post.user,
 												time: post.time
 											}));
-										} catch (e) {
-											console.log(e);
-										}
+										} catch (e) {}
 									}
 								});
 								return tws.send(JSON.stringify({event: 'info-complete'}));
@@ -1476,6 +1500,7 @@ wss.on('connection', function(tws) {
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
+							event: 'edit',
 							time: new Date().getTime(),
 							body: post.body
 						});
@@ -1485,6 +1510,64 @@ wss.on('connection', function(tws) {
 								event: 'edit',
 								id: post._id,
 								body: message.body
+							}));
+						}
+					});
+				} else if (message.event == 'delete') {
+					dbcs.chat.findOne({_id: message.id}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message not found.'
+						}));
+						if (post.deleted) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'This message is already deleted.'
+						}));
+						if (post.user != tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You may only delete your own messages.'
+						}));
+						dbcs.chathistory.insert({
+							message: post._id,
+							event: 'delete',
+							time: new Date().getTime(),
+							by: [tws.user.name]
+						});
+						dbcs.chat.update({_id: post._id}, {$set: {deleted: true}});
+						for (var i in wss.clients) {
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								event: 'delete',
+								id: post._id
+							}));
+						}
+					});
+				} else if (message.event == 'undelete') {
+					dbcs.chat.findOne({_id: message.id}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message not found.'
+						}));
+						if (!post.deleted) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'This message isn\'t deleted.'
+						}));
+						if (post.user != tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You may only undelete your own messages.'
+						}));
+						dbcs.chathistory.insert({
+							message: post._id,
+							event: 'undelete',
+							time: new Date().getTime(),
+							by: [tws.user.name]
+						});
+						dbcs.chat.update({_id: post._id}, {$unset: {deleted: 1}});
+						for (var i in wss.clients) {
+							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								event: 'undelete',
+								id: post._id
 							}));
 						}
 					});
@@ -1507,7 +1590,13 @@ wss.on('connection', function(tws) {
 						event: 'err',
 						body: 'Invalid skip value.'
 					}));
-					var cursor = dbcs.chat.find({room: tws.room});
+					var cursor = dbcs.chat.find({
+						room: tws.room,
+						$or: [
+							{deleted: {$exists: false}},
+							{user: tws.user.name}
+						]
+					});
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
@@ -1549,7 +1638,10 @@ wss.on('connection', function(tws) {
 						body: 'You must have 30 reputation to star messages.'
 					}));
 					var id = parseInt(message.id);
-					dbcs.chat.findOne({_id: id}, function(err, post) {
+					dbcs.chat.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
 						if (err) throw err;
 						if (!post) return tws.send(JSON.stringify({
 							event: 'err',
@@ -1590,12 +1682,11 @@ wss.on('connection', function(tws) {
 						event: 'err',
 						body: 'You must be logged in and have 30 reputation to unstar messages.'
 					}));
-					if (tws.user.rep < 30) return tws.send(JSON.stringify({
-						event: 'err',
-						body: 'You must have 30 reputation to unstar messages.'
-					}));
 					var id = parseInt(message.id);
-					dbcs.chat.findOne({_id: id}, function(err, doc) {
+					dbcs.chat.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, doc) {
 						if (err) throw err;
 						if (!doc) return tws.send(JSON.stringify({
 							event: 'err',

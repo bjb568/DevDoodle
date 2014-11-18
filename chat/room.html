@@ -33,11 +33,12 @@ $textarea
 		starwall = document.getElementById('stars'),
 		lock = true,
 		ctrls = document.createElement('div'),
-		ctrlsDelete = document.createElement('a'),
-		ctrlsFlag = document.createElement('a'),
+		ctrlsStar = document.createElement('a'),
 		ctrlsLink = document.createElement('a'),
 		ctrlsEdit = document.createElement('a'),
-		ctrlsStar = document.createElement('a'),
+		ctrlsDelete = document.createElement('a'),
+		ctrlsUndelete = document.createElement('a'),
+		ctrlsFlag = document.createElement('a'),
 		source = {},
 		editing = false,
 		e;
@@ -63,7 +64,11 @@ $textarea
 	};
 	ctrlsDelete.textContent = '✕';
 	ctrlsDelete.onclick = function() {
-		
+		socket.send(JSON.stringify({event: 'delete', id: parseInt(this.parentNode.parentNode.id)}));
+	};
+	ctrlsUndelete.textContent = '↑';
+	ctrlsUndelete.onclick = function() {
+		socket.send(JSON.stringify({event: 'undelete', id: parseInt(this.parentNode.parentNode.id)}));
 	};
 	ctrlsFlag.textContent = '⚑';
 	ctrlsFlag.onclick = function() {
@@ -73,6 +78,7 @@ $textarea
 	ctrls.appendChild(ctrlsLink);
 	ctrls.appendChild(ctrlsEdit);
 	ctrls.appendChild(ctrlsDelete);
+	ctrls.appendChild(ctrlsUndelete);
 	ctrls.appendChild(ctrlsFlag);
 	cont.onscroll = function(e) {
 		onBottom = cont.scrollTop + cont.offsetHeight >= cont.scrollHeight - 2;
@@ -137,6 +143,7 @@ $textarea
 			source[data.id] = data.body;
 			var div = document.createElement('div');
 			div.classList.add('comment');
+			if (data.deleted) div.classList.add('deleted');
 			div.innerHTML = username ? markdown(data.body).replaceAll('@' + username + ' ', '&lt;span class="mention">@' + username + '&lt;/span>') : markdown(data.body);
 			if (data.event == 'init') {
 				var imgs = div.getElementsByTagName('img'),
@@ -168,11 +175,13 @@ $textarea
 			tCtrls.children[1].onclick = ctrlsLink.onclick;
 			tCtrls.children[2].onclick = ctrlsEdit.onclick;
 			tCtrls.children[3].onclick = ctrlsDelete.onclick;
-			tCtrls.children[4].onclick = ctrlsFlag.onclick;
+			tCtrls.children[4].onclick = ctrlsUndelete.onclick;
+			tCtrls.children[5].onclick = ctrlsFlag.onclick;
 			if (username != data.user) {
 				tCtrls.removeChild(tCtrls.children[2]);
 				tCtrls.removeChild(tCtrls.children[2]);
-			}
+			} else tCtrls.children[data.deleted ? 3 : 4].hidden = true;
+			if (data.deleted) tCtrls.children[0].hidden = true;
 			if (username) div.appendChild(tCtrls);
 			if (data.before) {
 				cont.insertBefore(div, cont.firstChild);
@@ -189,6 +198,28 @@ $textarea
 			msg.innerHTML = username ? markdown(data.body).replaceAll('@' + username + ' ', '&lt;span class="mention">@' + username + '&lt;/span> ') : markdown(data.body);
 			msg.appendChild(msgCsig);
 			msg.appendChild(msgCtrls);
+		} else if (data.event == 'delete') {
+			var msg = document.getElementById(data.id);
+			if (!msg) return;
+			if (msg.getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) msg.classList.add('deleted');
+			else msg.hidden = true;
+			var msgCtrls = msg.getElementsByClassName('ctrls')[0];
+			if (!msgCtrls) return;
+			msgCtrls = msgCtrls.children;
+			msgCtrls[0].hidden = true;
+			if (msgCtrls[3]) msgCtrls[3].hidden = true;
+			if (msgCtrls[3]) msgCtrls[4].hidden = false;
+		} else if (data.event == 'undelete') {
+			var msg = document.getElementById(data.id);
+			if (!msg) return;
+			if (msg.getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) msg.classList.remove('deleted');
+			else msg.hidden = false;
+			var msgCtrls = msg.getElementsByClassName('ctrls')[0].children;
+			if (!msgCtrls) return;
+			msgCtrls = msgCtrls.children;
+			msgCtrls[0].hidden = false;
+			if (msgCtrls[3]) msgCtrls[3].hidden = false;
+			if (msgCtrls[3]) msgCtrls[4].hidden = true;
 		} else if (data.event == 'selfstar') {
 			var e;
 			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
@@ -428,4 +459,5 @@ $textarea
 		border-radius: 4px;
 	}
 	.editing { background: #4af }
+	.deleted { background: #f00 }
 </style>
