@@ -825,13 +825,15 @@ http.createServer(function(req, res) {
 					res.write('This message has been deleted.');
 					return respondPageFooter(res);
 				}
-				res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
-				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
+				var lastEditTime,
+					revisions = 0;
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
 						if (data.event == 'edit') {
-							res.write('Edited <time datetime="' + new Date(data.time).toISOString() + '"></time> to:\n');
+							if (lastEditTime) res.write('Revision ' + (++revisions + 1) + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
+							else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> said <time datetime="' + new Date(doc.time).toISOString() + '"></time>:\n');
+							lastEditTime = data.time;
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 						} else if (data.event == 'delete' || data.event == 'undelete') {
 							var deletersstr = '',
@@ -843,7 +845,12 @@ http.createServer(function(req, res) {
 							}
 							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
 						}
-					} respondPageFooter(res);
+					} else {
+						if (revisions) res.write('<a href="/chat/' + doc.room + '#' + doc._id + '">Final revision (<time datetime="' + new Date(doc.time).toISOString() + '"></time>)</a>:\n');
+						else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
+						res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
+						respondPageFooter(res);
+					}
 				});
 			});
 		});
@@ -1345,8 +1352,9 @@ wss.on('connection', function(tws) {
 						var pids = [];
 						dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
 							if (err) throw err;
-							if (star) if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
-							else {
+							if (star) {
+								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+							} else {
 								dbcs.chat.find({
 									_id: {$in: pids},
 									deleted: {$exists: false}

@@ -41,6 +41,7 @@ $textarea
 		ctrlsFlag = document.createElement('a'),
 		source = {},
 		editing = false,
+		hashchangeready = false,
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
@@ -315,6 +316,7 @@ $textarea
 				location.hash = '';
 				location.hash = '#' + hash;
 			};
+			hashchangeready = true;
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
@@ -400,7 +402,6 @@ $textarea
 		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
 		return false;
 	};
-	var hashchangeready = false;
 	addEventListener('hashchange', function(e) {
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
