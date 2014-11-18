@@ -1462,10 +1462,10 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@[\w-_!$^*]{3,16} /g);
+						var matches = message.body.match(/@([\w-_!$^*]{3,16})\W/g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
-							dbcs.users.findOne({name: matches[i].substr(1)}, function(err, user) {
+							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
 								if (err) throw err;
 								if (!user) return;
 								dbcs.chatusers.findOne({
