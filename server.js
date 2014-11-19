@@ -74,7 +74,7 @@ function inlineMarkdown(input) {
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
 							.replace(/\^(\w+)/g, '<sup>$1</sup>');
 						if (i % 2) {
-							var p = open.indexOf('</ins>')
+							var p = open.indexOf('</ins>');
 							if (p != -1) {
 								open.splice(p, 1);
 								return '</ins>' + parsed;

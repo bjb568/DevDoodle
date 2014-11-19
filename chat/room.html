@@ -56,7 +56,7 @@ $textarea
 	ctrlsEdit.onclick = function() {
 		var msg = this.parentNode.parentNode;
 		msg.classList.add('editing');
-		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top
+		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top;
 		ta.focus();
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
@@ -110,17 +110,17 @@ $textarea
 			state = nstate;
 			socket.send(JSON.stringify({event: 'statechange', state: state}));
 		}
-	};
+	}
 	function inactive() {
 		statechange(0);
-	};
+	}
+	function active() {
+		clearTimeout(timeout);
+		timeout = setTimeout(inactive, 10000);
+		statechange(1);
+	}
 	if (ta) {
 		var timeout = setTimeout(inactive, 10000);
-		function active() {
-			clearTimeout(timeout);
-			timeout = setTimeout(inactive, 10000);
-			statechange(1);
-		};
 		addEventListener('keyup', active);
 		addEventListener('keydown', active);
 		addEventListener('click', active);
@@ -150,7 +150,7 @@ $textarea
 					i = imgs.length;
 				while (i--) imgs[i].onload = function() {
 					cont.scrollTop = cont.scrollHeight;
-				}
+				};
 			}
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
@@ -221,10 +221,9 @@ $textarea
 			if (msgCtrls[3]) msgCtrls[3].hidden = false;
 			if (msgCtrls[3]) msgCtrls[4].hidden = true;
 		} else if (data.event == 'selfstar') {
-			var e;
 			if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
 		} else if (data.event == 'star') {
-			var e, f;
+			var f;
 			if ((e = document.getElementById(data.id)) &amp;&amp; (f = document.getElementById(data.id + 's'))) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
@@ -235,8 +234,8 @@ $textarea
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
 			} else {
 				var li = document.createElement('li'),
-					div = document.createElement('div'),
-					e = document.getElementById(data.id);
+					div = document.createElement('div');
+				e = document.getElementById(data.id);
 				if (e &amp;&amp; !data.board) {
 					e = e.getElementsByClassName('starcount')[0];
 					e.removeChild(e.firstChild);
@@ -266,7 +265,7 @@ $textarea
 				li.appendChild(div);
 				if (starwall.firstChild) starwall.insertBefore(li, starwall.firstChild);
 				else starwall.appendChild(li);
-			};
+			}
 		} else if (data.event == 'unstar') {
 			var e;
 			if (e = document.getElementById(data.id)) {
@@ -355,7 +354,7 @@ $textarea
 			var i = cont.children.length;
 			while (i--) {
 				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
-					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 					return e.onclick.apply(e);
 				}
 			}
@@ -366,7 +365,7 @@ $textarea
 				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
 					editing = false;
 					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 					return e.onclick.apply(e);
 				}
 			}
@@ -377,7 +376,7 @@ $textarea
 				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
 					editing = false;
 					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					var e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 					return e.onclick.apply(e);
 				}
 			}
