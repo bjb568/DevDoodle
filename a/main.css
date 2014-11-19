@@ -66,11 +66,15 @@ code { background: rgba(255, 255, 255, 0.6) }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
 .ctrls {
-	bottom: -1px; right: -1px;
+	top: 100%; right: -1px;
 	z-index: 1;
 	background: #cef;
 	line-height: 16px;
 	padding-bottom: 1px;
+}
+.comment:last-child:not(:first-child) .ctrls {
+	top: auto;
+	bottom: 100%;
 }
 .comment img { max-height: 200px }
 .ctrls :hover { color: #000 }
