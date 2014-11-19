@@ -18,55 +18,58 @@ function html(input, replaceQuoteOff) {
 	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 };
+function markdownEscape(input) {
+	return input.replaceAll(['\\', '`', '*', '_', '-', '+', '.', '#', '>', '(', ')', '^', '$'], ['\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u000d', '\u000e', '\u000f', '\u0010', '\u0011', '\u0012', '\u0013']);
+};
 function inlineMarkdown(input) {
-	var backslash = Math.random().toString();
-	while (input.indexOf(backslash) != -1) backslash = Math.random().toString();
+	var backslash = '\u0001';
 	input = input.replaceAll('\\\\', backslash);
-	var graveaccent = Math.random().toString();
-	while (input.indexOf(graveaccent) != -1 || [backslash].indexOf(graveaccent) != -1) graveaccent = Math.random().toString();
+	var graveaccent = '\u0002';
 	input = input.replaceAll('\\`', graveaccent);
-	var asterisk = Math.random().toString();
-	while (input.indexOf(asterisk) != -1 || [backslash, graveaccent].indexOf(asterisk) != -1) asterisk = Math.random().toString();
+	var asterisk = '\u0003';
 	input = input.replaceAll('\\*', asterisk);
-	var underscore = Math.random().toString();
-	while (input.indexOf(underscore) != -1 || [backslash, graveaccent, asterisk].indexOf(underscore) != -1) underscore = Math.random().toString();
+	var underscore = '\u0004';
 	input = input.replaceAll('\\_', underscore);
-	var dash = Math.random().toString();
-	while (input.indexOf(dash) != -1 || [backslash, graveaccent, asterisk, underscore].indexOf(dash) != -1) dash = Math.random().toString();
+	var dash = '\u0005';
 	input = input.replaceAll('\\-', dash);
-	var plus = Math.random().toString();
-	while (input.indexOf(plus) != -1 || [backslash, graveaccent, asterisk, underscore, dash].indexOf(plus) != -1) plus = Math.random().toString();
+	var plus = '\u0006';
 	input = input.replaceAll('\\+', plus);
-	var dot = Math.random().toString();
-	while (input.indexOf(dot) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus].indexOf(dot) != -1) dot = Math.random().toString();
+	var dot = '\u000d';
 	input = input.replaceAll('\\.', dot);
-	var hash = Math.random().toString();
-	while (input.indexOf(hash) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus, dot].indexOf(hash) != -1) hash = Math.random().toString();
+	var hash = '\u000e';
 	input = input.replaceAll('\\#', hash);
-	var gt = Math.random().toString();
-	while (input.indexOf(gt) != -1 || [backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash].indexOf(gt) != -1) gt = Math.random().toString();
+	var gt = '\u000f';
 	input = input.replaceAll('\\>', gt);
-	var paren = '#' + Math.random().toString();
-	while (input.indexOf(paren) != -1) paren = '#' + Math.random().toString();
+	var paren = '\u0010';
 	input = input.replaceAll('\\(', paren);
-	var cparen = '#' + Math.random().toString();
-	while (input.indexOf(cparen) != -1 || [paren].indexOf(cparen) != -1) cparen = '#' + Math.random().toString();
+	var cparen = '\u0011';
 	input = input.replaceAll('\\)', cparen);
-	var carrot = '#' + Math.random().toString();
-	while (input.indexOf(carrot) != -1 || [paren, cparen].indexOf(carrot) != -1) carrot = '#' + Math.random().toString();
+	var carrot = '\u0012';
 	input = input.replaceAll('\\^', carrot);
-	var dollar = '#' + Math.random().toString();
-	while (input.indexOf(dollar) != -1 || [paren, cparen, carrot].indexOf(dollar) != -1) dollar = '#' + Math.random().toString();
+	var dollar = '\u0013';
 	input = input.replaceAll('\\$', dollar);
 	var open = [];
 	return input.split('`').map(function(val, i, arr) {
 		if (i % 2) return '<code>' + html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt, paren, cparen, carrot, dollar], ['\\\\', '\\`', '\\*', '\\_', '\\-', '\\+', '\\.', '\\#', '\\>', '\\(', '\\)', '\\^'])) + '</code>';
-		var parsed = val.split('*').map(function(val, i, arr) {
+		var parsed = val
+			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+				return '![' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
+			})
+			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+				return '[' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
+			})
+			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1, p2) {
+				return markdownEscape(p1) + markdownEscape(p2);
+			})
+			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1) {
+				return markdownEscape(p1);
+			})
+		.split('*').map(function(val, i, arr) {
 			var parsed = val.split('_').map(function(val, i, arr) {
 				var parsed = val.split('---').map(function(val, i, arr) {
 					var parsed = val.split('+++').map(function(val, i, arr) {
 						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
-							.replace(/!\[([^\]]+)]\(([^\s("\\]+\.[^\s()"\\]+)\)/g, '<img alt="$1" src="$2" />')
+							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '<img alt="$1" src="$2" />')
 							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '$1'.link('$2'))
 							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$1' + '$3'.link('$2'))
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
