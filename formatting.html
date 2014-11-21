@@ -1,0 +1,124 @@
+<h1>Formatting Help</h1>
+<p>Our <a href="https://github.com/bjb568/Markdown-HTML" title="Github repository">markdown-inspired formatting parser</a> allows you to add formatting to your post such as <em>emphasis</em> and <code>code</code>.</p>
+<h2>Inline formatting</h2>
+<p>Inline formatting (formatting that won't cause a line break) is written as a formatting sequence followed by the affected text followed by the same formatting sequence.</p>
+<section>
+	<h3>Emphasis</h3>
+	<code class="blk">Use an asterisk to *emphasise* text that is slightly more important or is stressed in speach.</code>
+	<blockquote>Use an asterisk to <em>emphasise</em> text that is slightly more important or is stressed in speach.</blockquote>
+</section>
+<section>
+	<h3>Strong Emphasis</h3>
+	<code class="blk">Use an underscore to add _strong emphasis_ to text that is more important.</code>
+	<blockquote>Use an underscore to add <strong>strong emphasis</strong> to text that is more important.</blockquote>
+</section>
+<section>
+	<h3>Deleted Text</h3>
+	<code class="blk">Use 3 dashes to indicate ---deleted text--- which was once, but is no longer relevant, useful, or accurate.</code>
+	<blockquote>Use 3 dashes to indicate <del>deleted text</del> which was once, but is no longer relevant, useful, or accurate.</blockquote>
+</section>
+<section>
+	<h3>Inserted Text</h3>
+	<code class="blk">Use 3 plusses to indicate ---inserted text--- which was add later to the post, especially if it replaced deleted text.</code>
+	<blockquote>Use 3 dashes to indicate <ins>inserted text</ins> which was add later to the post, especially if it replaced deleted text.</blockquote>
+</section>
+<section>
+	<h3>Code</h3>
+	<code class="blk">Use a backtick to add `inline code` which contents don't get parsed.</code>
+	<blockquote>Use a backtick to add <code>inline code</code> which contents don't get parsed.</blockquote>
+</section>
+<section>
+	<h3>Links</h3>
+	<p>Bare URLs with http:// or https:// are automatically turned into a link:</p>
+	<code class="blk">http://example.com</code>
+	<blockquote><a href="http://example.com">example.com</a></blockquote>
+	<p>But it is preferable to use a link title:</p>
+	<code class="blk">[Example title](http://example.com)</code>
+	<blockquote><a href="http://example.com">Example title</a></blockquote>
+</section>
+<section>
+	<h3>Nesting</h3>
+	<p>You can combine multiple formatting commands, placing one inside another. This is called <em>nesting</em>.</p>
+	<code class="blk">---deleted text with *emphasis* inside---</code>
+	<blockquote><del>deleted text with <em>emphasis</em> inside</del></blockquote>
+</section>
+<section>
+	<h3>Escapement</h3>
+	<p>To write literal control characters, for example the literal string "3*4*5 = 60", escape the parsed characters with a backslash (<code>3\*4\*5 = 60</code>). To write a literal backslash, escape it with another backslash.</p>
+	<code class="blk">*emphasis* \*just asterisks\*</code>
+	<blockquote><em>emphasis</em> *just asterisks*</blockquote>
+</section>
+<section>
+	<h3>Super/sub-script</h3>
+	<p>For convienece, a superscripted string consisting of just word characters (alphanumeric or underscore (<code>_</code>)) can be written with just a carrot.</p>
+	<code class="blk">5^2 = 25</code>
+	<blockquote>5<sup>2</sup> = 25</blockquote>
+	<p>Otherwise parenthatheses are needed.</p>
+	<code class="blk">3^(3^(3)) = 7625597484987</code>
+	<blockquote>3<sup>3<sup>3</sup></sup> = 7625597484987</blockquote>
+	<p>A dollar sign (<code>$</code>) is used for subscript.</p>
+	<code class="blk">a$(n) = 4n</code>
+	<blockquote>a<sub>n</sub> = 4n</blockquote>
+</section>
+<h2>Block formatting</h2>
+<p>Block formatting is the control of the type of block a line is placed in. By default, every line is put into a paragraph block.</p>
+<section>
+	<h3>Blockquote</h3>
+	<p>Blockquotes can contain any material a post can.</p>
+	<code class="blk">> Blockquote
+> > Blockquote inside a blockquote</code>
+	<blockquote>
+		<blockquote>
+			<p>Blockquote</p>
+			<blockquote>Blockquote inside a blockquote</blockquote>
+		</blockquote>
+	</blockquote>
+</section>
+<section>
+	<h3>Unordered list</h3>
+	<p>Unordered lists items are started with a dash (<code>- </code>) or an asterisk (<code>* </code>). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
+	<code class="blk">* Item 1
+- Item 2
+    Line 2 of item 2</code>
+	<blockquote>
+		<ul>
+			<li>Item 1</li>
+			<li>
+				<p>Item 2</p>
+				<p>Line 2 of item 2</p>
+			</li>
+		</ul>
+	</blockquote>
+</section>
+<section>
+	<h3>Ordered list</h3>
+	<p>Ordered lists are like unordered lists, except that items have a defined order and are usually rendered with numbers prefixed to list items. Items are started with a sequence of one or more digets (0-9) or a single letter (A-Z, case insensitive) followed by either <code>)</code> or <code>.</code> (period character). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
+	<code class="blk">1. Item 1
+b. Item 2
+    Line 2 of item 2
+C) Item 3
+39. Item 4</code>
+	<blockquote>
+		<ol>
+			<li>Item 1</li>
+			<li>
+				<p>Item 2</p>
+				<p>Line 2 of item 2</p>
+			</li>
+			<li>Item 3</li>
+			<li>Item 4</li>
+		</ol>
+	</blockquote>
+</section>
+<section>
+	<h3>Block code</h3>
+	<p>Lines indeneted by 4 spaces or a tab character (or more depending on nesting in lists) are not parsed and are put in a code block.</p>
+	<code class="blk">    function multiply3(a, b, c) {
+        return a * b * c;
+    }</code>
+	<blockquote>
+		<code class="blk">function multiply3(a, b, c) {
+    return a * b * c;
+}</code>
+	</blockquote>
+</section>

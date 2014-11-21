@@ -814,7 +814,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1035,6 +1035,14 @@ http.createServer(function(req, res) {
 				});
 			}
 		});
+	} else if (req.url.pathname == '/formatting') {
+		respondPage('Formatting Help', req, res, function() {
+			fs.readFile('formatting.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
 	} else if (req.url.pathname == '/api/me/changeemail') {
 		if (req.method == 'POST') {
 			post = '';
