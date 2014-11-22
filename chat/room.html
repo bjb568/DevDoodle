@@ -180,6 +180,7 @@ $textarea
 			if (username != data.user) {
 				tCtrls.removeChild(tCtrls.children[2]);
 				tCtrls.removeChild(tCtrls.children[2]);
+				tCtrls.removeChild(tCtrls.children[2]);
 			} else tCtrls.children[data.deleted ? 3 : 4].hidden = true;
 			if (data.deleted) tCtrls.children[0].hidden = true;
 			if (username) div.appendChild(tCtrls);

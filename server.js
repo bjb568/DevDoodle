@@ -125,7 +125,7 @@ function inlineMarkdown(input) {
 	}).join('') + open.join('');
 }
 function markdown(input) {
-	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^(\w+[.)]|#{1,6}) /)) return inlineMarkdown(input);
+	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}) /)) return inlineMarkdown(input);
 	var blockquote = '',
 		ul = '',
 		ol = '',
@@ -133,14 +133,14 @@ function markdown(input) {
 		code = '';
 	return input.split('\n').map(function(val, i, arr) {
 		if (!val) return '';
-		var f, arg;
+		var f;
 		if (val.substr(0, 2) == '> ') {
 			val = val.substr(2);
 			if (arr[i + 1] && arr[i + 1].substr(0, 2) == '> ') {
 				blockquote += val + '\n';
 				return '';
 			} else {
-				arg = blockquote + val;
+				var arg = blockquote + val;
 				blockquote = '';
 				return '<blockquote>' + markdown(arg) + '</blockquote>';
 			}
@@ -150,7 +150,7 @@ function markdown(input) {
 			if (li) {
 				ul += '<li>' + markdown(li) + '</li>';
 				li = '';
-			}
+			};
 			if (arr[i + 1] && (arr[i + 1].substr(0, 2) == '- ' || arr[i + 1] && arr[i + 1].substr(0, 2) == '* ')) {
 				ul += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -158,36 +158,36 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				arg = ul + '<li>' + markdown(val) + '</li>';
+				var arg = ul + '<li>' + markdown(val) + '</li>';
 				ul = '';
 				return arg + '</ul>';
 			}
-		} else if (f = val.match(/^\w+[.)] /)) {
+		} else if (f = val.match(/^(\d+|[A-z])[.)] /)) {
 			if (!ol) ol = '<ol>';
 			val = val.substr(f[0].length);
 			if (li) {
 				ol += '<li>' + markdown(li) + '</li>';
 				li = '';
-			}
-			if (arr[i + 1] && arr[i + 1].match(/^\w+[.)] /)) {
+			};
+			if (arr[i + 1] && arr[i + 1].match(/^(\d+|[A-z])[.)] /)) {
 				ol += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
 			} else if (arr[i + 1] && (arr[i + 1][0] == '\t' || arr[i + 1] && arr[i + 1].substr(0, 4) == '    ')) {
 				li += val + '\n';
 				return '';
 			} else {
-				arg = ol + '<li>' + inlineMarkdown(val) + '</li>';
+				var arg = ol + '<li>' + inlineMarkdown(val) + '</li>';
 				ol = '';
 				return arg + '</ol>';
 			}
 		} else if (li && val[0] == '\t') {
 			li += val.substr(1) + '\n';
 			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
-				arg = ul + '<li>' + markdown(li) + '</li>';
+				var arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
-			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
-				arg = ol + '<li>' + markdown(li) + '</li>';
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^(\d+|[A-z])[.)] /)))) {
+				var arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
 			}
@@ -195,11 +195,11 @@ function markdown(input) {
 		} else if (li && val.substr(0, 4) == '    ') {
 			li += val.substr(4) + '\n';
 			if (ul && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && arr[i + 1].substr(2) != '- ' && arr[i + 1].substr(2) != '* '))) {
-				arg = ul + '<li>' + markdown(li) + '</li>';
+				var arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
-			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^\w+[.)] /)))) {
-				arg = ol + '<li>' + markdown(li) + '</li>';
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^((\d+|[A-z])|[A-z])[.)] /)))) {
+				var arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
 			}
@@ -207,7 +207,7 @@ function markdown(input) {
 		} else if (val[0] == '\t') {
 			code += val.substr(1);
 			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
-				arg = html(code);
+				var arg = html(code);
 				code = '';
 				return '<code class="blk">' + arg + '</code>';
 			} else code += '\n';
@@ -215,7 +215,7 @@ function markdown(input) {
 		} else if (val.substr(0, 4) == '    ') {
 			code += val.substr(4);
 			if (!arr[i + 1] || (arr[i + 1].substr(0, 4) != '    ' && arr[i + 1][0] != '\t')) {
-				arg = html(code);
+				var arg = html(code);
 				code = '';
 				return '<code class="blk">' + arg + '</code>';
 			} else code += '\n';
@@ -814,7 +814,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><button id="btn" class="blk" onclick="send()">Post</button>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -859,7 +859,7 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, req, res, function() {
-			res.write('<h1>Programs <small><a href="ask">New Program</a></small></h1>\n');
+			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>\n');
 			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
@@ -917,7 +917,7 @@ http.createServer(function(req, res) {
 		respondPage('HTML Playground', req, res, function() {
 			fs.readFile('dev/html.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? (html(req.url.query.html || '')) : '', req.url.query ? (html(req.url.query.css || '')) : '', req.url.query ? (html(req.url.query.js || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? (html(req.url.query.html || '')) : '', req.url.query ? (html(req.url.query.css || '')) : '', req.url.query ? (html(req.url.query.js || '')) : '']));
 				respondPageFooter(res);
 			});
 		});
@@ -1035,6 +1035,14 @@ http.createServer(function(req, res) {
 				});
 			}
 		});
+	} else if (req.url.pathname == '/formatting') {
+		respondPage('Formatting Help', req, res, function() {
+			fs.readFile('formatting.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				respondPageFooter(res);
+			});
+		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
 	} else if (req.url.pathname == '/api/me/changeemail') {
 		if (req.method == 'POST') {
 			post = '';
