@@ -509,7 +509,7 @@ http.createServer(function(req, res) {
 					var errors = [];
 					if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
 					if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[\w-_!$^*]+$/)) errors.push('Name may not contain non-alphanumeric characters besides "-", "_", "!", "$", "^", and "*."');
+					if (!post.name.match(/^[\w-]+$/)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
 					if (errors.length) return respondLoginPage(errors, req, res, post);
@@ -628,7 +628,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})$/)) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res);
@@ -687,7 +687,7 @@ http.createServer(function(req, res) {
 		});
 		dbcs.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-_!$^*]{3,16})\/changepass$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
 		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
 			if (err) throw err;
 			if (!user || user.name != i[1]) return errorPage[403](req, res);
@@ -814,7 +814,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1481,7 +1481,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-_!$^*]{3,16})\W/g);
+						var matches = message.body.match(/@([\w-]{3,16})\W/g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
 							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
