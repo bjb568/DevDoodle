@@ -1411,8 +1411,12 @@ wss.on('connection', function(tws) {
 								state: 1
 							}));
 						} else {
+							var sendto = [];
 							for (var i in wss.clients) {
-								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+							}
+							for (var i in sendto) {
+								sendto[i].send(JSON.stringify({
 									event: 'adduser',
 									name: user.name,
 									state: 1
@@ -1465,8 +1469,12 @@ wss.on('connection', function(tws) {
 							time: new Date().getTime(),
 							room: tws.room
 						});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'add',
 								body: message.body,
 								user: tws.user.name,
@@ -1523,9 +1531,13 @@ wss.on('connection', function(tws) {
 							time: new Date().getTime(),
 							body: post.body
 						});
-						dbcs.chat.update({_id: post._id}, {$set: {body: message.body}});
+					dbcs.chat.update({_id: post._id}, {$set: {body: message.body}});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'edit',
 								id: post._id,
 								body: message.body
@@ -1554,8 +1566,12 @@ wss.on('connection', function(tws) {
 							by: [tws.user.name]
 						});
 						dbcs.chat.update({_id: post._id}, {$set: {deleted: true}});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'delete',
 								id: post._id
 							}));
@@ -1583,8 +1599,12 @@ wss.on('connection', function(tws) {
 							by: [tws.user.name]
 						});
 						dbcs.chat.update({_id: post._id}, {$unset: {deleted: 1}});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'undelete',
 								id: post._id
 							}));
@@ -1596,8 +1616,12 @@ wss.on('connection', function(tws) {
 							name: tws.user.name,
 							room: tws.room
 						}, {$set: {state: message.state}});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'statechange',
 								state: message.state,
 								user: tws.user.name
@@ -1682,17 +1706,19 @@ wss.on('connection', function(tws) {
 								time: new Date().getTime()
 							});
 							dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
+							var sendto = [];
 							for (var i in wss.clients) {
-								if (wss.clients[i].room == tws.room) {
-									tws.send(JSON.stringify({
-										event: 'star',
-										id: post._id,
-										body: post.body,
-										stars: post.stars + 1,
-										user: post.user,
-										time: post.time
-									}));
-								}
+								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+							}
+							for (var i in sendto) {
+								sendto[i].send(JSON.stringify({
+									event: 'star',
+									id: post._id,
+									body: post.body,
+									stars: post.stars + 1,
+									user: post.user,
+									time: post.time
+								}));
 							}
 						});
 					});
@@ -1725,8 +1751,12 @@ wss.on('connection', function(tws) {
 								pid: id
 							});
 							dbcs.chat.update({_id: id}, {$inc: {stars: -1}});
+							var sendto = [];
 							for (var i in wss.clients) {
-								if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+							}
+							for (var i in sendto) {
+								sendto[i].send(JSON.stringify({
 									event: 'unstar',
 									id: id
 								}));
@@ -1756,21 +1786,23 @@ wss.on('connection', function(tws) {
 							time: new Date().getTime(),
 							room: tws.room
 						});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].room == tws.room) {
-								wss.clients[i].send(JSON.stringify({
-									event: 'info-update',
-									name: message.name,
-									desc: message.desc,
-									id: id
-								}));
-								wss.clients[i].send(JSON.stringify({
-									event: 'add',
-									body: newMessage,
-									user: tws.user.name,
-									id: id
-								}));
-							}
+							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
+								event: 'info-update',
+								name: message.name,
+								desc: message.desc,
+								id: id
+							}));
+							sendto[i].send(JSON.stringify({
+								event: 'add',
+								body: newMessage,
+								user: tws.user.name,
+								id: id
+							}));
 						}
 					});
 				} else tws.send(JSON.stringify({
@@ -1779,8 +1811,12 @@ wss.on('connection', function(tws) {
 				}));
 			});
 			tws.on('close', function() {
+				var sendto = [];
 				for (var i in wss.clients) {
-					if (wss.clients[i].room == tws.room) wss.clients[i].send(JSON.stringify({
+					if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+				}
+				for (var i in sendto) {
+					sendto[i].send(JSON.stringify({
 						event: 'deluser',
 						name: tws.user.name
 					}));
@@ -1835,8 +1871,12 @@ wss.on('connection', function(tws) {
 							time: new Date().getTime(),
 							program: tws.program
 						});
+						var sendto = [];
 						for (var i in wss.clients) {
-							if (wss.clients[i].program == tws.program) wss.clients[i].send(JSON.stringify({
+							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
 								event: 'add',
 								body: message.body,
 								user: tws.user.name,
