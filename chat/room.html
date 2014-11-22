@@ -41,6 +41,7 @@ $textarea
 		ctrlsFlag = document.createElement('a'),
 		source = {},
 		editing = false,
+		users = [],
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
@@ -141,6 +142,8 @@ $textarea
 		}
 		if (data.event == 'init' || data.event == 'add') {
 			source[data.id] = data.body;
+			if (users.indexOf(data.user) != -1) users.splice(users.indexOf(data.user), 1);
+			if (data.name != username) users.push(data.user);
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
@@ -284,6 +287,8 @@ $textarea
 				e.appendChild(document.createTextNode(count + '★ '));
 			}
 		} else if (data.event == 'adduser') {
+			if (users.indexOf(data.name) != -1) users.splice(users.indexOf(data.name), 1);
+			if (data.name != username) users.push(data.name);
 			var li = document.createElement('li');
 			if (data.state == 0) li.classList.add('inactive');
 			if (data.state == 2) li.classList.add('writing');
@@ -329,63 +334,92 @@ $textarea
 	socket.onclose = function() {
 		if (confirm('Connection error. Reload?')) location.reload();
 	};
-	if (ta) ta.onkeypress = ta.onkeydown = function(e) {
-		if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
-			e.preventDefault();
-			if (editing) {
-				socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+	if (ta) {
+		ta.onkeypress = ta.onkeydown = function(e) {
+			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+				e.preventDefault();
+				if (editing) {
+					socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+					document.getElementsByClassName('editing')[0].classList.remove('editing');
+					editing = false;
+					this.value = '';
+					cont.scrollTop = cont.scrollHeight;
+				} else {
+					socket.send(JSON.stringify({event: 'post', body: ta.value}));
+					location.hash = '';
+					ta.value = '';
+					cont.scrollTop = cont.scrollHeight;
+				};
+			} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
+				e.preventDefault();
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
 				editing = false;
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
-			} else {
-				socket.send(JSON.stringify({event: 'post', body: ta.value}));
-				location.hash = '';
-				ta.value = '';
+			} else if (e.keyCode == 38 &amp;&amp; !ta.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+				e.preventDefault();
+				var i = cont.children.length;
+				while (i--) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+						return e.onclick.apply(e);
+					}
+				}
+			} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+				e.preventDefault();
+				var i = cont.children.indexOf(document.getElementById(editing));
+				while (i--) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+						editing = false;
+						document.getElementsByClassName('editing')[0].classList.remove('editing');
+						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+						return e.onclick.apply(e);
+					}
+				}
+			} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+				e.preventDefault();
+				var i = cont.children.indexOf(document.getElementById(editing));
+				while (++i &lt; cont.children.length) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+						editing = false;
+						document.getElementsByClassName('editing')[0].classList.remove('editing');
+						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
+						return e.onclick.apply(e);
+					}
+				}
+				document.getElementsByClassName('editing')[0].classList.remove('editing');
+				editing = false;
+				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
-			};
-		} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
-			e.preventDefault();
-			document.getElementsByClassName('editing')[0].classList.remove('editing');
-			editing = false;
-			this.value = '';
-			cont.scrollTop = cont.scrollHeight;
-		} else if (e.keyCode == 38 &amp;&amp; !ta.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
-			e.preventDefault();
-			var i = cont.children.length;
-			while (i--) {
-				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
-					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
-					return e.onclick.apply(e);
-				}
 			}
-		} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
-			e.preventDefault();
-			var i = cont.children.indexOf(document.getElementById(editing));
-			while (i--) {
-				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
-					editing = false;
-					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
-					return e.onclick.apply(e);
-				}
-			}
-		} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
-			e.preventDefault();
-			var i = cont.children.indexOf(document.getElementById(editing));
-			while (++i &lt; cont.children.length) {
-				if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
-					editing = false;
-					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
-					return e.onclick.apply(e);
-				}
-			}
-			document.getElementsByClassName('editing')[0].classList.remove('editing');
-			editing = false;
-			this.value = '';
-			cont.scrollTop = cont.scrollHeight;
 		}
+		function pingsugs() {
+			setTimeout(function() {
+				var before = ta.value.substr(0, ta.selectionStart),
+					str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
+					list = document.getElementById('pingsug'),
+					c;
+				while (c = list.firstChild) list.removeChild(c);
+				if (str[0] == '@') {
+					for (var i = users.length - 1; i >= 0; i--) {
+						if (users[i].substr(0, str.length - 1) == str.substr(1)) {
+							var span = document.createElement('span');
+							span.appendChild(document.createTextNode(users[i]));
+							span.onclick = function() {
+								var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
+								ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
+								ta.focus();
+								ta.selectionStart = before + this.textContent.length;
+							};
+							list.appendChild(span);
+						}
+					}
+				}
+			}, 0);
+		}
+		ta.addEventListener('keydown', pingsugs);
+		ta.addEventListener('keyup', pingsugs);
+		ta.addEventListener('keypress', pingsugs);
 	};
 	var edit = document.getElementById('edit');
 	if (edit) {
@@ -460,4 +494,13 @@ $textarea
 	}
 	.editing { background: #4af }
 	.deleted { background: #f00 }
+	#pingsug {
+		position: absolute;
+		margin-top: -18px;
+	}
+	#pingsug span {
+		background: #ffa;
+		padding: 2px;
+		margin: 0 2px;
+	}
 </style>
