@@ -344,12 +344,7 @@ $textarea
 					editing = false;
 					this.value = '';
 					cont.scrollTop = cont.scrollHeight;
-				} else {
-					socket.send(JSON.stringify({event: 'post', body: ta.value}));
-					location.hash = '';
-					ta.value = '';
-					cont.scrollTop = cont.scrollHeight;
-				};
+				} else send();
 			} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
@@ -421,6 +416,13 @@ $textarea
 		ta.addEventListener('keyup', pingsugs);
 		ta.addEventListener('keypress', pingsugs);
 	};
+	function send() {
+		socket.send(JSON.stringify({event: 'post', body: ta.value}));
+		location.hash = '';
+		ta.value = '';
+		cont.scrollTop = cont.scrollHeight;
+		ta.focus();
+	}
 	var edit = document.getElementById('edit');
 	if (edit) {
 		edit.onclick = function() {
