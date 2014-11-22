@@ -4,8 +4,8 @@
 <p>Inline formatting (formatting that won't cause a line break) is written as a formatting sequence followed by the affected text followed by the same formatting sequence.</p>
 <section>
 	<h3>Emphasis</h3>
-	<code class="blk">Use an asterisk to *emphasise* text that is slightly more important or is stressed in speach.</code>
-	<blockquote>Use an asterisk to <em>emphasise</em> text that is slightly more important or is stressed in speach.</blockquote>
+	<code class="blk">Use an asterisk to *emphasise* text that is slightly more important or is stressed in speech.</code>
+	<blockquote>Use an asterisk to <em>emphasise</em> text that is slightly more important or is stressed in speech.</blockquote>
 </section>
 <section>
 	<h3>Strong Emphasis</h3>
@@ -19,13 +19,13 @@
 </section>
 <section>
 	<h3>Inserted Text</h3>
-	<code class="blk">Use 3 plusses to indicate ---inserted text--- which was add later to the post, especially if it replaced deleted text.</code>
-	<blockquote>Use 3 dashes to indicate <ins>inserted text</ins> which was add later to the post, especially if it replaced deleted text.</blockquote>
+	<code class="blk">Use 3 plusses to indicate ---inserted text--- which was added later to the post, especially if it replaced deleted text.</code>
+	<blockquote>Use 3 plusses to indicate <ins>inserted text</ins> which was added later to the post, especially if it replaced deleted text.</blockquote>
 </section>
 <section>
-	<h3>Code</h3>
-	<code class="blk">Use a backtick to add `inline code` which contents don't get parsed.</code>
-	<blockquote>Use a backtick to add <code>inline code</code> which contents don't get parsed.</blockquote>
+	<h3>Inline Code <small>(not parsed)</small></h3>
+	<code class="blk">To indicate `code`, enclose it in backticks.</code>
+	<blockquote>To indicate <code>code</code>, enclose it in backticks.</blockquote>
 </section>
 <section>
 	<h3>Links</h3>
@@ -92,7 +92,7 @@
 </section>
 <section>
 	<h3>Ordered list</h3>
-	<p>Ordered lists are like unordered lists, except that items have a defined order and are usually rendered with numbers prefixed to list items. Items are started with a sequence of one or more digets (0-9) or a single letter (A-Z, case insensitive) followed by either <code>)</code> or <code>.</code> (period character). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
+	<p>Ordered lists are like unordered lists, except that items have a defined order and are usually rendered with numbers prefixed to list items. Items are started with a sequence of one or more digits (0-9) or a single letter (A-Z, case insensitive) followed by either <code>)</code> or <code>.</code> (period character). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
 	<code class="blk">1. Item 1
 b. Item 2
     Line 2 of item 2
@@ -111,7 +111,7 @@ C) Item 3
 	</blockquote>
 </section>
 <section>
-	<h3>Block code</h3>
+	<h3>Block code <small>(not parsed)</small></h3>
 	<p>Lines indeneted by 4 spaces or a tab character (or more depending on nesting in lists) are not parsed and are put in a code block.</p>
 	<code class="blk">    function multiply3(a, b, c) {
         return a * b * c;
