@@ -52,16 +52,16 @@ function inlineMarkdown(input) {
 	return input.split('`').map(function(val, i, arr) {
 		if (i % 2) return '<code>' + html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt, paren, cparen, carrot, dollar], ['\\\\', '\\`', '\\*', '\\_', '\\-', '\\+', '\\.', '\\#', '\\>', '\\(', '\\)', '\\^'])) + '</code>';
 		var parsed = val
-			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
 				return '![' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
 			})
-			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
 				return '[' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
 			})
-			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1, p2) {
+			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1, p2) {
 				return markdownEscape(p1) + markdownEscape(p2);
 			})
-			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1) {
+			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
 				return markdownEscape(p1);
 			})
 		.split('*').map(function(val, i, arr) {
@@ -69,10 +69,10 @@ function inlineMarkdown(input) {
 				var parsed = val.split('---').map(function(val, i, arr) {
 					var parsed = val.split('+++').map(function(val, i, arr) {
 						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
-							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '<img alt="$1" src="$2" />')
-							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '$1'.link('$2'))
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$1' + '$3'.link('$2'))
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
+							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
+							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
+							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
+							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
 							.replace(/\^(\w+)/g, '<sup>$1</sup>');
 						if (i % 2) {
 							var p = open.indexOf('</ins>');
