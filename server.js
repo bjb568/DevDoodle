@@ -1417,7 +1417,13 @@ wss.on('connection', function(tws) {
 							ts: after > 92
 						}));
 					} catch(e) {}
-					dbcs.chat.find().skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
+					dbcs.chat.find({
+						room: tws.room,
+						$or: [
+							{deleted: {$exists: false}},
+							{user: tws.user.name}
+						]
+					}).skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							tws.send(JSON.stringify({
