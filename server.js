@@ -495,6 +495,10 @@ function respondChangePassPage(errs, req, res, post) {
 }
 
 http.createServer(function(req, res) {
+	if (req.url.length > 1000) {
+		req.url = url.parse(req.url, true);
+		return errorPage[414](req, res);
+	}
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
 	var i, post;
@@ -510,9 +514,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
@@ -704,9 +714,15 @@ http.createServer(function(req, res) {
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
+					if (req.abort) return;
 					post += data;
+					if (post.length > 100000) {
+						errorPage[413](req, res);
+						req.abort = true;
+					}
 				});
 				req.on('end', function() {
+					if (req.abort) return;
 					post = querystring.parse(post);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
@@ -730,7 +746,7 @@ http.createServer(function(req, res) {
 			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
-				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
 				else respondPageFooter(res);
 			});
 		});
@@ -746,15 +762,21 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				respondPage(post.lang + ': ' + post.title, req, res, function() {
-					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
+					res.write('<h1>' + html(post.lang + ': ' + post.title) + '</h1>');
 					res.write(markdown(post.description));
 					res.write('<code class="blk">' + html(post.code) + '</code>');
-					res.write('<p>' + post.question + '</p>');
+					res.write('<p>' + html(post.question) + '</p>');
 					res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
 					res.write('<hr />');
 					var cat = [];
@@ -782,15 +804,15 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res);
 			respondPage(question.lang + ': ' + question.title, req, res, function() {
-				res.write('<h1>' + question.lang + ': ' + question.title + '</h1>');
+				res.write('<h1>' + html(question.lang + ': ' + question.title) + '</h1>');
 				res.write(markdown(question.description));
 				res.write('<code class="blk">' + html(question.code) + '</code>');
-				res.write('<p>' + question.question + '</p>');
+				res.write('<p>' + html(question.question) + '</p>');
 				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname == '/chat/') {
-		respondPage(null, req, res, function() {
+		respondPage(null, req, res, function(user) {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
 			dbcs.chatrooms.find().each(function(err, doc) {
@@ -801,7 +823,7 @@ http.createServer(function(req, res) {
 					roomnames[doc._id] = doc.name;
 				} else {
 					res.write('<hr />\n');
-					res.write('<a href="newroom" class="small">Create Room</a>\n');
+					if (user.rep >= 200) res.write('<a href="newroom" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
@@ -818,14 +840,20 @@ http.createServer(function(req, res) {
 			cookie: cookie.parse(req.headers.cookie || '').id
 		}, function(err, user) {
 			if (err) throw err;
-			if (!user) return res.end('You must be logged in and have 200 reputation to create a room.');
-			if (user.rep < 200) return res.end('You must have 200 reputation to create a room.');
+			if (!user) return errorPage[403](req, res, 'You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return errorPage[403](req, res, 'You must have 200 reputation to create a room.');
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
+					if (req.abort) return;
 					post += data;
+					if (post.length > 4000) {
+						errorPage[413](req, res);
+						req.abort = true;
+					}
 				});
 				req.on('end', function() {
+					if (req.abort) return;
 					post = querystring.parse(post);
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
@@ -903,7 +931,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
-					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
 					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
@@ -926,7 +954,7 @@ http.createServer(function(req, res) {
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
-				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
+				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
 					fs.readFile('dev/search.html', function(err, data) {
 						if (err) throw err;
@@ -1007,13 +1035,13 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1086,9 +1114,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				var newemail = post.newemail;
 				if (!newemail) return res.end('Error: No email specified.');
@@ -1105,9 +1139,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: cookie.parse(req.headers.cookie || '').id
@@ -1155,9 +1195,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				var type = parseInt(req.url.query.type);
 				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
@@ -1225,9 +1271,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
@@ -1249,9 +1301,15 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 200) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				if (!post.val) return res.end('Error: Vote value not specified.');
 				post.val = parseInt(post.val);
@@ -1314,13 +1372,19 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 100) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
-					if (!user) return res.end('Error: You must be logged in to vote.');
+					if (!user) return res.end('Error: You must be logged in to delete programs.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
@@ -1344,7 +1408,12 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 100) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
