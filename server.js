@@ -237,6 +237,16 @@ var site = {
 	}
 };
 
+var questionTypes = {
+	err: 'an error',
+	bug: 'unexpected behavior',
+	imp: 'improving working code',
+	how: 'achieving an end result',
+	alg: 'algorithms and data structures',
+	pra: 'techniques and best practices',
+	the: 'a theoretical scenario'
+};
+
 var sensitivePaths = ['README.md', 'server.js', '.git', 'package.json', '/data/', 'node_modules'];
 
 var http = require('http');
@@ -745,11 +755,40 @@ http.createServer(function(req, res) {
 					res.write(markdown(post.description));
 					res.write('<code class="blk">' + html(post.code) + '</code>');
 					res.write('<p>' + post.question + '</p>');
-					res.write('<small>(type: ' + post.type + ')</small>');
+					res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
+					res.write('<hr />');
+					var cat = [];
+					for (var i in post) {
+						if (i.substr(0, 2) == 'ck') cat.push(i.substr(2));
+					}
+					res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else location.href = res }, ' + html(JSON.stringify(
+						'title=' + encodeURIComponent(post.title) + 
+						'&lang=' + encodeURIComponent(post.lang) + 
+						'&description=' + encodeURIComponent(post.description) + 
+						'&question=' + encodeURIComponent(post.question) + 
+						'&code=' + encodeURIComponent(post.code) + 
+						'&type=' + encodeURIComponent(post.type) + 
+						'&cat=' + encodeURIComponent(cat) + 
+						'&gr=' + encodeURIComponent(post.gr || '') + 
+						'&self=' + encodeURIComponent(post.self || '') + 
+						'&bounty=' + encodeURIComponent(post.bounty || '')
+					)) + ')">Submit</button>');
 					respondPageFooter(res);
 				});
 			});
 		} else errorPage[405](req, res);
+	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
+		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
+			if (err) throw err;
+			if (!question) return errorPage[404](req, res);
+			respondPage(question.lang + ': ' + question.title, req, res, function() {
+				res.write('<h1>' + question.lang + ': ' + question.title + '</h1>');
+				res.write(markdown(question.description));
+				res.write('<code class="blk">' + html(question.code) + '</code>');
+				res.write('<p>' + question.question + '</p>');
+				respondPageFooter(res);
+			});
+		});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
@@ -1059,6 +1098,42 @@ http.createServer(function(req, res) {
 					if (!user) return res.end('Error: You are not logged in.');
 					dbcs.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
 					res.end('Success');
+				});
+			});
+		} else errorPage[405](req, res);
+	} else if (req.url.pathname == '/api/qa/newquestion') {
+		if (req.method == 'POST') {
+			post = '';
+			req.on('data', function(data) {
+				post += data;
+			});
+			req.on('end', function() {
+				post = querystring.parse(post);
+				dbcs.users.findOne({
+					cookie: cookie.parse(req.headers.cookie || '').id
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user) return res.end('Error: You must be logged in to ask a question.');
+					dbcs.questions.find().sort({_id: -1}).limit(1).next(function(err, last) {
+						if (err) throw err;
+						var id = last ? last._id + 1 : 0;
+						dbcs.questions.insert({
+							_id: id,
+							title: post.title,
+							lang: post.lang,
+							description: post.description,
+							question: post.question,
+							code: post.code,
+							type: post.type,
+							cat: post.cat,
+							gr: post.gr,
+							self: post.self,
+							bounty: post.bounty,
+							user: user.name,
+							time: new Date().getTime()
+						});
+						res.end('/qa/' + id);
+					});
 				});
 			});
 		} else errorPage[405](req, res);
