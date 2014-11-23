@@ -823,7 +823,7 @@ http.createServer(function(req, res) {
 					roomnames[doc._id] = doc.name;
 				} else {
 					res.write('<hr />\n');
-					if (user.rep >= 200) res.write('<a href="newroom" class="small">Create Room</a>\n');
+					if (user && user.rep >= 200) res.write('<a href="newroom" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
