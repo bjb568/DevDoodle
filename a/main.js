@@ -19,7 +19,7 @@ function html(input, replaceQuoteOff) {
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 }
 function markdownEscape(input) {
-	return input.replaceAll(['\\', '`', '*', '_', '-', '+', '.', '#', '>', '(', ')', '^', '$'], ['\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u000d', '\u000e', '\u000f', '\u0010', '\u0011', '\u0012', '\u0013']);
+	return input.replaceAll(['\\', '`', '*', '_', '-', '+', '.', '#', '>', '(', ')', '^', '$'], ['\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u000e', '\u000f', '\u0010', '\u0011', '\u0012', '\u0013', '\u0014']);
 }
 function inlineMarkdown(input) {
 	var backslash = '\u0001';
@@ -34,34 +34,34 @@ function inlineMarkdown(input) {
 	input = input.replaceAll('\\-', dash);
 	var plus = '\u0006';
 	input = input.replaceAll('\\+', plus);
-	var dot = '\u000d';
+	var dot = '\u000e';
 	input = input.replaceAll('\\.', dot);
-	var hash = '\u000e';
+	var hash = '\u000f';
 	input = input.replaceAll('\\#', hash);
-	var gt = '\u000f';
+	var gt = '\u0010';
 	input = input.replaceAll('\\>', gt);
-	var paren = '\u0010';
+	var paren = '\u0011';
 	input = input.replaceAll('\\(', paren);
-	var cparen = '\u0011';
+	var cparen = '\u0012';
 	input = input.replaceAll('\\)', cparen);
-	var carrot = '\u0012';
+	var carrot = '\u0013';
 	input = input.replaceAll('\\^', carrot);
-	var dollar = '\u0013';
+	var dollar = '\u0014';
 	input = input.replaceAll('\\$', dollar);
 	var open = [];
 	return input.split('`').map(function(val, i, arr) {
 		if (i % 2) return '<code>' + html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt, paren, cparen, carrot, dollar], ['\\\\', '\\`', '\\*', '\\_', '\\-', '\\+', '\\.', '\\#', '\\>', '\\(', '\\)', '\\^'])) + '</code>';
 		var parsed = val
-			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
 				return '![' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
 			})
-			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, function(match, p1, p2) {
+			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
 				return '[' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
 			})
-			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1, p2) {
+			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1, p2) {
 				return markdownEscape(p1) + markdownEscape(p2);
 			})
-			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, function(match, p1) {
+			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
 				return markdownEscape(p1);
 			})
 		.split('*').map(function(val, i, arr) {
@@ -69,10 +69,10 @@ function inlineMarkdown(input) {
 				var parsed = val.split('---').map(function(val, i, arr) {
 					var parsed = val.split('+++').map(function(val, i, arr) {
 						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
-							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '<img alt="$1" src="$2" />')
-							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s()"\\]+)\)/g, '$1'.link('$2'))
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$1' + '$3'.link('$2'))
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s()"\\]+))/g, '$2'.link('$1'))
+							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
+							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
+							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
+							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
 							.replace(/\^(\w+)/g, '<sup>$1</sup>');
 						if (i % 2) {
 							var p = open.indexOf('</ins>');
