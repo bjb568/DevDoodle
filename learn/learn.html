@@ -1,20 +1,24 @@
 <h1 id="heading">Courses</h1>
 <div id="courses" class="row bumar">
-	<div class="half pad br">
-		<h2><a href="web/">Web Development</a></h2>
-		<img src="web.png" />
+	<div class="pad br">
+		<a href="web/">
+			<h2>Web Development</h2>
+			<img src="web.png" />
+		</a>
 		<div class="desc shglt">
-			Learn how to use semantic HTML, styling with Cascading Style Sheets, and interactivity with JavaScript. You will:
+			Learn how to build a website with HTML, CSS, and JavaScript. You will:
 			<ul class="umar">
-				<li>Build a news site</li>
-				<li>Style your site with CSS</li>
-				<li>Add interactivity with JavaScript</li>
+				<li>Build an accessible news site</li>
+				<li>Make it beautiful with CSS</li>
+				<li>Make interactive widgets with JavaScript</li>
 			</ul>
 		</div>
 	</div>
-	<div class="half pad br">
-		<h2><a>Server-side JavaScript</a></h2>
-		<img src="nodejs.png" />
+	<div class="pad br">
+		<a>
+			<h2>Server-side JavaScript</h2>
+			<img src="nodejs.png" />
+		</a>
 		<div class="desc shglt">
 			Learn how to use Node.js and Mongodb to power a web server. You will:
 			<ul class="umar">
@@ -25,15 +29,62 @@
 			</ul>
 		</div>
 	</div>
+	<div class="pad br">
+		<a href="debug/">
+			<h2>Debugging</h2>
+			<img src="debug.png" />
+		</a>
+		<div class="desc shglt">
+			Learn how to fix errors in your code by yourself!
+			<ul class="umar">
+				<li>Use logs, stack traces, and breakpoints</li>
+				<li>Learn how to rubber-duck debug</li>
+				<li>Make a minimal, self-contained, complete example from long code</li>
+			</ul>
+		</div>
+	</div>
+	<div class="pad br">
+		<a href="debug/">
+			<h2>Code Quality</h2>
+			<img src="quality.png" />
+		</a>
+		<div class="desc shglt">
+			Improve code quality to avoid future errors and reduce maintaining cost.
+			<ul class="umar">
+				<li>Avoid common readability problems</li>
+				<li>Increase efficiency of your code</li>
+				<li>Avoid security issues</li>
+			</ul>
+		</div>
+	</div>
 </div>
 <style>
-	#courses { max-width: 1800px }
+	h2 { text-align: center }
+	#courses { max-width: 3200px }
 	#courses > div {
 		background: rgba(16, 140, 255, .8);
 		transition: background .2s;
 	}
+	#courses > div:not(:first-child) { margin-top: 8px }
 	#courses > div:hover { background: rgba(24, 160, 255, .8) }
 	#content a:hover { color: #333 }
 	#content a:active { color: #100 }
 	#courses img { border-radius: 4px }
+	@media (min-width: 700px) {
+		#courses > div { width: calc(50% - 4px) }
+		#courses > div:nth-child(2) { margin-top: 0 }
+		#courses > div:nth-child(2n+1) { margin-right: 6px }
+	}
+	@media (min-width: 700px) and (max-width: 1080px) {
+		#courses > div > div { min-height: 7.8em }
+	}
+	@media (min-width: 1080px) and (max-width: 1800px) {
+		#courses > div:nth-child(-1n+2) > div { min-height: 6.6em }
+	}
+	@media (min-width: 1800px) {
+		#courses > div { width: calc(25% - 5px) }
+		#courses > div:nth-child(3) { margin-top: 0 }
+		#courses > div:not(:last-child) { margin-right: 6px }
+		#courses > div:last-child { margin-top: 0 }
+	}
 </style>
