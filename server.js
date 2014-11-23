@@ -853,7 +853,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1392,78 +1392,86 @@ wss.on('connection', function(tws) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
-			var cursor = dbcs.chat.find({
+			dbcs.chat.find({
 				room: tws.room,
 				$or: [
 					{deleted: {$exists: false}},
 					{user: tws.user.name}
 				]
-			});
-			cursor.count(function(err, count) {
+			}).count(function(err, count) {
 				if (err) throw err;
-				var i = (parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) + 1 || Infinity) - 3;
-				var skip = Math.max(0, Math.min(count - 92, i));
-				try {
-					tws.send(JSON.stringify({
-						event: 'info-skipped',
-						body: skip,
-						ts: Math.min(count - 92, i) == i
-					}));
-				} catch(e) {}
-				cursor.skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
-					if (err) throw err;
-					if (doc) {
+				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]);
+				dbcs.chat.find({
+					room: tws.room,
+					$or: [
+						{deleted: {$exists: false}},
+						{user: tws.user.name}
+					],
+					_id: {$gt: i}
+				}).count(function(err, after) {
+					var skip = Math.max(0, after > 92 ? count - after : count - 92);
+					try {
 						tws.send(JSON.stringify({
-							event: 'init',
-							id: doc._id,
-							body: doc.body,
-							user: doc.user,
-							time: doc.time,
-							stars: doc.stars,
-							deleted: doc.deleted
+							event: 'info-skipped',
+							body: skip,
+							ts: after > 92
 						}));
-						dbcs.chatstars.findOne({
-							pid: doc._id,
-							user: tws.user.name
-						}, function(err, star) {
-							if (err) throw err;
-							try {
-								if (star) tws.send(JSON.stringify({
-										event: 'selfstar',
-										id: star.pid
-									}));
-							} catch(e) {}
-						});
-					} else {
-						var pids = [];
-						dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
-							if (err) throw err;
-							if (star) {
-								if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
-							} else {
-								dbcs.chat.find({
-									_id: {$in: pids},
-									deleted: {$exists: false}
-								}).sort({_id: -1}).each(function(err, post) {
-									if (err) throw err;
-									if (post) {
-										try {
-											tws.send(JSON.stringify({
-												event: 'star',
-												id: post._id,
-												board: true,
-												body: post.body,
-												stars: post.stars,
-												user: post.user,
-												time: post.time
-											}));
-										} catch (e) {}
-									}
-								});
-								return tws.send(JSON.stringify({event: 'info-complete'}));
-							}
-						});
-					}
+					} catch(e) {}
+					dbcs.chat.find().skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
+						if (err) throw err;
+						if (doc) {
+							tws.send(JSON.stringify({
+								event: 'init',
+								id: doc._id,
+								body: doc.body,
+								user: doc.user,
+								time: doc.time,
+								stars: doc.stars,
+								deleted: doc.deleted
+							}));
+							dbcs.chatstars.findOne({
+								pid: doc._id,
+								user: tws.user.name
+							}, function(err, star) {
+								if (err) throw err;
+								try {
+									if (star) tws.send(JSON.stringify({
+											event: 'selfstar',
+											id: star.pid
+										}));
+								} catch(e) {}
+							});
+						} else {
+							var pids = [];
+							dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+								if (err) throw err;
+								if (star) {
+									if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+								} else {
+									dbcs.chat.find({
+										_id: {$in: pids},
+										deleted: {$exists: false}
+									}).sort({_id: -1}).each(function(err, post) {
+										if (err) throw err;
+										if (post) {
+											try {
+												tws.send(JSON.stringify({
+													event: 'star',
+													id: post._id,
+													board: true,
+													body: post.body,
+													stars: post.stars,
+													user: post.user,
+													time: post.time
+												}));
+											} catch (e) {}
+										}
+									});
+									return tws.send(JSON.stringify({event: 'info-complete'}));
+								}
+							});
+						}
+					});
 				});
 			});
 			dbcs.chatusers.remove({
