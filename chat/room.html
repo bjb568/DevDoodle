@@ -42,6 +42,8 @@ $textarea
 		source = {},
 		editing = false,
 		users = [],
+		title = document.title,
+		unread = 0,
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
@@ -176,6 +178,7 @@ $textarea
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
+			if (document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
 			source[data.id] = data.body;
 			var msg = document.getElementById(data.id),
@@ -443,6 +446,12 @@ $textarea
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
 		} else haschangeready = true;
+	});
+	document.addEventListener('visibilitychange', function() {
+		if (!document.hidden) {
+			document.title = title;
+			unread = 0;
+		}
 	});
 </script>
 <style>
