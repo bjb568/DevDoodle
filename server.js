@@ -1400,7 +1400,7 @@ wss.on('connection', function(tws) {
 				]
 			}).count(function(err, count) {
 				if (err) throw err;
-				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]);
+				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || Infinity;
 				dbcs.chat.find({
 					room: tws.room,
 					$or: [
