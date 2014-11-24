@@ -178,7 +178,7 @@ $textarea
 			if (data.event == 'add') new Audio('/a/beep.mp3').play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
-			if (document.hidden) document.title = '(' + ++unread + ') ' + title;
+			if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
 			source[data.id] = data.body;
 			var msg = document.getElementById(data.id),
