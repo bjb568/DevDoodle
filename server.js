@@ -564,6 +564,7 @@ http.createServer(function(req, res) {
 						});
 					});
 				} else {
+					if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], req, res, post);
 					crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						var pass = key.toString('base64');
