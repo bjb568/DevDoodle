@@ -281,6 +281,7 @@ $textarea
 			var a = document.createElement('a');
 			a.appendChild(document.createTextNode(data.name));
 			a.href = '/user/' + data.name;
+			a.target = '_blank';
 			li.appendChild(a);
 			document.getElementById('users').appendChild(li);
 		} else if (data.event == 'deluser') {
