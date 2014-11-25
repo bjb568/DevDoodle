@@ -897,16 +897,20 @@ http.createServer(function(req, res) {
 					res.write('This message has been deleted.');
 					return respondPageFooter(res);
 				}
-				var revisions = 0;
+				var revisions = 0,
+					events;
 				res.write('<h1>Message #' + doc._id + '</h1>\n');
 				res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>\n');
 				res.write('<p>Current revision:</p>\n');
 				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>\n');
-				res.write('<h2>History:</h2>\n');
-				res.write('<ul>\n')
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
+						if (!events) {
+							res.write('<h2>History:</h2>\n');
+							res.write('<ul>\n')
+							events = true;
+						}
 						res.write('<li>\n');
 						if (data.event == 'edit') {
 							revisions++;
@@ -924,7 +928,8 @@ http.createServer(function(req, res) {
 						}
 						res.write('</li>\n');
 					} else {
-						res.write('</ul>')
+						if (events) res.write('</ul>');
+						else res.write('<p>(no message history)</p>\n');
 						respondPageFooter(res);
 					}
 				});
