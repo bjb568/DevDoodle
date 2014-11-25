@@ -1546,7 +1546,7 @@ wss.on('connection', function(tws) {
 													id: post._id,
 													board: true,
 													body: post.body,
-													stars: post.stars,
+													stars: post.stars || 0,
 													user: post.user,
 													time: post.time
 												}));
@@ -1779,7 +1779,7 @@ wss.on('connection', function(tws) {
 								body: post.body,
 								user: post.user,
 								time: post.time,
-								stars: post.stars
+								stars: post.stars || 0
 							}));
 						}
 					});
@@ -1888,7 +1888,7 @@ wss.on('connection', function(tws) {
 									event: 'star',
 									id: post._id,
 									body: post.body,
-									stars: post.stars + 1,
+									stars: (post.stars || 0) + 1,
 									user: post.user,
 									time: post.time
 								}));
