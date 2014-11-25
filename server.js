@@ -903,7 +903,8 @@ http.createServer(function(req, res) {
 					if (err) throw err;
 					if (data) {
 						if (data.event == 'edit') {
-							if (lastEditTime) res.write('Revision ' + (++revisions + 1) + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
+							revisions++;
+							if (lastEditTime) res.write('Revision ' + (revisions + 1) + ' (<time datetime="' + new Date(lastEditTime).toISOString() + '"></time>):\n');
 							else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> said <time datetime="' + new Date(doc.time).toISOString() + '"></time>:\n');
 							lastEditTime = data.time;
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
@@ -918,7 +919,7 @@ http.createServer(function(req, res) {
 							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
 						}
 					} else {
-						if (revisions) res.write('<a href="/chat/' + doc.room + '#' + doc._id + '">Final revision (<time datetime="' + new Date(doc.time).toISOString() + '"></time>)</a>:\n');
+						if (revisions) res.write('<a href="/chat/' + doc.room + '#' + doc._id + '">Final revision (<time datetime="' + new Date(lastEditTime).toISOString() + '"></time>)</a>:\n');
 						else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
 						res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
 						respondPageFooter(res);
