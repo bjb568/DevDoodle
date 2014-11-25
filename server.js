@@ -892,21 +892,25 @@ http.createServer(function(req, res) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage('Message History', req, res, function(user) {
+			respondPage('Message #' + doc._id, req, res, function(user) {
 				if (doc.deleted && doc.user != user.name) {
 					res.write('This message has been deleted.');
 					return respondPageFooter(res);
 				}
-				var lastEditTime,
-					revisions = 0;
+				var revisions = 0;
+				res.write('<h1>Message #' + doc._id + '</h1>\n');
+				res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>\n');
+				res.write('<p>Current revision:</p>\n');
+				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>\n');
+				res.write('<h2>History:</h2>\n');
+				res.write('<ul>\n')
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
+						res.write('<li>\n');
 						if (data.event == 'edit') {
 							revisions++;
-							if (lastEditTime) res.write('Revision ' + (revisions + 1) + ' (<time datetime="' + new Date(lastEditTime).toISOString() + '"></time>):\n');
-							else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> said <time datetime="' + new Date(doc.time).toISOString() + '"></time>:\n');
-							lastEditTime = data.time;
+							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 						} else if (data.event == 'delete' || data.event == 'undelete') {
 							var deletersstr = '',
@@ -918,10 +922,9 @@ http.createServer(function(req, res) {
 							}
 							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
 						}
+						res.write('</li>\n');
 					} else {
-						if (revisions) res.write('<a href="/chat/' + doc.room + '#' + doc._id + '">Final revision (<time datetime="' + new Date(lastEditTime).toISOString() + '"></time>)</a>:\n');
-						else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
-						res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
+						res.write('</ul>')
 						respondPageFooter(res);
 					}
 				});
