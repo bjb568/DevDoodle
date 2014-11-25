@@ -1767,7 +1767,11 @@ wss.on('connection', function(tws) {
 						for (var i in sendto) {
 							sendto[i].send(JSON.stringify({
 								event: 'undelete',
-								id: post._id
+								id: post._id,
+								body: post.body,
+								user: post.user,
+								time: post.time,
+								stars: post.stars
 							}));
 						}
 					});
