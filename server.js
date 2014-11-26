@@ -1179,6 +1179,10 @@ http.createServer(function(req, res) {
 		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
 	} else if (req.url.pathname == '/api/me/changemail') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1196,8 +1200,10 @@ http.createServer(function(req, res) {
 				if (newmail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id},
-						created: {$gt: new Date().getTime() - 2592000000}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1209,6 +1215,10 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/qa/newquestion') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1270,6 +1280,10 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/api/program/save') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1351,6 +1365,10 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/edit-title') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1388,6 +1406,10 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/vote') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1466,6 +1488,10 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/delete') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
@@ -1509,6 +1535,10 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/undelete') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
