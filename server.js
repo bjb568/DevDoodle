@@ -414,24 +414,38 @@ function respondPage(title, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
-	res.writeHead(status || 200, header);
-	fs.readFile('a/head.html', function(err, data) {
-		if (err) throw err;
-		dbcs.users.findOne({
-			cookie: {
-				$elemMatch: {
-					token: cookies.id,
-					created: {$gt: new Date().getTime() - 2592000000}
-				}
+	dbcs.users.findOne({
+		cookie: {
+			$elemMatch: {
+				token: cookies.id,
+				created: {$gt: new Date().getTime() - 2592000000}
 			}
-		}, function(err, user) {
+		}
+	}, function(err, user) {
+		if (err) throw err;
+		if (user) {
+			dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
+			if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
+				var tokens = user.cookie,
+					idToken = crypto.randomBytes(128).toString('base64');
+				for (var i in tokens) {
+					if (tokens[i].token == cookies.id) tokens[i].token = idToken;
+				}
+				dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
+				header['Set-Cookie'] = cookie.serialize('id', idToken, {
+					path: '/',
+					expires: new Date(new Date().setDate(new Date().getDate() + 30))
+				});
+			}
+		}
+		res.writeHead(status || 200, header);
+		fs.readFile('a/head.html', function(err, data) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user && user.unread && !nonotif) ? ' class="unread"' : ''));
 			callback(user);
-			if (user) dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
 }
