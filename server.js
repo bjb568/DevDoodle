@@ -760,7 +760,7 @@ http.createServer(function(req, res) {
 					if (!user || user.name != i[1]) return errorPage[403](req, res);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A' + user.salt, 1e5, 128, function(err, key) {
+					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
 						var salt = crypto.randomBytes(64).toString('base64');
@@ -770,10 +770,11 @@ http.createServer(function(req, res) {
 								$set: {
 									pass: new Buffer(key).toString('base64'),
 									salt: salt
-								}
+								},
+								$unset: {cookie: 1}
 							});
 							respondPage('Password Updated', req, res, function() {
-								res.write('The password for user ' + user.name + ' has been updated.');
+								res.write('The password for user ' + user.name + ' has been updated. You have been logged out.');
 								respondPageFooter(res);
 							});
 						});
