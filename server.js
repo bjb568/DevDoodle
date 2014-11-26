@@ -419,7 +419,10 @@ function respondPage(title, req, res, callback, header, status) {
 		if (err) throw err;
 		dbcs.users.findOne({
 			cookie: {
-				$elemMatch: {token: cookies.id}
+				$elemMatch: {
+					token: cookies.id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
 			}
 		}, function(err, user) {
 			if (err) throw err;
@@ -605,7 +608,7 @@ http.createServer(function(req, res) {
 								$push: {
 									cookie: {
 										token: idToken,
-										set: new Date().getTime
+										created: new Date().getTime()
 									}
 								}
 							});
@@ -713,7 +716,10 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/notifs') {
 		dbcs.users.findOne({
 			cookie: {
-				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
 			}
 		}, function(err, user) {
 			if (err) throw err;
@@ -733,7 +739,10 @@ http.createServer(function(req, res) {
 		});
 		dbcs.users.update({
 			cookie: {
-				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
 			}
 		}, {$unset: {cookie: 1}});
 		res.end();
@@ -753,7 +762,10 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -879,7 +891,10 @@ http.createServer(function(req, res) {
 	} else if (req.url.pathname == '/chat/newroom') {
 		dbcs.users.findOne({
 			cookie: {
-				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
 			}
 		}, function(err, user) {
 			if (err) throw err;
@@ -1181,7 +1196,8 @@ http.createServer(function(req, res) {
 				if (newmail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id},
+						created: {$gt: new Date().getTime() - 2592000000}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1207,7 +1223,10 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1267,7 +1286,10 @@ http.createServer(function(req, res) {
 				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1343,7 +1365,10 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1380,7 +1405,10 @@ http.createServer(function(req, res) {
 				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1452,7 +1480,10 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1491,7 +1522,10 @@ http.createServer(function(req, res) {
 				post = querystring.parse(post);
 				dbcs.users.findOne({
 					cookie: {
-						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
 					}
 				}, function(err, user) {
 					if (err) throw err;
@@ -1535,7 +1569,10 @@ wss.on('connection', function(tws) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
 		dbcs.users.findOne({
 				cookie: {
-					$elemMatch: {token: cookie.parse(tws.upgradeReq.headers.cookie || '').id}
+					$elemMatch: {
+						token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+						created: {$gt: new Date().getTime() - 2592000000}
+					}
 				}
 			}, function(err, user) {
 			if (err) throw err;
@@ -2075,7 +2112,10 @@ wss.on('connection', function(tws) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
 		dbcs.users.findOne({
 			cookie: {
-				$elemMatch: {token: cookie.parse(tws.upgradeReq.headers.cookie || '').id}
+				$elemMatch: {
+					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
 			}
 		}, function(err, user) {
 			if (err) throw err;
