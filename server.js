@@ -417,7 +417,11 @@ function respondPage(title, req, res, callback, header, status) {
 	res.writeHead(status || 200, header);
 	fs.readFile('a/head.html', function(err, data) {
 		if (err) throw err;
-		dbcs.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({
+			cookie: {
+				$elemMatch: {token: cookies.id}
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
@@ -597,7 +601,14 @@ http.createServer(function(req, res) {
 								}),
 								user: user
 							});
-							dbcs.users.update({name: user.name}, {$set: {cookie: idToken}});
+							dbcs.users.update({name: user.name}, {
+								$push: {
+									cookie: {
+										token: idToken,
+										set: new Date().getTime
+									}
+								}
+							});
 						});
 					});
 				}
@@ -700,7 +711,11 @@ http.createServer(function(req, res) {
 			}, {nonotif: true});
 		});
 	} else if (req.url.pathname == '/notifs') {
-		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		dbcs.users.findOne({
+			cookie: {
+				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			if (!user) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
 			respondPage('Notifications', req, res, function() {
@@ -716,7 +731,11 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		dbcs.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
+		dbcs.users.update({
+			cookie: {
+				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+			}
+		}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
 		if (req.method == 'POST') {
@@ -732,7 +751,11 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user || user.name != i[1]) return errorPage[403](req, res);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
@@ -854,7 +877,9 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
 		dbcs.users.findOne({
-			cookie: cookie.parse(req.headers.cookie || '').id
+			cookie: {
+				$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+			}
 		}, function(err, user) {
 			if (err) throw err;
 			if (!user) return errorPage[403](req, res, 'You must be logged in and have 200 reputation to create a room.');
@@ -1153,7 +1178,11 @@ http.createServer(function(req, res) {
 				var newmail = post.newmail;
 				if (!newmail) return res.end('Error: No email specified.');
 				if (newmail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
 					dbcs.users.update({name: user.name}, {$set: {mail: newmail, mailhash: crypto.createHash('md5').update(newmail).digest('hex')}});
@@ -1176,7 +1205,9 @@ http.createServer(function(req, res) {
 				if (req.abort) return;
 				post = querystring.parse(post);
 				dbcs.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to ask a question.');
@@ -1234,7 +1265,9 @@ http.createServer(function(req, res) {
 				var type = parseInt(req.url.query.type);
 				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
 				dbcs.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to save a program.');
@@ -1307,7 +1340,11 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to change a program title.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1340,7 +1377,11 @@ http.createServer(function(req, res) {
 				if (!post.val) return res.end('Error: Vote value not specified.');
 				post.val = parseInt(post.val);
 				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1408,7 +1449,11 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to delete programs.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1443,7 +1488,11 @@ http.createServer(function(req, res) {
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {token: cookie.parse(req.headers.cookie || '').id}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1483,7 +1532,11 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({
+				cookie: {
+					$elemMatch: {token: cookie.parse(tws.upgradeReq.headers.cookie || '').id}
+				}
+			}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -2019,7 +2072,11 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({
+			cookie: {
+				$elemMatch: {token: cookie.parse(tws.upgradeReq.headers.cookie || '').id}
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
