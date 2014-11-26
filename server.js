@@ -537,16 +537,18 @@ http.createServer(function(req, res) {
 					dbcs.users.findOne({name: post.name}, function(err, existingUser) {
 						if (err) throw err;
 						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						var salt = crypto.randomBytes(64).toString('base64');
+						crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							var pass = new Buffer(key).toString('base64'),
-								rstr = crypto.randomBytes(128).toString('base64');
+								confirmToken = crypto.randomBytes(128).toString('base64');
 							dbcs.users.insert({
 								name: post.name,
 								pass: pass,
 								email: post.email,
 								emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
-								confirm: rstr,
+								confirm: confirmToken,
+								salt: salt,
 								joined: new Date().getTime(),
 								rep: 0,
 								level: 0
@@ -555,7 +557,7 @@ http.createServer(function(req, res) {
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.email,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 							});
 							respondPage('Account Created', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -565,30 +567,26 @@ http.createServer(function(req, res) {
 					});
 				} else {
 					if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], req, res, post);
-					crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					dbcs.users.findOne({name: post.name}, function(err, user) {
 						if (err) throw err;
-						var pass = key.toString('base64');
-						dbcs.users.findOne({
-							name: post.name,
-							pass: pass
-						}, function(err, user) {
+						if (!user) return respondLoginPage(['Invalid Credentials.'], req, res, post);
+						if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+						if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
+						crypto.pbkdf2(post.pass + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
-							if (user) {
-								if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
-								if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
-								var rstr = crypto.randomBytes(128).toString('base64');
-								respondPage('Login Success', req, res, function() {
-									res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
-									respondPageFooter(res);
-								}, {
-									'Set-Cookie': cookie.serialize('id', rstr, {
-										path: '/',
-										expires: new Date(new Date().setDate(new Date().getDate() + 30))
-									}),
-									user: user
-								});
-								dbcs.users.update({name: user.name}, {$set: {cookie: rstr}});
-							} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+							if (key.toString('base64') != user.pass) return respondLoginPage(['Invalid Credentials.'], req, res, post);
+							var idToken = crypto.randomBytes(128).toString('base64');
+							respondPage('Login Success', req, res, function() {
+								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
+								respondPageFooter(res);
+							}, {
+								'Set-Cookie': cookie.serialize('id', idToken, {
+									path: '/',
+									expires: new Date(new Date().setDate(new Date().getDate() + 30))
+								}),
+								user: user
+							});
+							dbcs.users.update({name: user.name}, {$set: {cookie: idToken}});
 						});
 					});
 				}
@@ -710,39 +708,45 @@ http.createServer(function(req, res) {
 		dbcs.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
-		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
-			if (err) throw err;
-			if (!user || user.name != i[1]) return errorPage[403](req, res);
-			if (req.method == 'POST') {
-				post = '';
-				req.on('data', function(data) {
-					if (req.abort) return;
-					post += data;
-					if (post.length > 100000) {
-						errorPage[413](req, res);
-						req.abort = true;
-					}
-				});
-				req.on('end', function() {
-					if (req.abort) return;
-					post = querystring.parse(post);
+		if (req.method == 'POST') {
+			post = '';
+			req.on('data', function(data) {
+				if (req.abort) return;
+				post += data;
+				if (post.length > 100000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
+			});
+			req.on('end', function() {
+				if (req.abort) return;
+				post = querystring.parse(post);
+				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+					if (err) throw err;
+					if (!user || user.name != i[1]) return errorPage[403](req, res);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-					crypto.pbkdf2(post.old, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A' + user.salt, 1e5, 128, function(err, key) {
 						if (err) throw err;
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
-						crypto.pbkdf2(post.new, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						var salt = crypto.randomBytes(64).toString('base64');
+						crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
-							dbcs.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
+							dbcs.users.update({name: user.name}, {
+								$set: {
+									pass: new Buffer(key).toString('base64'),
+									salt: salt
+								}
+							});
 							respondPage('Password Updated', req, res, function() {
-								res.write('The password for ' + user.name + ' has been updated.');
+								res.write('The password for user ' + user.name + ' has been updated.');
 								respondPageFooter(res);
 							});
 						});
 					});
 				});
-			} else respondChangePassPage([], req, res, {});
-		});
+			});
+		} else respondChangePassPage([], req, res, {});
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
