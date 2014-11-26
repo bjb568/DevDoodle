@@ -792,7 +792,7 @@ http.createServer(function(req, res) {
 							respondPage('Password Updated', req, res, function() {
 								res.write('The password for user ' + user.name + ' has been updated. You have been logged out.');
 								respondPageFooter(res);
-							});
+							}, {'Set-Cookie': 'id='});
 						});
 					});
 				});
