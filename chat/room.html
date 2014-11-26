@@ -22,6 +22,7 @@ $textarea
 <p id="ts" hidden="">You are viewing old messages. <a href="/chat/$id">Join room</a>.</p>
 <script>
 	var noPageOverflow = 420,
+		audio = new Audio('/a/beep.mp3'),
 		hash = parseInt(location.hash.substr(1)),
 		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
 		username = '$user',
@@ -175,7 +176,7 @@ $textarea
 				cont.insertBefore(div, cont.firstChild);
 				cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
-			if (data.event == 'add') new Audio('/a/beep.mp3').play();
+			if (data.event == 'add') audio.play();
 			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
 			if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
