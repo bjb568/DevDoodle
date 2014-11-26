@@ -440,17 +440,17 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
-function respondLoginPage(errs, req, res, post) {
+function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 	respondPage('Login', req, res, function() {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
-		res.write('<input type="text" name="name" placeholder="Name" required="" />\n');
-		res.write('<input type="password" name="pass" placeholder="Password" required="" />\n');
+		res.write('<input type="text" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' />\n');
+		res.write('<input type="password" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' />\n');
 		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
-		res.write('<input type="text" name="email" placeholder="Email" />\n');
+		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
@@ -467,7 +467,7 @@ function respondCreateRoomPage(errs, req, res, post) {
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
 		res.write('<div>Name: <input type="text" name="name" required="" /></div>\n');
-		res.write('<div>Description: <textarea name="desc" required="" rows="3" cols="80"></textarea></div>\n');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80"></textarea></div>\n');
 		res.write('<div>Type: <select name="type">\n');
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
@@ -486,7 +486,7 @@ function respondChangePassPage(errs, req, res, post) {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
-		res.write('<div>Old password: <input type="password" name="old" required="" /></div>\n');
+		res.write('<div>Old password: <input type="password" name="old" required="" autofocus="" /></div>\n');
 		res.write('<div>New password: <input type="password" name="new" required="" /></div>\n');
 		res.write('<div>Confirm new password: <input type="password" name="conf" required="" /></div>\n');
 		res.write('<button type="submit">Submit</button>\n');
@@ -526,17 +526,28 @@ http.createServer(function(req, res) {
 				if (req.abort) return;
 				post = querystring.parse(post);
 				if (post.create) {
-					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
-					var errors = [];
-					if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
-					if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[\w-]+$/)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
+					if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], req, res, post, true, true, post.name && !post.pass);
+					var errors = [],
+						nfillm,
+						nfilln,
+						fpass;
+					if (post.name.length > 16 && (nfilln = true)) errors.push('Name must be no longer than 16 characters.');
+					if (post.name.length < 3 && (nfilln = true)) errors.push('Name must be at least 3 characters long.');
+					if (!post.name.match(/^[\w-]+$/) && (nfilln = true)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
-					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
-					if (errors.length) return respondLoginPage(errors, req, res, post);
+					var uniqueChars = [];
+					for (var i = 0; i < post.pass.length; i++) {
+						if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
+					}
+					if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
+					if (uniqueChars.length < 8) {
+						errors.push('Password is too simple.');
+						if (!nfillm && !nfilln) fpass = true;
+					}
+					if (errors.length) return respondLoginPage(errors, req, res, post, !nfillm, !nfilln, fpass);
 					dbcs.users.findOne({name: post.name}, function(err, existingUser) {
 						if (err) throw err;
-						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
+						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post, true);
 						var salt = crypto.randomBytes(64).toString('base64');
 						crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
@@ -545,8 +556,8 @@ http.createServer(function(req, res) {
 							dbcs.users.insert({
 								name: post.name,
 								pass: pass,
-								email: post.email,
-								emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
+								mail: post.mail,
+								mailhash: crypto.createHash('md5').update(post.mail).digest('hex'),
 								confirm: confirmToken,
 								salt: salt,
 								joined: new Date().getTime(),
@@ -555,7 +566,7 @@ http.createServer(function(req, res) {
 							});
 							transport.sendMail({
 								from: 'DevDoodle <support@devdoodle.net>',
-								to: post.email,
+								to: post.mail,
 								subject: 'Confirm your account',
 								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 							});
@@ -638,7 +649,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.emailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -655,16 +666,16 @@ http.createServer(function(req, res) {
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
 				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.emailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
+				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div class="lft lftpad">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
+				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
-					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changeemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var email = document.getElementById(\'email\'); email.hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true; email.removeChild(email.firstChild); email.appendChild(document.createTextNode(document.getElementById(\'emailinput\').value)); }, \'newemail=\' + encodeURIComponent(document.getElementById(\'emailinput\').value));"><span id="email">Email: ' + html(user.email) + '</span> <input type="text" id="emailinput" hidden="" value="' + html(user.email) + '" placeholder="email" style="width: 240px; max-width: 100%;" /> <button type="submit" id="emailsave" hidden="">Save</button> <button type="reset" id="emailcancel" hidden="" onclick="document.getElementById(\'email\').hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true;">Cancel</button> <button type="button" id="emailedit" onclick="document.getElementById(\'email\').hidden = this.hidden = true; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = false; document.getElementById(\'emailinput\').focus();">edit</button></form>\n');
+					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var mail = document.getElementById(\'mail\'); mail.hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true; mail.removeChild(mail.firstChild); mail.appendChild(document.createTextNode(document.getElementById(\'mailinput\').value)); }, \'newmail=\' + encodeURIComponent(document.getElementById(\'mailinput\').value));"><span id="mail">Email: ' + html(user.mail) + '</span> <input type="text" id="mailinput" hidden="" value="' + html(user.mail) + '" placeholder="mail" style="width: 240px; max-width: 100%;" /> <button type="submit" id="mailsave" hidden="">Save</button> <button type="reset" id="mailcancel" hidden="" onclick="document.getElementById(\'mail\').hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true;">Cancel</button> <button type="button" id="mailedit" onclick="document.getElementById(\'mail\').hidden = this.hidden = true; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = false; document.getElementById(\'mailinput\').focus();">edit</button></form>\n');
 					if (user.notifs) {
 						var notifs = [];
 						for (var i = 0; i < user.notifs.length; i++) {
@@ -1050,13 +1061,13 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1125,7 +1136,7 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
-	} else if (req.url.pathname == '/api/me/changeemail') {
+	} else if (req.url.pathname == '/api/me/changemail') {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
@@ -1139,13 +1150,13 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				var newemail = post.newemail;
-				if (!newemail) return res.end('Error: No email specified.');
-				if (newemail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
+				var newmail = post.newmail;
+				if (!newmail) return res.end('Error: No email specified.');
+				if (newmail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
 				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
-					dbcs.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
+					dbcs.users.update({name: user.name}, {$set: {mail: newmail, mailhash: crypto.createHash('md5').update(newmail).digest('hex')}});
 					res.end('Success');
 				});
 			});
