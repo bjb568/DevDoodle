@@ -459,6 +459,7 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer) + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
 		res.write('<style>\n');
@@ -532,6 +533,7 @@ http.createServer(function(req, res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
+				if (!post.referer) post.referer = req.headers.referer;
 				if (post.create) {
 					if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], req, res, post, true, true, post.name && !post.pass);
 					var errors = [],
@@ -595,7 +597,9 @@ http.createServer(function(req, res) {
 							if (key.toString('base64') != user.pass) return respondLoginPage(['Invalid Credentials.'], req, res, post);
 							var idToken = crypto.randomBytes(128).toString('base64');
 							respondPage('Login Success', req, res, function() {
-								res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
+								res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
+								var referer = url.parse(post.referer);
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1) res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
 								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', idToken, {
@@ -616,7 +620,7 @@ http.createServer(function(req, res) {
 					});
 				}
 			});
-		} else respondLoginPage([], req, res, {});
+		} else respondLoginPage([], req, res, {referer: req.headers.referer});
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
