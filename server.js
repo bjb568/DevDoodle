@@ -1521,15 +1521,17 @@ wss.on('connection', function(tws) {
 					}).skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
-							tws.send(JSON.stringify({
-								event: 'init',
-								id: doc._id,
-								body: doc.body,
-								user: doc.user,
-								time: doc.time,
-								stars: doc.stars,
-								deleted: doc.deleted
-							}));
+							try {
+								tws.send(JSON.stringify({
+									event: 'init',
+									id: doc._id,
+									body: doc.body,
+									user: doc.user,
+									time: doc.time,
+									stars: doc.stars,
+									deleted: doc.deleted
+								}));
+							} catch(e) {}
 							dbcs.chatstars.findOne({
 								pid: doc._id,
 								user: tws.user.name
