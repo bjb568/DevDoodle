@@ -1018,8 +1018,8 @@ http.createServer(function(req, res) {
 				if (data) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
-					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
 					res.write('<a href="search/" class="center-text blk">See more</a>\n');
@@ -1116,18 +1116,18 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						dbcs.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + (user && user.rep >= 50 ? '<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>' : '') + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1489,7 +1489,8 @@ http.createServer(function(req, res) {
 					}
 				}, function(err, user) {
 					if (err) throw err;
-					if (!user) return res.end('Error: You must be logged in to vote.');
+					if (!user) return res.end('Error: You must be logged in and have 15 reputation to vote.');
+					if (user.rep < 15) return res.end('Error: You must have 15 reputation to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
@@ -2295,7 +2296,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-]{3,16})\W/g);
+						var matches = message.body.match(/@([\w-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 							if (err) throw err;

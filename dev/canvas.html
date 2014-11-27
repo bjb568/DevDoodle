@@ -27,10 +27,12 @@
 	</form>
 	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
 </section>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	html, #content, #footer, #main { background: #000 }
+	#content { padding-bottom: 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -119,6 +121,45 @@
 		fill: #c00;
 	}
 	#comment:target + #addcomment { display: none }
+	.up {
+		width: 18px;
+		height: 20px;
+		fill: #888;
+	}
+	.up:hover {
+		fill: #999;
+		transition: fill 0.1s;
+	}
+	.up:active {
+		fill: #777;
+		transition: none;
+	}
+	.up.clkd { fill: #f90 }
+	.fl {
+		width: 20px;
+		height: 20px;
+		fill: #f88;
+	}
+	.fl:hover {
+		fill: #f66;
+		transition: fill 0.2s;
+	}
+	.fl.clkd { fill: #f00 }
+	.fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	.comment .sctrls {
+		float: left;
+		padding: 2px 2px 0 0;
+		height: 16px;
+	}
+	.comment:not(:hover) .sctrls { opacity: .4 }
+	.c-sig * {
+		color: #666;
+		font-weight: normal;
+	}
+	#content > .sctrls { display: none }
 </style>
 <script>
 	var footerOff = true,
@@ -287,6 +328,7 @@
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			div.innerHTML = markdown(data.body);
+			if ($rep >= 50) div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			sig.appendChild(document.createTextNode('-'));
