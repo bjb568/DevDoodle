@@ -282,6 +282,7 @@ db.open(function(err, db) {
 			db.collection(usedDBCs[i], function(err, collection) {
 				if (err) throw err;
 				dbcs[usedDBCs[i]] = collection;
+				if (usedDBCs[i] == 'chatusers') collection.drop();
 			});
 		}
 	});
@@ -413,17 +414,39 @@ function respondPage(title, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
-	res.writeHead(status || 200, header);
-	fs.readFile('a/head.html', function(err, data) {
+	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
+	dbcs.users.findOne({
+		cookie: {
+			$elemMatch: {
+				token: cookies.id,
+				created: {$gt: new Date().getTime() - 2592000000}
+			}
+		}
+	}, function(err, user) {
 		if (err) throw err;
-		dbcs.users.findOne({cookie: cookies.id || 'nomatch'}, function(err, user) {
+		if (user) {
+			dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
+			if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
+				var tokens = user.cookie,
+					idToken = crypto.randomBytes(128).toString('base64');
+				for (var i in tokens) {
+					if (tokens[i].token == cookies.id) tokens[i].token = idToken;
+				}
+				dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
+				header['Set-Cookie'] = cookie.serialize('id', idToken, {
+					path: '/',
+					expires: new Date(new Date().setDate(new Date().getDate() + 30))
+				});
+			}
+		}
+		res.writeHead(status || 200, header);
+		fs.readFile('a/head.html', function(err, data) {
 			if (err) throw err;
 			data = data.toString();
 			if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 			var dirs = req.url.pathname.split('/');
 			res.write(data.replace('$title', (title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name).replaceAll('"' + req.url.pathname + '"', '"' + req.url.pathname + '" class="active"').replace('"/' + dirs[1]+ '/"', '"/' + dirs[1]+ '/" class="active"').replace('"/' + dirs[1] + '/' + dirs[2] + '/"', '"/' + dirs[1] + '/' + dirs[2] + '/" class="active"').replaceAll('class="active" class="active"','class="active"').replace('$search', html(query.q || '')).replace('$inhead', inhead).replace('$notifs', (user && user.unread && !nonotif) ? ' class="unread"' : ''));
 			callback(user);
-			if (user) dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		});
 	});
 }
@@ -439,18 +462,19 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
-function respondLoginPage(errs, req, res, post) {
+function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 	respondPage('Login', req, res, function() {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
-		res.write('<input type="text" name="name" placeholder="Name" required="" />\n');
-		res.write('<input type="password" name="pass" placeholder="Password" required="" />\n');
+		res.write('<input type="text" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' />\n');
+		res.write('<input type="password" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' />\n');
 		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
-		res.write('<input type="text" name="email" placeholder="Email" />\n');
+		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer) + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
 		res.write('<style>\n');
@@ -466,7 +490,7 @@ function respondCreateRoomPage(errs, req, res, post) {
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
 		res.write('<div>Name: <input type="text" name="name" required="" /></div>\n');
-		res.write('<div>Description: <textarea name="desc" required="" rows="3" cols="80"></textarea></div>\n');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80"></textarea></div>\n');
 		res.write('<div>Type: <select name="type">\n');
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
@@ -485,7 +509,7 @@ function respondChangePassPage(errs, req, res, post) {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
-		res.write('<div>Old password: <input type="password" name="old" required="" /></div>\n');
+		res.write('<div>Old password: <input type="password" name="old" required="" autofocus="" /></div>\n');
 		res.write('<div>New password: <input type="password" name="new" required="" /></div>\n');
 		res.write('<div>Confirm new password: <input type="password" name="conf" required="" /></div>\n');
 		res.write('<button type="submit">Submit</button>\n');
@@ -495,6 +519,10 @@ function respondChangePassPage(errs, req, res, post) {
 }
 
 http.createServer(function(req, res) {
+	if (req.url.length > 1000) {
+		req.url = url.parse(req.url, true);
+		return errorPage[414](req, res);
+	}
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
 	var i, post;
@@ -510,41 +538,61 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
+				if (!post.referer) post.referer = req.headers.referer;
 				if (post.create) {
-					if (!post.name || !post.pass || !post.passc || !post.email) return respondLoginPage(['All fields are required.'], req, res, post);
-					var errors = [];
-					if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
-					if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[\w-]+$/)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
+					if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], req, res, post, true, true, post.name && !post.pass);
+					var errors = [],
+						nfillm,
+						nfilln,
+						fpass;
+					if (post.name.length > 16 && (nfilln = true)) errors.push('Name must be no longer than 16 characters.');
+					if (post.name.length < 3 && (nfilln = true)) errors.push('Name must be at least 3 characters long.');
+					if (!post.name.match(/^[\w-]+$/) && (nfilln = true)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
-					if (post.email.length > 256) errors.push('Email address must be no longer than 256 characters.');
-					if (errors.length) return respondLoginPage(errors, req, res, post);
+					var uniqueChars = [];
+					for (var i = 0; i < post.pass.length; i++) {
+						if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
+					}
+					if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
+					if (uniqueChars.length < 8) {
+						errors.push('Password is too simple.');
+						if (!nfillm && !nfilln) fpass = true;
+					}
+					if (errors.length) return respondLoginPage(errors, req, res, post, !nfillm, !nfilln, fpass);
 					dbcs.users.findOne({name: post.name}, function(err, existingUser) {
 						if (err) throw err;
-						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post);
-						crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						if (existingUser) return respondLoginPage(['Username already taken.'], req, res, post, true);
+						var salt = crypto.randomBytes(64).toString('base64');
+						crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
 							var pass = new Buffer(key).toString('base64'),
-								rstr = crypto.randomBytes(128).toString('base64');
+								confirmToken = crypto.randomBytes(128).toString('base64');
 							dbcs.users.insert({
 								name: post.name,
 								pass: pass,
-								email: post.email,
-								emailhash: crypto.createHash('md5').update(post.email).digest('hex'),
-								confirm: rstr,
+								mail: post.mail,
+								mailhash: crypto.createHash('md5').update(post.mail).digest('hex'),
+								confirm: confirmToken,
+								salt: salt,
 								joined: new Date().getTime(),
 								rep: 0,
 								level: 0
 							});
 							transport.sendMail({
 								from: 'DevDoodle <support@devdoodle.net>',
-								to: post.email,
+								to: post.mail,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + rstr + '">here</a>.</p>'
+								html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 							});
 							respondPage('Account Created', req, res, function() {
 								res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
@@ -553,35 +601,41 @@ http.createServer(function(req, res) {
 						});
 					});
 				} else {
-					crypto.pbkdf2(post.pass, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], req, res, post);
+					dbcs.users.findOne({name: post.name}, function(err, user) {
 						if (err) throw err;
-						var pass = key.toString('base64');
-						dbcs.users.findOne({
-							name: post.name,
-							pass: pass
-						}, function(err, user) {
+						if (!user) return respondLoginPage(['Invalid Credentials.'], req, res, post);
+						if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
+						if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
+						crypto.pbkdf2(post.pass + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
-							if (user) {
-								if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], req, res, post);
-								if (user.level < 1) return respondLoginPage(['This account has been disabled.'], req, res, post);
-								var rstr = crypto.randomBytes(128).toString('base64');
-								respondPage('Login Success', req, res, function() {
-									res.write('Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.');
-									respondPageFooter(res);
-								}, {
-									'Set-Cookie': cookie.serialize('id', rstr, {
-										path: '/',
-										expires: new Date(new Date().setDate(new Date().getDate() + 30))
-									}),
-									user: user
-								});
-								dbcs.users.update({name: user.name}, {$set: {cookie: rstr}});
-							} else respondLoginPage(['Invalid Credentials.'], req, res, post);
+							if (key.toString('base64') != user.pass) return respondLoginPage(['Invalid Credentials.'], req, res, post);
+							var idToken = crypto.randomBytes(128).toString('base64');
+							respondPage('Login Success', req, res, function() {
+								res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
+								var referer = url.parse(post.referer);
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1) res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
+								respondPageFooter(res);
+							}, {
+								'Set-Cookie': cookie.serialize('id', idToken, {
+									path: '/',
+									expires: new Date(new Date().setDate(new Date().getDate() + 30))
+								}),
+								user: user
+							});
+							dbcs.users.update({name: user.name}, {
+								$push: {
+									cookie: {
+										token: idToken,
+										created: new Date().getTime()
+									}
+								}
+							});
 						});
 					});
 				}
 			});
-		} else respondLoginPage([], req, res, {});
+		} else respondLoginPage([], req, res, {referer: req.headers.referer});
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
@@ -628,7 +682,7 @@ http.createServer(function(req, res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.emailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
 				else {
 					fs.readFile('user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -644,17 +698,17 @@ http.createServer(function(req, res) {
 			if (!dispUser) return errorPage[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
-				res.write('<h1><a href="/user/">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.emailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
-				res.write('<div class="lft lftpad">\n');
+				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
+				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.emailhash + '">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
+				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
 				if (me) {
 					res.write('<h2>Private</h2>\n');
-					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changeemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var email = document.getElementById(\'email\'); email.hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true; email.removeChild(email.firstChild); email.appendChild(document.createTextNode(document.getElementById(\'emailinput\').value)); }, \'newemail=\' + encodeURIComponent(document.getElementById(\'emailinput\').value));"><span id="email">Email: ' + html(user.email) + '</span> <input type="text" id="emailinput" hidden="" value="' + html(user.email) + '" placeholder="email" style="width: 240px; max-width: 100%;" /> <button type="submit" id="emailsave" hidden="">Save</button> <button type="reset" id="emailcancel" hidden="" onclick="document.getElementById(\'email\').hidden = document.getElementById(\'emailedit\').hidden = false; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = true;">Cancel</button> <button type="button" id="emailedit" onclick="document.getElementById(\'email\').hidden = this.hidden = true; document.getElementById(\'emailinput\').hidden = document.getElementById(\'emailsave\').hidden = document.getElementById(\'emailcancel\').hidden = false; document.getElementById(\'emailinput\').focus();">edit</button></form>\n');
+					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var mail = document.getElementById(\'mail\'); mail.hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true; mail.removeChild(mail.firstChild); mail.appendChild(document.createTextNode(document.getElementById(\'mailinput\').value)); }, \'newmail=\' + encodeURIComponent(document.getElementById(\'mailinput\').value));"><span id="mail">Email: ' + html(user.mail) + '</span> <input type="text" id="mailinput" hidden="" value="' + html(user.mail) + '" placeholder="mail" style="width: 240px; max-width: 100%;" /> <button type="submit" id="mailsave" hidden="">Save</button> <button type="reset" id="mailcancel" hidden="" onclick="document.getElementById(\'mail\').hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true;">Cancel</button> <button type="button" id="mailedit" onclick="document.getElementById(\'mail\').hidden = this.hidden = true; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = false; document.getElementById(\'mailinput\').focus();">edit</button></form>\n');
 					if (user.notifs) {
 						var notifs = [];
 						for (var i = 0; i < user.notifs.length; i++) {
@@ -679,7 +733,14 @@ http.createServer(function(req, res) {
 			}, {nonotif: true});
 		});
 	} else if (req.url.pathname == '/notifs') {
-		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+		dbcs.users.findOne({
+			cookie: {
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			if (!user) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
 			respondPage('Notifications', req, res, function() {
@@ -695,42 +756,69 @@ http.createServer(function(req, res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		dbcs.users.update({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, {$unset: {cookie: 1}});
+		dbcs.users.update({
+			cookie: {
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
+			}
+		}, {$unset: {cookie: 1}});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
-		dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id || 'nomatch'}, function(err, user) {
-			if (err) throw err;
-			if (!user || user.name != i[1]) return errorPage[403](req, res);
-			if (req.method == 'POST') {
-				post = '';
-				req.on('data', function(data) {
-					post += data;
-				});
-				req.on('end', function() {
-					post = querystring.parse(post);
+		if (req.method == 'POST') {
+			post = '';
+			req.on('data', function(data) {
+				if (req.abort) return;
+				post += data;
+				if (post.length > 100000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
+			});
+			req.on('end', function() {
+				if (req.abort) return;
+				post = querystring.parse(post);
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
+					if (err) throw err;
+					if (!user || user.name != i[1]) return errorPage[403](req, res);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], req, res, {});
-					crypto.pbkdf2(post.old, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], req, res, {});
-						crypto.pbkdf2(post.new, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+						var salt = crypto.randomBytes(64).toString('base64');
+						crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 							if (err) throw err;
-							dbcs.users.update({name: user.name}, {$set: {pass: new Buffer(key).toString('base64')}});
-							respondPage('Password Updated', req, res, function() {
-								res.write('The password for ' + user.name + ' has been updated.');
-								respondPageFooter(res);
+							dbcs.users.update({name: user.name}, {
+								$set: {
+									pass: new Buffer(key).toString('base64'),
+									salt: salt
+								},
+								$unset: {cookie: 1}
 							});
+							respondPage('Password Updated', req, res, function() {
+								res.write('The password for user ' + user.name + ' has been updated. You have been logged out.');
+								respondPageFooter(res);
+							}, {'Set-Cookie': 'id='});
 						});
 					});
 				});
-			} else respondChangePassPage([], req, res, {});
-		});
+			});
+		} else respondChangePassPage([], req, res, {});
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, req, res, function() {
 			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
-				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.title + '</a></h2>\n');
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '" title="Score: ' + doc.score + '">' + html(doc.title) + '</a></h2>\n');
 				else respondPageFooter(res);
 			});
 		});
@@ -746,15 +834,21 @@ http.createServer(function(req, res) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				respondPage(post.lang + ': ' + post.title, req, res, function() {
-					res.write('<h1>' + post.lang + ': ' + post.title + '</h1>');
+					res.write('<h1>' + html(post.lang + ': ' + post.title) + '</h1>');
 					res.write(markdown(post.description));
 					res.write('<code class="blk">' + html(post.code) + '</code>');
-					res.write('<p>' + post.question + '</p>');
+					res.write('<p>' + html(post.question) + '</p>');
 					res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
 					res.write('<hr />');
 					var cat = [];
@@ -782,15 +876,15 @@ http.createServer(function(req, res) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res);
 			respondPage(question.lang + ': ' + question.title, req, res, function() {
-				res.write('<h1>' + question.lang + ': ' + question.title + '</h1>');
+				res.write('<h1>' + html(question.lang + ': ' + question.title) + '</h1>');
 				res.write(markdown(question.description));
 				res.write('<code class="blk">' + html(question.code) + '</code>');
-				res.write('<p>' + question.question + '</p>');
+				res.write('<p>' + html(question.question) + '</p>');
 				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname == '/chat/') {
-		respondPage(null, req, res, function() {
+		respondPage(null, req, res, function(user) {
 			res.write('<h1>Chat Rooms</h1>\n');
 			var roomnames = {};
 			dbcs.chatrooms.find().each(function(err, doc) {
@@ -801,13 +895,13 @@ http.createServer(function(req, res) {
 					roomnames[doc._id] = doc.name;
 				} else {
 					res.write('<hr />\n');
-					res.write('<a href="newroom" class="small">Create Room</a>\n');
+					if (user && user.rep >= 200) res.write('<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
 					dbcs.chat.find({deleted: {$exists: false}}).sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
+						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
 						else respondPageFooter(res, true);
 					});
 				}
@@ -815,17 +909,28 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/chat/newroom') {
 		dbcs.users.findOne({
-			cookie: cookie.parse(req.headers.cookie || '').id
+			cookie: {
+				$elemMatch: {
+					token: cookie.parse(req.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
+			}
 		}, function(err, user) {
 			if (err) throw err;
-			if (!user) return res.end('You must be logged in and have 200 reputation to create a room.');
-			if (user.rep < 200) return res.end('You must have 200 reputation to create a room.');
+			if (!user) return errorPage[403](req, res, 'You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return errorPage[403](req, res, 'You must have 200 reputation to create a room.');
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
+					if (req.abort) return;
 					post += data;
+					if (post.length > 4000) {
+						errorPage[413](req, res);
+						req.abort = true;
+					}
 				});
 				req.on('end', function() {
+					if (req.abort) return;
 					post = querystring.parse(post);
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
@@ -853,7 +958,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -862,20 +967,29 @@ http.createServer(function(req, res) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
-			respondPage('Message History', req, res, function(user) {
+			respondPage('Message #' + doc._id, req, res, function(user) {
 				if (doc.deleted && doc.user != user.name) {
 					res.write('This message has been deleted.');
 					return respondPageFooter(res);
 				}
-				var lastEditTime,
-					revisions = 0;
+				var revisions = 0,
+					events;
+				res.write('<h1>Message #' + doc._id + '</h1>\n');
+				res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>\n');
+				res.write('<p>Current revision:</p>\n');
+				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>\n');
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
+						if (!events) {
+							res.write('<h2>History:</h2>\n');
+							res.write('<ul>\n')
+							events = true;
+						}
+						res.write('<li>\n');
 						if (data.event == 'edit') {
-							if (lastEditTime) res.write('Revision ' + (++revisions + 1) + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
-							else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> said <time datetime="' + new Date(doc.time).toISOString() + '"></time>:\n');
-							lastEditTime = data.time;
+							revisions++;
+							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 						} else if (data.event == 'delete' || data.event == 'undelete') {
 							var deletersstr = '',
@@ -887,10 +1001,10 @@ http.createServer(function(req, res) {
 							}
 							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
 						}
+						res.write('</li>\n');
 					} else {
-						if (revisions) res.write('<a href="/chat/' + doc.room + '#' + doc._id + '">Final revision (<time datetime="' + new Date(doc.time).toISOString() + '"></time>)</a>:\n');
-						else res.write('<a href="/user/' + doc.user + '">' + doc.user + '</a> <a href="/chat/' + doc.room + '#' + doc._id + '">said <time datetime="' + new Date(doc.time).toISOString() + '"></time></a>:\n');
-						res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
+						if (events) res.write('</ul>');
+						else res.write('<p>(no message history)</p>\n');
 						respondPageFooter(res);
 					}
 				});
@@ -903,7 +1017,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
-					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
 					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
@@ -926,7 +1040,7 @@ http.createServer(function(req, res) {
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
-				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
+				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
 					fs.readFile('dev/search.html', function(err, data) {
 						if (err) throw err;
@@ -1002,18 +1116,18 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						dbcs.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), program.title || 'Untitled', html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.emailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1082,35 +1196,102 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
-	} else if (req.url.pathname == '/api/me/changeemail') {
+	} else if (req.url.pathname == '/mod/') {
+		respondPage('', req, res, function(user) {
+			res.write('<h1>Moderation Queues</h1>\n');
+			res.write('' + (user && user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user && user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>\n');
+			respondPageFooter(res);
+		});
+	} else if (req.url.pathname == '/mod/chatflag') {
+		respondPage('Chat Flags', req, res, function(user) {
+			res.write('<h1>Chat Flags</h1>\n');
+			if (!user) {
+				res.write('<p>You must be logged in and have level 2 moderator tools to access this queue.</p>');
+				return respondPageFooter(res);
+			}
+			if (user.level < 2) {
+				res.write('<p>You must have level 2 moderator tools to access this queue.</p>');
+				return respondPageFooter(res);
+			}
+			dbcs.chat.findOne({
+				reviews: {$gt: 0},
+				reviewers: {$not: {$in: [user.name]}}
+			}, function(err, message) {
+				if (err) throw err;
+				if (message) {
+					dbcs.chatrooms.findOne({_id: message.room}, function(err, room) {
+						if (err) throw err;
+						res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a> in <a href="/chat/' + message.room + '">' + room.name + '</a>:\n');
+						res.write('<blockquote><pre>' + html(message.body) + '</pre></blockquote>\n');
+						respondPageFooter(res);
+					});
+				} else {
+					res.write('There are no items for you to review.');
+					respondPageFooter(res);
+				}
+			});
+		}, {inhead: '<style>pre { margin: 0 }</style>'});
+	} else if (req.url.pathname == '/api/me/changemail') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
-				var newemail = post.newemail;
-				if (!newemail) return res.end('Error: No email specified.');
-				if (newemail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				var newmail = post.newmail;
+				if (!newmail) return res.end('Error: No email specified.');
+				if (newmail.length > 256) return res.end('Error: Email address must be no longer than 256 characters.');
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You are not logged in.');
-					dbcs.users.update({name: user.name}, {$set: {email: newemail, emailhash: crypto.createHash('md5').update(newemail).digest('hex')}});
+					dbcs.users.update({name: user.name}, {$set: {mail: newmail, mailhash: crypto.createHash('md5').update(newmail).digest('hex')}});
 					res.end('Success');
 				});
 			});
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/qa/newquestion') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				dbcs.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to ask a question.');
@@ -1130,7 +1311,8 @@ http.createServer(function(req, res) {
 							self: post.self,
 							bounty: post.bounty,
 							user: user.name,
-							time: new Date().getTime()
+							time: new Date().getTime(),
+							score: 0
 						});
 						res.end('/qa/' + id);
 					});
@@ -1153,16 +1335,31 @@ http.createServer(function(req, res) {
 		});
 	} else if (req.url.pathname == '/api/program/save') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				var type = parseInt(req.url.query.type);
 				if (type !== 1 && type !== 2) return res.end('Error: Invalid program type.'); 
 				dbcs.users.findOne({
-					cookie: cookie.parse(req.headers.cookie || '').id
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
 				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to save a program.');
@@ -1223,13 +1420,30 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/edit-title') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 1000) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to change a program title.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1247,16 +1461,33 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/vote') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 200) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
 				if (!post.val) return res.end('Error: Vote value not specified.');
 				post.val = parseInt(post.val);
 				if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.end('Error: Invalid vote value.');
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1312,15 +1543,32 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/delete') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 100) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
+				if (req.abort) return;
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
 					if (err) throw err;
-					if (!user) return res.end('Error: You must be logged in to vote.');
+					if (!user) return res.end('Error: You must be logged in to delete programs.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
@@ -1342,13 +1590,29 @@ http.createServer(function(req, res) {
 		} else errorPage[405](req, res);
 	} else if (req.url.pathname == '/api/program/undelete') {
 		if (req.method == 'POST') {
+			if (url.parse(req.headers.referer).host != req.headers.host) {
+				res.writeHead(403);
+				return res.end('Error: Suspicious request.');
+			}
 			post = '';
 			req.on('data', function(data) {
+				if (req.abort) return;
 				post += data;
+				if (post.length > 100) {
+					errorPage[413](req, res);
+					req.abort = true;
+				}
 			});
 			req.on('end', function() {
 				post = querystring.parse(post);
-				dbcs.users.findOne({cookie: cookie.parse(req.headers.cookie || '').id}, function(err, user) {
+				dbcs.users.findOne({
+					cookie: {
+						$elemMatch: {
+							token: cookie.parse(req.headers.cookie || '').id,
+							created: {$gt: new Date().getTime() - 2592000000}
+						}
+					}
+				}, function(err, user) {
 					if (err) throw err;
 					if (!user) return res.end('Error: You must be logged in to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
@@ -1388,7 +1652,14 @@ wss.on('connection', function(tws) {
 	var i;
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
-		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({
+				cookie: {
+					$elemMatch: {
+						token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+						created: {$gt: new Date().getTime() - 2592000000}
+					}
+				}
+			}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -1417,18 +1688,26 @@ wss.on('connection', function(tws) {
 							ts: after > 92
 						}));
 					} catch(e) {}
-					dbcs.chat.find().skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
+					dbcs.chat.find({
+						room: tws.room,
+						$or: [
+							{deleted: {$exists: false}},
+							{user: tws.user.name}
+						]
+					}).skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
-							tws.send(JSON.stringify({
-								event: 'init',
-								id: doc._id,
-								body: doc.body,
-								user: doc.user,
-								time: doc.time,
-								stars: doc.stars,
-								deleted: doc.deleted
-							}));
+							try {
+								tws.send(JSON.stringify({
+									event: 'init',
+									id: doc._id,
+									body: doc.body,
+									user: doc.user,
+									time: doc.time,
+									stars: doc.stars,
+									deleted: doc.deleted
+								}));
+							} catch(e) {}
 							dbcs.chatstars.findOne({
 								pid: doc._id,
 								user: tws.user.name
@@ -1460,7 +1739,7 @@ wss.on('connection', function(tws) {
 													id: post._id,
 													board: true,
 													body: post.body,
-													stars: post.stars,
+													stars: post.stars || 0,
 													user: post.user,
 													time: post.time
 												}));
@@ -1627,6 +1906,43 @@ wss.on('connection', function(tws) {
 							}));
 						}
 					});
+				} else if (message.event == 'flag') {
+					dbcs.chat.findOne({_id: message.id}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message not found.'
+						}));
+						if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 50 reputation to flag chat messages.'
+						}));
+						if (tws.user.rep < 50) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 50 reputation to flag chat messages.'
+						}));
+						if (!message.body) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must specify a flag description.'
+						}));
+						dbcs.chat.update({_id: post._id}, {
+							$set: {
+								reviews: 3,
+								lastFlag: new Date().getTime()
+							},
+							$push: {
+								flags: {
+									body: message.body,
+									time: new Date().getTime(),
+									user: tws.user.name
+								}
+							}
+						});
+						tws.send(JSON.stringify({
+							event: 'notice',
+							body: 'Post #' + message.id + ' flagged.'
+						}))
+					});
 				} else if (message.event == 'delete') {
 					dbcs.chat.findOne({_id: message.id}, function(err, post) {
 						if (err) throw err;
@@ -1689,7 +2005,11 @@ wss.on('connection', function(tws) {
 						for (var i in sendto) {
 							sendto[i].send(JSON.stringify({
 								event: 'undelete',
-								id: post._id
+								id: post._id,
+								body: post.body,
+								user: post.user,
+								time: post.time,
+								stars: post.stars || 0
 							}));
 						}
 					});
@@ -1798,7 +2118,7 @@ wss.on('connection', function(tws) {
 									event: 'star',
 									id: post._id,
 									body: post.body,
-									stars: post.stars + 1,
+									stars: (post.stars || 0) + 1,
 									user: post.user,
 									time: post.time
 								}));
@@ -1912,7 +2232,14 @@ wss.on('connection', function(tws) {
 		});
 	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
 		if (isNaN(tws.program = parseInt(i[1]))) return;
-		dbcs.users.findOne({cookie: cookie.parse(tws.upgradeReq.headers.cookie || '').id || 'nomatch'}, function(err, user) {
+		dbcs.users.findOne({
+			cookie: {
+				$elemMatch: {
+					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
+				}
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
