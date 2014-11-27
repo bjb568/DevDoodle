@@ -77,6 +77,10 @@ code { background: rgba(255, 255, 255, 0.6) }
 	bottom: 100%;
 }
 .comment img { max-height: 200px }
+.c-sig > * {
+	color: #666;
+	font-weight: normal;
+}
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
