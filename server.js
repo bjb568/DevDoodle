@@ -1680,7 +1680,7 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
-					var skip = Math.max(0, after > 92 ? count - after : count - 92);
+					var skip = Math.max(1, after > 92 ? count - after : count - 92) - 1;
 					try {
 						tws.send(JSON.stringify({
 							event: 'info-skipped',
