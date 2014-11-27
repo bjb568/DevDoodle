@@ -6,4 +6,6 @@ You can visit [here](http://devdoodle.net).
 
 Need help? Make sure to visit our [wiki](https://github.com/bjb568/DevDoodle/wiki).
 
+Before submitting a bug, try hard-reloading.
+
 This code is licensed under a do-not-use-me-or-you-will-be-sued license.
