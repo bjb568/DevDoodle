@@ -414,6 +414,7 @@ function respondPage(title, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
+	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	dbcs.users.findOne({
 		cookie: {
 			$elemMatch: {
