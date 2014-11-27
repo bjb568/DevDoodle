@@ -76,7 +76,13 @@ $textarea
 	};
 	ctrlsFlag.textContent = '⚑';
 	ctrlsFlag.onclick = function() {
-		
+		var body = prompt('Describe what exactly is wrong');
+		if (!body) return;
+		socket.send(JSON.stringify({
+			event: 'flag',
+			id: parseInt(this.parentNode.parentNode.id),
+			body: body
+		}));
 	};
 	ctrls.appendChild(ctrlsStar);
 	ctrls.appendChild(ctrlsLink);
@@ -378,6 +384,8 @@ $textarea
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
+		} else if (data.event == 'notice') {
+			alert(data.body);
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.revertInfo) {

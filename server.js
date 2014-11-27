@@ -1195,6 +1195,41 @@ http.createServer(function(req, res) {
 				respondPageFooter(res);
 			});
 		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
+	} else if (req.url.pathname == '/mod/') {
+		respondPage('', req, res, function(user) {
+			res.write('<h1>Moderation Queues</h1>\n');
+			res.write('' + (user && user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user && user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>\n');
+			respondPageFooter(res);
+		});
+	} else if (req.url.pathname == '/mod/chatflag') {
+		respondPage('Chat Flags', req, res, function(user) {
+			res.write('<h1>Chat Flags</h1>\n');
+			if (!user) {
+				res.write('<p>You must be logged in and have level 2 moderator tools to access this queue.</p>');
+				return respondPageFooter(res);
+			}
+			if (user.level < 2) {
+				res.write('<p>You must have level 2 moderator tools to access this queue.</p>');
+				return respondPageFooter(res);
+			}
+			dbcs.chat.findOne({
+				reviews: {$gt: 0},
+				reviewers: {$not: {$in: [user.name]}}
+			}, function(err, message) {
+				if (err) throw err;
+				if (message) {
+					dbcs.chatrooms.findOne({_id: message.room}, function(err, room) {
+						if (err) throw err;
+						res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a> in <a href="/chat/' + message.room + '">' + room.name + '</a>:\n');
+						res.write('<blockquote><pre>' + html(message.body) + '</pre></blockquote>\n');
+						respondPageFooter(res);
+					});
+				} else {
+					res.write('There are no items for you to review.');
+					respondPageFooter(res);
+				}
+			});
+		}, {inhead: '<style>pre { margin: 0 }</style>'});
 	} else if (req.url.pathname == '/api/me/changemail') {
 		if (req.method == 'POST') {
 			if (url.parse(req.headers.referer).host != req.headers.host) {
@@ -1869,6 +1904,43 @@ wss.on('connection', function(tws) {
 								body: message.body
 							}));
 						}
+					});
+				} else if (message.event == 'flag') {
+					dbcs.chat.findOne({_id: message.id}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Message not found.'
+						}));
+						if (!tws.user.name) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have 50 reputation to flag chat messages.'
+						}));
+						if (tws.user.rep < 50) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must have 50 reputation to flag chat messages.'
+						}));
+						if (!message.body) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You must specify a flag description.'
+						}));
+						dbcs.chat.update({_id: post._id}, {
+							$set: {
+								reviews: 3,
+								lastFlag: new Date().getTime()
+							},
+							$push: {
+								flags: {
+									body: message.body,
+									time: new Date().getTime(),
+									user: tws.user.name
+								}
+							}
+						});
+						tws.send(JSON.stringify({
+							event: 'notice',
+							body: 'Post #' + message.id + ' flagged.'
+						}))
 					});
 				} else if (message.event == 'delete') {
 					dbcs.chat.findOne({_id: message.id}, function(err, post) {
