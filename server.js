@@ -1680,7 +1680,7 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
-					var skip = Math.max(1, after > 92 ? count - after : count - 92) - 1;
+					var skip = Math.max(0, after > 92 ? count - after - 18 : count - 92);
 					try {
 						tws.send(JSON.stringify({
 							event: 'info-skipped',
@@ -1694,7 +1694,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
+					}).skip(skip).sort({_id: 1}).limit(after > 92 ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
@@ -1746,7 +1746,9 @@ wss.on('connection', function(tws) {
 											} catch (e) {}
 										}
 									});
-									return tws.send(JSON.stringify({event: 'info-complete'}));
+									try {
+										return tws.send(JSON.stringify({event: 'info-complete'}));
+									} catch(e) {}
 								}
 							});
 						}
