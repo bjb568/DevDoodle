@@ -958,7 +958,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replaceAll('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1116,8 +1116,12 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						dbcs.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + (user && user.rep >= 50 ? '<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>' : '') + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-							else {
+							if (comment) {
+								var votes = comment.votes || [],
+									voted;
+								for (var i in votes) if (votes[i].user == user.name) voted = true;
+								commentstr += '<div id="c' + comment._id + '" class="comment"><span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' + (user && user.rep >= 50 ? '<span class="sctrls"><svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>' : '') + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							} else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
@@ -2049,7 +2053,7 @@ wss.on('connection', function(tws) {
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
-						var num = message.skip - message.to || 1;
+						var num = message.skip - message.to || 0;
 						cursor.sort({_id: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
 							if (err) throw err;
 							if (!doc) return;
@@ -2131,7 +2135,7 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'unstar') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 30 reputation to unstar messages.'
+						body: 'You must be logged in to unstar messages.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.chat.findOne({
@@ -2184,7 +2188,7 @@ wss.on('connection', function(tws) {
 					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1,
-							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
+							newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
 						dbcs.chat.insert({
 							_id: id,
 							body: newMessage,
@@ -2323,7 +2327,91 @@ wss.on('connection', function(tws) {
 							}
 						});
 					});
-				}
+				} else if (message.event == 'vote') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in and have 50 reputation to vote on comments.'
+					}));
+					if (tws.user.rep < 50) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must have 50 reputation to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) return tws.send(JSON.stringify({
+								event: 'err',
+								body: 'You already voted on this comment.'
+							}));
+						}
+						dbcs.comments.update({_id: id}, {
+							$push: {
+								votes: {
+									user: tws.user.name,
+									time: new Date().getTime()
+								}
+							}
+						});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
+								event: 'scorechange',
+								id: post._id,
+								score: post.votes ? post.votes.length + 1 : 1
+							}));
+						}
+					});
+				} else if (message.event == 'unvote') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						var err = true;
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) err = false;
+						}
+						if (err) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You haven\'t voted on this comment.'
+						}));
+						dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
+								event: 'scorechange',
+								id: post._id,
+								score: post.votes.length - 1
+							}));
+						}
+					});
+				} else tws.send(JSON.stringify({
+					event: 'err',
+					body: 'Invalid event type.'
+				}));
 			});
 		});
 	}
