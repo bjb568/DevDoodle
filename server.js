@@ -2293,6 +2293,32 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
+						var matches = message.body.match(/@([\w-]{3,16})\W/g);
+						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
+						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
+							if (err) throw err;
+							if (matches.indexOf(program.user) == -1) matches.push(program.user);
+							for (var i = 0; i < matches.length; i++) {
+								if (matches[i] == tws.user.name) continue;
+								dbcs.users.findOne({name: matches[i]}, function(err, user) {
+									if (err) throw err;
+									if (!user) return;
+									dbcs.users.update({name: user.name}, {
+										$push: {
+											notifs: {
+												type: 'Comment',
+												on: program.title.link('/dev/' + tws.program + '#c' + id),
+												body: message.body,
+												from: tws.user.name,
+												unread: true,
+												time: new Date().getTime()
+											}
+										},
+										$inc: {unread: 1}
+									});
+								});
+							}
+						});
 					});
 				}
 			});
