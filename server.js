@@ -856,15 +856,15 @@ http.createServer(function(req, res) {
 						if (i.substr(0, 2) == 'ck') cat.push(i.substr(2));
 					}
 					res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else location.href = res }, ' + html(JSON.stringify(
-						'title=' + encodeURIComponent(post.title) + 
-						'&lang=' + encodeURIComponent(post.lang) + 
-						'&description=' + encodeURIComponent(post.description) + 
-						'&question=' + encodeURIComponent(post.question) + 
-						'&code=' + encodeURIComponent(post.code) + 
-						'&type=' + encodeURIComponent(post.type) + 
-						'&cat=' + encodeURIComponent(cat) + 
-						'&gr=' + encodeURIComponent(post.gr || '') + 
-						'&self=' + encodeURIComponent(post.self || '') + 
+						'title=' + encodeURIComponent(post.title) +
+						'&lang=' + encodeURIComponent(post.lang) +
+						'&description=' + encodeURIComponent(post.description) +
+						'&question=' + encodeURIComponent(post.question) +
+						'&code=' + encodeURIComponent(post.code) +
+						'&type=' + encodeURIComponent(post.type) +
+						'&cat=' + encodeURIComponent(cat) +
+						'&gr=' + encodeURIComponent(post.gr || '') +
+						'&self=' + encodeURIComponent(post.self || '') +
 						'&bounty=' + encodeURIComponent(post.bounty || '')
 					)) + ')">Submit</button>');
 					respondPageFooter(res);
@@ -875,12 +875,23 @@ http.createServer(function(req, res) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res);
-			respondPage(question.lang + ': ' + question.title, req, res, function() {
-				res.write('<h1>' + html(question.lang + ': ' + question.title) + '</h1>');
-				res.write(markdown(question.description));
-				res.write('<code class="blk">' + html(question.code) + '</code>');
-				res.write('<p>' + html(question.question) + '</p>');
-				respondPageFooter(res);
+			respondPage(question.lang + ': ' + question.title, req, res, function(user) {
+				dbcs.users.findOne({name: question.user}, function(err, op) {
+					if (err) throw err;
+					fs.readFile('qa/question.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString()
+							.replaceAll(
+								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type', '$cat'],
+								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type, question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>']
+							).replaceAll(
+								['$op-name', '$op-rep', '$op-pic'],
+								[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+							)
+						);
+						respondPageFooter(res);
+					});
+				});
 			});
 		});
 	} else if (req.url.pathname == '/chat/') {
@@ -1125,13 +1136,16 @@ http.createServer(function(req, res) {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(
+											['$id', '$title', '$code', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;

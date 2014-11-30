@@ -6,10 +6,10 @@
 	</div>
 </section>
 <section id="meta">
-	<div class="rit user user-$op">
+	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
 		<div>
-			<a href="/user/$op">$op</a>
+			<a href="/user/$op-name">$op-name</a>
 			<small class="rep">$op-rep</small>
 		</div>
 	</div>
@@ -149,12 +149,6 @@
 		transition: fill 0.1s;
 		fill: #c00;
 	}
-	.comment .sctrls {
-		float: left;
-		padding: 2px 2px 0 0;
-		height: 16px;
-	}
-	.comment:not(:hover) .sctrls { opacity: .4 }
 	#content > .sctrls { display: none }
 	.score {
 		float: left;

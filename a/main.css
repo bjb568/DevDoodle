@@ -62,6 +62,8 @@ code { background: rgba(255, 255, 255, 0.6) }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
@@ -76,20 +78,19 @@ code { background: rgba(255, 255, 255, 0.6) }
 	top: auto;
 	bottom: 100%;
 }
-.comment img { max-height: 200px }
-.c-sig > * {
-	color: #666;
-	font-weight: normal;
+.comment .sctrls {
+	float: left;
+	padding: 2px 2px 0 0;
+	height: 16px;
 }
+.comment:not(:hover) .sctrls { opacity: .4 }
+.comment img { max-height: 200px }
+.c-sig > * { color: #666 }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
-small, a.small, footer, .c-sig, .ctrls a {
-	font-size: .85em;
-	font-weight: normal;
-}
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
 	border-left: 2px solid #fa0;
