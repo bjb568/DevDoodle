@@ -475,7 +475,7 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
-		res.write('<input type="hidden" name="referer" value="' + html(post.referer) + '" />\n');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
 		res.write('<style>\n');
