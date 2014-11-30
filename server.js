@@ -1749,7 +1749,7 @@ wss.on('connection', function(tws) {
 									dbcs.chat.find({
 										_id: {$in: pids},
 										deleted: {$exists: false}
-									}).sort({_id: -1}).each(function(err, post) {
+									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
 										if (post) {
 											try {
