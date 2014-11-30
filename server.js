@@ -2054,6 +2054,7 @@ wss.on('connection', function(tws) {
 						}
 					}
 				} else if (message.event == 'req') {
+					message.skip = parseInt(message.skip);
 					if (isNaN(message.skip) || message.skip < 0) return tws.send(JSON.stringify({
 						event: 'err',
 						body: 'Invalid skip value.'
@@ -2065,35 +2066,27 @@ wss.on('connection', function(tws) {
 							{user: tws.user.name}
 						]
 					});
-					cursor.count(function(err, count) {
+					cursor.sort({_id: 1}).skip(message.skip).limit(1).each(function(err, doc) {
 						if (err) throw err;
-						var i = 0;
-						var num = message.skip - message.to || 0;
-						cursor.sort({_id: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
+						if (!doc) return;
+						tws.send(JSON.stringify({
+							event: 'init',
+							id: doc._id,
+							body: doc.body,
+							user: doc.user,
+							time: doc.time,
+							stars: doc.stars,
+							before: true
+						}));
+						dbcs.chatstars.findOne({
+							pid: doc._id,
+							user: tws.user.name
+						}, function(err, star) {
 							if (err) throw err;
-							if (!doc) return;
-							i++;
-							try {
-								tws.send(JSON.stringify({
-									event: 'init',
-									id: doc._id,
-									body: doc.body,
-									user: doc.user,
-									time: doc.time,
-									stars: doc.stars,
-									before: true
-								}));
-							} catch(e) {}
-							dbcs.chatstars.findOne({
-								pid: doc._id,
-								user: tws.user.name
-							}, function(err, star) {
-								if (err) throw err;
-								if (star) tws.send(JSON.stringify({
-									event: 'selfstar',
-									id: star.pid
-								}));
-							});
+							if (star) tws.send(JSON.stringify({
+								event: 'selfstar',
+								id: star.pid
+							}));
 						});
 					});
 				} else if (message.event == 'star') {
