@@ -1,6 +1,6 @@
-<div class="row" style="height: calc(100% - 120px)">
-	<div id="chat" class="half hglt pad scrly"></div>
-	<aside id="aside" class="half umar">
+<div style="height: calc(100% - 120px)">
+	<div id="chat" class="lft hglt pad scrly"></div>
+	<aside id="aside" class="scrl">
 		<div id="roominfo">
 			<h1><span id="name">$name</span> <small><a id="edit">Edit</a></small></h1>
 			<p id="desc">$desc</p>
@@ -519,7 +519,7 @@ $textarea
 	});
 </script>
 <style>
-	#chat {
+	#chat, #aside {
 		height: 100%;
 		overflow-x: hidden;
 	}
@@ -556,6 +556,10 @@ $textarea
 	#users:empty::after { content: 'No users in room' }
 	#stars:empty::after { content: 'No starred messages' }
 	.comment:not(:hover) .ctrls:not(:hover) { display: none }
+	#aside {
+		float: right;
+		padding-top: 4px;
+	}
 	@media (max-width: 699px) {
 		#chat { width: 100% }
 		#aside { display: none }
