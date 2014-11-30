@@ -64,6 +64,7 @@ function inlineMarkdown(input) {
 			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
 				return markdownEscape(p1);
 			})
+			.replaceAll('**', '_')
 		.split('*').map(function(val, i, arr) {
 			var parsed = val.split('_').map(function(val, i, arr) {
 				var parsed = val.split('---').map(function(val, i, arr) {
