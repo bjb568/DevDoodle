@@ -1,6 +1,6 @@
-<div class="row" style="height: calc(100% - 120px)">
-	<div id="chat" class="half hglt pad scrly"></div>
-	<aside id="aside" class="half umar">
+<div style="height: calc(100% - 120px)">
+	<div id="chat" class="lft hglt pad scrly"></div>
+	<aside id="aside" class="scrl">
 		<div id="roominfo">
 			<h1><span id="name">$name</span> <small><a id="edit">Edit</a></small></h1>
 			<p id="desc">$desc</p>
@@ -8,7 +8,8 @@
 		<form id="editform" hidden="">
 			<input id="nameedit" type="text" value="$name" class="large" />
 			<textarea id="descedit" type="text" class="fullwidth">$rawdesc</textarea>
-			<button>Submit</button>
+			<button type="submit">Submit</button>
+			<button type="reset" onclick="resetEditForm()">Cancel</button>
 		</form>
 		<hr />
 		<h2>Users:</h2>
@@ -29,10 +30,10 @@ $textarea
 		onBottom = true,
 		state = 1,
 		skipped,
+		rawdesc = "$rawdesc",
 		ta = document.getElementById('ta'),
 		cont = document.getElementById('chat'),
 		starwall = document.getElementById('stars'),
-		lock = true,
 		ctrls = document.createElement('div'),
 		ctrlsStar = document.createElement('a'),
 		ctrlsLink = document.createElement('a'),
@@ -40,6 +41,7 @@ $textarea
 		ctrlsDelete = document.createElement('a'),
 		ctrlsUndelete = document.createElement('a'),
 		ctrlsFlag = document.createElement('a'),
+		lock = true,
 		source = {},
 		editing = false,
 		users = [],
@@ -122,6 +124,12 @@ $textarea
 		addEventListener('resize', active);
 		cont.addEventListener('scroll', active);
 	}
+	function resetEditForm() {
+		document.getElementById('nameedit').value = document.getElementById('name').textContent;
+		document.getElementById('descedit').value = rawdesc;
+		document.getElementById('roominfo').hidden = false;
+		document.getElementById('editform').hidden = true;
+	}
 	socket.onmessage = function(e) {
 		console.log(e.data);
 		var data;
@@ -184,7 +192,7 @@ $textarea
 				cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
 			if (data.event == 'add') audio.play();
-			if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
+			if (onBottom) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
 			if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
@@ -260,7 +268,7 @@ $textarea
 				if (username) div.appendChild(tCtrls);
 				cont.insertBefore(div, cont.firstChild);
 				cont.scrollTop += div.offsetHeight + 3;
-				if (onBottom &amp;&amp; !location.hash) cont.scrollTop = cont.scrollHeight;
+				if (onBottom) cont.scrollTop = cont.scrollHeight;
 				if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
 			}
 		} else if (data.event == 'selfstar') {
@@ -383,15 +391,12 @@ $textarea
 			if (!document.getElementById('ts').hidden) socket.onmessage = null;
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
-			document.getElementById('desc').textContent = document.getElementById('descedit').value = data.desc;
+			document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
 		} else if (data.event == 'notice') {
-			alert(data.body);
+			alert(data.body || 'Error: No notice body specified.');
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
-			if (data.revertInfo) {
-				document.getElementById('nameedit').value = document.getElementById('name').textContent;
-				document.getElementById('descedit').value = document.getElementById('desc').textContent;
-			}
+			if (data.revertInfo) resetEditForm();
 		}
 	};
 	socket.onclose = function() {
@@ -514,7 +519,7 @@ $textarea
 	});
 </script>
 <style>
-	#chat {
+	#chat, #aside {
 		height: 100%;
 		overflow-x: hidden;
 	}
@@ -551,6 +556,10 @@ $textarea
 	#users:empty::after { content: 'No users in room' }
 	#stars:empty::after { content: 'No starred messages' }
 	.comment:not(:hover) .ctrls:not(:hover) { display: none }
+	#aside {
+		float: right;
+		padding-top: 4px;
+	}
 	@media (max-width: 699px) {
 		#chat { width: 100% }
 		#aside { display: none }
@@ -574,4 +583,5 @@ $textarea
 		padding: 2px;
 		margin: 0 2px;
 	}
+	.comment > :first-child { margin: 0 }
 </style>

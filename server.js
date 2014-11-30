@@ -63,6 +63,7 @@ function inlineMarkdown(input) {
 			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
 				return markdownEscape(p1);
 			})
+			.replaceAll('**', '_')
 		.split('*').map(function(val, i, arr) {
 			var parsed = val.split('_').map(function(val, i, arr) {
 				var parsed = val.split('---').map(function(val, i, arr) {
@@ -856,15 +857,15 @@ http.createServer(function(req, res) {
 						if (i.substr(0, 2) == 'ck') cat.push(i.substr(2));
 					}
 					res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else location.href = res }, ' + html(JSON.stringify(
-						'title=' + encodeURIComponent(post.title) + 
-						'&lang=' + encodeURIComponent(post.lang) + 
-						'&description=' + encodeURIComponent(post.description) + 
-						'&question=' + encodeURIComponent(post.question) + 
-						'&code=' + encodeURIComponent(post.code) + 
-						'&type=' + encodeURIComponent(post.type) + 
-						'&cat=' + encodeURIComponent(cat) + 
-						'&gr=' + encodeURIComponent(post.gr || '') + 
-						'&self=' + encodeURIComponent(post.self || '') + 
+						'title=' + encodeURIComponent(post.title) +
+						'&lang=' + encodeURIComponent(post.lang) +
+						'&description=' + encodeURIComponent(post.description) +
+						'&question=' + encodeURIComponent(post.question) +
+						'&code=' + encodeURIComponent(post.code) +
+						'&type=' + encodeURIComponent(post.type) +
+						'&cat=' + encodeURIComponent(cat) +
+						'&gr=' + encodeURIComponent(post.gr || '') +
+						'&self=' + encodeURIComponent(post.self || '') +
 						'&bounty=' + encodeURIComponent(post.bounty || '')
 					)) + ')">Submit</button>');
 					respondPageFooter(res);
@@ -875,12 +876,23 @@ http.createServer(function(req, res) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res);
-			respondPage(question.lang + ': ' + question.title, req, res, function() {
-				res.write('<h1>' + html(question.lang + ': ' + question.title) + '</h1>');
-				res.write(markdown(question.description));
-				res.write('<code class="blk">' + html(question.code) + '</code>');
-				res.write('<p>' + html(question.question) + '</p>');
-				respondPageFooter(res);
+			respondPage(question.lang + ': ' + question.title, req, res, function(user) {
+				dbcs.users.findOne({name: question.user}, function(err, op) {
+					if (err) throw err;
+					fs.readFile('qa/question.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString()
+							.replaceAll(
+								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type', '$cat'],
+								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type, question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>']
+							).replaceAll(
+								['$op-name', '$op-rep', '$op-pic'],
+								[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+							)
+						);
+						respondPageFooter(res);
+					});
+				});
 			});
 		});
 	} else if (req.url.pathname == '/chat/') {
@@ -958,7 +970,7 @@ http.createServer(function(req, res) {
 			respondPage(doc.name, req, res, function(user) {
 				fs.readFile('chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replace('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replaceAll('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
 					respondPageFooter(res);
 				});
 			});
@@ -1018,8 +1030,8 @@ http.createServer(function(req, res) {
 				if (data) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;button onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
-					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;button style=&quot;display:block&quot; onclick=&quot;location.reload()&quot;>Restart&lt;/button>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
 				} else {
 					res.write('<a href="search/" class="center-text blk">See more</a>\n');
@@ -1116,18 +1128,25 @@ http.createServer(function(req, res) {
 						var commentstr = '';
 						dbcs.comments.find({program: program._id}).each(function(err, comment) {
 							if (err) throw err;
-							if (comment) commentstr += '<div id="c' + comment._id + '" class="comment">' + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-							else {
+							if (comment) {
+								var votes = comment.votes || [],
+									voted;
+								for (var i in votes) if (votes[i].user == user.name) voted = true;
+								commentstr += '<div id="c' + comment._id + '" class="comment"><span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' + (user && user.rep >= 50 ? '<span class="sctrls"><svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>' : '') + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+							} else {
 								if (program.type == 1) {
 									fs.readFile('dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$code', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(
+											['$id', '$title', '$code', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-rep', '$op-pic', '$op', '$created', '$updated', '$comments', 'Save</a>', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0], [program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1489,7 +1508,8 @@ http.createServer(function(req, res) {
 					}
 				}, function(err, user) {
 					if (err) throw err;
-					if (!user) return res.end('Error: You must be logged in to vote.');
+					if (!user) return res.end('Error: You must be logged in and have 15 reputation to vote.');
+					if (user.rep < 15) return res.end('Error: You must have 15 reputation to vote.');
 					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
@@ -1680,7 +1700,7 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
-					var skip = Math.max(0, after > 92 ? count - after : count - 92);
+					var skip = Math.max(0, after > 92 ? count - after - 18 : count - 92);
 					try {
 						tws.send(JSON.stringify({
 							event: 'info-skipped',
@@ -1694,7 +1714,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).skip(skip).sort({_id: 1}).limit(92).each(function(err, doc) {
+					}).skip(skip).sort({_id: 1}).limit(after > 92 ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
@@ -1730,7 +1750,7 @@ wss.on('connection', function(tws) {
 									dbcs.chat.find({
 										_id: {$in: pids},
 										deleted: {$exists: false}
-									}).sort({_id: -1}).each(function(err, post) {
+									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
 										if (post) {
 											try {
@@ -1746,7 +1766,9 @@ wss.on('connection', function(tws) {
 											} catch (e) {}
 										}
 									});
-									return tws.send(JSON.stringify({event: 'info-complete'}));
+									try {
+										return tws.send(JSON.stringify({event: 'info-complete'}));
+									} catch(e) {}
 								}
 							});
 						}
@@ -2046,7 +2068,7 @@ wss.on('connection', function(tws) {
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						var i = 0;
-						var num = message.skip - message.to || 1;
+						var num = message.skip - message.to || 0;
 						cursor.sort({_id: -1}).skip(count - message.skip - 1).limit(num).each(function(err, doc) {
 							if (err) throw err;
 							if (!doc) return;
@@ -2128,7 +2150,7 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'unstar') {
 					if (!tws.user.name) return tws.send(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 30 reputation to unstar messages.'
+						body: 'You must be logged in to unstar messages.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.chat.findOne({
@@ -2181,7 +2203,7 @@ wss.on('connection', function(tws) {
 					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1,
-							newMessage = 'Room description updated to ' + message.name + ': ' + message.desc;
+							newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
 						dbcs.chat.insert({
 							_id: id,
 							body: newMessage,
@@ -2293,8 +2315,118 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
+						var matches = message.body.match(/@([\w-]{3,16})\W/g) || [];
+						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
+						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
+							if (err) throw err;
+							if (matches.indexOf(program.user) == -1) matches.push(program.user);
+							for (var i = 0; i < matches.length; i++) {
+								if (matches[i] == tws.user.name) continue;
+								dbcs.users.findOne({name: matches[i]}, function(err, user) {
+									if (err) throw err;
+									if (!user) return;
+									dbcs.users.update({name: user.name}, {
+										$push: {
+											notifs: {
+												type: 'Comment',
+												on: program.title.link('/dev/' + tws.program + '#c' + id),
+												body: message.body,
+												from: tws.user.name,
+												unread: true,
+												time: new Date().getTime()
+											}
+										},
+										$inc: {unread: 1}
+									});
+								});
+							}
+						});
 					});
-				}
+				} else if (message.event == 'vote') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in and have 50 reputation to vote on comments.'
+					}));
+					if (tws.user.rep < 50) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must have 50 reputation to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) return tws.send(JSON.stringify({
+								event: 'err',
+								body: 'You already voted on this comment.'
+							}));
+						}
+						dbcs.comments.update({_id: id}, {
+							$push: {
+								votes: {
+									user: tws.user.name,
+									time: new Date().getTime()
+								}
+							}
+						});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
+								event: 'scorechange',
+								id: post._id,
+								score: post.votes ? post.votes.length + 1 : 1
+							}));
+						}
+					});
+				} else if (message.event == 'unvote') {
+					if (!tws.user.name) return tws.send(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						var err = true;
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) err = false;
+						}
+						if (err) return tws.send(JSON.stringify({
+							event: 'err',
+							body: 'You haven\'t voted on this comment.'
+						}));
+						dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) {
+							sendto[i].send(JSON.stringify({
+								event: 'scorechange',
+								id: post._id,
+								score: post.votes.length - 1
+							}));
+						}
+					});
+				} else tws.send(JSON.stringify({
+					event: 'err',
+					body: 'Invalid event type.'
+				}));
 			});
 		});
 	}

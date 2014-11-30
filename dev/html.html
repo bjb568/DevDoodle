@@ -13,10 +13,10 @@
 	</div>
 </section>
 <section id="meta">
-	<div class="rit user user-$op">
+	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
 		<div>
-			<a href="/user/$op">$op</a>
+			<a href="/user/$op-name">$op-name</a>
 			<small class="rep">$op-rep</small>
 		</div>
 	</div>
@@ -34,6 +34,7 @@
 	</form>
 	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
 </section>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
@@ -123,13 +124,81 @@
 		fill: #c00;
 	}
 	#comment:target + #addcomment { display: none }
+	.up {
+		width: 18px;
+		height: 20px;
+		fill: #888;
+	}
+	.up:hover {
+		fill: #999;
+		transition: fill 0.1s;
+	}
+	.up:active {
+		fill: #777;
+		transition: none;
+	}
+	.up.clkd { fill: #f90 }
+	.fl {
+		width: 20px;
+		height: 20px;
+		fill: #f88;
+	}
+	.fl:hover {
+		fill: #f66;
+		transition: fill 0.2s;
+	}
+	.fl.clkd { fill: #f00 }
+	.fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	#content > .sctrls { display: none }
+	.score {
+		float: left;
+		display: block;
+		margin-right: 4px;
+		color: #f00;
+		padding: 0 4px;
+	}
+	.score[data-score="0"] { display: none }
+	.score[data-score="1"] { color: #888 }
+	.score[data-score="2"] { color: #666 }
+	.score[data-score="3"] { color: #444 }
+	.score[data-score="4"] { color: #222 }
+	.score[data-score="5"] { color: #000 }
+	.score[data-score="6"] { color: #001 }
+	.score[data-score="7"] { color: #002 }
+	.score[data-score="8"] { color: #003 }
+	.score[data-score="9"] { color: #004 }
+	.score[data-score="10"] { color: #005 }
+	.score[data-score="11"] { color: #006 }
+	.score[data-score="12"] { color: #007 }
+	.score[data-score="13"] { color: #008 }
+	.score[data-score="14"] { color: #009 }
+	.score[data-score="15"] { color: #00a }
+	.score[data-score="16"] { color: #00b }
+	.score[data-score="17"] { color: #00c }
+	.score[data-score="18"] { color: #00d }
+	.score[data-score="19"] { color: #00e }
+	.score[data-score="20"] { color: #00f }
+	.score[data-score="21"] { color: #33f }
+	.score[data-score="22"] { color: #66f }
+	.score[data-score="23"] { color: #f90 }
+	.score[data-score="24"] { color: #f80 }
+	.score[data-score="25"] { color: #f70 }
+	.score[data-score="26"] { color: #f60 }
+	.score[data-score="27"] { color: #f50 }
+	.score[data-score="28"] { color: #f40 }
+	.score[data-score="29"] { color: #f30 }
+	.score[data-score="30"] { color: #f20 }
+	.score[data-score="31"] { color: #f10 }
 </style>
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,
 		pageOverflowMobile = true,
 		mainContentEl = document.getElementById('main'),
-		html = document.getElementById('html'),
+		htmle = document.getElementById('html'),
 		css = document.getElementById('css'),
 		js = document.getElementById('js'),
 		save = document.getElementById('save')
@@ -137,7 +206,7 @@
 		dn = document.getElementById('dn');
 	var p = '';
 	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + html.value + '&lt;style>' + css.value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + js.value + '&lt;/script>&lt;/body>&lt;/html>';
+		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + htmle.value + '&lt;style>' + css.value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + js.value + '&lt;/script>&lt;/body>&lt;/html>';
 	}
 	function run(f) {
 		if (f == true || (p != createCode() &amp;&amp; document.getElementById('autorun').checked)) {
@@ -150,7 +219,7 @@
 			p = document.getElementById('output').srcdoc = createCode();
 		}
 	}
-	html.onkeypress = function(e) {
+	htmle.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-((false/*Parse!*/)?0:1);
@@ -172,7 +241,7 @@
 		}
 		setTimeout(run, 0, 2);
 	};
-	html.onkeydown = html.onkeyup = css.onkeydown = css.onkeyup = js.onkeydown = js.onkeyup = run;
+	htmle.onkeydown = htmle.onkeyup = css.onkeydown = css.onkeyup = js.onkeydown = js.onkeyup = run;
 	run();
 	save.onclick = function() {
 		var e = this;
@@ -199,7 +268,7 @@
 			}
 			e.classList.remove('progress');
 			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(html.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
+		}, 'html=' + encodeURIComponent(htmle.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
 	};
 	(document.getElementById('fork') || {}).onclick = function() {
 		var e = this;
@@ -220,7 +289,7 @@
 				location.href = res.split(' ')[1];
 			} else alert('Unknown error. Response was: ' + res);
 			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(html.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
+		}, 'html=' + encodeURIComponent(htmle.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
 	};
 	document.getElementById('title').onclick = function() {
 		this.hidden = true;
@@ -250,6 +319,7 @@
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
+				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
 				up.classList.toggle('clkd');
 				dn.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
@@ -259,6 +329,7 @@
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
+				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
 				dn.classList.toggle('clkd');
 				up.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
@@ -296,6 +367,14 @@
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			div.innerHTML = markdown(data.body);
+			if ($rep >= 50) {
+				div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+				div.firstChild.firstChild.onclick = upvoteComment;
+				var score = document.createElement('span');
+				score.classList.add('score');
+				score.appendChild(document.createTextNode(score.dataset.score = 0));
+				div.insertBefore(score, div.firstChild);
+			}
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			sig.appendChild(document.createTextNode('-'));
@@ -311,6 +390,9 @@
 			sig.appendChild(permalink);
 			div.appendChild(sig);
 			document.getElementById('comments').appendChild(div);
+		} else if (data.event == 'scorechange') {
+			var c = document.getElementById('c' + data.id);
+			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 		} else if (data.event == 'err') alert('Error: ' + data.body);
 	};
 	var deletebutton = document.getElementById('delete');
@@ -324,5 +406,16 @@
 				});
 			}
 		};
+	}
+	function upvoteComment() {
+		this.classList.toggle('clkd');
+		socket.send(JSON.stringify({
+			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+			id: parseInt(this.parentNode.parentNode.id.substr(1))
+		}));
+	}
+	var comments = document.getElementsByClassName('comment');
+	for (var i = 0; i &lt; comments.length; i++) {
+		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
 	}
 </script>

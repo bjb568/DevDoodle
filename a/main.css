@@ -41,7 +41,7 @@ body {
 .nofloat { float: none }
 :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
 .mar { margin: 6px }
-.nomar, body, input, .comment > :first-child, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
+.nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
@@ -62,6 +62,8 @@ code { background: rgba(255, 255, 255, 0.6) }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
@@ -76,16 +78,19 @@ code { background: rgba(255, 255, 255, 0.6) }
 	top: auto;
 	bottom: 100%;
 }
+.comment .sctrls {
+	float: left;
+	padding: 2px 2px 0 0;
+	height: 16px;
+}
+.comment:not(:hover) .sctrls { opacity: .4 }
 .comment img { max-height: 200px }
+.c-sig > * { color: #666 }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
-small, a.small, footer, .c-sig, .ctrls a {
-	font-size: .85em;
-	font-weight: normal;
-}
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
 	border-left: 2px solid #fa0;

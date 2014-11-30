@@ -6,10 +6,10 @@
 	</div>
 </section>
 <section id="meta">
-	<div class="rit user user-$op">
+	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
 		<div>
-			<a href="/user/$op">$op</a>
+			<a href="/user/$op-name">$op-name</a>
 			<small class="rep">$op-rep</small>
 		</div>
 	</div>
@@ -27,10 +27,12 @@
 	</form>
 	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
 </section>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	html, #content, #footer, #main { background: #000 }
+	#content { padding-bottom: 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -119,6 +121,74 @@
 		fill: #c00;
 	}
 	#comment:target + #addcomment { display: none }
+	.up {
+		width: 18px;
+		height: 20px;
+		fill: #888;
+	}
+	.up:hover {
+		fill: #999;
+		transition: fill 0.1s;
+	}
+	.up:active {
+		fill: #777;
+		transition: none;
+	}
+	.up.clkd { fill: #f90 }
+	.fl {
+		width: 20px;
+		height: 20px;
+		fill: #f88;
+	}
+	.fl:hover {
+		fill: #f66;
+		transition: fill 0.2s;
+	}
+	.fl.clkd { fill: #f00 }
+	.fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	#content > .sctrls { display: none }
+	.score {
+		float: left;
+		display: block;
+		margin-right: 4px;
+		color: #f00;
+		padding: 0 4px;
+	}
+	.score[data-score="0"] { display: none }
+	.score[data-score="1"] { color: #888 }
+	.score[data-score="2"] { color: #666 }
+	.score[data-score="3"] { color: #444 }
+	.score[data-score="4"] { color: #222 }
+	.score[data-score="5"] { color: #000 }
+	.score[data-score="6"] { color: #001 }
+	.score[data-score="7"] { color: #002 }
+	.score[data-score="8"] { color: #003 }
+	.score[data-score="9"] { color: #004 }
+	.score[data-score="10"] { color: #005 }
+	.score[data-score="11"] { color: #006 }
+	.score[data-score="12"] { color: #007 }
+	.score[data-score="13"] { color: #008 }
+	.score[data-score="14"] { color: #009 }
+	.score[data-score="15"] { color: #00a }
+	.score[data-score="16"] { color: #00b }
+	.score[data-score="17"] { color: #00c }
+	.score[data-score="18"] { color: #00d }
+	.score[data-score="19"] { color: #00e }
+	.score[data-score="20"] { color: #00f }
+	.score[data-score="21"] { color: #33f }
+	.score[data-score="22"] { color: #66f }
+	.score[data-score="23"] { color: #f90 }
+	.score[data-score="24"] { color: #f80 }
+	.score[data-score="25"] { color: #f70 }
+	.score[data-score="26"] { color: #f60 }
+	.score[data-score="27"] { color: #f50 }
+	.score[data-score="28"] { color: #f40 }
+	.score[data-score="29"] { color: #f30 }
+	.score[data-score="30"] { color: #f20 }
+	.score[data-score="31"] { color: #f10 }
 </style>
 <script>
 	var footerOff = true,
@@ -142,10 +212,10 @@
 	};
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
-	};
+	}
 	function run() {
 		document.getElementById('output').srcdoc = createCode();
-	};
+	}
 	var oldValue = code.innerHTML;
 	function handleCode() {
 		if (this.value !== oldValue) {
@@ -156,7 +226,7 @@
 			if (!save.classList.contains('progress')) save.textContent = 'Save';
 			run();
 		}
-	};
+	}
 	code.addEventListener('keyup', handleCode);
 	code.addEventListener('keydown', handleCode);
 	code.addEventListener('keypress', function() {
@@ -287,6 +357,14 @@
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			div.innerHTML = markdown(data.body);
+			if ($rep >= 50) {
+				div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+				div.firstChild.firstChild.onclick = upvoteComment;
+				var score = document.createElement('span');
+				score.classList.add('score');
+				score.appendChild(document.createTextNode(score.dataset.score = 0));
+				div.insertBefore(score, div.firstChild);
+			}
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			sig.appendChild(document.createTextNode('-'));
@@ -302,6 +380,9 @@
 			sig.appendChild(permalink);
 			div.appendChild(sig);
 			document.getElementById('comments').appendChild(div);
+		} else if (data.event == 'scorechange') {
+			var c = document.getElementById('c' + data.id);
+			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 		} else if (data.event == 'err') alert('Error: ' + data.body);
 	};
 	var deletebutton = document.getElementById('delete');
@@ -315,5 +396,16 @@
 				});
 			}
 		};
+	}
+	function upvoteComment() {
+		this.classList.toggle('clkd');
+		socket.send(JSON.stringify({
+			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+			id: parseInt(this.parentNode.parentNode.id.substr(1))
+		}));
+	}
+	var comments = document.getElementsByClassName('comment');
+	for (var i = 0; i &lt; comments.length; i++) {
+		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
 	}
 </script>
