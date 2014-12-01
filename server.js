@@ -615,7 +615,7 @@ http.createServer(function(req, res) {
 							respondPage('Login Success', req, res, function() {
 								res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
 								var referer = url.parse(post.referer);
-								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1) res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
 								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', idToken, {
