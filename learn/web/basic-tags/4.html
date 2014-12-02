@@ -3,10 +3,10 @@ Basic Tags
 	<div id="text">
 		<div id="text-inner">
 			<h1>Basic Tags</h1>
-			<h2>Comments</h2>
-			<p>As you saw in the last lesson, a comment is used to comment (no joke!) in the code. Why would we need to comment on the code? Although comments don't affect the browser and what the end user will see, it helps you, the developer, stay organized. Unlike most HTML tags, comments start with <code>&lt;!--</code> and end with <code>--></code>. You can put anything in a comment.</p>
-			<code class="blk">&lt;!-- This is what a comment looks like. It doesn't functionally do anything. --></code>
-			<p>To move on, write a comment containing anything you want!</p>
+			<h2>Quiz</h2>
+			<p>It's time for a quiz! Let's test your knowledge on basic tags.</p>
+			<h2>How to answer</h2>
+			<p>Next to "answer", put <i>just the letter</i> of the answer you want to pick. Answer each one and then press "submit." Only once you have answered <i>all</i> the questions correctly will you be able to move on.</i></p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
@@ -18,12 +18,33 @@ Basic Tags
 		</div>
 		<div id="cntrls"><a href="../2/" class="lft">Back</a><a href="../4/" class="rit">Next</a></div>
 	</div>
-	<textarea id="html">&lt;!DOCTYPE html>
-&lt;html>
-	&lt;head>&lt;/head>
-	&lt;body>&lt;/body>
-&lt;/html></textarea>
-	<iframe id="output"></iframe>
+	<iframe id="output">
+	<textarea id="html">&lt;!--
+	
+	1: What are the tags for a paragraph?
+		a) &lt;p>&lt;/p>
+		b) &lt;paragraph>&lt;/paragraph>
+		c) &lt;p1>&lt;/p1>
+		d) all of the above
+		Answer:	
+			
+	2: What are the tags for a header?
+		a) &lt;h1>&lt;/h1>
+		b) &lt;h3>&lt;/h3>
+		c) &lt;h5>&lt;/h5>
+		d) all of the above
+		Answer:
+		
+	3: What is the formatting of a comment?
+		a) &lt;c>comment goes here&lt;/c>
+		b) &lt;comment>comment goes here&lt;/comment>
+		c) &lt;!--comment goes here-->
+		d) &lt;--comment goes here-->
+		Answer:
+		
+	-->
+	</textarea>
+	</iframe>
 </div>
 <script>
 	var footerOff = true, noPageOverflow = 520;
@@ -46,4 +67,3 @@ Basic Tags
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
 	}
-</script>
