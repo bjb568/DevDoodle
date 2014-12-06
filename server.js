@@ -2040,7 +2040,7 @@ wss.on('connection', function(tws) {
 						dbcs.chatusers.update({
 							name: tws.user.name,
 							room: tws.room
-						}, {$set: {state: message.state}});
+						}, {$set: {state: message.state}}, {upsert: 1});
 						var sendto = [];
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
@@ -2049,7 +2049,7 @@ wss.on('connection', function(tws) {
 							sendto[i].send(JSON.stringify({
 								event: 'statechange',
 								state: message.state,
-								user: tws.user.name
+								name: tws.user.name
 							}));
 						}
 					}

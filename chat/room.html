@@ -351,8 +351,21 @@ $textarea
 			var li = document.getElementById('user-' + data.name);
 			if (li) li.parentNode.removeChild(li);
 		} else if (data.event == 'statechange') {
-			var li = document.getElementById('user-' + data.user);
-			if (!li) return;
+			var li = document.getElementById('user-' + data.name);
+			if (!li) {
+				if (users.indexOf(data.name) != -1) users.splice(users.indexOf(data.name), 1);
+				if (data.name != username) users.push(data.name);
+				li = document.createElement('li');
+				if (data.state == 0) li.classList.add('inactive');
+				if (data.state == 2) li.classList.add('writing');
+				li.id = 'user-' + data.name;
+				var a = document.createElement('a');
+				a.appendChild(document.createTextNode(data.name));
+				a.href = '/user/' + data.name;
+				a.target = '_blank';
+				li.appendChild(a);
+				document.getElementById('users').appendChild(li);
+			}
 			if (data.state == 0) li.classList.add('inactive');
 			else li.classList.remove('inactive');
 			if (data.state == 2) li.classList.add('writing');
