@@ -1691,7 +1691,7 @@ wss.on('connection', function(tws) {
 				]
 			}).count(function(err, count) {
 				if (err) throw err;
-				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || Infinity;
+				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || 0;
 				dbcs.chat.find({
 					room: tws.room,
 					$or: [
@@ -1700,12 +1700,13 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
-					var skip = Math.max(0, after > 92 ? count - after - 18 : count - 92);
+					var ts = after > 92 && i,
+						skip = Math.max(0, ts ? count - after - 18 : count - 92);
 					try {
 						tws.send(JSON.stringify({
 							event: 'info-skipped',
 							body: skip,
-							ts: after > 92
+							ts: ts
 						}));
 					} catch(e) {}
 					dbcs.chat.find({
@@ -1714,7 +1715,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).skip(skip).sort({_id: 1}).limit(after > 92 ? 192 : 92).each(function(err, doc) {
+					}).sort({_id: -1}).skip(ts ? Math.max(0, count - i - 96) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
@@ -2075,8 +2076,7 @@ wss.on('connection', function(tws) {
 							body: doc.body,
 							user: doc.user,
 							time: doc.time,
-							stars: doc.stars,
-							before: true
+							stars: doc.stars
 						}));
 						dbcs.chatstars.findOne({
 							pid: doc._id,
