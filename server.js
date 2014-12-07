@@ -699,7 +699,7 @@ http.createServer(function(req, res) {
 			if (!dispUser) return errorPage[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
-				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
