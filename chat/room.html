@@ -141,13 +141,14 @@ $textarea
 		}
 		if (data.event == 'init' || data.event == 'add') {
 			source[data.id] = data.body;
+			if (document.getElementById(data.id)) return;
 			if (users.indexOf(data.user) != -1) users.splice(users.indexOf(data.user), 1);
 			if (data.name != username) users.push(data.user);
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
 			div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
-			if (data.event == 'init') {
+			if (data.event == 'init' &amp;&amp; !document.getElementById('ts').hidden) {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
 				while (i--) imgs[i].onload = function() {
@@ -187,12 +188,15 @@ $textarea
 			} else tCtrls.children[data.deleted ? 3 : 4].hidden = true;
 			if (data.deleted) tCtrls.children[0].hidden = true;
 			if (username) div.appendChild(tCtrls);
-			if (data.before) {
-				cont.insertBefore(div, cont.firstChild);
-				cont.scrollTop += div.offsetHeight + 3;
+			if (data.event == 'init') {
+				var after = 0,
+					e;
+				while (e = cont.children[after] &amp;&amp; e.id &lt; data.id) after++;
+				cont.insertBefore(div, cont.children[after]);
+				if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
 			if (data.event == 'add') audio.play();
-			if (onBottom) cont.scrollTop = cont.scrollHeight;
+			if (onBottom &amp;&amp; !document.getElementById(hash)) cont.scrollTop = cont.scrollHeight;
 			cont.onscroll();
 			if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
@@ -351,8 +355,21 @@ $textarea
 			var li = document.getElementById('user-' + data.name);
 			if (li) li.parentNode.removeChild(li);
 		} else if (data.event == 'statechange') {
-			var li = document.getElementById('user-' + data.user);
-			if (!li) return;
+			var li = document.getElementById('user-' + data.name);
+			if (!li) {
+				if (users.indexOf(data.name) != -1) users.splice(users.indexOf(data.name), 1);
+				if (data.name != username) users.push(data.name);
+				li = document.createElement('li');
+				if (data.state == 0) li.classList.add('inactive');
+				if (data.state == 2) li.classList.add('writing');
+				li.id = 'user-' + data.name;
+				var a = document.createElement('a');
+				a.appendChild(document.createTextNode(data.name));
+				a.href = '/user/' + data.name;
+				a.target = '_blank';
+				li.appendChild(a);
+				document.getElementById('users').appendChild(li);
+			}
 			if (data.state == 0) li.classList.add('inactive');
 			else li.classList.remove('inactive');
 			if (data.state == 2) li.classList.add('writing');
@@ -364,11 +381,11 @@ $textarea
 				document.getElementById('ts').hidden = false;
 			} else {
 				setInterval(function() {
-					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 180) {
+					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 72) {
 						skipped = Math.max(0, skipped - 1);
 						socket.send(JSON.stringify({event: 'req', skip: skipped}));
 					}
-				}, 20);
+				}, 10);
 				setInterval(function() {
 					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 720) {
 						skipped = Math.max(0, skipped - 1);

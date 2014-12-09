@@ -475,7 +475,7 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
-		res.write('<input type="hidden" name="referer" value="' + html(post.referer) + '" />\n');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
 		res.write('<style>\n');
@@ -615,7 +615,7 @@ http.createServer(function(req, res) {
 							respondPage('Login Success', req, res, function() {
 								res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
 								var referer = url.parse(post.referer);
-								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1) res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
 								respondPageFooter(res);
 							}, {
 								'Set-Cookie': cookie.serialize('id', idToken, {
@@ -699,7 +699,7 @@ http.createServer(function(req, res) {
 			if (!dispUser) return errorPage[404](req, res);
 			respondPage(dispUser.name, req, res, function(user) {
 				var me = user ? user.name == dispUser.name : false;
-				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? '<small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
@@ -1139,14 +1139,14 @@ http.createServer(function(req, res) {
 										if (err) throw err;
 										res.write(data.toString().replaceAll(
 											['$id', '$title', '$code', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('dev/html.html', function(err, data) {
 										if (err) throw err;
 										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', op.name, new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
@@ -1691,7 +1691,7 @@ wss.on('connection', function(tws) {
 				]
 			}).count(function(err, count) {
 				if (err) throw err;
-				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || Infinity;
+				var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || 0;
 				dbcs.chat.find({
 					room: tws.room,
 					$or: [
@@ -1700,12 +1700,13 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
-					var skip = Math.max(0, after > 92 ? count - after - 18 : count - 92);
+					var ts = after > 92 && i,
+						skip = Math.max(0, ts ? count - after - 18 : count - 92);
 					try {
 						tws.send(JSON.stringify({
 							event: 'info-skipped',
 							body: skip,
-							ts: after > 92
+							ts: ts
 						}));
 					} catch(e) {}
 					dbcs.chat.find({
@@ -1714,7 +1715,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).skip(skip).sort({_id: 1}).limit(after > 92 ? 192 : 92).each(function(err, doc) {
+					}).sort({_id: -1}).skip(ts ? Math.max(0, count - i - 96) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
@@ -2040,7 +2041,7 @@ wss.on('connection', function(tws) {
 						dbcs.chatusers.update({
 							name: tws.user.name,
 							room: tws.room
-						}, {$set: {state: message.state}});
+						}, {$set: {state: message.state}}, {upsert: 1});
 						var sendto = [];
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
@@ -2049,7 +2050,7 @@ wss.on('connection', function(tws) {
 							sendto[i].send(JSON.stringify({
 								event: 'statechange',
 								state: message.state,
-								user: tws.user.name
+								name: tws.user.name
 							}));
 						}
 					}
@@ -2075,8 +2076,7 @@ wss.on('connection', function(tws) {
 							body: doc.body,
 							user: doc.user,
 							time: doc.time,
-							stars: doc.stars,
-							before: true
+							stars: doc.stars
 						}));
 						dbcs.chatstars.findOne({
 							pid: doc._id,
@@ -2234,10 +2234,12 @@ wss.on('connection', function(tws) {
 					if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 				}
 				for (var i in sendto) {
-					sendto[i].send(JSON.stringify({
-						event: 'deluser',
-						name: tws.user.name
-					}));
+					try {
+						sendto[i].send(JSON.stringify({
+							event: 'deluser',
+							name: tws.user.name
+						}));
+					} catch(e) {}
 				}
 				dbcs.chatusers.remove({
 					name: tws.user.name,
