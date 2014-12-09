@@ -199,17 +199,16 @@
 		save = document.getElementById('save'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
-	code.onkeypress = function(e) {
+	code.addEventListener('keypress', function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
-			var tabs = this.value.substr(0,oldSelectionStart).split('\n')[this.value.substr(0,oldSelectionStart).split('\n').length-1].split('\t').length-(('{([:'.indexOf(this.value[oldSelectionStart-1])+1)?0:1);
-			this.value = this.value.substr(0,this.selectionStart)+'\n'+'\t'.repeat(tabs)+this.value.substr(this.selectionStart);
+			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - (('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1) ? 0 : 1);
+			this.value = this.value.substr(0, this.selectionStart)+'\n'+'\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
 			e.preventDefault();
 		}
-		setTimeout(run, 0);
-	};
+	});
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 	}
@@ -218,8 +217,8 @@
 	}
 	var oldValue = code.innerHTML;
 	function handleCode() {
-		if (this.value !== oldValue) {
-			oldValue = this.value;
+		if (code.value !== oldValue) {
+			oldValue = code.value;
 			onbeforeunload = function() {
 				return 'You have unsaved code.';
 			};
@@ -227,12 +226,18 @@
 			run();
 		}
 	}
-	code.addEventListener('keyup', handleCode);
-	code.addEventListener('keydown', handleCode);
+	var timeout = setTimeout(handleCode, 1000);
+	code.addEventListener('keyup', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
+	});
+	code.addEventListener('keydown', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
+	});
 	code.addEventListener('keypress', function() {
-		setTimeout(function(t) {
-			handleCode.call(t);
-		}, 0, this);
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
 	});
 	run();
 	save.onclick = function() {
