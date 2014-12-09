@@ -305,31 +305,33 @@
 	document.getElementById('edit-title').onkeypress = function(e) {
 		if (e.keyCode == 13) this.onblur.call(this);
 	};
-	up.onclick = function() {
-		request('/api/program/vote', function(res) {
-			if (res.indexOf('Error') == 0) alert(res);
-			else if (res == 'Success') {
-				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
-				up.classList.toggle('clkd');
-				dn.classList.remove('clkd');
-			} else alert('Unknown error. Response was: ' + res);
-		}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
-	};
-	dn.onclick = function() {
-		request('/api/program/vote', function(res) {
-			if (res.indexOf('Error') == 0) alert(res);
-			else if (res == 'Success') {
-				document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
-				dn.classList.toggle('clkd');
-				up.classList.remove('clkd');
-			} else alert('Unknown error. Response was: ' + res);
-		}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
-	};
-	document.getElementById('addcomment').onclick = function() {
-		setTimeout(function() {
-			document.getElementById('commentta').focus();
-		}, 0);
-	};
+	if (document.getElementById('meta')) {
+		up.onclick = function() {
+			request('/api/program/vote', function(res) {
+				if (res.indexOf('Error') == 0) alert(res);
+				else if (res == 'Success') {
+					document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
+					up.classList.toggle('clkd');
+					dn.classList.remove('clkd');
+				} else alert('Unknown error. Response was: ' + res);
+			}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
+		};
+		dn.onclick = function() {
+			request('/api/program/vote', function(res) {
+				if (res.indexOf('Error') == 0) alert(res);
+				else if (res == 'Success') {
+					document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+					dn.classList.toggle('clkd');
+					up.classList.remove('clkd');
+				} else alert('Unknown error. Response was: ' + res);
+			}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
+		};
+		document.getElementById('addcomment').onclick = function() {
+			setTimeout(function() {
+				document.getElementById('commentta').focus();
+			}, 0);
+		};
+	}
 	var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
