@@ -282,6 +282,44 @@ function agot(d) {
 	return time;
 }
 
+function textareaHandler(e) {
+	if (e.keyCode === 9) {
+		if (this.selectionStart == this.selectionEnd) {
+			if (e.shiftKey) {
+				var cS = this.selectionEnd - 1;
+				while (this.value[cS] && this.value[cS] != '\n') {
+					if (this.value[cS] == '\t') {
+						this.value = this.value.substr(0, cS) + this.value.substr(++cS);
+						break;
+					} else cS--;
+				}
+			} else {
+				var oS = this.selectionEnd;
+				this.value = this.value.substr(0, oS) + '\t' + this.value.substr(oS);
+				this.selectionStart = this.selectionEnd = ++oS;
+			}
+		} else {
+			var lines = this.value.split('\n'),
+				i = 0,
+				start = 0;
+			while ((i += lines[start].length) < this.selectionStart - start) start++;
+			var end = start;
+			i -= lines[start].length;
+			while ((i += lines[end].length) < this.selectionEnd - end) end++;
+			i = --start;
+			while (++i <= end) {
+				if (e.shiftKey) lines[i][0] != '\t' || (lines[i] = lines[i].substr(1));
+				else lines[i] = '\t' + lines[i];
+			}
+			this.value = lines.join('\n');
+			var nS = lines.slice(0, ++start).join('\n').length;
+			this.selectionStart = (nS += nS ? 1 : 0);
+			this.selectionEnd = nS + lines.slice(start, ++end).join('\n').length;
+		}
+		e.preventDefault();
+	}
+}
+
 addEventListener('DOMContentLoaded', function() {
 	mainContentEl = mainContentEl || document.getElementById('content');
 	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
@@ -297,45 +335,7 @@ addEventListener('DOMContentLoaded', function() {
 	}
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
-	while (i--) {
-		e[i].addEventListener('keydown', function(e) {
-			if (e.keyCode === 9) {
-				if (this.selectionStart == this.selectionEnd) {
-					if (e.shiftKey) {
-						var cS = this.selectionEnd - 1;
-						while (this.value[cS] && this.value[cS] != '\n') {
-							if (this.value[cS] == '\t') {
-								this.value = this.value.substr(0, cS) + this.value.substr(++cS);
-								break;
-							} else cS--;
-						}
-					} else {
-						var oS = this.selectionEnd;
-						this.value = this.value.substr(0, oS) + '\t' + this.value.substr(oS);
-						this.selectionStart = this.selectionEnd = ++oS;
-					}
-				} else {
-					var lines = this.value.split('\n'),
-						i = 0,
-						start = 0;
-					while ((i += lines[start].length) < this.selectionStart - start) start++;
-					var end = start;
-					i -= lines[start].length;
-					while ((i += lines[end].length) < this.selectionEnd - end) end++;
-					i = --start;
-					while (++i <= end) {
-						if (e.shiftKey) lines[i][0] != '\t' || (lines[i] = lines[i].substr(1));
-						else lines[i] = '\t' + lines[i];
-					}
-					this.value = lines.join('\n');
-					var nS = lines.slice(0, ++start).join('\n').length;
-					this.selectionStart = (nS += nS ? 1 : 0);
-					this.selectionEnd = nS + lines.slice(start, ++end).join('\n').length;
-				}
-				e.preventDefault();
-			}
-		});
-	}
+	while (i--) e[i].addEventListener('keydown', textareaHandler);
 	setInterval(function() {
 		var times = document.getElementsByTagName('time');
 		for (var i = 0; i < times.length; i++) {
