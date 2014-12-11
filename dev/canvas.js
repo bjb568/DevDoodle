@@ -1,11 +1,11 @@
 'use strict';
 
-var canvas = document.getElementById("canvas"),
-	ctx = canvas.getContext("2d"),
+var canvas = document.getElementById('canvas'),
+	ctx = canvas.getContext('2d'),
 	textarea = document.createElement('textarea');
 document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
-textarea.style.opacity = .001;
+textarea.style.opacity = 0.001;
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
@@ -14,7 +14,7 @@ function handleTA() {
 			textarea.value = '';
 		}
 	}
-};
+}
 addEventListener("keydown", function(e) {
 	keyCodes[e.keyCode] = true;
 	handleTA();
@@ -55,145 +55,133 @@ function rand(x,y) {
 		x = 0;
 	}
 	return random()*(y-x)+x;
-};
+}
 var TAU = 2 * PI;
 Object.getOwnPropertyNames(Math).forEach(function(element,index) {
 	window[element] = Math[element];
 });
 function rgb(r,g,b,a) {
-	return 'rgba('+round(r)+','+round(g)+','+round(b)+','+(a===undefined?1:a)+')';
-};
+	return 'rgba(' + round(r) + ',' + round(g) + ',' + round(b) + ',' + (a === undefined ? 1 : a) + ')';
+}
 function hsl(h,s,l,a) {
-	return 'hsla('+round(h)+','+round(s)+'%,'+round(l)+'%,'+(a===undefined?1:a)+')';
-};
+	return 'hsla(' + round(h) + ',' + round(s) + '%,' + round(l) + '%,' + (a === undefined ? 1 : a) + ')';
+}
 function fill(color,g,b) {
 	ctx.fillStyle = trans;
 	if (color >= 0) {
-		if (b >= 0) {
-			ctx.fillStyle = rgb(color,g,b)
-		} else {
-			ctx.fillStyle = rgb(color,color,color);
-		}
-	} else {
-		ctx.fillStyle = color;
-	}
-};
+		if (b >= 0) ctx.fillStyle = rgb(color, g, b);
+		else ctx.fillStyle = rgb(color, color, color);
+	} else ctx.fillStyle = color;
+}
 function stroke(color,g,b) {
 	ctx.strokeStyle = trans;
 	if (color >= 0) {
-		if (b >= 0) {
-			ctx.strokeStyle = rgb(color,g,b)
-		} else {
-			ctx.strokeStyle = rgb(color,color,color);
-		}
-	} else {
-		ctx.strokeStyle = color;
-	}
-};
+		if (b >= 0) ctx.strokeStyle = rgb(color, g, b)
+		else ctx.strokeStyle = rgb(color, color, color);
+	} else ctx.strokeStyle = color;
+}
 function strokeWidth(w) {
-	ctx.lineWidth = w === 0 ? .0001 : w;
-};
+	ctx.lineWidth = Math.max(0.0001, w);
+}
 function line(x1,y1,x2,y2) {
 	ctx.lineCap = 'round';
 	ctx.beginPath();
 	ctx.moveTo(x1, y1);
 	ctx.lineTo(x2, y2);
 	ctx.stroke();
-};
+}
 function rect(x,y,w,h) {
 	ctx.fillRect(x,y,w,h);
 	ctx.strokeRect(x,y,w,h);
-};
+}
 function point(x,y) {
 	rect(x,y,1,1);
-};
+}
 function ellipse(cx, cy, rx, ry) {
-	if (!cx && cx !== 0) {
-		throw 'Invalid or missing argument[0] for ellipse';
-	}
-	if (!cy && cy !== 0) {
-		throw 'Invalid or missing argument[1] for ellipse'
-	}
-	if (!(rx >= 0)) {
-		throw 'Invalid or missing argument[2] for ellipse';
-	}
-	if (!(ry >= 0)) {
-		throw 'Invalid or missing argument[3] for ellipse'
-	}
+	if (!cx && cx !== 0) throw 'Invalid or missing argument[0] for ellipse';
+	if (!cy && cy !== 0) throw 'Invalid or missing argument[1] for ellipse';
+	if (!(rx >= 0)) throw 'Invalid or missing argument[2] for ellipse';
+	if (!(ry >= 0)) throw 'Invalid or missing argument[3] for ellipse';
 	if (rx < 1.5 && ry < 1.5) {
-		strokeWidth((rx+ry) / 2);
+		var beforeWidth = ctx.lineWidth;
+		ctx.lineWidth = (rx + ry) / 2;
 		point(cx,cy);
+		ctx.lineWidth = beforeWidth;
 	} else if (rx < 1.5 || ry < 1.5) {
-		line(cx-(abs(rx)>2?rx:0),cy-(abs(ry)>2?ry:0),cx+(abs(rx)>2?rx:0),cy+(abs(ry)>2?ry:0));
+		rx = abs(rx) > 2 ? rx : 0;
+		ry = abs(ry) > 2 ? ry : 0;
+		line(cx - rx, cy - ry, cx + rx, cy + ry);
 	} else {
 		ctx.save();
 		ctx.beginPath();
-		ctx.translate(cx-rx, cy-ry);
+		ctx.translate(cx - rx, cy - ry);
 		ctx.scale(rx, ry);
 		ctx.arc(1, 1, 1, 0, TAU, false);
 		ctx.restore();
 		ctx.fill();
 		ctx.stroke();
 	}
-};
-function textAlign(h,v) {
+}
+function textAlign(h, v) {
 	if (arguments.length !== 2) throw 'textAlign expects 2 arguments';
 	ctx.textAlign = h.toLowerCase();
 	ctx.textBaseline = v.toLowerCase();
-};
+}
 function font(f) {
 	ctx.font = f;
-};
-function text(x,y,t) {
+}
+function text(x, y, t) {
 	strokeWidth(ctx.lineWidth * 2);
 	ctx.strokeText(t,x,y);
 	ctx.fillText(t,x,y);
 	strokeWidth(ctx.lineWidth / 2);
-};
+}
 function bg() {
 	var oldFill = ctx.fillStyle;
 	var oldStroke = ctx.strokeStyle;
-	fill.apply(this,arguments);
-	ctx.fillRect(0,0,32766,32766);
+	fill.apply(this, arguments);
+	ctx.fillRect(0, 0, width, height);
 	fill(oldFill);
 	stroke(oldStroke);
-};
-function size(x,y) {
+}
+function size(x, y) {
 	canvas.width = width = x;
 	canvas.height = height = y;
 	bg('#000');
-};
+}
 function resetLog() {
 	var node = document.getElementById('console'), child;
 	while (child = node.firstChild) node.removeChild(child);
-};
+}
 function print(input) {
 	var pre = document.createElement('pre');
 	pre.innerHTML = input;
 	document.getElementById('console').appendChild(pre);
-};
+}
 function reset(a) {
 	fill(255);
-	stroke(255,0,0);
+	stroke(255, 0, 0);
 	strokeWidth(2);
 	if (!a) {
-		size(400,400);
+		size(400, 400);
 		bg(0);
 		resetLog();
 		frameRate = 30;
 		draw = function() {};
 	}
-};
+}
 function error(e) {
-	for (var i in e) console.log(i, e[i]);
 	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + ((navigator.userAgent.indexOf('Safari') != -1 && e.line == 1 && e instanceof SyntaxError ? '' : (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ')) + e) + '</pre>');
-};
+}
 var frameRate = 30;
 var draw = function() {};
 (function drawLoop() {
 	reset(1);
-	try { draw() }
-	catch(e) { error(e) }
+	try {
+		draw();
+	} catch(e) {
+		error(e);
+	}
 	key = undefined;
 	setTimeout(drawLoop, 1000 / frameRate);
 })();
