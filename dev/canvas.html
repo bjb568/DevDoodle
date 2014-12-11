@@ -1,7 +1,7 @@
 <section id="main">
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
-		<textarea id="code" placeholder="//code" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" autofocus="">$code</textarea>
+		<textarea id="code">$code</textarea>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
@@ -203,11 +203,12 @@
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - (('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1) ? 0 : 1);
-			this.value = this.value.substr(0, this.selectionStart)+'\n'+'\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
 			e.preventDefault();
 		}
+		run();
 	});
 	function createCode() {
 		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
@@ -217,7 +218,7 @@
 	}
 	var oldValue = code.innerHTML;
 	function handleCode() {
-		if (code.value !== oldValue) {
+		if (code.value != oldValue) {
 			oldValue = code.value;
 			onbeforeunload = function() {
 				return 'You have unsaved code.';
@@ -336,83 +337,83 @@
 				document.getElementById('commentta').focus();
 			}, 0);
 		};
-	}
-	var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
-	document.getElementById('comment').onsubmit = function(e) {
-		socket.send(JSON.stringify({
-			event: 'post',
-			body: document.getElementById('commentta').value
-		}));
-		document.getElementById('commentta').value = '';
-		document.getElementById('reset').onclick();
-		e.preventDefault();
-	};
-	document.getElementById('reset').onclick = function() {
-		location.hash = '';
-		history.replaceState('', document.title, window.location.pathname);
-		document.body.scrollTop = innerHeight;
-	};
-	socket.onmessage = function(e) {
-		console.log(e.data);
-		try {
-			var data = JSON.parse(e.data);
-		} catch(err) {
-			console.log(err);
-			return alert('JSON Error. Response was: ' + e.data);
-		}
-		if (data.event == 'add') {
-			var div = document.createElement('div');
-			div.classList.add('comment');
-			div.innerHTML = markdown(data.body);
-			if ($rep >= 50) {
-				div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
-				div.firstChild.firstChild.onclick = upvoteComment;
-				var score = document.createElement('span');
-				score.classList.add('score');
-				score.appendChild(document.createTextNode(score.dataset.score = 0));
-				div.insertBefore(score, div.firstChild);
-			}
-			var sig = document.createElement('span');
-			sig.classList.add('c-sig');
-			sig.appendChild(document.createTextNode('-'));
-			var a = document.createElement('a');
-			a.href = '/user/' + data.user;
-			a.appendChild(document.createTextNode(data.user))
-			sig.appendChild(a);
-			sig.appendChild(document.createTextNode(', '));
-			var permalink = document.createElement('a');
-			if (!data.time) data.time = new Date().getTime();
-			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + (div.id = 'c' + data.id);
-			sig.appendChild(permalink);
-			div.appendChild(sig);
-			document.getElementById('comments').appendChild(div);
-		} else if (data.event == 'scorechange') {
-			var c = document.getElementById('c' + data.id);
-			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-		} else if (data.event == 'err') alert('Error: ' + data.body);
-	};
-	var deletebutton = document.getElementById('delete');
-	if (deletebutton) {
-		deletebutton.onclick = function() {
-			if (confirm('Do you want to delete this program?')) {
-				request('/api/program/delete', function(res) {
-					if (res.indexOf('Error') == 0) alert(res);
-					else if (res == 'Success') location.reload();
-					else alert('Unknown error. Response was: ' + res);
-				});
-			}
+		var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
+		document.getElementById('comment').onsubmit = function(e) {
+			socket.send(JSON.stringify({
+				event: 'post',
+				body: document.getElementById('commentta').value
+			}));
+			document.getElementById('commentta').value = '';
+			document.getElementById('reset').onclick();
+			e.preventDefault();
 		};
-	}
-	function upvoteComment() {
-		this.classList.toggle('clkd');
-		socket.send(JSON.stringify({
-			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
-			id: parseInt(this.parentNode.parentNode.id.substr(1))
-		}));
-	}
-	var comments = document.getElementsByClassName('comment');
-	for (var i = 0; i &lt; comments.length; i++) {
-		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+		document.getElementById('reset').onclick = function() {
+			location.hash = '';
+			history.replaceState('', document.title, window.location.pathname);
+			document.body.scrollTop = innerHeight;
+		};
+		socket.onmessage = function(e) {
+			console.log(e.data);
+			try {
+				var data = JSON.parse(e.data);
+			} catch(err) {
+				console.log(err);
+				return alert('JSON Error. Response was: ' + e.data);
+			}
+			if (data.event == 'add') {
+				var div = document.createElement('div');
+				div.classList.add('comment');
+				div.innerHTML = markdown(data.body);
+				if ($rep >= 50) {
+					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.firstChild.firstChild.onclick = upvoteComment;
+					var score = document.createElement('span');
+					score.classList.add('score');
+					score.appendChild(document.createTextNode(score.dataset.score = 0));
+					div.insertBefore(score, div.firstChild);
+				}
+				var sig = document.createElement('span');
+				sig.classList.add('c-sig');
+				sig.appendChild(document.createTextNode('-'));
+				var a = document.createElement('a');
+				a.href = '/user/' + data.user;
+				a.appendChild(document.createTextNode(data.user))
+				sig.appendChild(a);
+				sig.appendChild(document.createTextNode(', '));
+				var permalink = document.createElement('a');
+				if (!data.time) data.time = new Date().getTime();
+				permalink.appendChild(agot(data.time));
+				permalink.href = '#' + (div.id = 'c' + data.id);
+				sig.appendChild(permalink);
+				div.appendChild(sig);
+				document.getElementById('comments').appendChild(div);
+			} else if (data.event == 'scorechange') {
+				var c = document.getElementById('c' + data.id);
+				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
+			} else if (data.event == 'err') alert('Error: ' + data.body);
+		};
+		var deletebutton = document.getElementById('delete');
+		if (deletebutton) {
+			deletebutton.onclick = function() {
+				if (confirm('Do you want to delete this program?')) {
+					request('/api/program/delete', function(res) {
+						if (res.indexOf('Error') == 0) alert(res);
+						else if (res == 'Success') location.reload();
+						else alert('Unknown error. Response was: ' + res);
+					});
+				}
+			};
+		}
+		function upvoteComment() {
+			this.classList.toggle('clkd');
+			socket.send(JSON.stringify({
+				event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+				id: parseInt(this.parentNode.parentNode.id.substr(1))
+			}));
+		}
+		var comments = document.getElementsByClassName('comment');
+		for (var i = 0; i &lt; comments.length; i++) {
+			comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+		}
 	}
 </script>

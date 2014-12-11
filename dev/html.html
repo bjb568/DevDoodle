@@ -223,7 +223,7 @@
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - ((false/*Parse!*/) ? 0 : 1);
-			this.value = this.value.substr(0, this.selectionStart)+'\n'+'\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
 			e.preventDefault();
@@ -234,7 +234,7 @@
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - (('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1) ? 0 : 1);
-			this.value = this.value.substr(0, this.selectionStart)+'\n'+'\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
 			e.preventDefault();
@@ -341,83 +341,83 @@
 				document.getElementById('commentta').focus();
 			}, 0);
 		};
-	}
-	var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
-	document.getElementById('comment').onsubmit = function(e) {
-		socket.send(JSON.stringify({
-			event: 'post',
-			body: document.getElementById('commentta').value
-		}));
-		document.getElementById('commentta').value = '';
-		document.getElementById('reset').onclick();
-		e.preventDefault();
-	};
-	document.getElementById('reset').onclick = function() {
-		location.hash = '';
-		history.replaceState('', document.title, window.location.pathname);
-		document.body.scrollTop = innerHeight;
-	};
-	socket.onmessage = function(e) {
-		console.log(e.data);
-		try {
-			var data = JSON.parse(e.data);
-		} catch(err) {
-			console.log(err);
-			return alert('JSON Error. Response was: ' + e.data);
-		}
-		if (data.event == 'add') {
-			var div = document.createElement('div');
-			div.classList.add('comment');
-			div.innerHTML = markdown(data.body);
-			if ($rep >= 50) {
-				div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
-				div.firstChild.firstChild.onclick = upvoteComment;
-				var score = document.createElement('span');
-				score.classList.add('score');
-				score.appendChild(document.createTextNode(score.dataset.score = 0));
-				div.insertBefore(score, div.firstChild);
-			}
-			var sig = document.createElement('span');
-			sig.classList.add('c-sig');
-			sig.appendChild(document.createTextNode('-'));
-			var a = document.createElement('a');
-			a.href = '/user/' + data.user;
-			a.appendChild(document.createTextNode(data.user))
-			sig.appendChild(a);
-			sig.appendChild(document.createTextNode(', '));
-			var permalink = document.createElement('a');
-			if (!data.time) data.time = new Date().getTime();
-			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + (div.id = 'c' + data.id);
-			sig.appendChild(permalink);
-			div.appendChild(sig);
-			document.getElementById('comments').appendChild(div);
-		} else if (data.event == 'scorechange') {
-			var c = document.getElementById('c' + data.id);
-			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-		} else if (data.event == 'err') alert('Error: ' + data.body);
-	};
-	var deletebutton = document.getElementById('delete');
-	if (deletebutton) {
-		deletebutton.onclick = function() {
-			if (confirm('Do you want to delete this program?')) {
-				request('/api/program/delete', function(res) {
-					if (res.indexOf('Error') == 0) alert(res);
-					else if (res == 'Success') location.reload();
-					else alert('Unknown error. Response was: ' + res);
-				});
-			}
+		var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
+		document.getElementById('comment').onsubmit = function(e) {
+			socket.send(JSON.stringify({
+				event: 'post',
+				body: document.getElementById('commentta').value
+			}));
+			document.getElementById('commentta').value = '';
+			document.getElementById('reset').onclick();
+			e.preventDefault();
 		};
-	}
-	function upvoteComment() {
-		this.classList.toggle('clkd');
-		socket.send(JSON.stringify({
-			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
-			id: parseInt(this.parentNode.parentNode.id.substr(1))
-		}));
-	}
-	var comments = document.getElementsByClassName('comment');
-	for (var i = 0; i &lt; comments.length; i++) {
-		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+		document.getElementById('reset').onclick = function() {
+			location.hash = '';
+			history.replaceState('', document.title, window.location.pathname);
+			document.body.scrollTop = innerHeight;
+		};
+		socket.onmessage = function(e) {
+			console.log(e.data);
+			try {
+				var data = JSON.parse(e.data);
+			} catch(err) {
+				console.log(err);
+				return alert('JSON Error. Response was: ' + e.data);
+			}
+			if (data.event == 'add') {
+				var div = document.createElement('div');
+				div.classList.add('comment');
+				div.innerHTML = markdown(data.body);
+				if ($rep >= 50) {
+					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.firstChild.firstChild.onclick = upvoteComment;
+					var score = document.createElement('span');
+					score.classList.add('score');
+					score.appendChild(document.createTextNode(score.dataset.score = 0));
+					div.insertBefore(score, div.firstChild);
+				}
+				var sig = document.createElement('span');
+				sig.classList.add('c-sig');
+				sig.appendChild(document.createTextNode('-'));
+				var a = document.createElement('a');
+				a.href = '/user/' + data.user;
+				a.appendChild(document.createTextNode(data.user))
+				sig.appendChild(a);
+				sig.appendChild(document.createTextNode(', '));
+				var permalink = document.createElement('a');
+				if (!data.time) data.time = new Date().getTime();
+				permalink.appendChild(agot(data.time));
+				permalink.href = '#' + (div.id = 'c' + data.id);
+				sig.appendChild(permalink);
+				div.appendChild(sig);
+				document.getElementById('comments').appendChild(div);
+			} else if (data.event == 'scorechange') {
+				var c = document.getElementById('c' + data.id);
+				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
+			} else if (data.event == 'err') alert('Error: ' + data.body);
+		};
+		var deletebutton = document.getElementById('delete');
+		if (deletebutton) {
+			deletebutton.onclick = function() {
+				if (confirm('Do you want to delete this program?')) {
+					request('/api/program/delete', function(res) {
+						if (res.indexOf('Error') == 0) alert(res);
+						else if (res == 'Success') location.reload();
+						else alert('Unknown error. Response was: ' + res);
+					});
+				}
+			};
+		}
+		function upvoteComment() {
+			this.classList.toggle('clkd');
+			socket.send(JSON.stringify({
+				event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+				id: parseInt(this.parentNode.parentNode.id.substr(1))
+			}));
+		}
+		var comments = document.getElementsByClassName('comment');
+		for (var i = 0; i &lt; comments.length; i++) {
+			comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+		}
 	}
 </script>
