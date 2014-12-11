@@ -195,8 +195,10 @@ $textarea
 				cont.insertBefore(div, cont.children[after]);
 				if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
-			if (data.event == 'add') audio.play();
-			if (onBottom &amp;&amp; !document.getElementById(hash)) cont.scrollTop = cont.scrollHeight;
+			if (data.event == 'add') {
+				audio.play();
+				if (onBottom) cont.scrollTop = cont.scrollHeight;
+			}
 			cont.onscroll();
 			if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
