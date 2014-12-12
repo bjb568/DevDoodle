@@ -528,7 +528,7 @@ $textarea
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
-		} else haschangeready = true;
+		} else hashchangeready = true;
 	});
 	document.addEventListener('visibilitychange', function() {
 		if (!document.hidden) {
