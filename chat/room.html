@@ -203,8 +203,9 @@ $textarea
 			if (data.event == 'add' &amp;&amp; document.hidden) document.title = '(' + ++unread + ') ' + title;
 		} else if (data.event == 'edit') {
 			source[data.id] = data.body;
-			var msg = document.getElementById(data.id),
-				msgCsig = msg.getElementsByClassName('c-sig')[0],
+			var msg = document.getElementById(data.id);
+			if (!msg) return;
+			var msgCsig = msg.getElementsByClassName('c-sig')[0],
 				msgCtrls = msg.getElementsByClassName('ctrls')[0];
 			msg.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 			msg.appendChild(msgCsig);
