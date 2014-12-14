@@ -468,10 +468,10 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
+		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<input type="text" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' />\n');
 		res.write('<input type="password" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' />\n');
-		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');
+		res.write('<div id="ccreate">\n');
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
@@ -482,7 +482,7 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('#content input[type=text], button { display: block }\n');
 		res.write('</style>');
 		respondPageFooter(res);
-	});
+	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }</style>'});
 }
 
 function respondCreateRoomPage(errs, req, res, post) {
