@@ -253,6 +253,8 @@ function minHeight() {
 		}
 	}
 }
+addEventListener('load', minHeight);
+addEventListener('resize', minHeight);
 
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
@@ -283,7 +285,13 @@ function agot(d) {
 }
 
 function textareaHandler(e) {
-	if (e.keyCode === 9) {
+	if (!this.hist) this.hist = [{
+		body: '',
+		start: 0,
+		end: 0
+	}];
+	if (!this.hIndex) this.hIndex = 0;
+	if (e.keyCode == 9) {
 		if (this.selectionStart == this.selectionEnd) {
 			if (e.shiftKey) {
 				var cS = this.selectionEnd - 1;
@@ -317,19 +325,46 @@ function textareaHandler(e) {
 			this.selectionEnd = nS + lines.slice(start, ++end).join('\n').length;
 		}
 		e.preventDefault();
+	} else if (e.keyCode == 90 && e.metaKey && !e.altKey) {
+		e.preventDefault();
+		if (this.hIndex == this.hist.length - 1 && this.hist[this.hIndex].body != this.value) {
+			this.hist.push({
+				body: this.value,
+				start: this.selectionStart,
+				end: this.selectionEnd
+			});
+			this.hIndex = this.hist.length - 1;
+		}
+		var data = this.hist[e.shiftKey ? ++this.hIndex : --this.hIndex];
+		console.log(this.hist, this.hIndex);
+		if (data) {
+			this.value = data.body;
+			this.selectionStart = data.start;
+			this.selectionEnd = data.end;
+		} else e.shiftKey ? --this.hIndex : ++this.hIndex
+	} else {
+		if (this.hist[this.hIndex].body != this.value) this.hist = this.hist.slice(0, this.hIndex + 1);
+		if (this.timer) clearTimeout(this.timer);
+		this.timer = setTimeout(function(e) {
+			if (e.hIndex != e.hist.length - 1) return;
+			if (e.hist[e.hIndex].body == e.value) return;
+			e.hist.push({
+				body: e.value,
+				start: e.selectionStart,
+				end: e.selectionEnd
+			});
+			e.hIndex = e.hist.length - 1;
+		}, this.lastKeyCode == e.keyCode || [8, 9, 13].indexOf(e.keyCode) == -1 ? 400 : 0, this);
 	}
+	this.lastKeyCode = e.keyCode;
 }
 
 addEventListener('DOMContentLoaded', function() {
 	mainContentEl = mainContentEl || document.getElementById('content');
 	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
-		var div = document.createElement('div');
-		div.innerHTML = '<!--[if lt IE 9]><i></i><![endif]-->';
-		if (div.getElementsByTagName('i').length != 1) {
-			var span = document.createElement('span');
-			span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
-			document.getElementById('err').appendChild(span);
-		}
+		var span = document.createElement('span');
+		span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
+		document.getElementById('err').appendChild(span);
 		document.getElementById('cont').hidden = true;
 		document.getElementById('cont').style.display = 'none';
 	}
@@ -343,9 +378,7 @@ addEventListener('DOMContentLoaded', function() {
 			if (times[i].textContent != t) times[i].textContent = t;
 		}
 	}, 100);
-	
 	minHeight();
 });
-addEventListener('load', minHeight);
-addEventListener('resize', minHeight);
+
 if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
