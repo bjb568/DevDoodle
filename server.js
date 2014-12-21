@@ -1742,8 +1742,9 @@ wss.on('connection', function(tws) {
 								} catch(e) {}
 							});
 						} else {
-							var pids = [];
-							dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							var pids = [],
+								count = 0;
+							dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(24).each(function(err, star) {
 								if (err) throw err;
 								if (star) {
 									if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
@@ -1753,7 +1754,8 @@ wss.on('connection', function(tws) {
 										deleted: {$exists: false}
 									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
-										if (post && post.stars > 1) {
+										if (post && post.stars > 1 && count < 12) {
+											count++;
 											try {
 												tws.send(JSON.stringify({
 													event: 'star',

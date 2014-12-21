@@ -47,6 +47,7 @@ $textarea
 		users = [],
 		title = document.title,
 		unread = 0,
+		tsMode = false,
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
@@ -139,6 +140,7 @@ $textarea
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
+		if (tsMode &amp;&amp; ['star', 'unstar'].indexOf(data.event) == -1) return; 
 		if (data.event == 'init' || data.event == 'add') {
 			source[data.id] = data.body;
 			if (document.getElementById(data.id)) return;
@@ -408,7 +410,7 @@ $textarea
 				location.hash = '';
 				location.hash = '#' + hash;
 			};
-			if (!document.getElementById('ts').hidden) socket.onmessage = null;
+			if (!document.getElementById('ts').hidden) tsMode = true;
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
@@ -524,8 +526,9 @@ $textarea
 		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
 		return false;
 	};
-	var hashchangeready = false;
+	var hashchangeready = !hash;
 	addEventListener('hashchange', function(e) {
+		console.log(hashchangeready)
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
