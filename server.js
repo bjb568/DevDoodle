@@ -558,7 +558,8 @@ http.createServer(function(req, res) {
 						fpass;
 					if (post.name.length > 16 && (nfilln = true)) errors.push('Name must be no longer than 16 characters.');
 					if (post.name.length < 3 && (nfilln = true)) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[\w-]+$/) && (nfilln = true)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
+					if (!post.name.match(/^[a-zA-Z0-9-]+$/) && (nfilln = true)) errors.push('Name may only contain alphanumeric characters and dashes.');
+					if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 					var uniqueChars = [];
 					for (var i = 0; i < post.pass.length; i++) {
@@ -693,7 +694,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res);
@@ -766,7 +767,7 @@ http.createServer(function(req, res) {
 			}
 		}, {$unset: {cookie: 1}});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
@@ -1868,7 +1869,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-]{3,16})\W/g);
+						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
 							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
@@ -2313,7 +2314,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-]{3,16})\W/g) || [];
+						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 							if (err) throw err;
