@@ -429,7 +429,7 @@ $textarea
 			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				if (editing) {
-					socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+					socket.send(JSON.stringify({event: 'edit', body: this.value, id: parseInt(editing)}));
 					document.getElementsByClassName('editing')[0].classList.remove('editing');
 					editing = false;
 					this.value = '';
@@ -441,7 +441,7 @@ $textarea
 				editing = false;
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
-			} else if (e.keyCode == 38 &amp;&amp; !ta.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.length;
 				while (i--) {
@@ -450,7 +450,7 @@ $textarea
 						return e.onclick.apply(e);
 					}
 				}
-			} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; this.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (i--) {
@@ -461,7 +461,7 @@ $textarea
 						return e.onclick.apply(e);
 					}
 				}
-			} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; this.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (++i &lt; cont.children.length) {
@@ -476,6 +476,16 @@ $textarea
 				editing = false;
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
+			} else if (e.keyCode == 9) {
+				e.preventDefault();
+				this.noHandle = true;
+				var before = this.value.substr(0, this.selectionStart),
+					str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
+					list = document.getElementById('pingsug');
+				if (!list.firstChild) return;
+				var before = this.value.substr(0, this.selectionStart).lastIndexOf('@') + 1;
+				this.value = this.value.substr(0, before) + list.firstChild.textContent + ' ' + this.value.substr(this.selectionStart);
+				this.selectionEnd = this.selectionStart = before + list.firstChild.textContent.length + 1;
 			}
 		}
 		function pingsugs() {
@@ -494,7 +504,7 @@ $textarea
 								var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
 								ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
 								ta.focus();
-								ta.selectionStart = before + this.textContent.length;
+								ta.selectionEnd = ta.selectionStart = before + this.textContent.length;
 							};
 							list.appendChild(span);
 						}

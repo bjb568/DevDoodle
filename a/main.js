@@ -285,6 +285,7 @@ function agot(d) {
 }
 
 function textareaHandler(e) {
+	if (this.noHandle) return delete this.nHandle;
 	if (!this.hist) this.hist = [{
 		body: '',
 		start: 0,
