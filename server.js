@@ -1715,7 +1715,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).sort({_id: -1}).skip(ts ? Math.max(0, count - i - 96) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
+					}).sort({_id: -1}).skip(ts ? Math.max(0, after - 174) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
