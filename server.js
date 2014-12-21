@@ -273,7 +273,7 @@ var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
 });
 
 var dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
