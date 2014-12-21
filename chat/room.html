@@ -290,7 +290,7 @@ $textarea
 				var g;
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
-			} else {
+			} else if (data.stars > 1) {
 				var li = document.createElement('li'),
 					div = document.createElement('div');
 				e = document.getElementById(data.id);
@@ -306,7 +306,7 @@ $textarea
 				sig.classList.add('c-sig');
 				var starcount = document.createElement('span');
 				starcount.classList.add('starcount');
-				starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars || 0) + '★'));
+				starcount.appendChild(document.createTextNode((starcount.dataset.count = data.stars) + '★'));
 				sig.appendChild(starcount);
 				sig.appendChild(document.createTextNode(' -'));
 				var user = document.createElement('a');
@@ -334,7 +334,7 @@ $textarea
 				e.appendChild(document.createTextNode(count + '★'));
 			}
 			if (e = document.getElementById(data.id + 's')) {
-				if (count &lt; 1) return e.parentNode.parentNode.removeChild(e.parentNode);
+				if (count &lt; 2) return e.parentNode.parentNode.removeChild(e.parentNode);
 				e = e.getElementsByClassName('starcount')[0];
 				e.dataset.count--;
 				var f;
@@ -574,7 +574,7 @@ $textarea
 	#editform { margin: 0 }
 	#users a { font-weight: normal }
 	#users:empty::after { content: 'No users in room' }
-	#stars:empty::after { content: 'No starred messages' }
+	#stars:empty::after { content: 'No multistarred messages' }
 	.comment:not(:hover) .ctrls:not(:hover) { display: none }
 	#aside {
 		float: right;

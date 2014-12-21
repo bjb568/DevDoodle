@@ -416,7 +416,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 @media (min-width: 1500px) {
 	html { background-size: cover }
 	#cont { overflow: hidden }
-	#content, #footer { margin: 6px 6px 6px calc(4% + 152px) }
+	#content, #footer { margin: 6px 6px 6px calc(4% + 150px) }
 	#content:nth-child(2):nth-last-child(3) {
 		float: left;
 		width: calc(-250px + 80%);

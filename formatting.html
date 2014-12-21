@@ -3,6 +3,21 @@
 <h2>Inline formatting</h2>
 <p>Inline formatting (formatting that won't cause a line break) is written as a formatting sequence followed by the affected text followed by the same formatting sequence.</p>
 <section>
+	<h3>Links</h3>
+	<p>Bare URLs with http:// or https:// are automatically turned into a link:</p>
+	<code class="blk">http://example.com</code>
+	<blockquote><a href="http://example.com">example.com</a></blockquote>
+	<p>But it is preferable to use a link title:</p>
+	<code class="blk">[Example title](http://example.com)</code>
+	<blockquote><a href="http://example.com">Example title</a></blockquote>
+</section>
+<section>
+	<h3>Images</h3>
+	<p>Images have similar syntax as links, just with an <code>!</code>. Alt text is shown when images are disabled or otherwise unavailable.</p>
+	<code class="blk">![Alt text](http://devdoodle.net/a/logo1square.png)</code>
+	<blockquote><img src="http://devdoodle.net/a/logo1square.png" alt="Alt text" width="100" /></blockquote>
+</section>
+<section>
 	<h3>Emphasis</h3>
 	<code class="blk">Use an asterisk to *emphasize* text that is slightly more important or is stressed in speech.</code>
 	<blockquote>Use an asterisk to <em>emphasize</em> text that is slightly more important or is stressed in speech.</blockquote>
@@ -26,15 +41,6 @@
 	<h3>Inline Code <small>(not parsed)</small></h3>
 	<code class="blk">To indicate `code`, enclose it in backticks.</code>
 	<blockquote>To indicate <code>code</code>, enclose it in backticks.</blockquote>
-</section>
-<section>
-	<h3>Links</h3>
-	<p>Bare URLs with http:// or https:// are automatically turned into a link:</p>
-	<code class="blk">http://example.com</code>
-	<blockquote><a href="http://example.com">example.com</a></blockquote>
-	<p>But it is preferable to use a link title:</p>
-	<code class="blk">[Example title](http://example.com)</code>
-	<blockquote><a href="http://example.com">Example title</a></blockquote>
 </section>
 <section>
 	<h3>Nesting</h3>

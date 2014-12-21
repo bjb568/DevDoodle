@@ -468,10 +468,10 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create" onchange="document.getElementById(\'ccreate\').hidden ^= 1"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
+		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<input type="text" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' />\n');
 		res.write('<input type="password" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' />\n');
-		res.write('<div id="ccreate" ' + (post.create ? '' : 'hidden="" ') + '>\n');
+		res.write('<div id="ccreate">\n');
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
 		res.write('</div>\n');
@@ -482,7 +482,7 @@ function respondLoginPage(errs, req, res, post, fillm, filln, fpass) {
 		res.write('#content input[type=text], button { display: block }\n');
 		res.write('</style>');
 		respondPageFooter(res);
-	});
+	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }</style>'});
 }
 
 function respondCreateRoomPage(errs, req, res, post) {
@@ -1029,7 +1029,7 @@ http.createServer(function(req, res) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
-					res.write('\t<h2 class="title"><a href="' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
+					res.write('\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
 					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
 					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
 					res.write('</div>\n');
@@ -1408,9 +1408,9 @@ http.createServer(function(req, res) {
 								var i = last ? last._id + 1 : 1;
 								if (type == 2) dbcs.programs.insert({
 										type: type,
-										html: post.html,
-										css: post.css,
-										js: post.js,
+										html: (post.html || '').toString(),
+										css: (post.css || '').toString(),
+										js: (post.js || '').toString(),
 										user: user.name,
 										created: new Date().getTime(),
 										updated: new Date().getTime(),
@@ -1421,7 +1421,7 @@ http.createServer(function(req, res) {
 									});
 								else dbcs.programs.insert({
 										type: type,
-										code: post.code,
+										code: (post.code || '').toString(),
 										user: user.name,
 										created: new Date().getTime(),
 										updated: new Date().getTime(),
@@ -1753,14 +1753,14 @@ wss.on('connection', function(tws) {
 										deleted: {$exists: false}
 									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
-										if (post) {
+										if (post && post.stars > 1) {
 											try {
 												tws.send(JSON.stringify({
 													event: 'star',
 													id: post._id,
 													board: true,
 													body: post.body,
-													stars: post.stars || 0,
+													stars: post.stars,
 													user: post.user,
 													time: post.time
 												}));
