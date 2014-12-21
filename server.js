@@ -2077,6 +2077,7 @@ wss.on('connection', function(tws) {
 							id: doc._id,
 							body: doc.body,
 							user: doc.user,
+							deleted: doc.deleted,
 							time: doc.time,
 							stars: doc.stars
 						}));
