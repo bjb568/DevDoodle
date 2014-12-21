@@ -1753,14 +1753,14 @@ wss.on('connection', function(tws) {
 										deleted: {$exists: false}
 									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
-										if (post) {
+										if (post && post.stars > 1) {
 											try {
 												tws.send(JSON.stringify({
 													event: 'star',
 													id: post._id,
 													board: true,
 													body: post.body,
-													stars: post.stars || 0,
+													stars: post.stars,
 													user: post.user,
 													time: post.time
 												}));
