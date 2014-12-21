@@ -198,7 +198,9 @@ $textarea
 				if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
 			if (data.event == 'add') {
-				audio.play();
+				if (username != data.user) {
+					audio.play();
+				}
 				if (onBottom) cont.scrollTop = cont.scrollHeight;
 			}
 			cont.onscroll();
