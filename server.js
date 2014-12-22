@@ -2130,7 +2130,8 @@ wss.on('connection', function(tws) {
 								if (err) throw err;
 								if (count > 3) return tws.send(JSON.stringify({
 									event: 'err',
-									body: 'You may star only 3 posts in 15 minutes.'
+									body: 'You may star only 3 posts in 15 minutes.',
+									revertStar: id
 								}));
 								dbcs.chatstars.find({
 									user: tws.user.name,
@@ -2139,7 +2140,8 @@ wss.on('connection', function(tws) {
 									if (err) throw err;
 									if (count > 8) return tws.send(JSON.stringify({
 										event: 'err',
-										body: 'You may star only 8 posts in 2 hours.'
+										body: 'You may star only 8 posts in 2 hours.',
+										revertStar: id
 									}));
 									dbcs.chatstars.find({
 										user: tws.user.name,
@@ -2149,7 +2151,8 @@ wss.on('connection', function(tws) {
 										if (err) throw err;
 										if (count > 2) return tws.send(JSON.stringify({
 											event: 'err',
-											body: 'You may selfstar only 2 posts in 24 hours.'
+											body: 'You may selfstar only 2 posts in 24 hours.',
+											revertStar: id
 										}));
 										dbcs.chatstars.insert({
 											user: tws.user.name,

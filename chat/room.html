@@ -420,6 +420,8 @@ $textarea
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.revertInfo) resetEditForm();
+			var e;
+			if (e = document.getElementById(data.revertStar)) e.getElementsByClassName('ctrls')[0].firstChild.classList.remove('clkd');
 		}
 	};
 	socket.onclose = function() {
