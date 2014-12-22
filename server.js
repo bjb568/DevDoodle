@@ -1476,7 +1476,7 @@ http.createServer(function(req, res) {
 						if (program.user.toString() == user.name.toString()) {
 							dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 							res.end('Success');
-						} else res.end('Error: You may only rename your own programs.');
+						} else res.end('Error: You may rename only your own programs.');
 					});
 				});
 			});
@@ -1597,7 +1597,7 @@ http.createServer(function(req, res) {
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only delete your own programs.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may delete only your own programs.');
 						dbcs.programs.update({_id: id}, {
 							$set: {
 								deleted: {
@@ -1643,7 +1643,7 @@ http.createServer(function(req, res) {
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may undelete only your own programs.');
 						dbcs.programs.update({_id: id}, {$unset: {deleted: 1}});
 						res.end('Success');
 					});
@@ -1913,7 +1913,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only edit your own messages.'
+							body: 'You may edit only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -1984,7 +1984,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only delete your own messages.'
+							body: 'You may delete only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -2017,7 +2017,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only undelete your own messages.'
+							body: 'You may undelete only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -2123,27 +2123,59 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'You already stared this post.'
 							}));
-							dbcs.chatstars.insert({
+							dbcs.chatstars.find({
 								user: tws.user.name,
-								pid: id,
-								room: post.room,
-								time: new Date().getTime()
-							});
-							dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
-							var sendto = [];
-							for (var i in wss.clients) {
-								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
-							}
-							for (var i in sendto) {
-								sendto[i].send(JSON.stringify({
-									event: 'star',
-									id: post._id,
-									body: post.body,
-									stars: (post.stars || 0) + 1,
-									user: post.user,
-									time: post.time
+								time: {$gt: new Date().getTime() - 900000}
+							}).count(function(err, count) {
+								if (err) throw err;
+								if (count > 3) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You may star only 3 posts in 15 minutes.'
 								}));
-							}
+								dbcs.chatstars.find({
+									user: tws.user.name,
+									time: {$gt: new Date().getTime() - 7200000}
+								}).count(function(err, count) {
+									if (err) throw err;
+									if (count > 8) return tws.send(JSON.stringify({
+										event: 'err',
+										body: 'You may star only 8 posts in 2 hours.'
+									}));
+									dbcs.chatstars.find({
+										user: tws.user.name,
+										time: {$gt: new Date().getTime() - 86400000},
+										postowner: tws.user.name
+									}).count(function(err, count) {
+										if (err) throw err;
+										if (count > 2) return tws.send(JSON.stringify({
+											event: 'err',
+											body: 'You may selfstar only 2 posts in 24 hours.'
+										}));
+										dbcs.chatstars.insert({
+											user: tws.user.name,
+											pid: id,
+											room: post.room,
+											time: new Date().getTime(),
+											postowner: post.user
+										});
+										dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
+										var sendto = [];
+										for (var i in wss.clients) {
+											if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+										}
+										for (var i in sendto) {
+											sendto[i].send(JSON.stringify({
+												event: 'star',
+												id: post._id,
+												body: post.body,
+												stars: (post.stars || 0) + 1,
+												user: post.user,
+												time: post.time
+											}));
+										}
+									});
+								});
+							});
 						});
 					});
 				} else if (message.event == 'unstar') {

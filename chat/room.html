@@ -292,15 +292,16 @@ $textarea
 				var g;
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
-			} else if (data.stars > 1) {
+			} else {
 				var li = document.createElement('li'),
 					div = document.createElement('div');
-				e = document.getElementById(data.id);
+					e = document.getElementById(data.id);
 				if (e &amp;&amp; !data.board) {
 					e = e.getElementsByClassName('starcount')[0];
 					e.removeChild(e.firstChild);
 					e.appendChild(document.createTextNode(++e.dataset.count + '★'));
 				}
+				if (data.stars == 1) return;
 				div.id = data.id + 's';
 				div.classList.add('comment');
 				div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
