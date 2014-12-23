@@ -574,20 +574,18 @@ $textarea
 		line-height: 1.2;
 	}
 	.starcount[data-count="0"] { display: none }
-	.inactive {
-		opacity: 0.3;
-		transition: opacity 60s;
-	}
-	.writing, .writing a {
-		color: green;
-		font-weight: bold;
-	}
 	#stars {
 		list-style-type: none;
 		padding: 0;
 	}
 	#stars li { margin: 4px 0 }
 	#editform { margin: 0 }
+	.inactive {
+		opacity: 0.3;
+		transition: opacity 60s;
+	}
+	#users li { transition: color .2s }
+	.writing, .writing a { color: green }
 	#users a { font-weight: normal }
 	#users:empty::after { content: 'No users in room' }
 	#stars:empty::after { content: 'No multistarred messages' }
