@@ -2052,11 +2052,13 @@ wss.on('connection', function(tws) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
 						for (var i in sendto) {
-							sendto[i].send(JSON.stringify({
-								event: 'statechange',
-								state: message.state,
-								name: tws.user.name
-							}));
+							try {
+								sendto[i].send(JSON.stringify({
+									event: 'statechange',
+									state: message.state,
+									name: tws.user.name
+								}));
+							} catch(e) {}
 						}
 					}
 				} else if (message.event == 'req') {
