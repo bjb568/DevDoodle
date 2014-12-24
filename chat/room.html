@@ -32,6 +32,7 @@ $textarea
 		skipped,
 		rawdesc = "$rawdesc",
 		ta = document.getElementById('ta'),
+		btn = document.getElementById('btn'),
 		cont = document.getElementById('chat'),
 		starwall = document.getElementById('stars'),
 		ctrls = document.createElement('div'),
@@ -68,6 +69,8 @@ $textarea
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
 		editing = msg.id;
+		btn.onclick = edit;
+		btn.textContent = 'Edit';
 	};
 	ctrlsDelete.textContent = '✕';
 	ctrlsDelete.onclick = function() {
@@ -431,24 +434,21 @@ $textarea
 		ta.onkeypress = ta.onkeydown = function(e) {
 			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
-				if (editing) {
-					socket.send(JSON.stringify({event: 'edit', body: this.value, id: parseInt(editing)}));
-					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					editing = false;
-					this.value = '';
-					cont.scrollTop = cont.scrollHeight;
-				} else send();
+				if (editing) edit();
+				else send();
 			} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
 				editing = false;
+				btn.onclick = send;
+				btn.textContent = 'Send';
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
 			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.length;
 				while (i--) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
 					}
@@ -457,8 +457,10 @@ $textarea
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (i--) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						editing = false;
+						btn.onclick = send;
+						btn.textContent = 'Send';
 						document.getElementsByClassName('editing')[0].classList.remove('editing');
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
@@ -470,6 +472,8 @@ $textarea
 				while (++i &lt; cont.children.length) {
 					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
 						editing = false;
+						btn.onclick = send;
+						btn.textContent = 'Send';
 						document.getElementsByClassName('editing')[0].classList.remove('editing');
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
@@ -477,6 +481,8 @@ $textarea
 				}
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
 				editing = false;
+				btn.onclick = send;
+				btn.textContent = 'Send';
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
 			} else if (e.keyCode == 9) {
@@ -526,9 +532,18 @@ $textarea
 		cont.scrollTop = cont.scrollHeight;
 		ta.focus();
 	}
-	var edit = document.getElementById('edit');
-	if (edit) {
-		edit.onclick = function() {
+	function edit() {
+		socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+		document.getElementsByClassName('editing')[0].classList.remove('editing');
+		editing = false;
+		btn.onclick = send;
+		btn.textContent = 'Send';
+		ta.value = '';
+		cont.scrollTop = cont.scrollHeight;
+	}
+	var editbtn = document.getElementById('edit');
+	if (editbtn) {
+		editbtn.onclick = function() {
 			document.getElementById('roominfo').hidden = true;
 			document.getElementById('editform').hidden = false;
 		};
