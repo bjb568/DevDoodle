@@ -32,6 +32,7 @@ $textarea
 		skipped,
 		rawdesc = "$rawdesc",
 		ta = document.getElementById('ta'),
+		btn = document.getElementById('btn'),
 		cont = document.getElementById('chat'),
 		starwall = document.getElementById('stars'),
 		ctrls = document.createElement('div'),
@@ -47,6 +48,7 @@ $textarea
 		users = [],
 		title = document.title,
 		unread = 0,
+		tsMode = false,
 		e;
 	ctrls.classList.add('ctrls');
 	ctrlsStar.textContent = '★';
@@ -67,6 +69,8 @@ $textarea
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
 		editing = msg.id;
+		btn.onclick = edit;
+		btn.textContent = 'Edit';
 	};
 	ctrlsDelete.textContent = '✕';
 	ctrlsDelete.onclick = function() {
@@ -139,6 +143,7 @@ $textarea
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
+		if (tsMode &amp;&amp; ['star', 'unstar'].indexOf(data.event) == -1) return; 
 		if (data.event == 'init' || data.event == 'add') {
 			source[data.id] = data.body;
 			if (document.getElementById(data.id)) return;
@@ -196,7 +201,7 @@ $textarea
 				if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
 			} else cont.appendChild(div);
 			if (data.event == 'add') {
-				audio.play();
+				if (username != data.user) audio.play();
 				if (onBottom) cont.scrollTop = cont.scrollHeight;
 			}
 			cont.onscroll();
@@ -290,15 +295,16 @@ $textarea
 				var g;
 				while (g = f.firstChild) f.removeChild(g);
 				f.appendChild(document.createTextNode(++f.dataset.count + '★ '));
-			} else if (data.stars > 1) {
+			} else {
 				var li = document.createElement('li'),
 					div = document.createElement('div');
-				e = document.getElementById(data.id);
+					e = document.getElementById(data.id);
 				if (e &amp;&amp; !data.board) {
 					e = e.getElementsByClassName('starcount')[0];
 					e.removeChild(e.firstChild);
 					e.appendChild(document.createTextNode(++e.dataset.count + '★'));
 				}
+				if (data.stars == 1) return;
 				div.id = data.id + 's';
 				div.classList.add('comment');
 				div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
@@ -408,7 +414,7 @@ $textarea
 				location.hash = '';
 				location.hash = '#' + hash;
 			};
-			if (!document.getElementById('ts').hidden) socket.onmessage = null;
+			if (!document.getElementById('ts').hidden) tsMode = true;
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 			document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
@@ -417,6 +423,8 @@ $textarea
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.revertInfo) resetEditForm();
+			var e;
+			if (e = document.getElementById(data.revertStar)) e.getElementsByClassName('ctrls')[0].firstChild.classList.remove('clkd');
 		}
 	};
 	socket.onclose = function() {
@@ -426,45 +434,46 @@ $textarea
 		ta.onkeypress = ta.onkeydown = function(e) {
 			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
-				if (editing) {
-					socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
-					document.getElementsByClassName('editing')[0].classList.remove('editing');
-					editing = false;
-					this.value = '';
-					cont.scrollTop = cont.scrollHeight;
-				} else send();
+				if (editing) edit();
+				else send();
 			} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
 				editing = false;
+				btn.onclick = send;
+				btn.textContent = 'Send';
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
-			} else if (e.keyCode == 38 &amp;&amp; !ta.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.length;
 				while (i--) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
 					}
 				}
-			} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 38 &amp;&amp; editing &amp;&amp; this.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (i--) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						editing = false;
+						btn.onclick = send;
+						btn.textContent = 'Send';
 						document.getElementsByClassName('editing')[0].classList.remove('editing');
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
 					}
 				}
-			} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; ta.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
+			} else if (e.keyCode == 40 &amp;&amp; editing &amp;&amp; this.value == source[editing] &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (++i &lt; cont.children.length) {
 					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
 						editing = false;
+						btn.onclick = send;
+						btn.textContent = 'Send';
 						document.getElementsByClassName('editing')[0].classList.remove('editing');
 						e = cont.children[i].getElementsByClassName('ctrls')[0].children[2];
 						return e.onclick.apply(e);
@@ -472,8 +481,20 @@ $textarea
 				}
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
 				editing = false;
+				btn.onclick = send;
+				btn.textContent = 'Send';
 				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
+			} else if (e.keyCode == 9) {
+				e.preventDefault();
+				this.noHandle = true;
+				var before = this.value.substr(0, this.selectionStart),
+					str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
+					list = document.getElementById('pingsug');
+				if (!list.firstChild) return;
+				var before = this.value.substr(0, this.selectionStart).lastIndexOf('@') + 1;
+				this.value = this.value.substr(0, before) + list.firstChild.textContent + ' ' + this.value.substr(this.selectionStart);
+				this.selectionEnd = this.selectionStart = before + list.firstChild.textContent.length + 1;
 			}
 		}
 		function pingsugs() {
@@ -492,7 +513,7 @@ $textarea
 								var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
 								ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
 								ta.focus();
-								ta.selectionStart = before + this.textContent.length;
+								ta.selectionEnd = ta.selectionStart = before + this.textContent.length;
 							};
 							list.appendChild(span);
 						}
@@ -511,9 +532,18 @@ $textarea
 		cont.scrollTop = cont.scrollHeight;
 		ta.focus();
 	}
-	var edit = document.getElementById('edit');
-	if (edit) {
-		edit.onclick = function() {
+	function edit() {
+		socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
+		document.getElementsByClassName('editing')[0].classList.remove('editing');
+		editing = false;
+		btn.onclick = send;
+		btn.textContent = 'Send';
+		ta.value = '';
+		cont.scrollTop = cont.scrollHeight;
+	}
+	var editbtn = document.getElementById('edit');
+	if (editbtn) {
+		editbtn.onclick = function() {
 			document.getElementById('roominfo').hidden = true;
 			document.getElementById('editform').hidden = false;
 		};
@@ -524,8 +554,9 @@ $textarea
 		socket.send(JSON.stringify({event: 'info-update', name: document.getElementById('nameedit').value, desc: document.getElementById('descedit').value}));
 		return false;
 	};
-	var hashchangeready = false;
+	var hashchangeready = !hash;
 	addEventListener('hashchange', function(e) {
+		console.log(hashchangeready)
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
@@ -558,20 +589,18 @@ $textarea
 		line-height: 1.2;
 	}
 	.starcount[data-count="0"] { display: none }
-	.inactive {
-		opacity: 0.3;
-		transition: opacity 60s;
-	}
-	.writing {
-		color: green;
-		font-weight: bold;
-	}
 	#stars {
 		list-style-type: none;
 		padding: 0;
 	}
 	#stars li { margin: 4px 0 }
 	#editform { margin: 0 }
+	.inactive {
+		opacity: 0.3;
+		transition: opacity 60s;
+	}
+	#users li { transition: color .2s }
+	.writing, .writing a { color: green }
 	#users a { font-weight: normal }
 	#users:empty::after { content: 'No users in room' }
 	#stars:empty::after { content: 'No multistarred messages' }
@@ -593,7 +622,7 @@ $textarea
 		border-radius: 4px;
 	}
 	.editing { background: #4af }
-	.deleted { background: #f00 }
+	.deleted { background: #d44 }
 	#pingsug {
 		position: absolute;
 		margin-top: -18px;

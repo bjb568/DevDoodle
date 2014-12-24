@@ -70,6 +70,8 @@ function inlineMarkdown(input) {
 					var parsed = val.split('+++').map(function(val, i, arr) {
 						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
 							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
+							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '<img src="$1" />')
+							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
 							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
 							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
@@ -273,7 +275,7 @@ var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
 });
 
 var dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
@@ -558,7 +560,8 @@ http.createServer(function(req, res) {
 						fpass;
 					if (post.name.length > 16 && (nfilln = true)) errors.push('Name must be no longer than 16 characters.');
 					if (post.name.length < 3 && (nfilln = true)) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[\w-]+$/) && (nfilln = true)) errors.push('Name may not contain non-alphanumeric characters besides "-" and "_".');
+					if (!post.name.match(/^[a-zA-Z0-9-]+$/) && (nfilln = true)) errors.push('Name may only contain alphanumeric characters and dashes.');
+					if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 					var uniqueChars = [];
 					for (var i = 0; i < post.pass.length; i++) {
@@ -693,7 +696,7 @@ http.createServer(function(req, res) {
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res);
@@ -766,7 +769,7 @@ http.createServer(function(req, res) {
 			}
 		}, {$unset: {cookie: 1}});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([\w-]{3,16})\/changepass$/)) {
+	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
 		if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
@@ -1473,7 +1476,7 @@ http.createServer(function(req, res) {
 						if (program.user.toString() == user.name.toString()) {
 							dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 							res.end('Success');
-						} else res.end('Error: You may only rename your own programs.');
+						} else res.end('Error: You may rename only your own programs.');
 					});
 				});
 			});
@@ -1594,7 +1597,7 @@ http.createServer(function(req, res) {
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only delete your own programs.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may delete only your own programs.');
 						dbcs.programs.update({_id: id}, {
 							$set: {
 								deleted: {
@@ -1640,7 +1643,7 @@ http.createServer(function(req, res) {
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) return res.end('Error: Invalid program id.');
-						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may only undelete your own programs.');
+						if (program.user.toString() != user.name.toString() && user.level != 2) return res.end('Error: You may undelete only your own programs.');
 						dbcs.programs.update({_id: id}, {$unset: {deleted: 1}});
 						res.end('Success');
 					});
@@ -1715,7 +1718,7 @@ wss.on('connection', function(tws) {
 							{deleted: {$exists: false}},
 							{user: tws.user.name}
 						]
-					}).sort({_id: -1}).skip(ts ? Math.max(0, count - i - 96) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
+					}).sort({_id: -1}).skip(ts ? Math.max(0, after - 174) : 0).limit(ts ? 192 : 92).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) {
 							try {
@@ -1742,8 +1745,9 @@ wss.on('connection', function(tws) {
 								} catch(e) {}
 							});
 						} else {
-							var pids = [];
-							dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(12).each(function(err, star) {
+							var pids = [],
+								count = 0;
+							dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(24).each(function(err, star) {
 								if (err) throw err;
 								if (star) {
 									if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
@@ -1753,7 +1757,8 @@ wss.on('connection', function(tws) {
 										deleted: {$exists: false}
 									}).sort({_id: 1}).each(function(err, post) {
 										if (err) throw err;
-										if (post && post.stars > 1) {
+										if (post && post.stars > 1 && count < 12) {
+											count++;
 											try {
 												tws.send(JSON.stringify({
 													event: 'star',
@@ -1866,7 +1871,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-]{3,16})\W/g);
+						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g);
 						if (!matches) return;
 						for (var i = 0; i < matches.length; i++) {
 							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
@@ -1908,7 +1913,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only edit your own messages.'
+							body: 'You may edit only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -1979,7 +1984,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only delete your own messages.'
+							body: 'You may delete only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -2012,7 +2017,7 @@ wss.on('connection', function(tws) {
 						}));
 						if (post.user != tws.user.name) return tws.send(JSON.stringify({
 							event: 'err',
-							body: 'You may only undelete your own messages.'
+							body: 'You may undelete only your own messages.'
 						}));
 						dbcs.chathistory.insert({
 							message: post._id,
@@ -2047,11 +2052,13 @@ wss.on('connection', function(tws) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
 						for (var i in sendto) {
-							sendto[i].send(JSON.stringify({
-								event: 'statechange',
-								state: message.state,
-								name: tws.user.name
-							}));
+							try {
+								sendto[i].send(JSON.stringify({
+									event: 'statechange',
+									state: message.state,
+									name: tws.user.name
+								}));
+							} catch(e) {}
 						}
 					}
 				} else if (message.event == 'req') {
@@ -2075,6 +2082,7 @@ wss.on('connection', function(tws) {
 							id: doc._id,
 							body: doc.body,
 							user: doc.user,
+							deleted: doc.deleted,
 							time: doc.time,
 							stars: doc.stars
 						}));
@@ -2117,27 +2125,62 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'You already stared this post.'
 							}));
-							dbcs.chatstars.insert({
+							dbcs.chatstars.find({
 								user: tws.user.name,
-								pid: id,
-								room: post.room,
-								time: new Date().getTime()
-							});
-							dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
-							var sendto = [];
-							for (var i in wss.clients) {
-								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
-							}
-							for (var i in sendto) {
-								sendto[i].send(JSON.stringify({
-									event: 'star',
-									id: post._id,
-									body: post.body,
-									stars: (post.stars || 0) + 1,
-									user: post.user,
-									time: post.time
+								time: {$gt: new Date().getTime() - 900000}
+							}).count(function(err, count) {
+								if (err) throw err;
+								if (count > 3) return tws.send(JSON.stringify({
+									event: 'err',
+									body: 'You may star only 3 posts in 15 minutes.',
+									revertStar: id
 								}));
-							}
+								dbcs.chatstars.find({
+									user: tws.user.name,
+									time: {$gt: new Date().getTime() - 7200000}
+								}).count(function(err, count) {
+									if (err) throw err;
+									if (count > 8) return tws.send(JSON.stringify({
+										event: 'err',
+										body: 'You may star only 8 posts in 2 hours.',
+										revertStar: id
+									}));
+									dbcs.chatstars.find({
+										user: tws.user.name,
+										time: {$gt: new Date().getTime() - 86400000},
+										postowner: tws.user.name
+									}).count(function(err, count) {
+										if (err) throw err;
+										if (count > 2) return tws.send(JSON.stringify({
+											event: 'err',
+											body: 'You may selfstar only 2 posts in 24 hours.',
+											revertStar: id
+										}));
+										dbcs.chatstars.insert({
+											user: tws.user.name,
+											pid: id,
+											room: post.room,
+											time: new Date().getTime(),
+											postowner: post.user
+										});
+										dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
+										var sendto = [];
+										for (var i in wss.clients) {
+											if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+										}
+										for (var i in sendto) {
+											sendto[i].send(JSON.stringify({
+												event: 'star',
+												id: post._id,
+												body: post.body,
+												stars: (post.stars || 0) + 1,
+												user: post.user,
+												time: post.time
+											}));
+										}
+									});
+								});
+							});
 						});
 					});
 				} else if (message.event == 'unstar') {
@@ -2310,7 +2353,7 @@ wss.on('connection', function(tws) {
 								id: id
 							}));
 						}
-						var matches = message.body.match(/@([\w-]{3,16})\W/g) || [];
+						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 							if (err) throw err;
