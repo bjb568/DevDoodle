@@ -64,66 +64,78 @@ function inlineMarkdown(input) {
 			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
 				return markdownEscape(p1);
 			})
-			.replaceAll('**', '_')
-		.split('*').map(function(val, i, arr) {
-			var parsed = val.split('_').map(function(val, i, arr) {
-				var parsed = val.split('---').map(function(val, i, arr) {
-					var parsed = val.split('+++').map(function(val, i, arr) {
-						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
-							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '<img src="$1" />')
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
-							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
-							.replace(/\^(\w+)/g, '<sup>$1</sup>');
+		.split('***').map(function(val, i, arr) {
+			var parsed = val.replaceAll('**', '_').split('*').map(function(val, i, arr) {
+				var parsed = val.split('_').map(function(val, i, arr) {
+					var parsed = val.split('---').map(function(val, i, arr) {
+						var parsed = val.split('+++').map(function(val, i, arr) {
+							var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
+								.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
+								.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '<img src="$1" />')
+								.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
+								.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
+								.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
+								.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
+								.replace(/\^(\w+)/g, '<sup>$1</sup>');
+							if (i % 2) {
+								var p = open.indexOf('</ins>');
+								if (p != -1) {
+									open.splice(p, 1);
+									return '</ins>' + parsed;
+								} else if (arr[i + 1] === undefined) {
+									open.push('</ins>');
+									return '<ins>' + parsed;
+								}
+							}
+							return i % 2 ? '<ins>' + parsed + '</ins>' : parsed;
+						}).join('');
 						if (i % 2) {
-							var p = open.indexOf('</ins>');
+							var p = open.indexOf('</del>');
 							if (p != -1) {
 								open.splice(p, 1);
-								return '</ins>' + parsed;
+								return '</del>' + parsed;
 							} else if (arr[i + 1] === undefined) {
-								open.push('</ins>');
-								return '<ins>' + parsed;
+								open.push('</del>');
+								return '<del>' + parsed;
 							}
 						}
-						return i % 2 ? '<ins>' + parsed + '</ins>' : parsed;
+						return i % 2 ? '<del>' + parsed + '</del>' : parsed;
 					}).join('');
 					if (i % 2) {
-						var p = open.indexOf('</del>');
+						var p = open.indexOf('</strong>');
 						if (p != -1) {
 							open.splice(p, 1);
-							return '</del>' + parsed;
+							return '</strong>' + parsed;
 						} else if (arr[i + 1] === undefined) {
-							open.push('</del>');
-							return '<del>' + parsed;
+							open.push('</strong>');
+							return '<strong>' + parsed;
 						}
 					}
-					return i % 2 ? '<del>' + parsed + '</del>' : parsed;
+					return i % 2 ? '<strong>' + parsed + '</strong>' : parsed;
 				}).join('');
 				if (i % 2) {
-					var p = open.indexOf('</strong>');
+					var p = open.indexOf('</em>');
 					if (p != -1) {
 						open.splice(p, 1);
-						return '</strong>' + parsed;
+						return '</em>' + parsed;
 					} else if (arr[i + 1] === undefined) {
-						open.push('</strong>');
-						return '<strong>' + parsed;
+						open.push('</em>');
+						return '<em>' + parsed;
 					}
 				}
-				return i % 2 ? '<strong>' + parsed + '</strong>' : parsed;
+				return i % 2 ? '<em>' + parsed + '</em>' : parsed;
 			}).join('');
 			if (i % 2) {
-				var p = open.indexOf('</em>');
+				var p = open.indexOf('</em></strong>');
 				if (p != -1) {
 					open.splice(p, 1);
-					return '</em>' + parsed;
+					return '</em></strong>' + parsed;
 				} else if (arr[i + 1] === undefined) {
-					open.push('</em>');
-					return '<em>' + parsed;
+					open.push('</em></strong>');
+					return '<strong><em>' + parsed;
 				}
 			}
-			return i % 2 ? '<em>' + parsed + '</em>' : parsed;
+			return i % 2 ? '<strong><em>' + parsed + '</em></strong>' : parsed;
 		}).join('');
 		return parsed.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\$\(([^)]+)\)/g, '<sub>$1</sub>').replaceAll([paren, cparen, carrot, dollar], ['(', ')', '^', '$']);
 	}).join('') + open.join('');
@@ -287,7 +299,6 @@ function agot(d) {
 }
 
 function textareaHandler(e) {
-	if (this.noHandle) return delete this.nHandle;
 	if (!this.hist) this.hist = [{
 		body: '',
 		start: 0,
