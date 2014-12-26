@@ -538,7 +538,7 @@ http.createServer(function(req,	res) {
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
-				if (data) liststr += '\t<li><a href="../' + data._id + '">' + (html(data.title) || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
+				if (data) liststr += '\t<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
 				else {
 					fs.readFile('./html/dev/search.html', function(err, data) {
 						if (err) throw err;
@@ -560,7 +560,7 @@ http.createServer(function(req,	res) {
 		respondPage('Canvas Playground', user, req, res, function() {
 			fs.readFile('./html/dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? (html(req.url.query.code || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? html(req.url.query.code || '') : '']));
 				respondPageFooter(res);
 			});
 		});
@@ -568,7 +568,7 @@ http.createServer(function(req,	res) {
 		respondPage('HTML Playground', user, req, res, function() {
 			fs.readFile('./html/dev/html.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? (html(req.url.query.html || '')) : '', req.url.query ? (html(req.url.query.css || '')) : '', req.url.query ? (html(req.url.query.js || '')) : '']));
+				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']));
 				respondPageFooter(res);
 			});
 		});
