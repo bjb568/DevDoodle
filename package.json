@@ -1,7 +1,7 @@
 {
   "name": "DevDoodle",
   "version": "0.0.0",
-  "description": "A programmers' network where you can do tutorials, ask questions, and create and share your own programs",
+  "description": "A programmers' network where you can do tutorials, ask questions, and create and share your own programs.",
   "main": "server.js",
   "dependencies": {
     "cookie": ">=0.1.2",
@@ -10,10 +10,6 @@
     "mongodb": ">=1.4.3"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "node server",
-    "start": "node server.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bjb568/DevDoodle.git"
