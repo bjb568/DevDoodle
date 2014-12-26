@@ -845,7 +845,7 @@ http.createServer(function(req,	res) {
 			var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
 				if (err || !stats.isFile()) {
-					req.headers.user = JSON.stringify(user);
+					req.headers.user = JSON.stringify(user) || '';
 					var bres = http.get({
 						host: 'localhost',
 						port: 8000,
