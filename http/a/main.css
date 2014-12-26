@@ -56,9 +56,9 @@ body {
 .scrly, #sidebar { overflow-y: auto }
 .br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, section, article { background: rgba(255, 255, 255, .4) }
-code { background: rgba(255, 255, 255, 0.6) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
-.white, iframe:not([seamless]) { background: #fff }
+.white, code, iframe:not([seamless]) { background: #fff }
+code { padding: 2px; }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
