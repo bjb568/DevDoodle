@@ -305,6 +305,16 @@ function respondChangePassPage(errs, user, req, res, post) {
 	});
 }
 
+var questionTypes = {
+	err: 'an error',
+	bug: 'unexpected behavior',
+	imp: 'improving working code',
+	how: 'achieving an end result',
+	alg: 'algorithms and data structures',
+	pra: 'techniques and best practices',
+	the: 'a theoretical scenario'
+};
+
 var cache = {};
 
 http.createServer(function(req,	res) {
