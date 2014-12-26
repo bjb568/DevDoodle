@@ -68,6 +68,14 @@ $textarea
 		ta.focus();
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
+		ta.hists = ta.hists || {};
+		ta.hists[editing] = ta.hist;console.log('AAA');console.log(editing, ta.hist);
+		ta.hist = ta.hists[msg.id] || [{
+			body: ta.value,
+			start: 0,
+			end: 0
+		}];
+		ta.hIndex = ta.hist.length - 1;
 		editing = msg.id;
 		btn.onclick = edit;
 		btn.textContent = 'Edit';
@@ -439,10 +447,18 @@ $textarea
 			} else if (editing &amp;&amp; e.keyCode == 27 &amp;&amp; !e.metaKey) {
 				e.preventDefault();
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
+				ta.hists = ta.hists || {};
+				ta.hists[editing] = ta.hist;
+				ta.hist = ta.hists[false] || [{
+					body: ta.value,
+					start: 0,
+					end: 0
+				}];
+				ta.hIndex = ta.hist.length - 1;
+				ta.value = ta.hist[ta.hIndex].body;
 				editing = false;
 				btn.onclick = send;
 				btn.textContent = 'Send';
-				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
 			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
@@ -458,6 +474,15 @@ $textarea
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (i--) {
 					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
+						ta.hists = ta.hists || {};
+						ta.hists[editing] = ta.hist;
+						ta.hist = ta.hists[false] || [{
+							body: ta.value,
+							start: 0,
+							end: 0
+						}];
+						ta.hIndex = ta.hist.length - 1;
+						ta.value = ta.hist[ta.hIndex].body;
 						editing = false;
 						btn.onclick = send;
 						btn.textContent = 'Send';
@@ -471,6 +496,24 @@ $textarea
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (++i &lt; cont.children.length) {
 					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+						ta.hists = ta.hists || {};
+						ta.hists[editing] = ta.hist;
+						ta.hist = ta.hists[false] || [{
+							body: ta.value,
+							start: 0,
+							end: 0
+						}];
+						ta.hIndex = ta.hist.length - 1;
+						ta.value = ta.hist[ta.hIndex].body;
+						ta.hists = ta.hists || {};
+						ta.hists[editing] = ta.hist;
+						ta.hist = ta.hists[false] || [{
+							body: ta.value,
+							start: 0,
+							end: 0
+						}];
+						ta.hIndex = ta.hist.length - 1;
+						ta.value = ta.hist[ta.hIndex].body;
 						editing = false;
 						btn.onclick = send;
 						btn.textContent = 'Send';
@@ -480,6 +523,15 @@ $textarea
 					}
 				}
 				document.getElementsByClassName('editing')[0].classList.remove('editing');
+				ta.hists = ta.hists || {};
+				ta.hists[editing] = ta.hist;
+				ta.hist = ta.hists[false] || [{
+					body: ta.value,
+					start: 0,
+					end: 0
+				}];
+				ta.hIndex = ta.hist.length - 1;
+				ta.value = ta.hist[ta.hIndex].body;
 				editing = false;
 				btn.onclick = send;
 				btn.textContent = 'Send';
@@ -535,6 +587,15 @@ $textarea
 	function edit() {
 		socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
 		document.getElementsByClassName('editing')[0].classList.remove('editing');
+		ta.hists = ta.hists || {};
+		ta.hists[editing] = ta.hist;
+		ta.hist = ta.hists[false] || [{
+			body: ta.value,
+			start: 0,
+			end: 0
+		}];
+		ta.hIndex = ta.hist.length - 1;
+		ta.value = ta.hist[ta.hIndex].body;
 		editing = false;
 		btn.onclick = send;
 		btn.textContent = 'Send';

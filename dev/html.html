@@ -222,7 +222,14 @@
 	htmle.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
-			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - ((false/*Parse!*/) ? 0 : 1);
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					(false/* Parse? */)
+					? 0
+					: 1
+				);
 			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
@@ -233,7 +240,19 @@
 	css.onkeypress = js.onkeypress = function(e) {
 		if (e.keyCode === 13) {
 			var oldSelectionStart = this.selectionStart;
-			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length - (('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1) ? 0 : 1);
+			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					? 0
+					: (
+						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						? (this.eIndent = false || 2) 
+						: 1
+					)
+				);
 			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
