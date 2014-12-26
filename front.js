@@ -395,7 +395,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
 					}
-					dbcs.questions.find().sort({_id: -1}).limit(1).next(function(err, last) {
+					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
 						var id = last ? last._id + 1 : 0;
 						dbcs.questions.insert({
@@ -452,7 +452,7 @@ http.createServer(function(req,	res) {
 							res.writeHead(204);
 							res.end();
 						} else {
-							dbcs.programs.find().sort({_id: -1}).limit(1).next(function(err, last) {
+							dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 								if (err) throw err;
 								var i = last ? last._id + 1 : 1;
 								if (type == 2) {
@@ -837,7 +837,7 @@ http.createServer(function(req,	res) {
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
 					if (errors.length) return respondCreateRoomPage(errors, user, req, res, {});
-					dbcs.chatrooms.find().sort({_id: -1}).limit(1).next(function(err, last) {
+					dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
 						var i = last ? last._id + 1 : 1;
 						dbcs.chatrooms.insert({
