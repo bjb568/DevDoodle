@@ -623,16 +623,35 @@ http.createServer(function(req,	res) {
 								if (program.type == 1) {
 									fs.readFile('./html/dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(
-											['$id', '$title', '$code', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(
+											data.toString()
+											.replaceAll(
+												['$id', '$title', '$code', '$created', '$updated', '$comments'],
+												[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+											).replaceAll(
+												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
+											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+										);
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('./html/dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(
+											data.toString()
+											.replaceAll(
+												['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+												[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+											).replaceAll(
+												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
+											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+										);
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
