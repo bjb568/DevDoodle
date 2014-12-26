@@ -227,7 +227,7 @@ wss.on('connection', function(tws) {
 						event: 'err',
 						body: 'Chat message length may not exceed 2880 characters.'
 					}));
-					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+					dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
 						dbcs.chat.insert({
@@ -614,7 +614,7 @@ wss.on('connection', function(tws) {
 							desc: message.desc
 						}
 					});
-					dbcs.chat.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+					dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1,
 							newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
@@ -709,7 +709,7 @@ wss.on('connection', function(tws) {
 						event: 'err',
 						body: 'Comment length may not exceed 720 characters.'
 					}));
-					dbcs.comments.find().sort({_id: -1}).limit(1).next(function(err, doc) {
+					dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 						if (err) throw err;
 						var id = doc ? doc._id + 1 : 1;
 						dbcs.comments.insert({
