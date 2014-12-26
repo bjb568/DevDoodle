@@ -276,8 +276,8 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('<h1>Create Room</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
-		res.write('<div>Name: <input type="text" name="name" required="" /></div>\n');
-		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80"></textarea></div>\n');
+		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name) + '" /></div>\n');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc) + '</textarea></div>\n');
 		res.write('<div>Type: <select name="type">\n');
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
@@ -836,7 +836,7 @@ http.createServer(function(req,	res) {
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-					if (errors.length) return respondCreateRoomPage(errors, user, req, res, {});
+					if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 					dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
 						var i = last ? last._id + 1 : 1;
@@ -850,7 +850,7 @@ http.createServer(function(req,	res) {
 						res.end();
 					});
 				});
-			} else respondCreateRoomPage([], user, req, res, {});
+			} else respondCreateRoomPage([], user, req, res, post);
 		} else {
 			var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
