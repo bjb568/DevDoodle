@@ -862,23 +862,13 @@ http.createServer(function(req,	res) {
 						path: origURL,
 						headers: req.headers
 					}, function(bres) {
-						if (bres.statusCode == 200 || bres.statusCode == 303) {
-							res.writeHead(bres.statusCode, bres.headers);
-							bres.on('data', function(chunk) {
-								res.write(chunk);
-							});
-							bres.on('end', function() {
-								res.end();
-							});
-						} else {
-							var data = '';
-							bres.on('data', function(chunk) {
-								data += chunk;
-							});
-							bres.on('end', function() {
-								return errorPage[bres.statusCode](req, res, user, data);
-							});
-						}
+						res.writeHead(bres.statusCode, bres.headers);
+						bres.on('data', function(chunk) {
+							res.write(chunk);
+						});
+						bres.on('end', function() {
+							res.end();
+						});
 						bres.on('error', function(e) {
 							throw e;
 							errorPage[500](req, res, user, e.message);
