@@ -270,9 +270,6 @@
 	function handleCode() {
 		if (code.value != oldValue) {
 			oldValue = code.value;
-			onbeforeunload = function() {
-				return 'You have unsaved code.';
-			};
 			if (!save.classList.contains('progress')) save.textContent = 'Save';
 			run();
 		}
@@ -289,6 +286,9 @@
 	code.addEventListener('keypress', function() {
 		clearTimeout(timeout);
 		timeout = setTimeout(handleCode, 1000);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
 	});
 	run();
 	save.onclick = function() {

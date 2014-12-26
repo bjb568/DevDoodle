@@ -210,11 +210,6 @@
 	}
 	function run(f) {
 		if (f == true || (p != createCode() &amp;&amp; document.getElementById('autorun').checked)) {
-			if (f &amp;&amp; f != true) {
-				onbeforeunload = function() {
-					return 'You have unsaved code.';
-				};
-			}
 			if (!save.classList.contains('progress')) save.textContent = 'Save';
 			p = document.getElementById('output').srcdoc = createCode();
 		}
@@ -236,6 +231,9 @@
 			e.preventDefault();
 		}
 		setTimeout(run, 0, 2);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
 	};
 	css.onkeypress = js.onkeypress = function(e) {
 		if (e.keyCode === 13) {
@@ -259,6 +257,9 @@
 			e.preventDefault();
 		}
 		setTimeout(run, 0, 2);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
 	};
 	htmle.onkeydown = htmle.onkeyup = css.onkeydown = css.onkeyup = js.onkeydown = js.onkeyup = run;
 	run();
