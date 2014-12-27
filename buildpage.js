@@ -251,6 +251,10 @@ var statics = {
 	}
 }
 
+var showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
+	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString(),
+	mailform = fs.readFileSync('./html/user/mailform.html').toString();
+
 http.createServer(function(req,	res) {
 	var origURL = req.url,
 		cookies = cookie.parse(req.headers.cookie || ''),
@@ -312,7 +316,10 @@ http.createServer(function(req,	res) {
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr += '\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>\n\t</div>\n';
+				if (cUser) dstr +=
+							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+							'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
+							'\n\t</div>\n';
 				else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -347,8 +354,8 @@ http.createServer(function(req,	res) {
 					if (data) {
 						res.write('<div class="program">\n');
 						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
-						if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
-						else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+						if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
+						else if (data.type == 2) res.write('\t' + showcanvas.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
 						res.write('</div>\n');
 						programs++;
 					} else {
@@ -356,7 +363,7 @@ http.createServer(function(req,	res) {
 						res.write('</section>\n');
 						if (me) {
 							res.write('<h2 class="underline">Private</h2>\n');
-							res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var mail = document.getElementById(\'mail\'); mail.hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true; mail.removeChild(mail.firstChild); mail.appendChild(document.createTextNode(document.getElementById(\'mailinput\').value)); }, \'newmail=\' + encodeURIComponent(document.getElementById(\'mailinput\').value));"><span id="mail">Email: ' + html(user.mail) + '</span> <input type="text" id="mailinput" hidden="" value="' + html(user.mail) + '" placeholder="mail" style="width: 240px; max-width: 100%;" /> <button type="submit" id="mailsave" hidden="">Save</button> <button type="reset" id="mailcancel" hidden="" onclick="document.getElementById(\'mail\').hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true;">Cancel</button> <button type="button" id="mailedit" onclick="document.getElementById(\'mail\').hidden = this.hidden = true; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = false; document.getElementById(\'mailinput\').focus();">edit</button></form>\n');
+							res.write(mailform.replaceAll('$mail', html(user.mail)));
 							if (user.notifs) {
 								var notifs = [];
 								for (var i = 0; i < user.notifs.length; i++) {
@@ -366,7 +373,10 @@ http.createServer(function(req,	res) {
 								if (notifs.length) {
 									res.write('<h2>Notifications</h2>\n');
 									res.write('<ul id="notifs">\n');
-									for (var i = 0; i < notifs.length; i++) res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
+									for (var i = 0; i < notifs.length; i++) res.write(
+										'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>' +
+										'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
+									);
 									res.write('</ul>');
 									dbcs.users.update({name: user.name}, {
 										$set: {
@@ -387,7 +397,10 @@ http.createServer(function(req,	res) {
 		respondPage('Notifications', user, req, res, function() {
 			res.write('<h1>Notifications</h1>\n');
 			res.write('<ul id="notifs">\n');
-			for (var i = user.notifs.length - 1; i >= 0; i--) res.write('\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n');
+			for (var i = user.notifs.length - 1; i >= 0; i--) res.write(
+				'\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>' +
+				'-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n'
+			);
 			res.write('</ul>\n');
 			respondPageFooter(res);
 		});
@@ -433,9 +446,9 @@ http.createServer(function(req,	res) {
 						if (err) throw err;
 						res.write(data.toString()
 							.replaceAll(
-								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type', '$cat'],
-								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type, question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>']
-							).replaceAll(
+								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+							).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
 								['$op-name', '$op-rep', '$op-pic'],
 								[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
 							)
@@ -463,7 +476,10 @@ http.createServer(function(req,	res) {
 					res.write('<h2>Recent Posts</h2>\n');
 					dbcs.chat.find({deleted: {$exists: false}}).sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
-						if (doc) res.write('<div class="comment">' + markdown(doc.body) + '<span class="c-sig">-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n');
+						if (doc) res.write(
+							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
+							'-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n'
+						);
 						else respondPageFooter(res, true);
 					});
 				}
@@ -476,7 +492,23 @@ http.createServer(function(req,	res) {
 			respondPage(doc.name, user, req, res, function() {
 				fs.readFile('./html/chat/room.html', function(err, data) {
 					if (err) throw err;
-					res.write(data.toString().replaceAll('$id', doc._id).replaceAll('$name', html(doc.name)).replaceAll('$rawdesc', html(doc.desc)).replace('$desc', markdown(doc.desc)).replace('$user', user ? user.name : '').replace('$textarea', user ? ((user || {rep: 0}).rep < 30 ? '<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' : '<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>') : '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>').replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>'));
+					res.write(
+						data.toString()
+						.replaceAll('$id', doc._id)
+						.replaceAll('$name', html(doc.name))
+						.replaceAll('$rawdesc', html(doc.desc))
+						.replace('$desc', markdown(doc.desc))
+						.replace('$user', user ? user.name : '')
+						.replace('$textarea',
+							user ?
+								(
+									(user || {rep: 0}).rep < 30 ?
+									'<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' :
+									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
+								) :
+								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>')
+						.replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>')
+					);
 					respondPageFooter(res);
 				});
 			});
@@ -536,8 +568,8 @@ http.createServer(function(req,	res) {
 				if (data) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
-					else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+					if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
+						else if (data.type == 2) res.write('\t' + showcanvas.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
 					res.write('</div>\n');
 				} else {
 					res.write('<a href="search/" class="center-text blk">See more</a>\n');
@@ -580,7 +612,14 @@ http.createServer(function(req,	res) {
 		respondPage('Canvas Playground', user, req, res, function() {
 			fs.readFile('./html/dev/canvas.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$code'], ['', 'New Program', req.url.query ? html(req.url.query.code || '') : '']));
+				res.write(
+					data.toString()
+					.replace(/<section id="meta">[^]+<\/section>/, '')
+					.replaceAll(
+						['$id', '$title', '$code'],
+						['', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+					)
+				);
 				respondPageFooter(res);
 			});
 		});
@@ -588,7 +627,14 @@ http.createServer(function(req,	res) {
 		respondPage('HTML Playground', user, req, res, function() {
 			fs.readFile('./html/dev/html.html', function(err, data) {
 				if (err) throw err;
-				res.write(data.toString().replace(/<section id="meta">[^]+<\/section>/, '').replaceAll(['$id', '$title', '$html', '$css', '$js'], ['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']));
+				res.write(
+					data.toString()
+					.replace(/<section id="meta">[^]+<\/section>/, '')
+					.replaceAll(
+						['$id', '$title', '$html', '$css', '$js'],
+						['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+					)
+				);
 				respondPageFooter(res);
 			});
 		});
@@ -638,7 +684,19 @@ http.createServer(function(req,	res) {
 								var votes = comment.votes || [],
 									voted;
 								for (var i in votes) if (votes[i].user == user.name) voted = true;
-								commentstr += '<div id="c' + comment._id + '" class="comment"><span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' + (user && user.rep >= 50 ? '<span class="sctrls"><svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg></span>' : '') + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+								commentstr +=
+									'<div id="c' + comment._id + '" class="comment">' +
+									'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
+									(
+										user && user.rep >= 50 ?
+										(
+											'<span class="sctrls">' +
+											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg>' +
+											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg>' +
+											'</span>'
+										) :
+										''
+									) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							} else {
 								if (program.type == 1) {
 									fs.readFile('./html/dev/canvas.html', function(err, data) {
