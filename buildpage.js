@@ -336,30 +336,50 @@ http.createServer(function(req,	res) {
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
-				if (me) {
-					res.write('<h2>Private</h2>\n');
-					res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var mail = document.getElementById(\'mail\'); mail.hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true; mail.removeChild(mail.firstChild); mail.appendChild(document.createTextNode(document.getElementById(\'mailinput\').value)); }, \'newmail=\' + encodeURIComponent(document.getElementById(\'mailinput\').value));"><span id="mail">Email: ' + html(user.mail) + '</span> <input type="text" id="mailinput" hidden="" value="' + html(user.mail) + '" placeholder="mail" style="width: 240px; max-width: 100%;" /> <button type="submit" id="mailsave" hidden="">Save</button> <button type="reset" id="mailcancel" hidden="" onclick="document.getElementById(\'mail\').hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true;">Cancel</button> <button type="button" id="mailedit" onclick="document.getElementById(\'mail\').hidden = this.hidden = true; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = false; document.getElementById(\'mailinput\').focus();">edit</button></form>\n');
-					if (user.notifs) {
-						var notifs = [];
-						for (var i = 0; i < user.notifs.length; i++) {
-							if (user.notifs[i].unread) notifs.push(user.notifs[i]);
-							user.notifs[i].unread = false;
-						}
-						if (notifs.length) {
-							res.write('<h2>Notifications</h2>\n');
-							res.write('<ul id="notifs">\n');
-							for (var i = 0; i < notifs.length; i++) res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
-							res.write('</ul>');
-							dbcs.users.update({name: user.name}, {
-								$set: {
-									unread: 0,
-									notifs: user.notifs
+				res.write('<section class="lim-programs pad">\n');
+				res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
+				var programs = 0;
+				dbcs.programs.find({
+					user: dispUser.name,
+					deleted: {$exists: false}
+				}).sort({score: -1}).limit(6).each(function(err, data) {
+					if (err) throw err;
+					if (data) {
+						res.write('<div class="program">\n');
+						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
+						if (data.type == 1) res.write('\t<div><iframe sandbox="allow-scripts" seamless="" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;color:#fff;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;/head>&lt;body>&lt;canvas id=&quot;canvas&quot;>&lt;/canvas>&lt;div id=&quot;console&quot;>&lt;/div>&lt;script src=&quot;/dev/canvas.js&quot;>&lt;/script>&lt;script>\'use strict\';try{this.eval(' + html(JSON.stringify(data.code)) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n');
+						else if (data.type == 2) res.write('\t<div><iframe sandbox="allow-scripts" srcdoc="&lt;!DOCTYPE html>&lt;html>&lt;body>' + html(data.html) + '&lt;style>' + html(data.css) + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + html(data.js) + '&lt;/script>&lt;/body>&lt;/html>"></iframe></div>\n'); 
+						res.write('</div>\n');
+						programs++;
+					} else {
+						if (!programs) res.write('<p class="grey">'(me ? 'You don\'t' : 'This user doesn\'t') + 'have any programs.</p>');
+						res.write('</section>\n');
+						if (me) {
+							res.write('<h2 class="underline">Private</h2>\n');
+							res.write('<form onsubmit="arguments[0].preventDefault(); request(\'/api/me/changemail\', function(res) { if (res.indexOf(\'Error:\') == 0) return alert(res); var mail = document.getElementById(\'mail\'); mail.hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true; mail.removeChild(mail.firstChild); mail.appendChild(document.createTextNode(document.getElementById(\'mailinput\').value)); }, \'newmail=\' + encodeURIComponent(document.getElementById(\'mailinput\').value));"><span id="mail">Email: ' + html(user.mail) + '</span> <input type="text" id="mailinput" hidden="" value="' + html(user.mail) + '" placeholder="mail" style="width: 240px; max-width: 100%;" /> <button type="submit" id="mailsave" hidden="">Save</button> <button type="reset" id="mailcancel" hidden="" onclick="document.getElementById(\'mail\').hidden = document.getElementById(\'mailedit\').hidden = false; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = true;">Cancel</button> <button type="button" id="mailedit" onclick="document.getElementById(\'mail\').hidden = this.hidden = true; document.getElementById(\'mailinput\').hidden = document.getElementById(\'mailsave\').hidden = document.getElementById(\'mailcancel\').hidden = false; document.getElementById(\'mailinput\').focus();">edit</button></form>\n');
+							if (user.notifs) {
+								var notifs = [];
+								for (var i = 0; i < user.notifs.length; i++) {
+									if (user.notifs[i].unread) notifs.push(user.notifs[i]);
+									user.notifs[i].unread = false;
 								}
-							});
-						} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+								if (notifs.length) {
+									res.write('<h2>Notifications</h2>\n');
+									res.write('<ul id="notifs">\n');
+									for (var i = 0; i < notifs.length; i++) res.write('\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + notifs[i].body + '</blockquote>-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n');
+									res.write('</ul>');
+									dbcs.users.update({name: user.name}, {
+										$set: {
+											unread: 0,
+											notifs: user.notifs
+										}
+									});
+								} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+							}
+						}
+						respondPageFooter(res);
 					}
-				}
-				respondPageFooter(res);
+				});
 			}, {nonotif: true});
 		});
 	} else if (req.url.pathname == '/notifs') {
@@ -623,16 +643,35 @@ http.createServer(function(req,	res) {
 								if (program.type == 1) {
 									fs.readFile('./html/dev/canvas.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(
-											['$id', '$title', '$code', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.code), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(
+											data.toString()
+											.replaceAll(
+												['$id', '$title', '$code', '$created', '$updated', '$comments'],
+												[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+											).replaceAll(
+												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
+											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+										);
 										respondPageFooter(res);
 									});
 								} else if (program.type == 2) {
 									fs.readFile('./html/dev/html.html', function(err, data) {
 										if (err) throw err;
-										res.write(data.toString().replaceAll(['$id', '$title', '$html', '$css', '$js', '$op-name', '$op-rep', '$op-pic', '$created', '$updated', '$comments', '$rep', 'Save</a>', 'id="addcomment"', vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0],
-											[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon', new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr, (user.rep || 0).toString(), 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''), 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'), (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 0) + ' class="clkd"']));
+										res.write(
+											data.toString()
+											.replaceAll(
+												['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+												[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+											).replaceAll(
+												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
+											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+										);
 										respondPageFooter(res);
 									});
 								} else throw 'Invalid program type for id: ' + program._id;
