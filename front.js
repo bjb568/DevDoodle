@@ -60,7 +60,6 @@ db.open(function(err, db) {
 			db.collection(usedDBCs[i], function(err, collection) {
 				if (err) throw err;
 				dbcs[usedDBCs[i]] = collection;
-				if (usedDBCs[i] == 'chatusers') collection.drop();
 			});
 		}
 	});
