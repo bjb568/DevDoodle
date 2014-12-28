@@ -176,10 +176,12 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (!header) header = {};
 	var inhead = header.inhead || '',
 		huser = header.user,
-		nonotif = header.nonotif;
+		nonotif = header.nonotif,
+		clean = header.clean;
 	delete header.inhead;
 	delete header.user;
 	delete header.nonotif;
+	delete header.clean;
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	if (user) {
@@ -228,7 +230,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 			).replace(
 				'$notifs',
 				(user && user.unread && !nonotif) ? ' class="unread"' : ''
-			)
+			).replace('main.css', clean ? 'clean.css' : 'main.css')
 		);
 		callback();
 	});
@@ -248,6 +250,13 @@ function errorsHTML(errs) {
 var statics = {
 	'/': {
 		path: './html/home.html'
+	},
+	'/formatting': {
+		path: './html/formatting.html'
+	},
+	'/about': {
+		path: './html/about.html',
+		clean: true
 	}
 }
 
@@ -269,7 +278,7 @@ http.createServer(function(req,	res) {
 				res.write(data.toString());
 				respondPageFooter(res);
 			});
-		})
+		}, i.clean ? {clean: true} : null);
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
@@ -359,7 +368,7 @@ http.createServer(function(req,	res) {
 						res.write('</div>\n');
 						programs++;
 					} else {
-						if (!programs) res.write('<p class="grey">'(me ? 'You don\'t' : 'This user doesn\'t') + 'have any programs.</p>');
+						if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + 'have any programs.</p>');
 						res.write('</section>\n');
 						if (me) {
 							res.write('<h2 class="underline">Private</h2>\n');
@@ -569,7 +578,7 @@ http.createServer(function(req,	res) {
 					res.write('<div class="program">\n');
 					res.write('\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
 					if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showcanvas.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
 					res.write('</div>\n');
 				} else {
 					res.write('<a href="search/" class="center-text blk">See more</a>\n');
@@ -789,14 +798,6 @@ http.createServer(function(req,	res) {
 				});
 			}
 		});
-	} else if (req.url.pathname == '/formatting') {
-		respondPage('Formatting Help', user, req, res, function() {
-			fs.readFile('./html/formatting.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
-			});
-		}, {inhead: '<style>section, section > code.blk { margin-left: 36px} section { padding: 6px }</style>'});
 	} else if (req.url.pathname == '/mod/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Moderation Queues</h1>\n');
