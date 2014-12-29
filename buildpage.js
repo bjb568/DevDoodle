@@ -251,10 +251,12 @@ var statics = {
 		path: './html/home.html'
 	},
 	'/formatting': {
-		path: './html/formatting.html'
+		path: './html/formatting.html',
+		title: 'Formatting'
 	},
 	'/about': {
 		path: './html/about.html',
+		title: 'About',
 		clean: true
 	}
 }
@@ -357,13 +359,16 @@ http.createServer(function(req,	res) {
 				dbcs.programs.find({
 					user: dispUser.name,
 					deleted: {$exists: false}
-				}).sort({score: -1}).limit(6).each(function(err, data) {
+				}).sort({
+					score: -1,
+					updated: -1
+				}).limit(6).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
 						res.write('<div class="program">\n');
 						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
 						if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showcanvas.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
 						res.write('</div>\n');
 						programs++;
 					} else {
@@ -699,8 +704,8 @@ http.createServer(function(req,	res) {
 										user && user.rep >= 50 ?
 										(
 											'<span class="sctrls">' +
-											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg>' +
-											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg>' +
+											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
 											'</span>'
 										) :
 										''
