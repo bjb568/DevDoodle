@@ -213,9 +213,109 @@ function markdown(input) {
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
 }
+
+var errorPage = [];
+errorPage[400] = function(req, res, user) {
+	respondPage('400', user, req, res, function() {
+		res.write('<h1>Error 400 :(</h1>');
+		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 400);
+};
+errorPage[403] = function(req, res, user, msg) {
+	respondPage('403', user, req, res, function() {
+		res.write('<h1>Error 403</h1>');
+		res.write(msg || '<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 403);
+};
+errorPage[404] = function(req, res, user) {
+	respondPage('404', user, req, res, function() {
+		res.write('<h1>Error 404 :(</h1>');
+		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 404);
+};
+errorPage[405] = function(req, res, user) {
+	respondPage('405', user, req, res, function() {
+		res.write('<h1>Error 405</h1>');
+		res.write('<p>Method not allowed.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 405);
+};
+errorPage[413] = function(req, res, user) {
+	respondPage('413', user, req, res, function() {
+		res.write('<h1>Error 413</h1>');
+		res.write('<p>Request entity too large.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 413);
+};
+errorPage[414] = function(req, res, user) {
+	respondPage('414', user, req, res, function() {
+		res.write('<h1>Error 414</h1>');
+		res.write('<p>Request URI too long.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 414);
+};
+errorPage[418] = function(req, res, user) {
+	respondPage('418', user, req, res, function() {
+		res.write('<h1>418!</h1>');
+		res.write('<p>I\'m a little teapot, short and stout.</p>');
+		respondPageFooter(res);
+	}, {}, 418);
+};
+errorPage[429] = function(req, res, user) {
+	respondPage('429', user, req, res, function() {
+		res.write('<h1>Error 429</h1>');
+		res.write('<p>Too many requests.</p>');
+		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 429);
+};
+errorPage[431] = function(req, res, user) {
+	respondPage('431', user, req, res, function() {
+		res.write('<h1>Error 431</h1>');
+		res.write('<p>Request header fields too large.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 431);
+};
+errorPage[500] = function(req, res, user, msg) {
+	respondPage('500', user, req, res, function() {
+		res.write('<h1>Error 500 :(</h1>');
+		res.write('<p>Internal server error. This will be automatically reported.</p>');
+		if (msg) res.write('Error: ' + msg);
+		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 500);
+};
+errorPage[505] = function(req, res, user) {
+	respondPage('505', user, req, res, function() {
+		res.write('<h1>Error 505</h1>');
+		res.write('<p>HTTP version not supported.</p>');
+		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 505);
+};
+errorPage[521] = function(req, res, user) {
+	respondPage('521', user, req, res, function() {
+		res.write('<h1>Error 521 :(</h1>');
+		res.write('<p>We\'re down. We should be up soon!</p>');
+		res.write('<p><a href="">Reload</a>.</p>');
+		respondPageFooter(res);
+	}, {}, 521);
+};
+
 module.exports = {
 	html: html,
 	markdownEscape: markdownEscape,
 	inlineMarkdown: inlineMarkdown,
-	markdown: markdown
+	markdown: markdown,
+	errorPage: errorPage
 }
