@@ -230,11 +230,11 @@ function markdown(input) {
 	}).join('');
 }
 
-var noPageOverflow = false,
-	pageOverflowMobile = false,
-	footerOff = false,
-	mainContentEl,
-	mainBottomPad = 0;
+var noPageOverflow = noPageOverflow || false,
+	pageOverflowMobile = pageOverflowMobile || false,
+	footerOff = footerOff || false,
+	mainContentEl = mainContentEl || false,
+	mainBottomPad = mainBottomPad || 0;
 
 function minHeight() {
 	var footer = document.getElementById('footer').offsetHeight,
