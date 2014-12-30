@@ -34,19 +34,22 @@ var http = require('http'),
 	html = essentials.html,
 	markdownEscape = essentials.markdownEscape,
 	inlineMarkdown = essentials.inlineMarkdown,
-	markdown = essentials.markdown;
-
-var mongo = require('mongodb');
-var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
-	auto_reconnect: false,
-	poolSize: 4
-}), {
-	w: 0,
-	native_parser: false
-});
-
-var dbcs = {},
+	markdown = essentials.markdown,
+	errorPage = essentials.errorPage,
+	nodemailer = require('nodemailer'),
+	sendmailTransport = require('nodemailer-sendmail-transport'),
+	transport = nodemailer.createTransport(sendmailTransport()),
+	mongo = require('mongodb'),
+	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
+		auto_reconnect: false,
+		poolSize: 4
+	}), {
+		w: 0,
+		native_parser: false
+	}),
+	dbcs = {},
 	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
@@ -60,113 +63,6 @@ db.open(function(err, db) {
 		}
 	});
 });
-
-var errorPage = [];
-errorPage[400] = function(req, res, user) {
-	respondPage('400', user, req, res, function() {
-		res.write('<h1>Error 400 :(</h1>');
-		res.write('<p>Your request was corrupted, <a href="">try again</a>. If the problem persists, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 400);
-};
-errorPage[403] = function(req, res, user, msg) {
-	respondPage('403', user, req, res, function() {
-		res.write('<h1>Error 403</h1>');
-		res.write(msg || '<p>Permission denied. If you think this is a mistake, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 403);
-};
-errorPage[404] = function(req, res, user) {
-	respondPage('404', user, req, res, function() {
-		res.write('<h1>Error 404 :(</h1>');
-		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 404);
-};
-errorPage[405] = function(req, res, user) {
-	respondPage('405', user, req, res, function() {
-		res.write('<h1>Error 405</h1>');
-		res.write('<p>Method not allowed.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 405);
-};
-errorPage[413] = function(req, res, user) {
-	respondPage('413', user, req, res, function() {
-		res.write('<h1>Error 413</h1>');
-		res.write('<p>Request entity too large.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 413);
-};
-errorPage[414] = function(req, res, user) {
-	respondPage('414', user, req, res, function() {
-		res.write('<h1>Error 414</h1>');
-		res.write('<p>Request URI too long.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 414);
-};
-errorPage[418] = function(req, res, user) {
-	respondPage('418', user, req, res, function() {
-		res.write('<h1>418!</h1>');
-		res.write('<p>I\'m a little teapot, short and stout.</p>');
-		respondPageFooter(res);
-	}, {}, 418);
-};
-errorPage[429] = function(req, res, user) {
-	respondPage('429', user, req, res, function() {
-		res.write('<h1>Error 429</h1>');
-		res.write('<p>Too many requests.</p>');
-		res.write('<p>Wait, then <a href="">Reload</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 429);
-};
-errorPage[431] = function(req, res, user) {
-	respondPage('431', user, req, res, function() {
-		res.write('<h1>Error 431</h1>');
-		res.write('<p>Request header fields too large.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 431);
-};
-errorPage[500] = function(req, res, user, msg) {
-	respondPage('500', user, req, res, function() {
-		res.write('<h1>Error 500 :(</h1>');
-		res.write('<p>Internal server error. This will be automatically reported.</p>');
-		if (msg) res.write('Error: ' + msg);
-		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 500);
-};
-errorPage[505] = function(req, res, user) {
-	respondPage('505', user, req, res, function() {
-		res.write('<h1>Error 505</h1>');
-		res.write('<p>HTTP version not supported.</p>');
-		res.write('<p><a href="">Reload</a>, <a href="javascript:history.go(-1)">go back</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 505);
-};
-errorPage[521] = function(req, res, user) {
-	respondPage('521', user, req, res, function() {
-		res.write('<h1>Error 521 :(</h1>');
-		res.write('<p>We\'re down. We should be up soon!</p>');
-		res.write('<p><a href="">Reload</a>.</p>');
-		respondPageFooter(res);
-	}, {}, 521);
-};
-
-var mime = {
-	'.html': 'text/html',
-	'.css': 'text/css',
-	'.js': 'text/javascript',
-	'.png': 'image/png',
-	'.svg': 'image/svg+xml',
-	'.mp3': 'audio/mpeg'
-};
 
 function respondPage(title, user, req, res, callback, header, status) {
 	if (title) title = html(title);
@@ -229,6 +125,9 @@ function respondPage(title, user, req, res, callback, header, status) {
 			).replace(
 				'$notifs',
 				(user && user.unread && !nonotif) ? ' class="unread"' : ''
+			).replace(
+				'<a href="/mod/">Mod</a>',
+				user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
 			).replace('main.css', clean ? 'clean.css' : 'main.css')
 		);
 		callback();
@@ -246,19 +145,6 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
-var statics = {
-	'/': {
-		path: './html/home.html'
-	},
-	'/formatting': {
-		path: './html/formatting.html'
-	},
-	'/about': {
-		path: './html/about.html',
-		clean: true
-	}
-}
-
 var showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
 	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString(),
 	mailform = fs.readFileSync('./html/user/mailform.html').toString();
@@ -270,15 +156,7 @@ http.createServer(function(req,	res) {
 		i;
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
-	if (i = statics[req.url.pathname]) {
-		respondPage(i.title, user, req, res, function() {
-			fs.readFile(i.path || './html/' + req.url.pathname, function(err, data) {
-				if (err) throw err;
-				res.write(data.toString());
-				respondPageFooter(res);
-			});
-		}, i.clean ? {clean: true} : null);
-	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
+	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {
@@ -357,13 +235,16 @@ http.createServer(function(req,	res) {
 				dbcs.programs.find({
 					user: dispUser.name,
 					deleted: {$exists: false}
-				}).sort({score: -1}).limit(6).each(function(err, data) {
+				}).sort({
+					score: -1,
+					updated: -1
+				}).limit(6).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
 						res.write('<div class="program">\n');
 						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
 						if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showcanvas.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
 						res.write('</div>\n');
 						programs++;
 					} else {
@@ -699,8 +580,8 @@ http.createServer(function(req,	res) {
 										user && user.rep >= 50 ?
 										(
 											'<span class="sctrls">' +
-											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11"></polygon></svg>' +
-											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16"></polygon></svg>' +
+											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
 											'</span>'
 										) :
 										''
@@ -745,38 +626,6 @@ http.createServer(function(req,	res) {
 						});
 					});
 				});
-			});
-		});
-	} else if (req.url.pathname == '/dev/docs/') {
-		respondPage('New', user, req, res, function() {
-			fs.readFile('./html/dev/docs.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
-			});
-		});
-	} else if (req.url.pathname == '/learn/') {
-		respondPage(null, user, req, res, function() {
-			fs.readFile('./html/learn/learn.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
-			});
-		});
-	} else if (req.url.pathname == '/learn/web/') {
-		respondPage('Web', user, req, res, function() {
-			fs.readFile('./html/learn/web/web.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
-			});
-		});
-	} else if (req.url.pathname == '/learn/debug/') {
-		respondPage('Debugging', user, req, res, function() {
-			fs.readFile('./html/learn/debug.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
 			});
 		});
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
@@ -833,5 +682,5 @@ http.createServer(function(req,	res) {
 			});
 		}, {inhead: '<style>pre { margin: 0 }</style>'});
 	} else return errorPage[404](req, res, user);
-}).listen(8000);
-console.log('buildpage.js running on port 8000');
+}).listen(process.argv[2] || 8000);
+console.log('buildpage.js running on port ' + (process.argv[2] || 8000));
