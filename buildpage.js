@@ -73,6 +73,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	delete header.clean;
+	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	if (user) {
