@@ -136,6 +136,9 @@ function respondPage(title, user, req, res, callback, header, status) {
 			).replace(
 				'$notifs',
 				(user && user.unread && !nonotif) ? ' class="unread"' : ''
+			).replace(
+				'<a href="/mod/">Mod</a>',
+				user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
 			).replace('main.css', clean ? 'clean.css' : 'main.css')
 		);
 		callback();
