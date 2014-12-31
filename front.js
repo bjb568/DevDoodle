@@ -973,4 +973,4 @@ http.createServer(function(req,	res) {
 		}
 	});
 }).listen(process.argv[2] || 80);
-console.log('buildpage.js running on port ' + (process.argv[2] || 80));
+console.log('front.js running on port ' + (process.argv[2] || 80));
