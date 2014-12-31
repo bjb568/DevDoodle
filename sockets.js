@@ -16,22 +16,18 @@ Number.prototype.bound = function(l, h) {
 var cookie = require('cookie'),
 	essentials = require('./essentials.js'),
 	ws = require('ws'),
-	html = essentials.html,
-	markdownEscape = essentials.markdownEscape,
-	inlineMarkdown = essentials.inlineMarkdown,
-	markdown = essentials.markdown;
-
-var mongo = require('mongodb');
-var db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
-	auto_reconnect: false,
-	poolSize: 4
-}), {
-	w: 0,
-	native_parser: false
-});
-
-var dbcs = {},
+	markdown = essentials.markdown,
+	mongo = require('mongodb'),
+	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
+		auto_reconnect: false,
+		poolSize: 4
+	}), {
+		w: 0,
+		native_parser: false
+	}),
+	dbcs = {},
 	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
@@ -54,13 +50,13 @@ wss.on('connection', function(tws) {
 	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 		if (isNaN(tws.room = parseInt(i[1]))) return;
 		dbcs.users.findOne({
-				cookie: {
-					$elemMatch: {
-						token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
-						created: {$gt: new Date().getTime() - 2592000000}
-					}
+			cookie: {
+				$elemMatch: {
+					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+					created: {$gt: new Date().getTime() - 2592000000}
 				}
-			}, function(err, user) {
+			}
+		}, function(err, user) {
 			if (err) throw err;
 			if (!user) user = {};
 			tws.user = user;
@@ -81,6 +77,7 @@ wss.on('connection', function(tws) {
 					],
 					_id: {$gt: i}
 				}).count(function(err, after) {
+					if (err) throw err;
 					var ts = after > 92 && i,
 						skip = Math.max(0, ts ? count - after - 18 : count - 92);
 					try {
