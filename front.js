@@ -49,7 +49,7 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
 
 db.open(function(err, db) {
 	if (err) throw err;
@@ -336,9 +336,6 @@ var statics = {
 	'/dev/docs/': {
 		path: './html/dev/docs.html',
 		title: 'Docs'
-	},
-	'/learn/': {
-		path: './html/learn/learn.html'
 	},
 	'/learn/web/': {
 		path: './html/learn/web/web.html',
@@ -725,6 +722,91 @@ http.createServer(function(req,	res) {
 						)) + ')">Submit</button>');
 						respondPageFooter(res);
 					});
+				});
+			} else errorPage[405](req, res);
+		} else if (req.url.pathname == '/learn/new') {
+			if (req.method == 'GET') {
+				respondPage('New Lesson', user, req, res, function() {
+					fs.readFile('./html/learn/newlesson.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('id="checker"', 'id="checker" hidden=""').replace(/\$[^\s"<]+/g, ''));
+						respondPageFooter(res);
+					});
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+			} else if (req.method == 'POST') {
+				post = '';
+				req.on('data', function(data) {
+					if (req.abort) return;
+					post += data;
+					if (post.length > 1000000) {
+						errorPage[413](req, res);
+						req.abort = true;
+					}
+				});
+				req.on('end', function() {
+					if (req.abort) return;
+					post = querystring.parse(post);
+					if (parseInt(req.url.query.submit)) {
+						if (!user) return errorPage[403](req, res, user, 'You must be logged in to submit a lesson.');
+						dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+							if (err) throw err;
+							var id = last ? last_id + 1 : 1;
+							dbcs.lessons.insert({
+								_id: id,
+								created: new Date().getTime(),
+								updated: new Date().getTime(),
+								title: post.title || '',
+								stitle: post.stitle || '',
+								sbody: post.sbody || '',
+								pregex: post.pregex,
+								sregex: post.sregex,
+								stext: post.stext,
+								ftext: post.ftext,
+								html: post.html || ''
+							});
+							res.writeHead(303, {'Location': 'unoff/' + id});
+							res.end();
+						});
+					} else if (parseInt(req.url.query.preview)) {
+						respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, function() {
+							fs.readFile('./html/learn/lessonpreview.html', function(err, data) {
+								if (err) throw err;
+								res.write(
+									data.toString()
+									.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
+									.replaceAll(
+										['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
+										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.pregex || ''), html(post.sregex || ''), html(post.stext || ''), html(post.ftext || ''), html(post.html || '')]
+									).replaceAll(
+										['$md-ftext', '$md-stext', '$md-sbody'],
+										[markdown(post.ftext), markdown(post.stext), markdown(post.sbody)]
+									).replaceAll(
+										['$str-pregex', '$str-sregex'],
+										[html(JSON.stringify(post.pregex || '')), html(JSON.stringify(post.sregex || ''))]
+									)
+								);
+								respondPageFooter(res);
+							});
+						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+					} else {
+						respondPage('New Lesson', user, req, res, function() {
+							fs.readFile('./html/learn/newlesson.html', function(err, data) {
+								if (err) throw err;
+								res.write(
+									data.toString()
+									.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
+									.replaceAll(
+										['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
+										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.pregex || ''), html(post.sregex || ''), html(post.stext || ''), html(post.ftext || ''), html(post.html || '')]
+									).replaceAll(
+										['$md-ftext', '$md-stext'],
+										[markdown(post.ftext), markdown(post.stext)]
+									)
+								);
+								respondPageFooter(res);
+							});
+						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+					}
 				});
 			} else errorPage[405](req, res);
 		} else if (req.url.pathname == '/login/') {

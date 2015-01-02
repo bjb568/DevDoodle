@@ -47,7 +47,7 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
 
 db.open(function(err, db) {
 	if (err) throw err;
@@ -726,6 +726,21 @@ http.createServer(function(req,	res) {
 				});
 			});
 		});
+	} else if (req.url.pathname == '/learn/') {
+		respondPage(null, user, req, res, function() {
+			var lessonstr = '';
+			dbcs.lessons.find().each(function(err, lesson) {
+				if (err) throw err;
+				if (lesson) lessonstr += '<li><a href="unoff/' + lesson._id + '"><em>' + html(lesson.title) + ':</em> ' + html(lesson.stitle) + '</a></li>';
+				else {
+					fs.readFile('./html/learn/learn.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$lessons', '<ul>' + lessonstr + '</ul>'));
+						respondPageFooter(res);
+					});
+				}
+			});
+		});
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
 		res.writeHead(303, {
 			Location: '1/'
@@ -739,10 +754,33 @@ http.createServer(function(req,	res) {
 				respondPage(data.substr(0, data.indexOf('\n')), user, req, res, function() {
 					res.write(data.substr(data.indexOf('\n') + 1));
 					respondPageFooter(res);
-				}, {
-					inhead: '<link rel="stylesheet" href="/learn/course.css" />'
-				});
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 			}
+		});
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)$/)) {
+		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
+			if (err) throw err;
+			if (!post) return errorPage[404](req, res, user);
+			respondPage(post.title, user, req, res, function() {
+				fs.readFile('./html/learn/lesson.html', function(err, data) {
+					if (err) throw err;
+					res.write(
+						data.toString()
+						.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
+						.replaceAll(
+							['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
+							[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.pregex || ''), html(post.sregex || ''), html(post.stext || ''), html(post.ftext || ''), html(post.html || '')]
+						).replaceAll(
+							['$md-ftext', '$md-stext', '$md-sbody'],
+							[markdown(post.ftext), markdown(post.stext), markdown(post.sbody)]
+						).replaceAll(
+							['$str-pregex', '$str-sregex'],
+							[html(JSON.stringify(post.pregex || '')), html(JSON.stringify(post.sregex || ''))]
+						)
+					);
+					respondPageFooter(res);
+				});
+			}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 		});
 	} else if (req.url.pathname == '/mod/') {
 		respondPage(null, user, req, res, function() {

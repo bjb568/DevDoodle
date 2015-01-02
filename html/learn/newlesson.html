@@ -1,0 +1,73 @@
+<form action="?preview=1&amp;submit=0" method="POST" class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1><input type="text" value="$title" name="title" placeholder="Lesson Title" /></h1>
+			<h2><input type="text" value="$stitle" name="stitle" placeholder="Section Title" /></h2>
+			<textarea name="sbody" placeholder="Section Content">$sbody</textarea>
+			<input type="text" id="regex-pass" value="$pregex" name="pregex" placeholder="Passing regex" />
+			<input type="text" id="regex-second" value="$sregex" name="sregex" placeholder="Almost-Passing regex" />
+			<input type="text" id="text-second" value="$stext" name="stext" placeholder="Almost-Passing text" />
+			<input type="text" id="text-fail" value="$ftext" name="ftext" placeholder="Failure text" />
+			<div id="checker">
+				<button type="button" id="check" class="blk">Test User Submit</button>
+				<div id="passed" class="passed clearfix">
+					<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+				</div>
+				<div id="failed1" class="failed clearfix">
+					<h2>Try Again</h2>
+					<p id="fail">$md-ftext</p>
+				</div>
+				<div id="failed2" class="failed clearfix">
+					<h2>Almost!</h2>
+					<p id="second">$md-stext</p>
+				</div>
+			</div>
+		</div>
+		<div id="cntrls"><button type="submit">Preview Lesson</button></div>
+	</div>
+	<textarea id="html" name="html">$html</textarea>
+	<iframe id="output"></iframe>
+</form>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	document.getElementById('check').onclick = function(e) {
+		e.preventDefault();
+		if (document.getElementById('html').value.match(new RegExp(document.getElementById('regex-pass').value, 'i'))) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed2').classList.remove('show');
+		} else if (document.getElementById('html').value.match(new RegExp(document.getElementById('regex-second').value, 'i'))) {
+			document.getElementById('failed2').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+			document.getElementById('failed1').classList.remove('show');
+		} else {
+			document.getElementById('failed1').classList.add('show');
+			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	};
+	document.getElementById('text-second').onchange = function() {
+		document.getElementById('second').innerHTML = markdown(this.value);
+	};
+	document.getElementById('text-fail').onchange = function() {
+		document.getElementById('fail').innerHTML = markdown(this.value);
+	};
+	document.getElementById('regex-pass').onchange = function() {
+		document.getElementById('checker').hidden = !this.value;
+	};
+</script>
+<style>
+	input, textarea { width: 100% }
+	h1, h2 { border: none }
+	textarea { height: 400px }
+</style>
