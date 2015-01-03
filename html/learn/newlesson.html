@@ -1,9 +1,9 @@
 <form action="?preview=1&amp;submit=0" method="POST" class="row">
 	<div id="text">
 		<div id="text-inner">
-			<h1><input type="text" value="$title" name="title" placeholder="Lesson Title" /></h1>
-			<h2><input type="text" value="$stitle" name="stitle" placeholder="Section Title" /></h2>
-			<textarea name="sbody" placeholder="Section Content">$sbody</textarea>
+			<h1><input type="text" value="$title" name="title" placeholder="Lesson Title" required="" /></h1>
+			<h2><input type="text" value="$stitle" name="stitle" placeholder="Section Title" required="" /></h2>
+			<textarea name="sbody" placeholder="Section Content" required="">$sbody</textarea>
 			<input type="text" id="regex-pass" value="$pregex" name="pregex" placeholder="Passing regex" />
 			<input type="text" id="regex-second" value="$sregex" name="sregex" placeholder="Almost-Passing regex" />
 			<input type="text" id="text-second" value="$stext" name="stext" placeholder="Almost-Passing text" />

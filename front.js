@@ -750,21 +750,24 @@ http.createServer(function(req,	res) {
 						if (!user) return errorPage[403](req, res, user, 'You must be logged in to submit a lesson.');
 						dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 							if (err) throw err;
-							var id = last ? last_id + 1 : 1;
+							var id = last ? last._id + 1 : 1;
 							dbcs.lessons.insert({
 								_id: id,
+								user: user.name,
 								created: new Date().getTime(),
 								updated: new Date().getTime(),
-								title: post.title || '',
-								stitle: post.stitle || '',
-								sbody: post.sbody || '',
-								pregex: post.pregex,
-								sregex: post.sregex,
-								stext: post.stext,
-								ftext: post.ftext,
-								html: post.html || ''
+								title: post.title || 'Untitled',
+								content: [{
+									stitle: post.stitle || 'Untitled',
+									sbody: post.sbody || '',
+									pregex: post.pregex,
+									sregex: post.sregex,
+									stext: post.stext,
+									ftext: post.ftext,
+									html: post.html || ''
+								}]
 							});
-							res.writeHead(303, {'Location': 'unoff/' + id});
+							res.writeHead(303, {'Location': 'unoff/' + id + '/'});
 							res.end();
 						});
 					} else if (parseInt(req.url.query.preview)) {
@@ -1003,7 +1006,6 @@ http.createServer(function(req,	res) {
 							res.end();
 						});
 						bres.on('error', function(e) {
-							throw e;
 							errorPage[500](req, res, user, e.message);
 						});
 					}).on('error', function(e) {
