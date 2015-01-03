@@ -175,7 +175,7 @@ wss.on('connection', function(tws) {
 							for (var i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].send(JSON.stringify({
+							for (var i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'adduser',
 								name: user.name,
 								state: 1
@@ -231,7 +231,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'add',
 							body: message.body,
 							user: tws.user.name,
@@ -292,7 +292,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'edit',
 							id: post._id,
 							body: message.body
@@ -361,7 +361,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'delete',
 							id: post._id
 						}));
@@ -392,7 +392,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'undelete',
 							id: post._id,
 							body: post.body,
@@ -411,7 +411,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'statechange',
 							state: message.state,
 							name: tws.user.name
@@ -524,7 +524,7 @@ wss.on('connection', function(tws) {
 										for (var i in wss.clients) {
 											if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 										}
-										for (var i in sendto) sendto[i].send(JSON.stringify({
+										for (var i in sendto) sendto[i].trysend(JSON.stringify({
 											event: 'star',
 											id: post._id,
 											body: post.body,
@@ -570,7 +570,7 @@ wss.on('connection', function(tws) {
 							for (var i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].send(JSON.stringify({
+							for (var i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'unstar',
 								id: id
 							}));
@@ -604,13 +604,13 @@ wss.on('connection', function(tws) {
 							if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
 						for (var i in sendto) {
-							sendto[i].send(JSON.stringify({
+							sendto[i].trysend(JSON.stringify({
 								event: 'info-update',
 								name: message.name,
 								desc: message.desc,
 								id: id
 							}));
-							sendto[i].send(JSON.stringify({
+							sendto[i].trysend(JSON.stringify({
 								event: 'add',
 								body: newMessage,
 								user: tws.user.name,
@@ -628,7 +628,7 @@ wss.on('connection', function(tws) {
 				for (var i in wss.clients) {
 					if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 				}
-				for (var i in sendto) sendto[i].send(JSON.stringify({
+				for (var i in sendto) sendto[i].trysend(JSON.stringify({
 					event: 'deluser',
 					name: tws.user.name
 				}));
@@ -693,7 +693,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'add',
 							body: message.body,
 							user: tws.user.name,
@@ -763,7 +763,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'scorechange',
 							id: post._id,
 							score: post.votes ? post.votes.length + 1 : 1
@@ -797,7 +797,7 @@ wss.on('connection', function(tws) {
 						for (var i in wss.clients) {
 							if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 						}
-						for (var i in sendto) sendto[i].send(JSON.stringify({
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
 							event: 'scorechange',
 							id: post._id,
 							score: post.votes.length - 1
