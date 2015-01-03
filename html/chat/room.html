@@ -67,7 +67,7 @@ $textarea
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
 		ta.hists = ta.hists || {};
-		ta.hists[editing] = ta.hist;console.log('AAA');console.log(editing, ta.hist);
+		ta.hists[editing] = ta.hist;
 		ta.hist = ta.hists[msg.id] || [{
 			body: ta.value,
 			start: 0,
@@ -615,7 +615,6 @@ $textarea
 	};
 	var hashchangeready = !hash;
 	addEventListener('hashchange', function(e) {
-		console.log(hashchangeready)
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
