@@ -256,7 +256,10 @@ http.createServer(function(req,	res) {
 			if (err) throw err;
 			if (user) {
 				dbcs.users.update({name: user.name}, {
-					$set: {level: 1},
+					$set: {
+						level: 1,
+						cookie: []
+					},
 					$unset: {confirm: 1}
 				});
 				respondPage('Account confirmed', user, req, res, function() {
