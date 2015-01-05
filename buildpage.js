@@ -403,7 +403,7 @@ http.createServer(function(req,	res) {
 					created: {$gt: new Date().getTime() - 2592000000}
 				}
 			}
-		}, {$unset: {cookie: 1}});
+		}, {$set: {cookie: []}});
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {

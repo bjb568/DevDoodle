@@ -986,9 +986,9 @@ http.createServer(function(req,	res) {
 							dbcs.users.update({name: user.name}, {
 								$set: {
 									pass: new Buffer(key).toString('base64'),
-									salt: salt
+									salt: salt,
+									cookie: []
 								},
-								$unset: {cookie: 1}
 							});
 							respondPage('Password Updated', user, req, res, function() {
 								res.write('The password for user ' + user.name + ' has been updated. You have been logged out.');
