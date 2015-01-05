@@ -575,6 +575,7 @@ $textarea
 		ta.addEventListener('keypress', pingsugs);
 	};
 	function send() {
+		if (!ta.value) return;
 		socket.send(JSON.stringify({event: 'post', body: ta.value}));
 		location.hash = '';
 		ta.value = '';
