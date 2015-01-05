@@ -678,6 +678,27 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (req.url.pathname == '/lesson/edit-title') {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to change a lesson title.');
+					}
+					var i = url.parse(req.headers.referer || '').pathname.match(/^\/learn\/unoff\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					dbcs.lessons.findOne({_id: id}, function(err, lesson) {
+						if (err) throw err;
+						if (!lesson) {
+							res.writeHead(400);
+							return res.end('Error: Invalid lesson id.');
+						}
+						if (lesson.user.toString() != user.name.toString()) {
+							res.writeHead(204);
+							return res.end('Error: You may rename only your own lessons.');
+						}
+						dbcs.lessons.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
+						res.writeHead(204);
+						res.end();
+					});
 				} else {
 					res.writeHead(404);
 					res.end('The API feature requested has not been implemented.');
@@ -729,7 +750,7 @@ http.createServer(function(req,	res) {
 				respondPage('New Lesson', user, req, res, function() {
 					fs.readFile('./html/learn/newlesson.html', function(err, data) {
 						if (err) throw err;
-						res.write(data.toString().replace('id="checker"', 'id="checker" hidden=""').replace(/\$[^\s"<]+/g, ''));
+						res.write(data.toString().replace('id="checker"', 'id="checker" hidden=""').replace('$title', html(req.url.query.title || '')).replace(/\$[^\s"<]+/g, ''));
 						respondPageFooter(res);
 					});
 				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
@@ -748,27 +769,51 @@ http.createServer(function(req,	res) {
 					post = querystring.parse(post);
 					if (parseInt(req.url.query.submit)) {
 						if (!user) return errorPage[403](req, res, user, 'You must be logged in to submit a lesson.');
-						dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+						dbcs.lessons.findOne({
+							user: user.name,
+							title: post.title || 'Untitled'
+						}, function(err, lesson) {
 							if (err) throw err;
-							var id = last ? last._id + 1 : 1;
-							dbcs.lessons.insert({
-								_id: id,
-								user: user.name,
-								created: new Date().getTime(),
-								updated: new Date().getTime(),
-								title: post.title || 'Untitled',
-								content: [{
-									stitle: post.stitle || 'Untitled',
-									sbody: post.sbody || '',
-									pregex: post.pregex,
-									sregex: post.sregex,
-									stext: post.stext,
-									ftext: post.ftext,
-									html: post.html || ''
-								}]
-							});
-							res.writeHead(303, {'Location': 'unoff/' + id + '/'});
-							res.end();
+							if (lesson) {
+								dbcs.lessons.update({_id: lesson._id}, {
+									$push: {
+										content: {
+											stitle: post.stitle || 'Untitled',
+											sbody: post.sbody || '',
+											pregex: post.pregex,
+											sregex: post.sregex,
+											stext: post.stext,
+											ftext: post.ftext,
+											html: post.html || ''
+										}
+									}
+								});
+								res.writeHead(303, {'Location': 'unoff/' + lesson._id + '/'});
+								res.end();
+							} else {
+								dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+									if (err) throw err;
+									var id = last ? last._id + 1 : 1;
+									dbcs.lessons.insert({
+										_id: id,
+										user: user.name,
+										created: new Date().getTime(),
+										updated: new Date().getTime(),
+										title: post.title || 'Untitled',
+										content: [{
+											stitle: post.stitle || 'Untitled',
+											sbody: post.sbody || '',
+											pregex: post.pregex,
+											sregex: post.sregex,
+											stext: post.stext,
+											ftext: post.ftext,
+											html: post.html || ''
+										}]
+									});
+									res.writeHead(303, {'Location': 'unoff/' + id + '/'});
+									res.end();
+								});
+							}
 						});
 					} else if (parseInt(req.url.query.preview)) {
 						respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, function() {

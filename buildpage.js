@@ -752,11 +752,21 @@ http.createServer(function(req,	res) {
 				res.end();
 			} else {
 				respondPage(post.title, user, req, res, function() {
-					res.write('<h1>' + post.title + '</h1>');
-					res.write('<ul>' + post.content.map(function(val, i) {
-						return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
-					}) + '</ul>');
-					respondPageFooter(res);
+					fs.readFile('./html/learn/course.html', function(err, data) {
+						res.write(
+							data.toString()
+							.replaceAll('$title', html(post.title))
+							.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
+								return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
+							}).join('') + '</ul>' + (
+								post.user == user.name
+								? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
+								: ''
+							))
+							.replace('$mine', post.user == user.name ? 'true' : 'false')
+						);
+						respondPageFooter(res);
+					});
 				});
 			}
 		});
@@ -781,7 +791,7 @@ http.createServer(function(req,	res) {
 						).replaceAll(
 							['$str-pregex', '$str-sregex'],
 							[html(JSON.stringify(post.pregex)), html(JSON.stringify(post.sregex))]
-						)
+						).replaceAll(['$back', '$next'], [i[2] ? i[2].toString() : '" title="This is the first slide." class="disabled', i[2] == lesson.content.length - 1 ? '" title="This is the last slide." class="disabled' : (i[2] + 2).toString()])
 					);
 					respondPageFooter(res);
 				});

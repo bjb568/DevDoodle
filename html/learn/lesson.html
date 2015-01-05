@@ -19,15 +19,20 @@
 				</div>
 			</div>
 		</div>
-		<div id="cntrls"><a href="./">Back</a></div>
+		<div id="cntrls"><a href="$back">Back</a> <a href="./">Course-Info</a> <a href="$next">Next</a></div>
 	</div>
 	<textarea id="html">$html</textarea>
 	<iframe id="output"></iframe>
 </div>
 <style>
-	#cntrls form {
-		display: inline;
-		margin: 0;
+	#cntrls {
+		text-align: justify;
+		height: 1.2em;
+	}
+	#cntrls::after {
+		content: 't';
+		display: inline-block;
+		width: 100%;
 	}
 </style>
 <script>
