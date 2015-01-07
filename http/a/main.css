@@ -62,6 +62,7 @@ code { padding: 2px; }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
+.disabled, a.disabled:hover, a.disabled:active { color: #999 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
 small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
@@ -472,6 +473,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		height: 2rem;
 		transition: height 0.2s, border 0.15s;
 		padding-left: 32px;
+		padding-right: 0;
 	}
 	#nav nav::before {
 		content: '＞';

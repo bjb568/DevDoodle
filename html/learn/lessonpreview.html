@@ -1,0 +1,83 @@
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>$title</h1>
+			<h2>$stitle</h2>
+			$md-sbody
+			<div id="checker">
+				<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+				<div id="passed" class="passed clearfix">
+					<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+				</div>
+				<div id="failed1" class="failed clearfix">
+					<h2>Try Again</h2>
+					<p>$md-ftext</p>
+				</div>
+				<div id="failed2" class="failed clearfix">
+					<h2>Almost!</h2>
+					<p>$md-stext</p>
+				</div>
+			</div>
+		</div>
+		<div id="cntrls">
+			<form action="?submit=1&amp;preview=0" method="post">
+				<input type="hidden" value="$title" name="title" />
+				<input type="hidden" value="$stitle" name="stitle" />
+				<textarea hidden="" name="sbody">$sbody</textarea>
+				<input type="hidden" value="$pregex" name="pregex" />
+				<input type="hidden" value="$sregex" name="sregex" />
+				<input type="hidden" value="$stext" name="stext" />
+				<input type="hidden" value="$ftext" name="ftext" />
+				<textarea hidden="" name="html">$html</textarea>
+				<button type="submit">Save Lesson</button>
+			</form>
+			<form action="?submit=0&amp;preview=0" method="post" class="rit">
+				<input type="hidden" value="$title" name="title" />
+				<input type="hidden" value="$stitle" name="stitle" />
+				<textarea hidden="" name="sbody">$sbody</textarea>
+				<input type="hidden" value="$pregex" name="pregex" />
+				<input type="hidden" value="$sregex" name="sregex" />
+				<input type="hidden" value="$stext" name="stext" />
+				<input type="hidden" value="$ftext" name="ftext" />
+				<textarea hidden="" name="html">$html</textarea>
+				<button type="submit">Edit Lesson</button>
+			</form>
+		</div>
+	</div>
+	<textarea id="html">$html</textarea>
+	<iframe id="output"></iframe>
+</div>
+<style>
+	#cntrls form {
+		display: inline;
+		margin: 0;
+	}
+</style>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	function submit() {
+		if (document.getElementById('html').value.match(new RegExp($str-pregex, 'i'))) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed2').classList.remove('show');
+		} else if (document.getElementById('html').value.match(new RegExp($str-sregex, 'i'))) {
+			document.getElementById('failed2').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+			document.getElementById('failed1').classList.remove('show');
+		} else {
+			document.getElementById('failed1').classList.add('show');
+			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
+</script>

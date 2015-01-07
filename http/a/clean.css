@@ -65,6 +65,7 @@ code, iframe:not([seamless]) { background: #fff }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #aaa }
+.disabled, a.disabled:hover, a.disabled:active { color: #666 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
 small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
