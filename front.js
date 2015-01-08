@@ -255,6 +255,7 @@ function errorsHTML(errs) {
 }
 
 function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
+	if (!post) post = {};
 	respondPage('Login', user, req, res, function() {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
@@ -277,12 +278,13 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 }
 
 function respondCreateRoomPage(errs, user, req, res, post) {
+	if (!post) post = {};
 	respondPage('Create Room', user, req, res, function() {
 		res.write('<h1>Create Room</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
-		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name) + '" /></div>\n');
-		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc) + '</textarea></div>\n');
+		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>\n');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc || '') + '</textarea></div>\n');
 		res.write('<div>Type: <select name="type">\n');
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
@@ -297,6 +299,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 }
 
 function respondChangePassPage(errs, user, req, res, post) {
+	if (!post) post = {};
 	respondPage('Create Room', req, res, function(user) {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));

@@ -492,7 +492,7 @@ $textarea
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (++i &lt; cont.children.length) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						ta.hists = ta.hists || {};
 						ta.hists[editing] = ta.hist;
 						ta.hist = ta.hists[false] || [{
@@ -631,13 +631,6 @@ $textarea
 	#chat, #aside {
 		height: 100%;
 		overflow-x: hidden;
-	}
-	#chat img { height: 300px }
-	@media (max-width: 600px) {
-		#chat img { height: 150px }
-	}
-	@media (max-width: 400px) {
-		#chat img { height: 50px }
 	}
 	.comment:hover { outline: 1px dotted #000 }
 	.ctrls { border: 1px solid #aaa }
