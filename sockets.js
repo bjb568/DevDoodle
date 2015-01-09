@@ -47,24 +47,24 @@ var wss = new ws.Server({port: 81});
 
 wss.on('connection', function(tws) {
 	var i;
-	if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
-		if (isNaN(tws.room = parseInt(i[1]))) return;
-		dbcs.users.findOne({
-			cookie: {
-				$elemMatch: {
-					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
-					created: {$gt: new Date().getTime() - 2592000000}
-				}
+	dbcs.users.findOne({
+		cookie: {
+			$elemMatch: {
+				token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
+				created: {$gt: new Date().getTime() - 2592000000}
 			}
-		}, function(err, user) {
-			if (err) throw err;
-			if (!user) user = {};
-			tws.user = user;
-			tws.trysend = function(msg) {
-				try {
-					tws.send(msg);
-				} catch(e) {}
-			};
+		}
+	}, function(err, user) {
+		if (err) throw err;
+		if (!user) user = {};
+		tws.user = user;
+		tws.trysend = function(msg) {
+			try {
+				tws.send(msg);
+			} catch(e) {}
+		};
+		if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
+			if (isNaN(tws.room = parseInt(i[1]))) return;
 			dbcs.chat.find({
 				room: tws.room,
 				$or: [
@@ -637,20 +637,8 @@ wss.on('connection', function(tws) {
 					room: tws.room
 				});
 			});
-		});
-	} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
-		if (isNaN(tws.program = parseInt(i[1]))) return;
-		dbcs.users.findOne({
-			cookie: {
-				$elemMatch: {
-					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
-					created: {$gt: new Date().getTime() - 2592000000}
-				}
-			}
-		}, function(err, user) {
-			if (err) throw err;
-			if (!user) user = {};
-			tws.user = user;
+		} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
+			if (isNaN(tws.program = parseInt(i[1]))) return;
 			tws.on('message', function(message) {
 				console.log(message);
 				try {
@@ -808,7 +796,7 @@ wss.on('connection', function(tws) {
 					body: 'Invalid event type.'
 				}));
 			});
-		});
-	}
+		}
+	});
 });
 console.log('sockets.js running on port 81');
