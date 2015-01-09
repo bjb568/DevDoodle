@@ -24,8 +24,8 @@
 </div>
 <form id="q-edit" action="javascript:editSubmit()" style="margin-left: 32px" hidden="">
 	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
-	<textarea id="q-code-edit" rows="24">$code</textarea>
-	<input id="q-question-edit" value="$rawq" class="fullwidth" />
+	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
 	$ecat
 	<div>
 		<button type="submit">Submit Edit</button>
@@ -135,10 +135,10 @@ This text will be replaced
 		if (f) e.focus();
 		else if (location.hash == '#edit') {
 			document.body.classList.add('q-editing');
-			document.getElementById('q-edit').hidden ^= 1;
-			document.getElementById('title').hidden ^= 1;
-			document.getElementById('title-edit').hidden ^= 1;
-			document.getElementById('q-content').hidden ^= 1;
+			document.getElementById('q-edit').hidden = 0;
+			document.getElementById('title').hidden = 1;
+			document.getElementById('title-edit').hidden = 0;
+			document.getElementById('q-content').hidden = 1;
 			document.getElementById('q-body-edit').focus();
 		}
 	}
@@ -147,9 +147,9 @@ This text will be replaced
 	document.getElementById('cancel-edit').onclick = function() {
 		location.hash = '';
 		document.body.classList.remove('q-editing');
-		document.getElementById('q-edit').hidden ^= 1;
-		document.getElementById('title').hidden ^= 1;
-		document.getElementById('title-edit').hidden ^= 1;
-		document.getElementById('q-content').hidden ^= 1;
+		document.getElementById('q-edit').hidden = 1;
+		document.getElementById('title').hidden = 0;
+		document.getElementById('title-edit').hidden = 1;
+		document.getElementById('q-content').hidden = 0;
 	}
 </script>
