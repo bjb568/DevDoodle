@@ -665,7 +665,7 @@ http.createServer(function(req,	res) {
 					dbcs.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
 						var commentstr = '';
-						dbcs.comments.find({program: program._id}).each(function(err, comment) {
+						dbcs.comments.find({program: program._id}).sort({_id: -1}).each(function(err, comment) {
 							if (err) throw err;
 							if (comment) {
 								var votes = comment.votes || [],
