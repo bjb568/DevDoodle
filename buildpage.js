@@ -847,7 +847,7 @@ http.createServer(function(req,	res) {
 					respondPageFooter(res);
 				}
 			});
-		}, {inhead: '<style>pre { margin: 0 }</style>'});
+		}, {inhead: '<style>pre { margin: 0 }</style>', clean: true});
 	} else return errorPage[404](req, res, user);
 }).listen(process.argv[2] || 8000);
 console.log('buildpage.js running on port ' + (process.argv[2] || 8000));
