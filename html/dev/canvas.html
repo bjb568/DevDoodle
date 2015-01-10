@@ -416,7 +416,7 @@
 			if (data.event == 'add') {
 				var div = document.createElement('div');
 				div.classList.add('comment');
-				div.innerHTML = markdown(data.body);
+				div.innerHTML = ' ' + markdown(data.body);
 				if ($rep >= 50) {
 					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
