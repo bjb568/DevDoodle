@@ -796,7 +796,10 @@ wss.on('connection', function(tws) {
 					body: 'Invalid event type.'
 				}));
 			});
-		}
+		} else tws.trysend(JSON.stringify({
+			event: 'err',
+			body: 'Invalid upgrade URL.'
+		}));
 	});
 });
 console.log('sockets.js running on port 81');
