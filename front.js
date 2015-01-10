@@ -448,7 +448,7 @@ http.createServer(function(req,	res) {
 					}
 					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
-						var id = last ? last._id + 1 : 0;
+						var id = last ? last._id + 1 : 1;
 						dbcs.questions.insert({
 							_id: id,
 							title: post.title,
