@@ -796,6 +796,165 @@ wss.on('connection', function(tws) {
 					body: 'Invalid event type.'
 				}));
 			});
+		} else if ((i = tws.upgradeReq.url.match(/\/q\/(\d+)/))) {
+			if (isNaN(tws.question = parseInt(i[1]))) return;
+			tws.on('message', function(message) {
+				console.log(message);
+				try {
+					message = JSON.parse(message);
+				} catch (e) {
+					return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'JSON error.'
+					}));
+				}
+				if (message.event == 'post') {
+					if (!tws.user.name) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in and have 20 reputation to comment.'
+					}));
+					if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You must have 20 reputation to comment.'
+					}));
+					message.body = message.body.toString();
+					if (!message.body) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Comment body not submitted.'
+					}));
+					if (message.body.length > 720) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Comment length may not exceed 720 characters.'
+					}));
+					dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
+						if (err) throw err;
+						var id = doc ? doc._id + 1 : 1;
+						dbcs.comments.insert({
+							_id: id,
+							body: message.body,
+							user: tws.user.name,
+							time: new Date().getTime(),
+							question: tws.question
+						});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							event: 'add',
+							body: message.body,
+							user: tws.user.name,
+							id: id
+						}));
+						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
+						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
+						dbcs.questions.findOne({_id: tws.question}, function(err, question) {
+							if (err) throw err;
+							if (matches.indexOf(question.user) == -1) matches.push(question.user);
+							for (var i = 0; i < matches.length; i++) {
+								if (matches[i] == tws.user.name) continue;
+								dbcs.users.findOne({name: matches[i]}, function(err, user) {
+									if (err) throw err;
+									if (!user) return;
+									dbcs.users.update({name: user.name}, {
+										$push: {
+											notifs: {
+												type: 'Comment',
+												on: question.title.link('/qa/' + tws.question + '#c' + id),
+												body: message.body,
+												from: tws.user.name,
+												unread: true,
+												time: new Date().getTime()
+											}
+										},
+										$inc: {unread: 1}
+									});
+								});
+							}
+						});
+					});
+				} else if (message.event == 'vote') {
+					if (!tws.user.name) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in and have 50 reputation to vote on comments.'
+					}));
+					if (tws.user.rep < 50) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You must have 50 reputation to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) return tws.trysend(JSON.stringify({
+								event: 'err',
+								body: 'You already voted on this comment.'
+							}));
+						}
+						dbcs.comments.update({_id: id}, {
+							$push: {
+								votes: {
+									user: tws.user.name,
+									time: new Date().getTime()
+								}
+							}
+						});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							event: 'scorechange',
+							id: post._id,
+							score: post.votes ? post.votes.length + 1 : 1
+						}));
+					});
+				} else if (message.event == 'unvote') {
+					if (!tws.user.name) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You must be logged in to vote on comments.'
+					}));
+					var id = parseInt(message.id);
+					dbcs.comments.findOne({
+						_id: id,
+						deleted: {$exists: false}
+					}, function(err, post) {
+						if (err) throw err;
+						if (!post) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'Invalid comment id.'
+						}));
+						var err = true;
+						for (var i in post.votes) {
+							if (post.votes[i].user == tws.user.name) err = false;
+						}
+						if (err) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You haven\'t voted on this comment.'
+						}));
+						dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
+						var sendto = [];
+						for (var i in wss.clients) {
+							if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
+						}
+						for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							event: 'scorechange',
+							id: post._id,
+							score: post.votes.length - 1
+						}));
+					});
+				} else tws.trysend(JSON.stringify({
+					event: 'err',
+					body: 'Invalid event type.'
+				}));
+			});
 		} else tws.trysend(JSON.stringify({
 			event: 'err',
 			body: 'Invalid upgrade URL.'

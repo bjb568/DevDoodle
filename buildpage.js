@@ -429,18 +429,44 @@ http.createServer(function(req,	res) {
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
-					fs.readFile('./html/qa/question.html', function(err, data) {
+					var commentstr = '';
+					dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
 						if (err) throw err;
-						res.write(data.toString()
-							.replaceAll(
-								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-							).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
-								['$op-name', '$op-rep', '$op-pic'],
-								[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-							)
-						);
-						respondPageFooter(res);
+						if (comment) {
+							var votes = comment.votes || [],
+								voted;
+							for (var i in votes) if (votes[i].user == user.name) voted = true;
+							commentstr +=
+								'<div id="c' + comment._id + '" class="comment">' +
+								'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
+								(
+									user && user.rep >= 50 ?
+									(
+										'<span class="sctrls">' +
+										'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+										'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+										'</span>'
+									) :
+									''
+								) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+						} else {
+							fs.readFile('./html/qa/question.html', function(err, data) {
+								if (err) throw err;
+								res.write(data.toString()
+									.replaceAll(
+										['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+										[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+									).replaceAll(
+										['$qcommentstr', '$rep'],
+										[commentstr, user.rep.toString()]
+									).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
+										['$op-name', '$op-rep', '$op-pic'],
+										[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+									)
+								);
+								respondPageFooter(res);
+							});
+						}
 					});
 				});
 			});
@@ -665,7 +691,7 @@ http.createServer(function(req,	res) {
 					dbcs.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
 						var commentstr = '';
-						dbcs.comments.find({program: program._id}).sort({_id: -1}).each(function(err, comment) {
+						dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
 							if (err) throw err;
 							if (comment) {
 								var votes = comment.votes || [],
