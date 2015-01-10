@@ -491,7 +491,7 @@ http.createServer(function(req,	res) {
 								(
 									(user || {rep: 0}).rep < 30 ?
 									'<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' :
-									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
+									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
 								) :
 								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>')
 						.replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>')
@@ -665,7 +665,7 @@ http.createServer(function(req,	res) {
 					dbcs.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
 						var commentstr = '';
-						dbcs.comments.find({program: program._id}).each(function(err, comment) {
+						dbcs.comments.find({program: program._id}).sort({_id: -1}).each(function(err, comment) {
 							if (err) throw err;
 							if (comment) {
 								var votes = comment.votes || [],
@@ -847,7 +847,7 @@ http.createServer(function(req,	res) {
 					respondPageFooter(res);
 				}
 			});
-		}, {inhead: '<style>pre { margin: 0 }</style>'});
+		}, {inhead: '<style>pre { margin: 0 }</style>', clean: true});
 	} else return errorPage[404](req, res, user);
 }).listen(process.argv[2] || 8000);
 console.log('buildpage.js running on port ' + (process.argv[2] || 8000));

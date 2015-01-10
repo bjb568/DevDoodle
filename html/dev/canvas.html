@@ -21,7 +21,7 @@
 	</div>
 	<div id="comments" class="umar">$comments</div>
 	<form id="comment" class="target umar">
-		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." style="width: 100%" rows="4"></textarea>
+		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Post</button>
 		<button type="reset" id="reset">Cancel</button>
 	</form>
@@ -219,6 +219,8 @@
 			this.selectionStart = ++oldSelectionStart + tabs;
 			this.selectionEnd = this.selectionStart;
 			e.preventDefault();
+		} else if ((this.value[this.selectionStart] || '').match(/[^\s\,\(\[\{]/)) {
+			return;
 		} else if (e.keyCode == 34) {
 			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
 			this.selectionEnd = ++oldSelectionStart;
@@ -240,7 +242,6 @@
 			this.selectionEnd = ++oldSelectionStart;
 			e.preventDefault();
 		}
-		// console.log(e.keyCode);
 		run();
 	});
 	code.addEventListener('keydown', function(e) {
