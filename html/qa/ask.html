@@ -190,11 +190,12 @@
 				used = [];
 			while (used.length &lt; 2) {
 				for (var j = 0; j &lt; langs.length; j++) {
-					if (used.indexOf(langs[j]) == -1 &amp;&amp; langs[j].substr(0, i) == this.value.substr(0, i)) {
+					if (used.indexOf(langs[j]) == -1 &amp;&amp; langs[j].substr(0, i).toLowerCase() == this.value.substr(0, i).toLowerCase()) {
 						used.push(langs[j]);
 						var span = document.createElement('span');
 						span.appendChild(document.createTextNode(langs[j]));
-						span.onclick = function() {
+						span.onmousedown = function(e) {
+							e.preventDefault();
 							document.getElementById('lang').value = this.textContent;
 							this.parentNode.hidden = true;
 						};

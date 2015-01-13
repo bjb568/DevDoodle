@@ -152,46 +152,6 @@
 		transition: fill 0.1s;
 		fill: #c00;
 	}
-	#content > .sctrls { display: none }
-	.score {
-		float: left;
-		display: block;
-		margin-right: 4px;
-		color: #f00;
-		padding: 0 4px;
-	}
-	.score[data-score="0"] { display: none }
-	.score[data-score="1"] { color: #888 }
-	.score[data-score="2"] { color: #666 }
-	.score[data-score="3"] { color: #444 }
-	.score[data-score="4"] { color: #222 }
-	.score[data-score="5"] { color: #000 }
-	.score[data-score="6"] { color: #001 }
-	.score[data-score="7"] { color: #002 }
-	.score[data-score="8"] { color: #003 }
-	.score[data-score="9"] { color: #004 }
-	.score[data-score="10"] { color: #005 }
-	.score[data-score="11"] { color: #006 }
-	.score[data-score="12"] { color: #007 }
-	.score[data-score="13"] { color: #008 }
-	.score[data-score="14"] { color: #009 }
-	.score[data-score="15"] { color: #00a }
-	.score[data-score="16"] { color: #00b }
-	.score[data-score="17"] { color: #00c }
-	.score[data-score="18"] { color: #00d }
-	.score[data-score="19"] { color: #00e }
-	.score[data-score="20"] { color: #00f }
-	.score[data-score="21"] { color: #33f }
-	.score[data-score="22"] { color: #66f }
-	.score[data-score="23"] { color: #f90 }
-	.score[data-score="24"] { color: #f80 }
-	.score[data-score="25"] { color: #f70 }
-	.score[data-score="26"] { color: #f60 }
-	.score[data-score="27"] { color: #f50 }
-	.score[data-score="28"] { color: #f40 }
-	.score[data-score="29"] { color: #f30 }
-	.score[data-score="30"] { color: #f20 }
-	.score[data-score="31"] { color: #f10 }
 </style>
 <script>
 	var footerOff = true,
@@ -389,7 +349,7 @@
 			if (data.event == 'add') {
 				var div = document.createElement('div');
 				div.classList.add('comment');
-				div.innerHTML = markdown(data.body);
+				div.innerHTML = ' ' + markdown(data.body);
 				if ($rep >= 50) {
 					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;

@@ -448,7 +448,7 @@ http.createServer(function(req,	res) {
 					}
 					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
-						var id = last ? last._id + 1 : 0;
+						var id = last ? last._id + 1 : 1;
 						dbcs.questions.insert({
 							_id: id,
 							title: post.title,
@@ -732,7 +732,7 @@ http.createServer(function(req,	res) {
 						for (var i in post) {
 							if (i.substr(0, 2) == 'ck') cat.push(i.substr(2));
 						}
-						res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); elseif (res.substr(0, 10) == \'Location: \') location.href = res; else alert(\'Unknown error. Response was: \' + res) }, ' + html(JSON.stringify(
+						res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else if (res.substr(0, 10) == \'Location: \') location.href = res.substr(10); else alert(\'Unknown error. Response was: \' + res) }, ' + html(JSON.stringify(
 							'title=' + encodeURIComponent(post.title) +
 							'&lang=' + encodeURIComponent(post.lang) +
 							'&description=' + encodeURIComponent(post.description) +
