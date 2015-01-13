@@ -716,11 +716,11 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 50 reputation to vote on comments.'
+						body: 'You must be logged in and have 20 reputation to vote on comments.'
 					}));
-					if (tws.user.rep < 50) return tws.trysend(JSON.stringify({
+					if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must have 50 reputation to vote on comments.'
+						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.comments.findOne({
@@ -875,11 +875,11 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 50 reputation to vote on comments.'
+						body: 'You must be logged in and have 20 reputation to vote on comments.'
 					}));
-					if (tws.user.rep < 50) return tws.trysend(JSON.stringify({
+					if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must have 50 reputation to vote on comments.'
+						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.comments.findOne({
