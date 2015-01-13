@@ -237,8 +237,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g);
-						if (!matches) return;
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i = 0; i < matches.length; i++) {
 							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
 								if (err) throw err;
@@ -687,7 +686,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 							if (err) throw err;
@@ -717,11 +716,11 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 50 reputation to vote on comments.'
+						body: 'You must be logged in and have 20 reputation to vote on comments.'
 					}));
-					if (tws.user.rep < 50) return tws.trysend(JSON.stringify({
+					if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must have 50 reputation to vote on comments.'
+						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.comments.findOne({
@@ -739,6 +738,10 @@ wss.on('connection', function(tws) {
 								body: 'You already voted on this comment.'
 							}));
 						}
+						if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not vote on your own comments.'
+						}));
 						dbcs.comments.update({_id: id}, {
 							$push: {
 								votes: {
@@ -846,7 +849,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.questions.findOne({_id: tws.question}, function(err, question) {
 							if (err) throw err;
@@ -876,11 +879,11 @@ wss.on('connection', function(tws) {
 				} else if (message.event == 'vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must be logged in and have 50 reputation to vote on comments.'
+						body: 'You must be logged in and have 20 reputation to vote on comments.'
 					}));
-					if (tws.user.rep < 50) return tws.trysend(JSON.stringify({
+					if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You must have 50 reputation to vote on comments.'
+						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					var id = parseInt(message.id);
 					dbcs.comments.findOne({
@@ -898,6 +901,10 @@ wss.on('connection', function(tws) {
 								body: 'You already voted on this comment.'
 							}));
 						}
+						if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not vote on your own comments.'
+						}));
 						dbcs.comments.update({_id: id}, {
 							$push: {
 								votes: {
