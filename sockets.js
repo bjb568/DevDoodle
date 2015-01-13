@@ -738,6 +738,10 @@ wss.on('connection', function(tws) {
 								body: 'You already voted on this comment.'
 							}));
 						}
+						if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not vote on your own comments.'
+						}));
 						dbcs.comments.update({_id: id}, {
 							$push: {
 								votes: {
@@ -897,6 +901,10 @@ wss.on('connection', function(tws) {
 								body: 'You already voted on this comment.'
 							}));
 						}
+						if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not vote on your own comments.'
+						}));
 						dbcs.comments.update({_id: id}, {
 							$push: {
 								votes: {
