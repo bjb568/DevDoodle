@@ -237,8 +237,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g);
-						if (!matches) return;
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i = 0; i < matches.length; i++) {
 							dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
 								if (err) throw err;
@@ -687,7 +686,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 							if (err) throw err;
@@ -846,7 +845,7 @@ wss.on('connection', function(tws) {
 							user: tws.user.name,
 							id: id
 						}));
-						var matches = message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
+						var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 						for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 						dbcs.questions.findOne({_id: tws.question}, function(err, question) {
 							if (err) throw err;
