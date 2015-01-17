@@ -7,7 +7,7 @@
 		</a>
 		<div class="desc shglt">
 			Learn how to build a website with HTML, CSS, and JavaScript. You will:
-			<ul class="umar">
+			<ul>
 				<li>Build an accessible news site</li>
 				<li>Make it beautiful with CSS</li>
 				<li>Make interactive widgets with JavaScript</li>
@@ -21,7 +21,7 @@
 		</a>
 		<div class="desc shglt">
 			Learn how to use Node.js and Mongodb to power a web server. You will:
-			<ul class="umar">
+			<ul>
 				<li>Build a simple server</li>
 				<li>Let it serve static files and handle errors</li>
 				<li>Build an authentication system</li>
@@ -36,7 +36,7 @@
 		</a>
 		<div class="desc shglt">
 			Learn how to fix errors in your code by yourself!
-			<ul class="umar">
+			<ul>
 				<li>Use logs, stack traces, and breakpoints</li>
 				<li>Learn how to rubber-duck debug</li>
 				<li>Make a minimal, self-contained, complete example from long code</li>
@@ -50,7 +50,7 @@
 		</a>
 		<div class="desc shglt">
 			Improve code quality to avoid future errors and reduce maintaining cost.
-			<ul class="umar">
+			<ul>
 				<li>Avoid common readability problems</li>
 				<li>Increase efficiency of your code</li>
 				<li>Avoid security issues</li>
@@ -69,21 +69,22 @@ $lessons
 		background: rgba(16, 140, 255, .8);
 		transition: background .2s;
 	}
+	#courses ul { margin: 0 }
 	#courses > div:not(:first-child) { margin-top: 8px }
 	#courses > div:hover { background: rgba(24, 160, 255, .8) }
 	#courses a:hover { color: #333 }
 	#courses a:active { color: #100 }
-	#courses img { border-radius: 4px }
+	#courses img {
+		border-radius: 4px;
+		display: block;
+	}
 	@media (min-width: 700px) {
 		#courses > div { width: calc(50% - 4px) }
 		#courses > div:nth-child(2) { margin-top: 0 }
 		#courses > div:nth-child(2n+1) { margin-right: 6px }
 	}
-	@media (min-width: 700px) and (max-width: 1080px) {
-		#courses > div > div { min-height: 7.8em }
-	}
-	@media (min-width: 1080px) and (max-width: 1800px) {
-		#courses > div:nth-child(-1n+2) > div { min-height: 6.6em }
+	@media (min-width: 700px) and (max-width: 1800px) {
+		#courses > div:nth-child(-1n+2) > div { min-height: 6.4em }
 	}
 	@media (min-width: 1800px) {
 		#courses > div { width: calc(25% - 5px) }
