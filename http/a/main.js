@@ -154,7 +154,7 @@ function markdown(input) {
 			if (li) {
 				ul += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && (arr[i + 1].substr(0, 2) == '- ' || arr[i + 1] && arr[i + 1].substr(0, 2) == '* ')) {
 				ul += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -172,7 +172,7 @@ function markdown(input) {
 			if (li) {
 				ol += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && arr[i + 1].match(/^(\d+|[A-z])[.)] /)) {
 				ol += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
