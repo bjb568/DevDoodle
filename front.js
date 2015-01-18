@@ -300,7 +300,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 
 function respondChangePassPage(errs, user, req, res, post) {
 	if (!post) post = {};
-	respondPage('Create Room', req, res, function(user) {
+	respondPage('Change Password', user, req, res, function() {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
