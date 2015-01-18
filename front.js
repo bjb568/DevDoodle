@@ -509,6 +509,8 @@ http.createServer(function(req,	res) {
 								if (type == 2) {
 									dbcs.programs.insert({
 										type: type,
+										fork: program._id,
+										title: 'Fork of ' + program.title.substr(0, 84),
 										html: (post.html || '').toString(),
 										css: (post.css || '').toString(),
 										js: (post.js || '').toString(),
@@ -523,6 +525,8 @@ http.createServer(function(req,	res) {
 								} else {
 									dbcs.programs.insert({
 										type: type,
+										fork: program._id,
+										title: 'Fork of ' + program.title.substr(0, 84),
 										code: (post.code || '').toString(),
 										user: user.name,
 										created: new Date().getTime(),
