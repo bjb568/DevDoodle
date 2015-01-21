@@ -7,14 +7,18 @@
 		<option value="N">Private</option>
 	</select> <span id="changetypeStat"></span>
 </form>
-<div id="users">
+<div id="users" class="clearfix">
 	$users
 </div>
+<form id="adduser">
+	+ <input type="text" id="adduserinput" placeholder="Add a user" />
+</form>
 <style>
 	.user, .user:first-child { margin-top: 6px }
 </style>
 <script>
 	var changetypeStat = document.getElementById('changetypeStat'),
+		adduserinput = document.getElementById('adduserinput'),
 		prevType = '$type';
 	document.getElementById('type').onchange = function changeType() {
 		changetypeStat.textContent = 'Saving…';
@@ -37,5 +41,37 @@
 	document.getElementById('changetype').onsubmit = function(e) {
 		e.preventDefault();
 		changeType();
+	};
+	document.getElementById('adduser').onsubmit = function(e) {
+		e.preventDefault();
+		adduserinput.disabled = true;
+		request('/api/chat/inviteuser', function(res) {
+			adduserinput.disabled = false;
+			if (res.indexOf('Error') == 0) alert(res);
+			else {
+				try {
+					res = JSON.parse(res);
+				} catch(e) {
+					return alert('Unknown error adding user. Response was: ' + res);
+				}
+				adduserinput.value = '';
+				var div = document.createElement('div'),
+					img = document.createElement('img');
+				img.src = '//gravatar.com/avatar/' + res.mailhash + '?s=576&amp;d=identicon"';
+				img.width = img.height = 40;
+				div.appendChild(img);
+				var onrit = document.createElement('div'),
+					anchor = document.createElement('a');
+				anchor.href = '/user/' + adduserinput.value;
+				anchor.appendChild(document.createTextNode(adduserinput.value));
+				var rep = document.createElement('small');
+				rep.classList.add('rep');
+				rep.appendChild(document.createTextNode(res.rep));
+				onrit.appendChild(a);
+				div.appendChild(onrit);
+				document.getElementById('users').appendChild(div);
+			}
+			adduserinput.focus();
+		}, 'user=' + adduserinput.value);
 	};
 </script>

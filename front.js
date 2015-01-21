@@ -459,6 +459,37 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (req.url.pathname == '/chat/inviteuser') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to invite users to this room.');
+						}
+						dbcs.users.findOne({name: post.user}, function(err, invUser) {
+							if (err) throw err;
+							if (!invUser) {
+								res.writeHead(400);
+								return res.end('Error: User not found.');
+							}
+							if (room.invited.indexOf(invUser.name) != -1) {
+								res.writeHead(409);
+								return res.end('Error: ' + invUser.name + ' has already been invited.');
+							}
+							dbcs.chatrooms.update({_id: id}, {$push: {invited: invUser.name}});
+							res.writeHead(200);
+							res.end(JSON.stringify({
+								mailhash: invUser.mailhash,
+								rep: invUser.rep
+							}));
+						});
+					});
 				} else if (req.url.pathname == '/qa/newquestion') {
 					if (!user) {
 						res.writeHead(403);
