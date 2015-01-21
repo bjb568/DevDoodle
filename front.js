@@ -1032,6 +1032,7 @@ http.createServer(function(req,	res) {
 							name: post.name,
 							desc: post.desc,
 							type: post.type,
+							invited: [user.name],
 							_id: i
 						});
 						res.writeHead(303, {'Location': i});

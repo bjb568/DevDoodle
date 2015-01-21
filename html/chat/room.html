@@ -2,7 +2,7 @@
 	<div id="chat" class="lft hglt pad scrly"></div>
 	<aside id="aside" class="scrl">
 		<div id="roominfo">
-			<h1><span id="name">$name</span> <small><a id="edit">Edit</a></small></h1>
+			<h1><span id="name">$name</span> $options</h1>
 			<p id="desc">$desc</p>
 		</div>
 		<form id="editform" hidden="">
@@ -109,7 +109,7 @@ $textarea
 		if (onBottom) cont.scrollTop = cont.scrollHeight;
 	});
 	function statechange(nstate) {
-		if (nstate == 1 &amp;&amp; ta.value) nstate = 2;
+		if (nstate == 1 &amp;&amp; ta &amp;&amp; ta.value) nstate = 2;
 		if (state != nstate) {
 			state = nstate;
 			socket.send(JSON.stringify({event: 'statechange', state: state}));
@@ -123,16 +123,14 @@ $textarea
 		timeout = setTimeout(inactive, 10000);
 		statechange(1);
 	}
-	if (ta) {
-		var timeout = setTimeout(inactive, 10000);
-		addEventListener('keyup', active);
-		addEventListener('keydown', active);
-		addEventListener('click', active);
-		addEventListener('mousemove', active);
-		addEventListener('touchstart', active);
-		addEventListener('scroll', active);
-		addEventListener('resize', active);
-	}
+	var timeout = setTimeout(inactive, 10000);
+	addEventListener('keyup', active);
+	addEventListener('keydown', active);
+	addEventListener('click', active);
+	addEventListener('mousemove', active);
+	addEventListener('touchstart', active);
+	addEventListener('scroll', active);
+	addEventListener('resize', active);
 	function resetEditForm() {
 		document.getElementById('nameedit').value = document.getElementById('name').textContent;
 		document.getElementById('descedit').value = rawdesc;

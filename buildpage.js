@@ -240,7 +240,14 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
-var showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
+
+var typeIcons = {
+		P: '',
+		R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" /></svg>',
+		N: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="14"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" /></svg>',
+		M: ' ♦'
+	},
+	showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
 	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString(),
 	mailform = fs.readFileSync('./html/user/mailform.html').toString();
 
@@ -474,20 +481,26 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/chat/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
-			var roomnames = {};
+			var roomnames = [],
+				publicRooms = [];
 			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
-					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
+					if (user.level != 5 && doc.type == 'M') return;
+					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
 					roomnames[doc._id] = doc.name;
+					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
 					res.write('<hr />\n');
 					if (user && user.rep >= 200) res.write('<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
-					dbcs.chat.find({deleted: {$exists: false}}).sort({_id: -1}).limit(12).each(function(err, doc) {
+					dbcs.chat.find({
+						deleted: {$exists: false},
+						room: {$in: publicRooms}
+					}).sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) res.write(
 							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
@@ -502,9 +515,12 @@ http.createServer(function(req,	res) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res);
+			if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
+			if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
 			respondPage(doc.name, user, req, res, function() {
 				fs.readFile('./html/chat/room.html', function(err, data) {
 					if (err) throw err;
+					var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
 					res.write(
 						data.toString()
 						.replaceAll('$id', doc._id)
@@ -515,12 +531,16 @@ http.createServer(function(req,	res) {
 						.replace('$textarea',
 							user ?
 								(
-									(user || {rep: 0}).rep < 30 ?
-									'<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' :
-									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
+									user.rep < 30 ?
+										'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
+										(
+											isInvited ?
+												'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
+												'<p>Posting in a non-public room is by invitation only.</p>'
+										)
 								) :
-								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>')
-						.replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>')
+								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+						.replace(' $options',  typeIcons[doc.type] + ((user || {rep: 0}).rep < 200 || !isInvited ? '' : ' <small><a id="edit">Edit</a></small>'))
 					);
 					respondPageFooter(res);
 				});

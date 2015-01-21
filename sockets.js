@@ -71,6 +71,15 @@ wss.on('connection', function(tws) {
 					body: 'Room not found.'
 				}));
 				tws.roomType = room.type;
+				tws.isInvited = room.type == 'P' || room.invited.indexOf(tws.user.name) != -1;
+				if (room.type == 'N' && room.invited.indexOf(user.name) == -1) return tws.trysend(JSON.stringify({
+					event: 'err',
+					body: 'You have not been invited to this private room.'
+				}));
+				if (room.type == 'M' && user.level != 5) return tws.trysend(JSON.stringify({
+					event: 'err',
+					body: 'You must be a moderator to join this room.'
+				}));
 				dbcs.chat.find({
 					room: tws.room,
 					$or: [
@@ -214,6 +223,10 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have 30 reputation to chat.'
 						}));
+						if (!tws.isInvited) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not post in a non-public room unless you are invited.'
+						}));
 						if (!message.body) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'Message body not submitted.'
@@ -275,6 +288,10 @@ wss.on('connection', function(tws) {
 							}
 						});
 					} else if (message.event == 'edit') {
+						if (!tws.isInvited) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You may not edit messages in a non-public room unless you are invited.'
+						}));
 						dbcs.chat.findOne({_id: message.id}, function(err, post) {
 							if (err) throw err;
 							if (!post) return tws.trysend(JSON.stringify({
@@ -581,7 +598,7 @@ wss.on('connection', function(tws) {
 							});
 						});
 					} else if (message.event == 'info-update') {
-						if (!tws.user.name || tws.user.rep < 200) return tws.trysend(JSON.stringify({
+						if (!tws.user.name || tws.user.rep < 200 || !tws.isInvited) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You don\'t have permission to update room information.',
 							revertInfo: 1
