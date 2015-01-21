@@ -270,11 +270,8 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
-		res.write('<style>\n');
-		res.write('#content input[type=text], button { display: block }\n');
-		res.write('</style>');
 		respondPageFooter(res);
-	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }</style>'});
+	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content input[type=text], button { display: block }</style>'});
 }
 
 function respondCreateRoomPage(errs, user, req, res, post) {
