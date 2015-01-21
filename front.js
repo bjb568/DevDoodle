@@ -553,7 +553,7 @@ http.createServer(function(req,	res) {
 							return res.end('Error: Invalid program id.');
 						}
 						if (program.user.toString() != user.name.toString()) {
-							res.writeHead(204);
+							res.writeHead(403);
 							return res.end('Error: You may rename only your own programs.');
 						}
 						dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
