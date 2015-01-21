@@ -323,7 +323,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
-			if (!dispUser) return errorPage[404](req, res);
+			if (!dispUser) return errorPage[404](req, res, user);
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user ? user.name == dispUser.name : false;
 				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
@@ -432,7 +432,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
-			if (!question) return errorPage[404](req, res);
+			if (!question) return errorPage[404](req, res, user);
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
@@ -514,7 +514,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
-			if (!doc) return errorPage[404](req, res);
+			if (!doc) return errorPage[404](req, res, user);
 			if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
 			if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
 			respondPage(doc.name, user, req, res, function() {
@@ -549,7 +549,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
-			if (!doc) return errorPage[404](req, res);
+			if (!doc) return errorPage[404](req, res, user);
 			respondPage('Message #' + doc._id, user, req, res, function() {
 				if (doc.deleted && doc.user != user.name) {
 					res.write('This message has been deleted.');
@@ -674,7 +674,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
-			if (!program) return errorPage[404](req, res);
+			if (!program) return errorPage[404](req, res, user);
 			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', user, req, res, function() {
 				if (!user) user = {};
 				if (program.deleted) {
@@ -864,7 +864,7 @@ http.createServer(function(req,	res) {
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', function(err, data) {
-			if (err) errorPage[404](req, res);
+			if (err) errorPage[404](req, res, user);
 			else {
 				data = data.toString();
 				respondPage(data.substr(0, data.indexOf('\n')), user, req, res, function() {

@@ -364,7 +364,7 @@ http.createServer(function(req,	res) {
 	var origURL = req.url, i, post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
-		return errorPage[414](req, res);
+		return errorPage[414](req, res, user);
 	}
 	var cookies = cookie.parse(req.headers.cookie || '');
 	req.url = url.parse(req.url, true);
@@ -718,7 +718,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -751,7 +751,7 @@ http.createServer(function(req,	res) {
 						respondPageFooter(res);
 					});
 				});
-			} else errorPage[405](req, res);
+			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/learn/new') {
 			if (req.method == 'GET') {
 				respondPage('New Lesson', user, req, res, function() {
@@ -767,7 +767,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -863,7 +863,7 @@ http.createServer(function(req,	res) {
 						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 					}
 				});
-			} else errorPage[405](req, res);
+			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/login/') {
 			if (req.method == 'POST') {
 				post = '';
@@ -871,7 +871,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -974,14 +974,14 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 100000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
 				req.on('end', function() {
 					if (req.abort) return;
 					post = querystring.parse(post);
-					if (!user || user.name != i[1]) return errorPage[403](req, res);
+					if (!user || user.name != i[1]) return errorPage[403](req, res, user);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
 					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
@@ -1006,15 +1006,15 @@ http.createServer(function(req,	res) {
 				});
 			} else respondChangePassPage([], user, req, res, {});
 		} else if (req.url.pathname == '/chat/newroom') {
-			if (!user) return errorPage[403](req, res, 'You must be logged in and have 200 reputation to create a room.');
-			if (user.rep < 200) return errorPage[403](req, res, 'You must have 200 reputation to create a room.');
+			if (!user) return errorPage[403](req, res, user, 'You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return errorPage[403](req, res, user, 'You must have 200 reputation to create a room.');
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 4000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
