@@ -1,0 +1,41 @@
+<h1><a href="$id" title="Join Room">←</a> Access to $name</h1>
+<form id="changetype">
+	Type:
+	<select name="type" id="type">
+		<option value="P">Public</option>
+		<option value="R">Read-only</option>
+		<option value="N">Private</option>
+	</select> <span id="changetypeStat"></span>
+</form>
+<div id="users">
+	$users
+</div>
+<style>
+	.user, .user:first-child { margin-top: 6px }
+</style>
+<script>
+	var changetypeStat = document.getElementById('changetypeStat'),
+		prevType = '$type';
+	document.getElementById('type').onchange = function changeType() {
+		changetypeStat.textContent = 'Saving…';
+		var currentType = document.getElementById('type').value;
+		request('/api/chat/changeroomtype', function(res) {
+			if (res.indexOf('Error') == 0) {
+				changetypeStat.textContent = '';
+				alert(res);
+				document.getElementById('type').value = prevType;
+			} else if (res == 'Success') {
+				changetypeStat.textContent = 'Saved';
+				prevType = currentType;
+			} else {
+				changetypeStat.textContent = '';
+				alert('Unknown error updating room access. Response was: ' + res);
+				document.getElementById('type').value = prevType;
+			}
+		}, 'type=' + currentType);
+	};
+	document.getElementById('changetype').onsubmit = function(e) {
+		e.preventDefault();
+		changeType();
+	};
+</script>

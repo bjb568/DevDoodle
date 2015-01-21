@@ -438,6 +438,27 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (req.url.pathname == '/chat/changeroomtype') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) {
+						res.writeHead(400);
+						return res.end('Error: Invalid room type.');
+					}
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to change the room type.');
+						}
+						dbcs.chatrooms.update({_id: id}, {$set: {type: post.type}});
+						res.writeHead(204);
+						res.end();
+					});
 				} else if (req.url.pathname == '/qa/newquestion') {
 					if (!user) {
 						res.writeHead(403);
@@ -1021,7 +1042,7 @@ http.createServer(function(req,	res) {
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-					if ('PRNM'.indexOf(post.type) == -1) errors.push('Invalid room type.');
+					if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) errors.push('Invalid room type.');
 					if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 					dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;

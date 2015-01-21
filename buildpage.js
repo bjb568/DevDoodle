@@ -515,36 +515,63 @@ http.createServer(function(req,	res) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
-			if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
-			if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
-			respondPage(doc.name, user, req, res, function() {
-				fs.readFile('./html/chat/room.html', function(err, data) {
-					if (err) throw err;
-					var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
-					res.write(
-						data.toString()
-						.replaceAll('$id', doc._id)
-						.replaceAll('$name', html(doc.name))
-						.replaceAll('$rawdesc', html(doc.desc))
-						.replace('$desc', markdown(doc.desc))
-						.replace('$user', user ? user.name : '')
-						.replace('$textarea',
-							user ?
-								(
-									user.rep < 30 ?
-										'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
-										(
-											isInvited ?
-												'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
-												'<p>Posting in a non-public room is by invitation only.</p>'
-										)
-								) :
-								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
-						.replace(' $options',  typeIcons[doc.type] + ((user || {rep: 0}).rep < 200 || !isInvited ? '' : ' <small><a id="edit">Edit</a></small>'))
-					);
-					respondPageFooter(res);
+			if (req.url.query && typeof(req.url.query.access) == 'string') {
+				if (doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You don\'t have permission to control access to this room.');
+				respondPage('Access for ' + doc.name, user, req, res, function() {
+					var userstr = '';
+					console.log({name: {$in: doc.invited}});
+					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
+						if (err) throw err;
+						if (invUser) userstr += 
+							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div>' +
+							'\n\t</div>\n';
+						else {
+							fs.readFile('./html/chat/access.html', function(err, data) {
+								if (err) throw err;
+								res.write(
+									data.toString()
+									.replaceAll(['$id', '$name', '$type', '$users'], [doc._id.toString(), doc.name, doc.type, userstr])
+									.replace('value="' + doc.type + '"', 'value="' + doc.type + '" selected=""')
+								);
+								respondPageFooter(res);
+							});
+						}
+					});
 				});
-			});
+			} else {
+				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
+				if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
+				respondPage(doc.name, user, req, res, function() {
+					fs.readFile('./html/chat/room.html', function(err, data) {
+						if (err) throw err;
+						var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
+						res.write(
+							data.toString()
+							.replaceAll('$id', doc._id)
+							.replaceAll('$name', html(doc.name))
+							.replaceAll('$rawdesc', html(doc.desc))
+							.replace('$desc', markdown(doc.desc))
+							.replace('$user', user ? user.name : '')
+							.replace('$textarea',
+								user ?
+									(
+										user.rep < 30 ?
+											'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
+											(
+												isInvited ?
+													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
+													'<p>Posting in a non-public room is by invitation only.</p>'
+											)
+									) :
+									'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+							.replace(' $options',  typeIcons[doc.type] + ((user || {rep: 0}).rep < 200 || !isInvited ? '' : ' <small><a id="edit">Edit</a></small>'))
+							.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
+						);
+						respondPageFooter(res);
+					});
+				});
+			}
 		});
 	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
