@@ -1021,6 +1021,7 @@ http.createServer(function(req,	res) {
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
+					if ('PRNM'.indexOf(post.type) == -1) errors.push('Invalid room type.');
 					if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 					dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
