@@ -475,7 +475,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to save a program.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -544,7 +544,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a program title.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -578,7 +578,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must have 15 reputation to vote.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -638,7 +638,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to delete programs.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -666,7 +666,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to undelete programs.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -687,7 +687,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a lesson title.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/learn\/unoff\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.lessons.findOne({_id: id}, function(err, lesson) {
 						if (err) throw err;
