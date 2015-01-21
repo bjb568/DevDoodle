@@ -177,7 +177,7 @@
 		}
 	}
 	htmle.onkeypress = function(e) {
-		if (e.keyCode === 13) {
+		if (e.keyCode == 13) {
 			var oldSelectionStart = this.selectionStart;
 			var tabs = this.value.substr(0, oldSelectionStart)
 				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
@@ -198,7 +198,7 @@
 		};
 	};
 	css.onkeypress = js.onkeypress = function(e) {
-		if (e.keyCode === 13) {
+		if (e.keyCode == 13) {
 			var oldSelectionStart = this.selectionStart;
 			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
 			var tabs = this.value.substr(0, oldSelectionStart)
@@ -233,11 +233,11 @@
 			if (e.textContent == 'Save') e.textContent = 'Saving…';
 		}, 200);
 		request('/api/program/save?type=2', function(res) {
-			if (res.indexOf('Error') === 0) {
+			if (res.indexOf('Error') == 0) {
 				clearTimeout(savingTimeout);
 				alert(res);
 				e.textContent = 'Save';
-			} else if (res.indexOf('Location') === 0) {
+			} else if (res.indexOf('Location') == 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
 			} else if (res == 'Success') {
@@ -259,13 +259,13 @@
 		var e = e.previousSibling.previousSibling;
 		e.hidden = e.previousSibling.previousSibling.hidden = true;
 		request('/api/program/save?type=2&amp;fork=1', function(res) {
-			if (res.indexOf('Error') === 0) {
+			if (res.indexOf('Error') == 0) {
 				e.hidden = false;
 				e = e.nextSibling.nextSibling;
 				e.hidden = false;
 				e.nextSibling.nextSibling.textContent = 'Fork';
 				alert(res);
-			} else if (res.indexOf('Location') === 0) {
+			} else if (res.indexOf('Location') == 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
 			} else alert('Unknown error. Response was: ' + res);
