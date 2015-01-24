@@ -519,12 +519,11 @@ http.createServer(function(req,	res) {
 				if (doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You don\'t have permission to control access to this room.');
 				respondPage('Access for ' + doc.name, user, req, res, function() {
 					var userstr = '';
-					console.log({name: {$in: doc.invited}});
 					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
 						if (err) throw err;
 						if (invUser) userstr += 
 							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div>' +
+							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div><span>✕</span>' +
 							'\n\t</div>\n';
 						else {
 							fs.readFile('./html/chat/access.html', function(err, data) {

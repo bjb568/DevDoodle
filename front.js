@@ -490,6 +490,31 @@ http.createServer(function(req,	res) {
 							}));
 						});
 					});
+				} else if (req.url.pathname == '/chat/uninviteuser') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to invite users to this room.');
+						}
+						if (room.invited.indexOf(post.user) == -1) {
+							res.writeHead(409);
+							return res.end('Error: ' + post.user + ' has not been invited.');
+						}
+						if (room.invited.length == 1) {
+							res.writeHead(400);
+							return res.end('Error: You may not remove the only invited user.');
+						}
+						dbcs.chatrooms.update({_id: id}, {$pull: {invited: post.user}});
+						res.writeHead(204);
+						res.end();
+					});
 				} else if (req.url.pathname == '/qa/newquestion') {
 					if (!user) {
 						res.writeHead(403);

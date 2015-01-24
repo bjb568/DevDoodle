@@ -15,6 +15,8 @@
 </form>
 <style>
 	.user, .user:first-child { margin-top: 6px }
+	.user span { float: right }
+	.rem { opacity: 0.5 }
 </style>
 <script>
 	var changetypeStat = document.getElementById('changetypeStat'),
@@ -54,9 +56,10 @@
 				} catch(e) {
 					return alert('Unknown error adding user. Response was: ' + res);
 				}
-				adduserinput.value = '';
 				var div = document.createElement('div'),
 					img = document.createElement('img');
+				div.classList.add('user');
+				div.classList.add('lft');
 				img.src = '//gravatar.com/avatar/' + res.mailhash + '?s=576&amp;d=identicon"';
 				img.width = img.height = 40;
 				div.appendChild(img);
@@ -67,11 +70,36 @@
 				var rep = document.createElement('small');
 				rep.classList.add('rep');
 				rep.appendChild(document.createTextNode(res.rep));
-				onrit.appendChild(a);
+				onrit.appendChild(anchor);
+				onrit.appendChild(rep);
 				div.appendChild(onrit);
+				var span = document.createElement('span');
+				span.appendChild(document.createTextNode('✕'));
+				span.onclick = remuser;
+				div.appendChild(span);
 				document.getElementById('users').appendChild(div);
+				adduserinput.value = '';
 			}
 			adduserinput.focus();
 		}, 'user=' + adduserinput.value);
 	};
+	function remuser() {
+		var el = this.parentNode;
+		el.classList.add('rem');
+		request('/api/chat/uninviteuser', function(res) {
+			if (res.indexOf('Error') == 0) {
+				el.classList.remove('rem');
+				alert(res);
+			} else if (res == 'Success') {
+				el.parentNode.removeChild(el);
+			} else {
+				el.classList.remove('rem');
+				alert('Unknown error removing user. Response was: ' + res);
+			}
+		}, 'user=' + el.children[1].children[0].textContent);
+	}
+	var els = document.getElementsByClassName('user');
+	for (var i = 0; i &lt; els.length; i++) {
+		els[i].getElementsByTagName('span')[0].onclick = remuser;
+	}
 </script>
