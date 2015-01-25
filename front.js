@@ -1007,17 +1007,17 @@ http.createServer(function(req,	res) {
 						});
 					} else {
 						if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], user, req, res, post, true, true, post.name && !post.pass);
-						dbcs.users.findOne({name: post.name}, function(err, user) {
+						dbcs.users.findOne({name: post.name}, function(err, fuser) {
 							if (err) throw err;
-							if (!user) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], user, req, res, post);
-							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
-							crypto.pbkdf2(post.pass + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (!fuser) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
+							if (fuser.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], user, req, res, post);
+							if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
+							crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 								if (err) throw err;
-								if (key.toString('base64') != user.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
+								if (key.toString('base64') != fuser.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
 								var idToken = crypto.randomBytes(128).toString('base64');
 								respondPage('Login Success', user, req, res, function() {
-									res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
+									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
 									var referer = url.parse(post.referer);
 									if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
 									respondPageFooter(res);
@@ -1026,9 +1026,9 @@ http.createServer(function(req,	res) {
 										path: '/',
 										expires: new Date(new Date().setDate(new Date().getDate() + 30))
 									}),
-									user: user
+									user: fuser
 								});
-								dbcs.users.update({name: user.name}, {
+								dbcs.users.update({name: fuser.name}, {
 									$push: {
 										cookie: {
 											token: idToken,
