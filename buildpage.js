@@ -465,7 +465,7 @@ http.createServer(function(req,	res) {
 										[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
 									).replaceAll(
 										['$qcommentstr', '$rep'],
-										[commentstr, user.rep.toString()]
+										[commentstr, (user.rep || 0).toString()]
 									).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
 										['$op-name', '$op-rep', '$op-pic'],
 										[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
