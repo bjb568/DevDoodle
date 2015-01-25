@@ -1,0 +1,105 @@
+<h1><a href="$id" title="Join Room">←</a> Access to $name</h1>
+<form id="changetype">
+	Type:
+	<select name="type" id="type">
+		<option value="P">Public</option>
+		<option value="R">Read-only</option>
+		<option value="N">Private</option>
+	</select> <span id="changetypeStat"></span>
+</form>
+<div id="users" class="clearfix">
+	$users
+</div>
+<form id="adduser">
+	+ <input type="text" id="adduserinput" placeholder="Add a user" />
+</form>
+<style>
+	.user, .user:first-child { margin-top: 6px }
+	.user span { float: right }
+	.rem { opacity: 0.5 }
+</style>
+<script>
+	var changetypeStat = document.getElementById('changetypeStat'),
+		adduserinput = document.getElementById('adduserinput'),
+		prevType = '$type';
+	document.getElementById('type').onchange = function changeType() {
+		changetypeStat.textContent = 'Saving…';
+		var currentType = document.getElementById('type').value;
+		request('/api/chat/changeroomtype', function(res) {
+			if (res.indexOf('Error') == 0) {
+				changetypeStat.textContent = '';
+				alert(res);
+				document.getElementById('type').value = prevType;
+			} else if (res == 'Success') {
+				changetypeStat.textContent = 'Saved';
+				prevType = currentType;
+			} else {
+				changetypeStat.textContent = '';
+				alert('Unknown error updating room access. Response was: ' + res);
+				document.getElementById('type').value = prevType;
+			}
+		}, 'type=' + currentType);
+	};
+	document.getElementById('changetype').onsubmit = function(e) {
+		e.preventDefault();
+		changeType();
+	};
+	document.getElementById('adduser').onsubmit = function(e) {
+		e.preventDefault();
+		adduserinput.disabled = true;
+		request('/api/chat/inviteuser', function(res) {
+			adduserinput.disabled = false;
+			if (res.indexOf('Error') == 0) alert(res);
+			else {
+				try {
+					res = JSON.parse(res);
+				} catch(e) {
+					return alert('Unknown error adding user. Response was: ' + res);
+				}
+				var div = document.createElement('div'),
+					img = document.createElement('img');
+				div.classList.add('user');
+				div.classList.add('lft');
+				img.src = '//gravatar.com/avatar/' + res.mailhash + '?s=576&amp;d=identicon"';
+				img.width = img.height = 40;
+				div.appendChild(img);
+				var onrit = document.createElement('div'),
+					anchor = document.createElement('a');
+				anchor.href = '/user/' + adduserinput.value;
+				anchor.appendChild(document.createTextNode(adduserinput.value));
+				var rep = document.createElement('small');
+				rep.classList.add('rep');
+				rep.appendChild(document.createTextNode(res.rep));
+				onrit.appendChild(anchor);
+				onrit.appendChild(rep);
+				div.appendChild(onrit);
+				var span = document.createElement('span');
+				span.appendChild(document.createTextNode('✕'));
+				span.onclick = remuser;
+				div.appendChild(span);
+				document.getElementById('users').appendChild(div);
+				adduserinput.value = '';
+			}
+			adduserinput.focus();
+		}, 'user=' + adduserinput.value);
+	};
+	function remuser() {
+		var el = this.parentNode;
+		el.classList.add('rem');
+		request('/api/chat/uninviteuser', function(res) {
+			if (res.indexOf('Error') == 0) {
+				el.classList.remove('rem');
+				alert(res);
+			} else if (res == 'Success') {
+				el.parentNode.removeChild(el);
+			} else {
+				el.classList.remove('rem');
+				alert('Unknown error removing user. Response was: ' + res);
+			}
+		}, 'user=' + el.children[1].children[0].textContent);
+	}
+	var els = document.getElementsByClassName('user');
+	for (var i = 0; i &lt; els.length; i++) {
+		els[i].getElementsByTagName('span')[0].onclick = remuser;
+	}
+</script>

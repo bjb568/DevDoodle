@@ -76,7 +76,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
-	if (user) {
+	if (user.name) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
 			var tokens = user.cookie,
@@ -95,7 +95,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	fs.readFile('html/a/head.html', function(err, data) {
 		if (err) throw err;
 		data = data.toString();
-		if (user = huser || user) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
+		if ((user = huser || user).name) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 		var dirs = req.url.pathname.split('/');
 		res.write(
 			data.replace(
@@ -121,10 +121,10 @@ function respondPage(title, user, req, res, callback, header, status) {
 				inhead
 			).replace(
 				'$notifs',
-				(user && user.unread && !nonotif) ? ' class="unread"' : ''
+				(user.unread && !nonotif) ? ' class="unread"' : ''
 			).replace(
 				'<a href="/mod/">Mod</a>',
-				user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
+				user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
 			).replace('main.css', clean ? 'clean.css' : 'main.css')
 		);
 		callback();
@@ -240,21 +240,28 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
-var showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
+
+var typeIcons = {
+		P: '',
+		R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" /></svg>',
+		N: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="14"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" /></svg>',
+		M: ' ♦'
+	},
+	showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
 	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString(),
 	mailform = fs.readFileSync('./html/user/mailform.html').toString();
 
 http.createServer(function(req,	res) {
 	var origURL = req.url,
 		cookies = cookie.parse(req.headers.cookie || ''),
-		user = JSON.parse(req.headers.user),
+		user = JSON.parse(req.headers.user) || {},
 		i;
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
 	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
-			if (user) {
+			if (user.name) {
 				dbcs.users.update({name: user.name}, {
 					$set: {
 						level: 1,
@@ -301,9 +308,9 @@ http.createServer(function(req,	res) {
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
 				if (cUser) dstr +=
-							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-							'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
-							'\n\t</div>\n';
+					'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+					'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
+					'\n\t</div>\n';
 				else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -316,9 +323,9 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
-			if (!dispUser) return errorPage[404](req, res);
+			if (!dispUser) return errorPage[404](req, res, user);
 			respondPage(dispUser.name, user, req, res, function() {
-				var me = user ? user.name == dispUser.name : false;
+				var me = user.name == dispUser.name;
 				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
@@ -380,7 +387,7 @@ http.createServer(function(req,	res) {
 			}, {nonotif: true});
 		});
 	} else if (req.url.pathname == '/notifs') {
-		if (!user) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
+		if (!user.name) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
 		respondPage('Notifications', user, req, res, function() {
 			res.write('<h1>Notifications</h1>\n');
 			res.write('<ul id="notifs">\n');
@@ -425,7 +432,7 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
-			if (!question) return errorPage[404](req, res);
+			if (!question) return errorPage[404](req, res, user);
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
@@ -440,7 +447,7 @@ http.createServer(function(req,	res) {
 								'<div id="c' + comment._id + '" class="comment">' +
 								'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
 								(
-									user && user.rep >= 50 ?
+									user.rep >= 50 ?
 									(
 										'<span class="sctrls">' +
 										'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
@@ -458,7 +465,7 @@ http.createServer(function(req,	res) {
 										[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
 									).replaceAll(
 										['$qcommentstr', '$rep'],
-										[commentstr, user.rep.toString()]
+										[commentstr, (user.rep || 0).toString()]
 									).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
 										['$op-name', '$op-rep', '$op-pic'],
 										[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
@@ -474,20 +481,26 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/chat/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Chat Rooms</h1>\n');
-			var roomnames = {};
+			var roomnames = [],
+				publicRooms = [];
 			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
-					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + '</a></h2>\n');
+					if (doc.type == 'M' && user.level != 5) return;
+					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
 					roomnames[doc._id] = doc.name;
+					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
 					res.write('<hr />\n');
-					if (user && user.rep >= 200) res.write('<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
+					if (user.rep >= 200) res.write('<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
-					dbcs.chat.find({deleted: {$exists: false}}).sort({_id: -1}).limit(12).each(function(err, doc) {
+					dbcs.chat.find({
+						deleted: {$exists: false},
+						room: {$in: publicRooms}
+					}).sort({_id: -1}).limit(12).each(function(err, doc) {
 						if (err) throw err;
 						if (doc) res.write(
 							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
@@ -501,35 +514,68 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
-			if (!doc) return errorPage[404](req, res);
-			respondPage(doc.name, user, req, res, function() {
-				fs.readFile('./html/chat/room.html', function(err, data) {
-					if (err) throw err;
-					res.write(
-						data.toString()
-						.replaceAll('$id', doc._id)
-						.replaceAll('$name', html(doc.name))
-						.replaceAll('$rawdesc', html(doc.desc))
-						.replace('$desc', markdown(doc.desc))
-						.replace('$user', user ? user.name : '')
-						.replace('$textarea',
-							user ?
-								(
-									(user || {rep: 0}).rep < 30 ?
-									'<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' :
-									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
-								) :
-								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>')
-						.replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>')
-					);
-					respondPageFooter(res);
+			if (!doc) return errorPage[404](req, res, user);
+			if (req.url.query && typeof(req.url.query.access) == 'string') {
+				if (doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You don\'t have permission to control access to this room.');
+				respondPage('Access for ' + doc.name, user, req, res, function() {
+					var userstr = '';
+					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
+						if (err) throw err;
+						if (invUser) userstr += 
+							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div><span>✕</span>' +
+							'\n\t</div>\n';
+						else {
+							fs.readFile('./html/chat/access.html', function(err, data) {
+								if (err) throw err;
+								res.write(
+									data.toString()
+									.replaceAll(['$id', '$name', '$type', '$users'], [doc._id.toString(), doc.name, doc.type, userstr])
+									.replace('value="' + doc.type + '"', 'value="' + doc.type + '" selected=""')
+								);
+								respondPageFooter(res);
+							});
+						}
+					});
 				});
-			});
+			} else {
+				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
+				if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
+				respondPage(doc.name, user, req, res, function() {
+					fs.readFile('./html/chat/room.html', function(err, data) {
+						if (err) throw err;
+						var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
+						res.write(
+							data.toString()
+							.replaceAll('$id', doc._id)
+							.replaceAll('$name', html(doc.name))
+							.replaceAll('$rawdesc', html(doc.desc))
+							.replace('$desc', markdown(doc.desc))
+							.replace('$user', user.name || '')
+							.replace('$textarea',
+								user.name ?
+									(
+										user.rep < 30 ?
+											'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
+											(
+												isInvited ?
+													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
+													'<p>Posting in a non-public room is by invitation only.</p>'
+											)
+									) :
+									'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+							.replace(' $options',  typeIcons[doc.type] + (user.rep > 200 && isInvited ? ' <small><a id="edit">Edit</a></small>' : ''))
+							.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
+						);
+						respondPageFooter(res);
+					});
+				});
+			}
 		});
 	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
-			if (!doc) return errorPage[404](req, res);
+			if (!doc) return errorPage[404](req, res, user);
 			respondPage('Message #' + doc._id, user, req, res, function() {
 				if (doc.deleted && doc.user != user.name) {
 					res.write('This message has been deleted.');
@@ -654,9 +700,8 @@ http.createServer(function(req,	res) {
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
-			if (!program) return errorPage[404](req, res);
+			if (!program) return errorPage[404](req, res, user);
 			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', user, req, res, function() {
-				if (!user) user = {};
 				if (program.deleted) {
 					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
 					else if (user.level >= 4) {
@@ -701,7 +746,7 @@ http.createServer(function(req,	res) {
 									'<div id="c' + comment._id + '" class="comment">' +
 									'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
 									(
-										user && user.rep >= 50 ?
+										user.rep >= 50 ?
 										(
 											'<span class="sctrls">' +
 											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
@@ -711,41 +756,55 @@ http.createServer(function(req,	res) {
 										''
 									) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
 							} else {
-								if (program.type == 1) {
-									fs.readFile('./html/dev/canvas.html', function(err, data) {
+								dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
+									if (err) throw err;
+									var forks = [];
+									dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
 										if (err) throw err;
-										res.write(
-											data.toString()
-											.replaceAll(
-												['$id', '$title', '$code', '$created', '$updated', '$comments'],
-												[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-											).replaceAll(
-												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
-											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-										);
-										respondPageFooter(res);
+										if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
+										else {
+											if (program.type == 1) {
+												fs.readFile('./html/dev/canvas.html', function(err, data) {
+													if (err) throw err;
+													res.write(
+														data.toString()
+														.replaceAll(
+															['$id', '$title', '$code', '$created', '$updated', '$comments'],
+															[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+														).replaceAll(
+															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+													);
+													respondPageFooter(res);
+												});
+											} else if (program.type == 2) {
+												fs.readFile('./html/dev/html.html', function(err, data) {
+													if (err) throw err;
+													res.write(
+														data.toString()
+														.replaceAll(
+															['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+															[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+														).replaceAll(
+															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+													);
+													respondPageFooter(res);
+												});
+											} else throw 'Invalid program type for id: ' + program._id;
+										}
 									});
-								} else if (program.type == 2) {
-									fs.readFile('./html/dev/html.html', function(err, data) {
-										if (err) throw err;
-										res.write(
-											data.toString()
-											.replaceAll(
-												['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
-												[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-											).replaceAll(
-												['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-												[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-											).replace('Save</a>', 'Save</a>' + (program.user == (user || {}).name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-											.replace('id="addcomment"', 'id="addcomment"' + (user && user.rep >= 50 ? '' : ' hidden=""'))
-											.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-										);
-										respondPageFooter(res);
-									});
-								} else throw 'Invalid program type for id: ' + program._id;
+								});
 							}
 						});
 					});
@@ -771,7 +830,7 @@ http.createServer(function(req,	res) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
 			if (err) throw err;
 			if (!post) return errorPage[404](req, res, user);
-			if (!user || (user.name != post.user)) {
+			if (user.name != post.user) {
 				res.writeHead(303, {
 					Location: '1'
 				});
@@ -830,7 +889,7 @@ http.createServer(function(req,	res) {
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
 		fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', function(err, data) {
-			if (err) errorPage[404](req, res);
+			if (err) errorPage[404](req, res, user);
 			else {
 				data = data.toString();
 				respondPage(data.substr(0, data.indexOf('\n')), user, req, res, function() {
@@ -842,13 +901,13 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/mod/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Moderation Queues</h1>\n');
-			res.write('' + (user && user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user && user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>\n');
+			res.write('' + (user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>\n');
 			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/mod/chatflag') {
 		respondPage('Chat Flags', user, req, res, function() {
 			res.write('<h1>Chat Flags</h1>\n');
-			if (!user) {
+			if (!user.name) {
 				res.write('<p>You must be logged in and have level 2 moderator tools to access this queue.</p>');
 				return respondPageFooter(res);
 			}

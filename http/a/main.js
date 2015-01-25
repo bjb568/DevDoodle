@@ -154,7 +154,7 @@ function markdown(input) {
 			if (li) {
 				ul += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && (arr[i + 1].substr(0, 2) == '- ' || arr[i + 1] && arr[i + 1].substr(0, 2) == '* ')) {
 				ul += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -172,7 +172,7 @@ function markdown(input) {
 			if (li) {
 				ol += '<li>' + markdown(li) + '</li>';
 				li = '';
-			};
+			}
 			if (arr[i + 1] && arr[i + 1].match(/^(\d+|[A-z])[.)] /)) {
 				ol += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
@@ -246,12 +246,11 @@ function minHeight() {
 		if (sidebar) sidebar.style.height = '';
 	} else {
 		mainContentEl.style.height = '';
-		if (navigator.userAgent.indexOf('Mobile') == -1) mainContentEl.style.minHeight = innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px';
+		if (navigator.userAgent.indexOf('Mobile') == -1) mainContentEl.style.minHeight = Math.max(0, innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad) + 'px';
 		else mainContentEl.style.minHeight = '';
 		if (sidebar) {
 			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.style.minHeight;
 			else sidebar.style.height = '';
-			if (mainContentEl.style.minHeight != innerHeight - footer - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad + 'px') minHeight();
 		}
 	}
 }

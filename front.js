@@ -270,11 +270,8 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
-		res.write('<style>\n');
-		res.write('#content input[type=text], button { display: block }\n');
-		res.write('</style>');
 		respondPageFooter(res);
-	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }</style>'});
+	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content input[type=text], button { display: block }</style>'});
 }
 
 function respondCreateRoomPage(errs, user, req, res, post) {
@@ -300,7 +297,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 
 function respondChangePassPage(errs, user, req, res, post) {
 	if (!post) post = {};
-	respondPage('Create Room', req, res, function(user) {
+	respondPage('Change Password', user, req, res, function() {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
@@ -364,7 +361,7 @@ http.createServer(function(req,	res) {
 	var origURL = req.url, i, post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
-		return errorPage[414](req, res);
+		return errorPage[414](req, res, user);
 	}
 	var cookies = cookie.parse(req.headers.cookie || '');
 	req.url = url.parse(req.url, true);
@@ -441,6 +438,83 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (req.url.pathname == '/chat/changeroomtype') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) {
+						res.writeHead(400);
+						return res.end('Error: Invalid room type.');
+					}
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to change the room type.');
+						}
+						dbcs.chatrooms.update({_id: id}, {$set: {type: post.type}});
+						res.writeHead(204);
+						res.end();
+					});
+				} else if (req.url.pathname == '/chat/inviteuser') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to invite users to this room.');
+						}
+						dbcs.users.findOne({name: post.user}, function(err, invUser) {
+							if (err) throw err;
+							if (!invUser) {
+								res.writeHead(400);
+								return res.end('Error: User not found.');
+							}
+							if (room.invited.indexOf(invUser.name) != -1) {
+								res.writeHead(409);
+								return res.end('Error: ' + invUser.name + ' has already been invited.');
+							}
+							dbcs.chatrooms.update({_id: id}, {$push: {invited: invUser.name}});
+							res.writeHead(200);
+							res.end(JSON.stringify({
+								mailhash: invUser.mailhash,
+								rep: invUser.rep
+							}));
+						});
+					});
+				} else if (req.url.pathname == '/chat/uninviteuser') {
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
+						id = i ? parseInt(i[1]) : 0;
+					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
+						if (err) throw err;
+						if (!room) {
+							res.writeHead(400);
+							return res.end('Error: Invalid room id.');
+						}
+						if (room.invited.indexOf(user.name) == -1) {
+							res.writeHead(403);
+							return res.end('Error: You don\'t have permission to invite users to this room.');
+						}
+						if (room.invited.indexOf(post.user) == -1) {
+							res.writeHead(409);
+							return res.end('Error: ' + post.user + ' has not been invited.');
+						}
+						if (room.invited.length == 1) {
+							res.writeHead(400);
+							return res.end('Error: You may not remove the only invited user.');
+						}
+						dbcs.chatrooms.update({_id: id}, {$pull: {invited: post.user}});
+						res.writeHead(204);
+						res.end();
+					});
 				} else if (req.url.pathname == '/qa/newquestion') {
 					if (!user) {
 						res.writeHead(403);
@@ -478,7 +552,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to save a program.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -509,6 +583,8 @@ http.createServer(function(req,	res) {
 								if (type == 2) {
 									dbcs.programs.insert({
 										type: type,
+										fork: program._id,
+										title: 'Fork of ' + program.title.substr(0, 84),
 										html: (post.html || '').toString(),
 										css: (post.css || '').toString(),
 										js: (post.js || '').toString(),
@@ -523,6 +599,8 @@ http.createServer(function(req,	res) {
 								} else {
 									dbcs.programs.insert({
 										type: type,
+										fork: program._id,
+										title: 'Fork of ' + program.title.substr(0, 84),
 										code: (post.code || '').toString(),
 										user: user.name,
 										created: new Date().getTime(),
@@ -543,7 +621,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a program title.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -552,7 +630,7 @@ http.createServer(function(req,	res) {
 							return res.end('Error: Invalid program id.');
 						}
 						if (program.user.toString() != user.name.toString()) {
-							res.writeHead(204);
+							res.writeHead(403);
 							return res.end('Error: You may rename only your own programs.');
 						}
 						dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
@@ -577,7 +655,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must have 15 reputation to vote.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -637,7 +715,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to delete programs.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -665,7 +743,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to undelete programs.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/dev\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
@@ -686,7 +764,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a lesson title.');
 					}
-					var i = url.parse(req.headers.referer || '').pathname.match(/^\/learn\/unoff\/(\d+)/),
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
 					dbcs.lessons.findOne({_id: id}, function(err, lesson) {
 						if (err) throw err;
@@ -714,7 +792,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -747,7 +825,7 @@ http.createServer(function(req,	res) {
 						respondPageFooter(res);
 					});
 				});
-			} else errorPage[405](req, res);
+			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/learn/new') {
 			if (req.method == 'GET') {
 				respondPage('New Lesson', user, req, res, function() {
@@ -763,7 +841,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -859,7 +937,7 @@ http.createServer(function(req,	res) {
 						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 					}
 				});
-			} else errorPage[405](req, res);
+			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/login/') {
 			if (req.method == 'POST') {
 				post = '';
@@ -867,7 +945,7 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 1000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -970,14 +1048,14 @@ http.createServer(function(req,	res) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 100000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
 				req.on('end', function() {
 					if (req.abort) return;
 					post = querystring.parse(post);
-					if (!user || user.name != i[1]) return errorPage[403](req, res);
+					if (!user || user.name != i[1]) return errorPage[403](req, res, user);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
 					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
@@ -1002,15 +1080,15 @@ http.createServer(function(req,	res) {
 				});
 			} else respondChangePassPage([], user, req, res, {});
 		} else if (req.url.pathname == '/chat/newroom') {
-			if (!user) return errorPage[403](req, res, 'You must be logged in and have 200 reputation to create a room.');
-			if (user.rep < 200) return errorPage[403](req, res, 'You must have 200 reputation to create a room.');
+			if (!user) return errorPage[403](req, res, user, 'You must be logged in and have 200 reputation to create a room.');
+			if (user.rep < 200) return errorPage[403](req, res, user, 'You must have 200 reputation to create a room.');
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
 					if (req.abort) return;
 					post += data;
 					if (post.length > 4000) {
-						errorPage[413](req, res);
+						errorPage[413](req, res, user);
 						req.abort = true;
 					}
 				});
@@ -1020,6 +1098,7 @@ http.createServer(function(req,	res) {
 					var errors = [];
 					if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 					if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
+					if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) errors.push('Invalid room type.');
 					if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 					dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
@@ -1028,6 +1107,7 @@ http.createServer(function(req,	res) {
 							name: post.name,
 							desc: post.desc,
 							type: post.type,
+							invited: [user.name],
 							_id: i
 						});
 						res.writeHead(303, {'Location': i});
