@@ -72,8 +72,8 @@ function inlineMarkdown(input) {
 						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
 							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '<img src="$1" />')
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
 							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
+							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
 							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
 							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
 							.replace(/\^(\w+)/g, '<sup>$1</sup>');
@@ -230,17 +230,17 @@ function markdown(input) {
 	}).join('');
 }
 
-var noPageOverflow = false,
-	pageOverflowMobile = false,
-	footerOff = false,
-	mainContentEl,
-	mainBottomPad = 0;
+var noPageOverflow = noPageOverflow || false,
+	pageOverflowMobile = pageOverflowMobile || false,
+	footerOff = footerOff || false,
+	mainContentEl = mainContentEl || false,
+	mainBottomPad = mainBottomPad || 0;
 
 function minHeight() {
 	var footer = document.getElementById('footer').offsetHeight,
 		sidebar = document.getElementById('sidebar');
 	if (innerWidth < 1500 && sidebar) footer += sidebar.offsetHeight + 6;
-	if (noPageOverflow && !(pageOverflowMobile && innerWidth < 800)) {
+	if (noPageOverflow && !(innerWidth < pageOverflowMobile)) {
 		mainContentEl.style.minHeight = '';
 		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 12, noPageOverflow) - mainBottomPad + 'px';
 		if (sidebar) sidebar.style.height = '';

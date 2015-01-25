@@ -1,4 +1,5 @@
 <h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" style="font-size: 0.8em; width: 100%;" hidden="" /></h1>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
 <div class="pad vote lft">
 	<svg id="mup" class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg>
 	<svg id="mdn" class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg>
@@ -22,10 +23,10 @@
 		<small class="blk sumar lft" style="clear: left"><a href="#edit" class="grey">Edit</a> <line /> <a class="grey">Delete</a></small>
 	</div>
 </div>
-<form id="q-edit" action="javascript:editSubmit()" style="margin-left: 32px" hidden="">
+<form id="q-edit" style="margin-left: 32px" hidden="">
 	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
-	<textarea id="q-code-edit" rows="24">$code</textarea>
-	<input id="q-question-edit" value="$rawq" class="fullwidth" />
+	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
 	$ecat
 	<div>
 		<button type="submit">Submit Edit</button>
@@ -35,12 +36,12 @@
 <div class="indt umar">
 	<hr class="nomar" />
 	<div id="comments">$qcommentstr</div>
-	<form id="comment" class="target" action="javascript:addComment()">
-		<textarea id="commentta" class="fullwidth" placeholder="Ask for clarification or suggest improvements for the question." rows="4"></textarea>
+	<form id="comment" class="target umar">
+		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Post</button>
-		<button type="reset" onclick="location.hash='';history.replaceState('', document.title, window.location.pathname)">Cancel</button>
+		<button type="reset" id="reset">Cancel</button>
 	</form>
-	<a id="addcomment" href="#comment" onclick="setTimeout(function(){document.getElementById('commentta').focus()},0);" style="font-weight: normal;" class="small">Add comment</a>
+	<a id="addcomment" href="#comment" style="font-weight: normal;" class="small">Add comment</a>
 </div>
 <hr class="nomar bumar" />
 <!-- <h2 class="sumar">1 Answer</h2>
@@ -135,10 +136,10 @@ This text will be replaced
 		if (f) e.focus();
 		else if (location.hash == '#edit') {
 			document.body.classList.add('q-editing');
-			document.getElementById('q-edit').hidden ^= 1;
-			document.getElementById('title').hidden ^= 1;
-			document.getElementById('title-edit').hidden ^= 1;
-			document.getElementById('q-content').hidden ^= 1;
+			document.getElementById('q-edit').hidden = 0;
+			document.getElementById('title').hidden = 1;
+			document.getElementById('title-edit').hidden = 0;
+			document.getElementById('q-content').hidden = 1;
 			document.getElementById('q-body-edit').focus();
 		}
 	}
@@ -147,9 +148,80 @@ This text will be replaced
 	document.getElementById('cancel-edit').onclick = function() {
 		location.hash = '';
 		document.body.classList.remove('q-editing');
-		document.getElementById('q-edit').hidden ^= 1;
-		document.getElementById('title').hidden ^= 1;
-		document.getElementById('title-edit').hidden ^= 1;
-		document.getElementById('q-content').hidden ^= 1;
+		document.getElementById('q-edit').hidden = 1;
+		document.getElementById('title').hidden = 0;
+		document.getElementById('title-edit').hidden = 1;
+		document.getElementById('q-content').hidden = 0;
+	}
+	document.getElementById('addcomment').onclick = function() {
+		setTimeout(function() {
+			document.getElementById('commentta').focus();
+		}, 0);
+	};
+	var socket = new WebSocket('ws://' + location.hostname + ':81/q/$id');
+	document.getElementById('comment').onsubmit = function(e) {
+		socket.send(JSON.stringify({
+			event: 'post',
+			body: document.getElementById('commentta').value
+		}));
+		document.getElementById('commentta').value = '';
+		document.getElementById('reset').onclick();
+		e.preventDefault();
+	};
+	document.getElementById('reset').onclick = function() {
+		location.hash = '';
+		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = innerHeight;
+	};
+	socket.onmessage = function(e) {
+		console.log(e.data);
+		try {
+			var data = JSON.parse(e.data);
+		} catch(err) {
+			console.log(err);
+			return alert('JSON Error. Response was: ' + e.data);
+		}
+		if (data.event == 'add') {
+			var div = document.createElement('div');
+			div.classList.add('comment');
+			div.innerHTML = ' ' + markdown(data.body);
+			if ($rep >= 50) {
+				div.insertBefore(document.getElementById('content').children[1].cloneNode(true), div.firstChild);
+				div.firstChild.firstChild.onclick = upvoteComment;
+				var score = document.createElement('span');
+				score.classList.add('score');
+				score.appendChild(document.createTextNode(score.dataset.score = 0));
+				div.insertBefore(score, div.firstChild);
+			}
+			var sig = document.createElement('span');
+			sig.classList.add('c-sig');
+			sig.appendChild(document.createTextNode('-'));
+			var a = document.createElement('a');
+			a.href = '/user/' + data.user;
+			a.appendChild(document.createTextNode(data.user))
+			sig.appendChild(a);
+			sig.appendChild(document.createTextNode(', '));
+			var permalink = document.createElement('a');
+			if (!data.time) data.time = new Date().getTime();
+			permalink.appendChild(agot(data.time));
+			permalink.href = '#' + (div.id = 'c' + data.id);
+			sig.appendChild(permalink);
+			div.appendChild(sig);
+			document.getElementById('comments').appendChild(div);
+		} else if (data.event == 'scorechange') {
+			var c = document.getElementById('c' + data.id);
+			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
+		} else if (data.event == 'err') alert('Error: ' + data.body);
+	};
+	function upvoteComment() {
+		this.classList.toggle('clkd');
+		socket.send(JSON.stringify({
+			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+			id: parseInt(this.parentNode.parentNode.id.substr(1))
+		}));
+	}
+	var comments = document.getElementsByClassName('comment');
+	for (var i = 0; i &lt; comments.length; i++) {
+		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
 	}
 </script>

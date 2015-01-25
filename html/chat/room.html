@@ -67,7 +67,7 @@ $textarea
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
 		ta.hists = ta.hists || {};
-		ta.hists[editing] = ta.hist;console.log('AAA');console.log(editing, ta.hist);
+		ta.hists[editing] = ta.hist;
 		ta.hist = ta.hists[msg.id] || [{
 			body: ta.value,
 			start: 0,
@@ -132,7 +132,6 @@ $textarea
 		addEventListener('touchstart', active);
 		addEventListener('scroll', active);
 		addEventListener('resize', active);
-		cont.addEventListener('scroll', active);
 	}
 	function resetEditForm() {
 		document.getElementById('nameedit').value = document.getElementById('name').textContent;
@@ -158,8 +157,8 @@ $textarea
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
-			div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
-			if (data.event == 'init' &amp;&amp; !document.getElementById('ts').hidden) {
+			div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
+			if (data.event == 'init' &amp;&amp; document.getElementById('ts').hidden) {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
 				while (i--) imgs[i].onload = function() {
@@ -218,7 +217,7 @@ $textarea
 			if (!msg) return;
 			var msgCsig = msg.getElementsByClassName('c-sig')[0],
 				msgCtrls = msg.getElementsByClassName('ctrls')[0];
-			msg.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
+			msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 			msg.appendChild(msgCsig);
 			msg.appendChild(msgCtrls);
 		} else if (data.event == 'delete') {
@@ -250,7 +249,7 @@ $textarea
 				var div = document.createElement('div');
 				div.classList.add('comment');
 				if (data.deleted) div.classList.add('deleted');
-				div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
+				div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 				var sig = document.createElement('span');
 				sig.classList.add('c-sig');
 				var starcount = document.createElement('span');
@@ -313,7 +312,7 @@ $textarea
 				if (data.stars == 1) return;
 				div.id = data.id + 's';
 				div.classList.add('comment');
-				div.innerHTML = (username ? markdown(data.body).replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
+				div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 				var sig = document.createElement('span');
 				sig.classList.add('c-sig');
 				var starcount = document.createElement('span');
@@ -493,7 +492,7 @@ $textarea
 				e.preventDefault();
 				var i = cont.children.indexOf(document.getElementById(editing));
 				while (++i &lt; cont.children.length) {
-					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
+					if (cont.children[i].getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username &amp;&amp; !cont.children[i].classList.contains('deleted')) {
 						ta.hists = ta.hists || {};
 						ta.hists[editing] = ta.hist;
 						ta.hist = ta.hists[false] || [{
@@ -576,6 +575,7 @@ $textarea
 		ta.addEventListener('keypress', pingsugs);
 	};
 	function send() {
+		if (!ta.value) return;
 		socket.send(JSON.stringify({event: 'post', body: ta.value}));
 		location.hash = '';
 		ta.value = '';
@@ -615,7 +615,6 @@ $textarea
 	};
 	var hashchangeready = !hash;
 	addEventListener('hashchange', function(e) {
-		console.log(hashchangeready)
 		if (hashchangeready) {
 			var hash = e.newURL.split('#', 2)[1];
 			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
@@ -632,13 +631,6 @@ $textarea
 	#chat, #aside {
 		height: 100%;
 		overflow-x: hidden;
-	}
-	#chat img { height: 300px }
-	@media (max-width: 600px) {
-		#chat img { height: 150px }
-	}
-	@media (max-width: 400px) {
-		#chat img { height: 50px }
 	}
 	.comment:hover { outline: 1px dotted #000 }
 	.ctrls { border: 1px solid #aaa }

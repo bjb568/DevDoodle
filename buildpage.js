@@ -44,7 +44,7 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
 
 db.open(function(err, db) {
 	if (err) throw err;
@@ -73,6 +73,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	delete header.clean;
+	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	if (user) {
@@ -255,7 +256,10 @@ http.createServer(function(req,	res) {
 			if (err) throw err;
 			if (user) {
 				dbcs.users.update({name: user.name}, {
-					$set: {level: 1},
+					$set: {
+						level: 1,
+						cookie: []
+					},
 					$unset: {confirm: 1}
 				});
 				respondPage('Account confirmed', user, req, res, function() {
@@ -342,7 +346,7 @@ http.createServer(function(req,	res) {
 						res.write('</div>\n');
 						programs++;
 					} else {
-						if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + 'have any programs.</p>');
+						if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
 						res.write('</section>\n');
 						if (me) {
 							res.write('<h2 class="underline">Private</h2>\n');
@@ -399,7 +403,7 @@ http.createServer(function(req,	res) {
 					created: {$gt: new Date().getTime() - 2592000000}
 				}
 			}
-		}, {$unset: {cookie: 1}});
+		}, {$set: {cookie: []}});
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {
@@ -425,18 +429,44 @@ http.createServer(function(req,	res) {
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
-					fs.readFile('./html/qa/question.html', function(err, data) {
+					var commentstr = '';
+					dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
 						if (err) throw err;
-						res.write(data.toString()
-							.replaceAll(
-								['$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-								[html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-							).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
-								['$op-name', '$op-rep', '$op-pic'],
-								[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-							)
-						);
-						respondPageFooter(res);
+						if (comment) {
+							var votes = comment.votes || [],
+								voted;
+							for (var i in votes) if (votes[i].user == user.name) voted = true;
+							commentstr +=
+								'<div id="c' + comment._id + '" class="comment">' +
+								'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
+								(
+									user && user.rep >= 50 ?
+									(
+										'<span class="sctrls">' +
+										'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+										'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+										'</span>'
+									) :
+									''
+								) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+						} else {
+							fs.readFile('./html/qa/question.html', function(err, data) {
+								if (err) throw err;
+								res.write(data.toString()
+									.replaceAll(
+										['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+										[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+									).replaceAll(
+										['$qcommentstr', '$rep'],
+										[commentstr, user.rep.toString()]
+									).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
+										['$op-name', '$op-rep', '$op-pic'],
+										[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+									)
+								);
+								respondPageFooter(res);
+							});
+						}
 					});
 				});
 			});
@@ -487,7 +517,7 @@ http.createServer(function(req,	res) {
 								(
 									(user || {rep: 0}).rep < 30 ?
 									'<p id="loginmsg">You must have at least 30 reputation to post to chat.</p>' :
-									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar" style="width: 100%; height: 96px;"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
+									'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>'
 								) :
 								'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to post to chat.</p>')
 						.replace(' <small><a id="edit">Edit</a></small>', (user || {rep: 0}).rep < 200 ? '' : ' <small><a id="edit">Edit</a></small>')
@@ -516,7 +546,7 @@ http.createServer(function(req,	res) {
 					if (data) {
 						if (!events) {
 							res.write('<h2>History:</h2>\n');
-							res.write('<ul>\n')
+							res.write('<ul>\n');
 							events = true;
 						}
 						res.write('<li>\n');
@@ -661,7 +691,7 @@ http.createServer(function(req,	res) {
 					dbcs.users.findOne({name: program.user}, function(err, op) {
 						if (err) throw err;
 						var commentstr = '';
-						dbcs.comments.find({program: program._id}).each(function(err, comment) {
+						dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
 							if (err) throw err;
 							if (comment) {
 								var votes = comment.votes || [],
@@ -722,6 +752,77 @@ http.createServer(function(req,	res) {
 				});
 			});
 		});
+	} else if (req.url.pathname == '/learn/') {
+		respondPage(null, user, req, res, function() {
+			var lessonstr = '';
+			dbcs.lessons.find().each(function(err, lesson) {
+				if (err) throw err;
+				if (lesson) lessonstr += '<li><a href="unoff/' + lesson._id + '/">' + html(lesson.title) + '</a></li>';
+				else {
+					fs.readFile('./html/learn/learn.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$lessons', '<ul>' + lessonstr + '</ul>'));
+						respondPageFooter(res);
+					});
+				}
+			});
+		});
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/$/)) {
+		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
+			if (err) throw err;
+			if (!post) return errorPage[404](req, res, user);
+			if (!user || (user.name != post.user)) {
+				res.writeHead(303, {
+					Location: '1'
+				});
+				res.end();
+			} else {
+				respondPage(post.title, user, req, res, function() {
+					fs.readFile('./html/learn/course.html', function(err, data) {
+						res.write(
+							data.toString()
+							.replaceAll('$title', html(post.title))
+							.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
+								return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
+							}).join('') + '</ul>' + (
+								post.user == user.name
+								? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
+								: ''
+							))
+							.replace('$mine', post.user == user.name ? 'true' : 'false')
+						);
+						respondPageFooter(res);
+					});
+				});
+			}
+		});
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
+		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, lesson) {
+			if (err) throw err;
+			if (!lesson) return errorPage[404](req, res, user);
+			var post = lesson.content[--i[2]];
+			if (!post) return errorPage[404](req, res, user);
+			respondPage(post.title, user, req, res, function() {
+				fs.readFile('./html/learn/lesson.html', function(err, data) {
+					if (err) throw err;
+					res.write(
+						data.toString()
+						.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
+						.replaceAll(
+							['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
+							[html(lesson.title), html(post.stitle), html(post.sbody), html(post.pregex), html(post.sregex), html(post.stext), html(post.ftext), html(post.html)]
+						).replaceAll(
+							['$md-ftext', '$md-stext', '$md-sbody'],
+							[markdown(post.ftext), markdown(post.stext), markdown(post.sbody)]
+						).replaceAll(
+							['$str-pregex', '$str-sregex'],
+							[html(JSON.stringify(post.pregex)), html(JSON.stringify(post.sregex))]
+						).replaceAll(['$back', '$next'], [i[2] ? i[2].toString() : '" title="This is the first slide." class="disabled', i[2] == lesson.content.length - 1 ? '" title="This is the last slide." class="disabled' : (i[2] + 2).toString()])
+					);
+					respondPageFooter(res);
+				});
+			}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+		});
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
 		res.writeHead(303, {
 			Location: '1/'
@@ -735,9 +836,7 @@ http.createServer(function(req,	res) {
 				respondPage(data.substr(0, data.indexOf('\n')), user, req, res, function() {
 					res.write(data.substr(data.indexOf('\n') + 1));
 					respondPageFooter(res);
-				}, {
-					inhead: '<link rel="stylesheet" href="/learn/course.css" />'
-				});
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 			}
 		});
 	} else if (req.url.pathname == '/mod/') {
@@ -774,7 +873,7 @@ http.createServer(function(req,	res) {
 					respondPageFooter(res);
 				}
 			});
-		}, {inhead: '<style>pre { margin: 0 }</style>'});
+		}, {inhead: '<style>pre { margin: 0 }</style>', clean: true});
 	} else return errorPage[404](req, res, user);
 }).listen(process.argv[2] || 8000);
 console.log('buildpage.js running on port ' + (process.argv[2] || 8000));
