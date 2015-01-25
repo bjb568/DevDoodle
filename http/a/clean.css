@@ -191,9 +191,14 @@ fieldset {
 	font-size: 0.9em;
 }
 ul, ol, p { margin: 6px 0 2px 0 }
-.error {
+#err, .error {
 	background: #f00;
 	color: #fff;
+}
+#err a { color: #fff }
+#err {
+	text-align: center;
+	padding: 3em;
 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
@@ -249,12 +254,6 @@ input[type=text], input[type=password], textarea {
 textarea {
 	font-size: .9em;
 	display: block;
-}
-#err > * {
-	display: block;
-	text-align: center;
-	margin: 3em;
-	color: #fff;
 }
 .score {
 	float: left;
