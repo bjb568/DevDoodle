@@ -492,8 +492,7 @@ http.createServer(function(req,	res) {
 					roomnames[doc._id] = doc.name;
 					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
-					res.write('<hr />\n');
-					if (user.rep >= 200) res.write('<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
+					if (user.rep >= 200) res.write('<hr />\n<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
