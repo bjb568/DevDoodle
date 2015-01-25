@@ -189,7 +189,8 @@ ul, ol, p { margin: 6px 0 2px 0 }
 	color: #fff;
 }
 #err a { color: #fff }
-#err {
+#err > * {
+	display: block;
 	text-align: center;
 	padding: 3em;
 }
