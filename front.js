@@ -723,7 +723,7 @@ http.createServer(function(req,	res) {
 							res.writeHead(400);
 							return res.end('Error: Invalid program id.');
 						}
-						if (program.user.toString() != user.name.toString() && user.level != 2) {
+						if (program.user.toString() != user.name.toString() && user.level < 4) {
 							res.end(403);
 							return res.end('Error: You may delete only your own programs.');
 						}
@@ -751,7 +751,7 @@ http.createServer(function(req,	res) {
 							res.writeHead(400);
 							return res.end('Error: Invalid program id.');
 						}
-						if (program.user.toString() != user.name.toString() && user.level != 2) {
+						if (program.user.toString() != user.name.toString() && user.level < 4) {
 							res.end(403);
 							return res.end('Error: You may undelete only your own programs.');
 						}
