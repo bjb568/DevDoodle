@@ -337,6 +337,14 @@ var statics = {
 		path: './html/dev/docs.html',
 		title: 'Docs'
 	},
+	'/dev/docs/line-func': {
+		path: './html/dev/docs/line-func.html',
+		title: 'line(x1, y1, x2, y2) | Docs',
+		clean: true
+	},
+	'/learn/': {
+		path: './html/learn/learn.html'
+	},
 	'/learn/web/': {
 		path: './html/learn/web/web.html',
 		title: 'Web'
