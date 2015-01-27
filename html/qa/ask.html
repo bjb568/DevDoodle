@@ -1,5 +1,5 @@
 <h1>New Question</h1>
-<form id="form" onsubmit="javascript:!arguments[0].preventDefault() &amp;&amp; formSubmit()" method="post" action="preview">
+<form id="form" method="post" action="preview">
 	<aside class="rit">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title should try to efficiently capture the essence of the question. Try to avoid titles like:</p>
@@ -214,7 +214,8 @@
 	document.getElementById('lang').addEventListener('focus', function() {
 		langsug.hidden = !this.value;
 	});
-	function formSubmit() {
+	document.getElementById('form').onsubmit = function(e) {
+		e.preventDefault();
 		if (waiting) return;
 		if (step == 0) {
 			if (document.getElementById('title').value.length &lt; 12) {
