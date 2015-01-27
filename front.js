@@ -342,6 +342,11 @@ var statics = {
 		title: 'line(x1, y1, x2, y2) | Docs',
 		clean: true
 	},
+	'/dev/docs/rect-func': {
+		path: './html/dev/docs/rect-func.html',
+		title: 'rect(x, y, h, w) | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
