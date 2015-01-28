@@ -337,24 +337,24 @@ var statics = {
 		path: './html/dev/docs.html',
 		title: 'Docs'
 	},
-	'/dev/docs/line-func': {
-		path: './html/dev/docs/line-func.html',
-		title: 'line(x1, y1, x2, y2) | Docs',
+	'/dev/docs/shapes/line-func': {
+		path: './html/dev/docs/shapes/line-func.html',
+		title: 'line(x1, y1, x2, y2) | Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/rect-func': {
-		path: './html/dev/docs/rect-func.html',
-		title: 'rect(x, y, h, w) | Docs',
+		path: './html/dev/docs/shapes/rect-func.html',
+		title: 'rect(x, y, h, w) | Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/point-func': {
-		path: './html/dev/docs/point-func.html',
-		title: 'point(x,y) | Docs',
+		path: './html/dev/docs/shapes/point-func.html',
+		title: 'point(x,y) | Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/ellipse-func': {
-		path: './html/dev/docs/ellipse-func.html',
-		title: 'ellipse(cx, cy, rx, ry) | Docs',
+		path: './html/dev/docs/shapes/ellipse-func.html',
+		title: 'ellipse(cx, cy, rx, ry) | Shapes | Docs',
 		clean: true
 	},
 	'/learn/': {
