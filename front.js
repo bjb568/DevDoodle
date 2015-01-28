@@ -347,6 +347,11 @@ var statics = {
 		title: 'rect(x, y, h, w) | Docs',
 		clean: true
 	},
+	'/dev/docs/point-func': {
+		path: './html/dev/docs/point-func.html',
+		title: 'point(x,y) | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
