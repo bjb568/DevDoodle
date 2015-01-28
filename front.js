@@ -352,6 +352,11 @@ var statics = {
 		title: 'point(x,y) | Docs',
 		clean: true
 	},
+	'/dev/docs/ellipse-func': {
+		path: './html/dev/docs/ellipse-func.html',
+		title: 'ellipse(cx, cy, rx, ry) | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
