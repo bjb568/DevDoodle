@@ -2,25 +2,29 @@
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
-* The line() function draws a line on the canvas according to what coordinates are passed in.
-* 
-* Usage:
-* line(x1, y1, x2, y2)
+ * The text() function draws text on the canvas at the coordinates passed into the function.
+ * 
+ * Usage:
+ * text(x, y, t)
 */
 
-//stroke() sets the color of lines and strokeWidth() sets the width of lines.
-stroke(50, 70, 50);
-strokeWidth(2);
-//As you can see, the line goes from (100, 100) to (200, 200) on the canvas.
-line(100, 100, 200, 200);
-//In this library, if you set the stroke width really high, the line becomes rounded on the ends.
-strokeWidth(10);
-stroke(127, 255, 200);
-line(25, 300, 250, 300);
+//Like rectangles and ellipses, text is colored in by fill() and stroke().
+fill(100, 200, 100);
+stroke(5, 80, 60);
+//You can also use font() to change the font of your text.
+font("30px serif");
+//Unlike the Processing.js library, the coordinates of the point for which the text is drawn comes before the text in the arguments list.
+text(100, 200, "Hi!");
+//Personally, you might want not to draw text with stroke:
+stroke(none);
+text(50, 300, "No stroke!");
+//However, it's your choice.
 
 /** See also:
-stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
-strokeWidth(w): http://devdoodle.net/dev/87/
+  fill([shade] [r, g, b] [color]): http://devdoodle.net/dev/79/
+  stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
+  textAlign(h, v): http://devdoodle.net/dev/100/
+  font(f): http://devdoodle.net/dev/101/
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
