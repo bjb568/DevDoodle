@@ -8,22 +8,30 @@
  * point(x, y)
 */
 
-//Because point() creates a small rectangle, whether it is colored by fill() or stroke() depends on the stroke width.
+// Because point() creates a small rectangle, whether it is colored by fill() or stroke() depends on the stroke width.
+
 fill(255, 0, 0);
 stroke(0, 0, 255);
-//If the stroke width is 0.5 or greater, than the point is noticeably colored by stroke()
+
+// If the stroke width is 0.5 or greater, than the point is noticeably colored by stroke()
+
 point(100, 30);
-//If the stroke width is between 0.4 and 0.5, if you look closely, it is noticeably colored by stroke() on the outside, but colored by fill() on the inside (look closely)
+
+// If the stroke width is between 0.4 and 0.5, if you look closely, it is noticeably colored by stroke() on the outside, but colored by fill() on the inside (look closely)
+
 strokeWidth(0.45);
 point(200, 30);
-//If the stroke width is less than 0.4, the point is noticeablely colored by fill()
+
+// If the stroke width is less than 0.4, the point is noticeablely colored by fill()
+
 strokeWidth(0.3);
 point(300, 30);
 
-/** See also:
-  fill([shade] [r, g, b] [color]): http://devdoodle.net/dev/79/
-  stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
-  strokeWidth(w): http://devdoodle.net/dev/87/
+/** 
+ * See also:
+ * fill([shade] [r, g, b] [color])
+ * stroke([shade] [r, g, b] [color])
+ * strokeWidth(w)
 */
 </textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

@@ -372,8 +372,8 @@ var statics = {
 		title: 'font(f) | Text | Docs',
 		clean: true
 	},
-	'/dev/docs/fill/stroke-func': {
-		path: './html/dev/docs/fill/stroke-func.html',
+	'/dev/docs/fill/fill-func': {
+		path: './html/dev/docs/fill/fill-func.html',
 		title: 'fill([shade] [r, g, b] [color]) | Text | Docs',
 		clean: true
 	},

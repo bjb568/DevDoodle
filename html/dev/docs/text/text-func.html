@@ -1,4 +1,4 @@
-<h1>line(x1, y1, x2, y2)</h1>
+<h1>text(x, y, t)</h1>
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
@@ -8,23 +8,32 @@
  * text(x, y, t)
 */
 
-//Like rectangles and ellipses, text is colored in by fill() and stroke().
+// Like rectangles and ellipses, text is colored in by fill() and stroke().
+
 fill(100, 200, 100);
 stroke(5, 80, 60);
-//You can also use font() to change the font of your text.
+
+// You can also use font() to change the font of your text.
+
 font("30px serif");
-//Unlike the Processing.js library, the coordinates of the point for which the text is drawn comes before the text in the arguments list.
+
+// Unlike the Processing.js library, the coordinates of the point for which the text is drawn comes before the text in the arguments list.
+
 text(100, 200, "Hi!");
-//Personally, you might want not to draw text with stroke:
+
+// Personally, you might want not to draw text with stroke:
+
 stroke(none);
 text(50, 300, "No stroke!");
-//However, it's your choice.
 
-/** See also:
-  fill([shade] [r, g, b] [color]): http://devdoodle.net/dev/79/
-  stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
-  textAlign(h, v): http://devdoodle.net/dev/100/
-  font(f): http://devdoodle.net/dev/101/
+// However, it's your choice.
+
+/** 
+ * See also:
+ * fill([shade] [r, g, b] [color])
+ * stroke([shade] [r, g, b] [color])
+ * textAlign(h, v)
+ * font(f)
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

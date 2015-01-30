@@ -14,16 +14,19 @@ font("30px times")
 
 var horizontalAligns = ["start", "end", "left", "center", "right"];
 var verticalAligns = ["top", "bottom", "middle", "alphabetic", "hanging"];
-//Alter i and j so they are either 0, 1, 2, 3, or 4 and press Restart to see the effect of the different arguments passed into textAlign. 
+
+// Alter i and j so they are either 0, 1, 2, 3, or 4 and press Restart to see the effect of the different arguments passed into textAlign. 
+
 var i = 0, j = 0;
 point(200, 200);
 strokeWidth(0);
 textAlign(horizontalAligns[i], verticalAligns[j]);
 text(200, 200, horizontalAligns[i]+verticalAligns[j]);
 
-/** See also:
-  text(x, y, t): http://devdoodle.net/dev/99/
-  font(f): http://devdoodle.net/dev/101/
+/** 
+ * See also:
+ * text(x, y, t)
+ * font(f)
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

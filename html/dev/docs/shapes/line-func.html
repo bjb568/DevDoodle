@@ -2,25 +2,31 @@
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
-* The line() function draws a line on the canvas according to what coordinates are passed in.
-* 
-* Usage:
-* line(x1, y1, x2, y2)
+ * The line() function draws a line on the canvas according to what coordinates are passed in.
+ * 
+ * Usage:
+ * line(x1, y1, x2, y2)
 */
 
-//stroke() sets the color of lines and strokeWidth() sets the width of lines.
+// stroke() sets the color of lines and strokeWidth() sets the width of lines.
+
 stroke(50, 70, 50);
 strokeWidth(2);
-//As you can see, the line goes from (100, 100) to (200, 200) on the canvas.
+	
+// As you can see, the line goes from (100, 100) to (200, 200) on the canvas.
+
 line(100, 100, 200, 200);
-//In this library, if you set the stroke width really high, the line becomes rounded on the ends.
+	
+// In this library, if you set the stroke width really high, the line becomes rounded on the ends.
+
 strokeWidth(10);
 stroke(127, 255, 200);
 line(25, 300, 250, 300);
 
-/** See also:
-stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
-strokeWidth(w): http://devdoodle.net/dev/87/
+/** 
+ * See also:
+ * stroke([shade] [r, g, b] [color])
+ * strokeWidth(w)
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

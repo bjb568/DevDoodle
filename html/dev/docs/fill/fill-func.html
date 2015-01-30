@@ -10,29 +10,38 @@
  * fill(color)
 */
 
-//If you pass in 1 number into fill(), the fill becomes a shade of gray (0=black, 255=white).
+// If you pass in 1 number into fill(), the fill becomes a shade of gray (0=black, 255=white).
+
 fill(127);
 ellipse(100, 100, 75, 90);
-//If you pass in 3 numbers into fill(), the fill becomes that RGB color.
+
+// If you pass in 3 numbers into fill(), the fill becomes that RGB color.
+
 fill(0, 0, 255);
 ellipse(300, 100, 90, 75);
-//If you want to use opacity with fill, however, you can not pass in a fourth parameter: You must use the rgb() function.
+
+// If you want to use opacity with fill, however, you can not pass in a fourth parameter: You must use the rgb() function.
+
 fill(rgb(0, 0, 255, 0.5));
 ellipse(50, 200, 40, 40);
-//Also, to use HSL colors, you must use the hsl() function.
+
+// Also, to use HSL colors, you must use the hsl() function.
+
 fill(hsl(30, 100, 50));
 ellipse(75, 300, 50, 50);
-//You can also pass in a string into fill() (use CSS properties).
+
+// You can also pass in a string into fill() (use CSS properties).
+
 fill("#00FF00");
 ellipse(300, 300, 70, 70);
 
-/* See also:
-  stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
-  rgb(r, g, b[, a]): http://devdoodle.net/dev/81/
-  hsl(h, s, l[, a]): http://devdoodle.net/dev/82/
-  Using trans and none: http://devdoodle.net/dev/78/
-  rect(x, y, w, h): http://devdoodle.net/dev/92/
-  ellipse(cx, cy, rx, ry): http://devdoodle.net/dev/95/
+/** 
+ * See also:
+ * stroke([shade] [r, g, b] [color])
+ * rgb(r, g, b[, a])
+ * hsl(h, s, l[, a])
+ * rect(x, y, w, h)
+ * ellipse(cx, cy, rx, ry)
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

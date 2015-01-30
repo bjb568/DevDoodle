@@ -3,30 +3,33 @@
 	<textarea id="code" autofocus="">
 /**
  * The font() function sets the font of text drawn on the canvas by setting the string passed in equal to the font property of the context of the canvas.
- * Don't know how to set the font property of the context of a canvas? Go here:
- * http://www.w3schools.com/tags/canvas_font.asp
  * 
  * Usage:
  * font(f)
 */
 
 fill(255);
-//Once you get the hang of doing what is shown above, it's quite easy to set the font of text.
+
+// Once you get the hang of doing what is shown above, it's quite easy to set the font of text.
+
 font("30px Arial")
 text(50, 50, "Hello!");
 font("italic 20px serif");
 text(250, 50, "I'm different...");
 font("small-caps 25px serif");
 text(50, 250, "I'm special!");
-//However, the font doesn't change if you don't at least put in the font size and font family and/or don't put in a valid font.
+
+// However, the font doesn't change if you don't at least put in the font size and font family and/or don't put in a valid font.
+
 font("times");
 text(200, 320, "I'm not working...");
 font("hello");
 text(200, 350, "Neither am I...");
 
-/** See also:
-  text(x, y, t): http://devdoodle.net/dev/99/
-  textAlign(h, v): http://devdoodle.net/dev/100/
+/** 
+ * See also:
+ * text(x, y, t)
+ * textAlign(h, v)
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
