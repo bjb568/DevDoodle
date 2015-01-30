@@ -362,6 +362,11 @@ var statics = {
 		title: 'text(x, y, t) | Text | Docs',
 		clean: true
 	},
+	'/dev/docs/text/align-func': {
+		path: './html/dev/docs/text/align-func.html',
+		title: 'textAlign(h, v) | Text | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
