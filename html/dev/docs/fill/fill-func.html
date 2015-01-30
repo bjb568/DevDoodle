@@ -1,0 +1,151 @@
+<h1>fill([shade] [r, g, b] [color])</h1>
+<div id="row" class="row">
+	<textarea id="code" autofocus="">
+/**
+ * The fill() function can be used to set the fill of shapes and text to be drawn on the canvas.
+ * 
+ * Usages:
+ * fill(shade)
+ * fill(r, g, b)
+ * fill(color)
+*/
+
+//If you pass in 1 number into fill(), the fill becomes a shade of gray (0=black, 255=white).
+fill(127);
+ellipse(100, 100, 75, 90);
+//If you pass in 3 numbers into fill(), the fill becomes that RGB color.
+fill(0, 0, 255);
+ellipse(300, 100, 90, 75);
+//If you want to use opacity with fill, however, you can not pass in a fourth parameter: You must use the rgb() function.
+fill(rgb(0, 0, 255, 0.5));
+ellipse(50, 200, 40, 40);
+//Also, to use HSL colors, you must use the hsl() function.
+fill(hsl(30, 100, 50));
+ellipse(75, 300, 50, 50);
+//You can also pass in a string into fill() (use CSS properties).
+fill("#00FF00");
+ellipse(300, 300, 70, 70);
+
+/* See also:
+  stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/80/
+  rgb(r, g, b[, a]): http://devdoodle.net/dev/81/
+  hsl(h, s, l[, a]): http://devdoodle.net/dev/82/
+  Using trans and none: http://devdoodle.net/dev/78/
+  rect(x, y, w, h): http://devdoodle.net/dev/92/
+  ellipse(cx, cy, rx, ry): http://devdoodle.net/dev/95/
+*/
+	</textarea>
+	<iframe id="output" sandbox="allow-scripts"></iframe>
+</div>
+<style>
+	#code {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		resize: none;
+		margin-bottom: 8px;
+	}
+	#code, #output { height: 500px }
+	#output { float: right }
+	#code { width: 55% }
+	#output { width: 44% }
+</style>
+<script>
+	var footerOff = true,
+		noPageOverflow = 400,
+		pageOverflowMobile = true,
+		code = document.getElementById('code');
+	code.addEventListener('keypress', function(e) {
+		var oldSelectionStart = this.selectionStart;
+		if (e.keyCode === 13) {
+			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					? 0
+					: (
+						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						? (this.eIndent = false || 2) 
+						: 1
+					)
+				);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 34) {
+			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 39) {
+			this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 40) {
+			this.value = this.value.substr(0, this.selectionStart) + '()' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 91) {
+			this.value = this.value.substr(0, this.selectionStart) + '[]' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 123) {
+			this.value = this.value.substr(0, this.selectionStart) + '{}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		}
+		// console.log(e.keyCode);
+		run();
+	});
+	code.addEventListener('keydown', function(e) {
+		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
+			console.log(this.value[this.selectionStart - 1] == '(')
+			if (
+				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
+				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
+				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
+				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
+				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
+			) {
+				var oldSelectionStart = this.selectionStart;
+				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
+				this.selectionEnd = --oldSelectionStart;
+				e.preventDefault();
+			}
+		}
+	});
+	function createCode() {
+		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+	}
+	function run() {
+		document.getElementById('output').srcdoc = createCode();
+	}
+	var oldValue = code.innerHTML;
+	function handleCode() {
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			if (!save.classList.contains('progress')) save.textContent = 'Save';
+			run();
+		}
+	}
+	var timeout = setTimeout(handleCode, 1000);
+	code.addEventListener('keyup', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
+	});
+	code.addEventListener('keydown', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
+	});
+	code.addEventListener('keypress', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 1000);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
+	});
+	run();
+</script>
