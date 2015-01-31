@@ -195,7 +195,7 @@ ul, ol, p { margin: 6px 0 2px 0 }
 	background: #f00;
 	color: #fff;
 }
-#err a { color: #fff }
+#err a, .diamond { color: #fff }
 #err > * {
 	display: block;
 	text-align: center;

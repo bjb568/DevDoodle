@@ -87,7 +87,7 @@ small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 .comment:not(:hover) .sctrls { opacity: .4 }
 .comment img { max-height: 200px }
 .c-sig > * { color: #666 }
-.ctrls :hover { color: #000 }
+.ctrls :hover, .diamond { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
