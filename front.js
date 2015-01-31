@@ -377,6 +377,11 @@ var statics = {
 		title: 'fill([shade] [r, g, b] [color]) | Text | Docs',
 		clean: true
 	},
+	'/dev/docs/fill/stroke-func': {
+		path: './html/dev/docs/fill/stroke-func.html',
+		title: 'stroke([shade] [r, g, b] [color]) | Text | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
