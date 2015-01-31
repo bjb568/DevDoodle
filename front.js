@@ -339,22 +339,22 @@ var statics = {
 	},
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
-		title: 'line(x1, y1, x2, y2) | Shapes | Docs',
+		title: 'line(x1, y1, x2, y2) | Lines and Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
-		title: 'rect(x, y, h, w) | Shapes | Docs',
+		title: 'rect(x, y, h, w) | Lines and Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
-		title: 'point(x,y) | Shapes | Docs',
+		title: 'point(x,y) | Lines and Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
-		title: 'ellipse(cx, cy, rx, ry) | Shapes | Docs',
+		title: 'ellipse(cx, cy, rx, ry) | Lines and Shapes | Docs',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
@@ -374,12 +374,17 @@ var statics = {
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
-		title: 'fill([shade] [r, g, b] [color]) | Text | Docs',
+		title: 'fill([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
-		title: 'stroke([shade] [r, g, b] [color]) | Text | Docs',
+		title: 'stroke([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
+		clean: true
+	},
+	'/dev/docs/fill/bg-func': {
+		path: './html/dev/docs/fill/bg-func.html',
+		title: 'bg([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
 		clean: true
 	},
 	'/learn/': {
