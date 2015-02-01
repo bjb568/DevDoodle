@@ -339,142 +339,142 @@ var statics = {
 	},
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
-		title: 'line(x1, y1, x2, y2) | Lines and Shapes | Docs',
+		title: 'line(x1, y1, x2, y2) | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
-		title: 'rect(x, y, h, w) | Lines and Shapes | Docs',
+		title: 'rect(x, y, h, w) | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
-		title: 'point(x,y) | Lines and Shapes | Docs',
+		title: 'point(x,y) | Docs',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
-		title: 'ellipse(cx, cy, rx, ry) | Lines and Shapes | Docs',
+		title: 'ellipse(cx, cy, rx, ry) | Docs',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
 		path: './html/dev/docs/text/text-func.html',
-		title: 'text(x, y, t) | Text | Docs',
+		title: 'text(x, y, t) | Docs',
 		clean: true
 	},
 	'/dev/docs/text/align-func': {
 		path: './html/dev/docs/text/align-func.html',
-		title: 'textAlign(h, v) | Text | Docs',
+		title: 'textAlign(h, v) | Docs',
 		clean: true
 	},
 	'/dev/docs/text/font-func': {
 		path: './html/dev/docs/text/font-func.html',
-		title: 'font(f) | Text | Docs',
+		title: 'font(f) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
-		title: 'fill([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
+		title: 'fill([shade] [r, g, b] [color]) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
-		title: 'stroke([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
+		title: 'stroke([shade] [r, g, b] [color]) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/bg-func': {
 		path: './html/dev/docs/fill/bg-func.html',
-		title: 'bg([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
+		title: 'bg([shade] [r, g, b] [color]) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/strokewidth-func': {
 		path: './html/dev/docs/fill/strokewidth-func.html',
-		title: 'strokeWidth(w) | Fill and Stroke | Docs',
+		title: 'strokeWidth(w) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/rgb-func': {
 		path: './html/dev/docs/fill/rgb-func.html',
-		title: 'rgb(r, g, b[, a]) | Fill and Stroke | Docs',
+		title: 'rgb(r, g, b[, a]) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/hsl-func': {
 		path: './html/dev/docs/fill/hsl-func.html',
-		title: 'hsl(r, g, b[, a]) | Fill and Stroke | Docs',
+		title: 'hsl(r, g, b[, a]) | Docs',
 		clean: true
 	},
 	'/dev/docs/fill/trans-none': {
 		path: './html/dev/docs/fill/trans-none.html',
-		title: 'Using trans and none | Fill and Stroke | Docs',
+		title: 'trans and none | Docs',
 		clean: true
 	},
 	'/dev/docs/draw/draw-loop': {
 		path: './html/dev/docs/draw/draw-loop.html',
-		title: 'Using the draw loop | Draw Loop | Docs',
+		title: 'draw() loop | Docs',
 		clean: true
 	},
 	'/dev/docs/draw/framerate': {
 		path: './html/dev/docs/draw/framerate.html',
-		title: 'Using frameRate | Draw Loop | Docs',
+		title: 'frameRate | Docs',
 		clean: true
 	},
 	'/dev/docs/mouse/mousex-y': {
 		path: './html/dev/docs/mouse/mousex-y.html',
-		title: 'Using mouseX and mouseY | Mouse | Docs',
+		title: 'mouseX and mouseY | Docs',
 		clean: true
 	},
 	'/dev/docs/mouse/mousepressed': {
 		path: './html/dev/docs/mouse/mousepressed.html',
-		title: 'Using mousePressed | Mouse | Docs',
+		title: 'mousePressed | Docs',
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
 		path: './html/dev/docs/keyboard/keycodes.html',
-		title: 'Using keyCodes and keyCodes[num] | Keyboard | Docs',
+		title: 'keyCodes object | Docs',
 		clean: true
 	},
 	'/dev/docs/keyboard/key': {
 		path: './html/dev/docs/keyboard/key.html',
-		title: 'Using key | Keyboard | Docs',
+		title: 'key variable | Docs',
 		clean: true
 	},
 	'/dev/docs/math/global-math': {
 		path: './html/dev/docs/math/global-math.html',
-		title: 'Using Math Properties and Methods as Global Variables | Math | Docs',
+		title: 'Globally-scoped Math | Docs',
 		clean: true
 	},
 	'/dev/docs/math/rand-func': {
 		path: './html/dev/docs/math/rand-func.html',
-		title: 'rand([x[, y]]) | Math | Docs',
+		title: 'rand([x[, y]]) | Docs',
 		clean: true
 	},
 	'/dev/docs/math/number-proto-bound': {
 		path: './html/dev/docs/math/number-proto-bound.html',
-		title: 'Number.prototype.bound(l[, h]) | Math | Docs',
+		title: 'Number.prototype.bound(l[, h]) | Docs',
 		clean: true
 	},
 	'/dev/docs/size/size-func': {
 		path: './html/dev/docs/size/size-func.html',
-		title: 'size(x, y) | Size | Docs',
+		title: 'size(x, y) | Docs',
 		clean: true
 	},
 	'/dev/docs/size/width-height': {
 		path: './html/dev/docs/size/width-height.html',
-		title: 'Using width and height | Size | Docs',
+		title: 'width and height variables | Docs',
 		clean: true
 	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
-		title: 'print(input) | Console | Docs',
+		title: 'print(input) | Docs',
 		clean: true
 	},
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
-		title: 'resetLog() | Console | Docs',
+		title: 'resetLog() | Docs',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
 		path: './html/dev/docs/canvas/canvas-ctx.html',
-		title: 'Using canvas and ctx | Canvas | Docs',
+		title: 'canvas and ctx | Docs',
 		clean: true
 	},
 	'/learn/': {
