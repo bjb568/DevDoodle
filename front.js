@@ -387,6 +387,96 @@ var statics = {
 		title: 'bg([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
 		clean: true
 	},
+	'/dev/docs/fill/strokew-func': {
+		path: './html/dev/docs/fill/strokew-func.html',
+		title: 'strokeWidth(w) | Fill and Stroke | Docs',
+		clean: true
+	},
+	'/dev/docs/fill/rgb-func': {
+		path: './html/dev/docs/fill/rgb-func.html',
+		title: 'rgb(r, g, b[, a]) | Fill and Stroke | Docs',
+		clean: true
+	},
+	'/dev/docs/fill/hsl-func': {
+		path: './html/dev/docs/fill/hsl-func.html',
+		title: 'hsl(r, g, b[, a]) | Fill and Stroke | Docs',
+		clean: true
+	},
+	'/dev/docs/fill/trans-none': {
+		path: './html/dev/docs/fill/trans-none.html',
+		title: 'Using trans and none | Fill and Stroke | Docs',
+		clean: true
+	},
+	'/dev/docs/draw/draw-loop': {
+		path: './html/dev/docs/draw/draw-loop.html',
+		title: 'Using the draw loop | Draw Loop | Docs',
+		clean: true
+	},
+	'/dev/docs/draw/framerate': {
+		path: './html/dev/docs/draw/framerate.html',
+		title: 'Using frameRate | Draw Loop | Docs',
+		clean: true
+	},
+	'/dev/docs/mouse/mousex-y': {
+		path: './html/dev/docs/mouse/mousex-y.html',
+		title: 'Using mouseX and mouseY | Mouse | Docs',
+		clean: true
+	},
+	'/dev/docs/mouse/mousepressed': {
+		path: './html/dev/docs/mouse/mousepressed.html',
+		title: 'Using mousePressed | Mouse | Docs',
+		clean: true
+	},
+	'/dev/docs/keyboard/keycodes': {
+		path: './html/dev/docs/keyboard/keycode.html',
+		title: 'Using keyCodes and keyCodes[num] | Keyboard | Docs',
+		clean: true
+	},
+	'/dev/docs/keyboard/key': {
+		path: './html/dev/docs/keyboard/key.html',
+		title: 'Using key | Keyboard | Docs',
+		clean: true
+	},
+	'/dev/docs/math/properties-methods': {
+		path: './html/dev/docs/math/properties-methods.html',
+		title: 'Using Math Properties and Methods as Global Variables | Math | Docs',
+		clean: true
+	},
+	'/dev/docs/math/rand-func': {
+		path: './html/dev/docs/math/rand-func.html',
+		title: 'rand([x[, y]]) | Math | Docs',
+		clean: true
+	},
+	'/dev/docs/math/number-func': {
+		path: './html/dev/docs/math/number-func.html',
+		title: 'Number.prototype.bound(l[, h]) | Math | Docs',
+		clean: true
+	},
+	'/dev/docs/size/size-func': {
+		path: './html/dev/docs/size/size-func.html',
+		title: 'size(x, y) | Size | Docs',
+		clean: true
+	},
+	'/dev/docs/size/width-height': {
+		path: './html/dev/docs/size/width-height.html',
+		title: 'Using width and height | Size | Docs',
+		clean: true
+	},
+	'/dev/docs/console/print-func': {
+		path: './html/dev/docs/console/print-func.html',
+		title: 'print(input) | Console | Docs',
+		clean: true
+	},
+	'/dev/docs/console/resetlog-func': {
+		path: './html/dev/docs/console/resetlog-func.html',
+		title: 'resetLog() | Console | Docs',
+		clean: true
+	},
+	'/dev/docs/canvas/canvas-ctx': {
+		path: './html/dev/docs/canvas/canvas-ctx.html',
+		title: 'Using canvas and ctx | Canvas | Docs',
+		clean: true
+	},
 	'/learn/': {
 		path: './html/learn/learn.html'
 	},
