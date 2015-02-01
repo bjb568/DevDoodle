@@ -428,7 +428,7 @@ var statics = {
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
-		path: './html/dev/docs/keyboard/keycode.html',
+		path: './html/dev/docs/keyboard/keycodes.html',
 		title: 'Using keyCodes and keyCodes[num] | Keyboard | Docs',
 		clean: true
 	},
