@@ -2,30 +2,21 @@
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
- * The point() function draws a 1 pixel by 1 pixel at the coordinates passed into it.
+ * The point() function draws a point with size specified by strokeWidth() at the coordinates passed into it.
  * 
  * Usage:
  * point(x, y)
 */
 
-// Because point() creates a small rectangle, whether it is colored by fill() or stroke() depends on the stroke width.
-
-fill(255, 0, 0);
-stroke(0, 0, 255);
-
-// If the stroke width is 0.5 or greater, than the point is noticeably colored by stroke()
+stroke(255);
 
 point(100, 30);
 
-// If the stroke width is between 0.4 and 0.5, if you look closely, it is noticeably colored by stroke() on the outside, but colored by fill() on the inside (look closely)
+strokeWidth(2);
+point(200, 30); //A slightly larger point
 
-strokeWidth(0.45);
-point(200, 30);
-
-// If the stroke width is less than 0.4, the point is noticeablely colored by fill()
-
-strokeWidth(0.3);
-point(300, 30);
+strokeWidth(10);
+point(300, 30); //A point with radius 10
 
 /** See also:
  * stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/stroke-func
@@ -96,7 +87,6 @@ point(300, 30);
 			e.preventDefault();
 		}
 		// console.log(e.keyCode);
-		run();
 	});
 	code.addEventListener('keydown', function(e) {
 		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
@@ -115,35 +105,28 @@ point(300, 30);
 			}
 		}
 	});
-	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
-	}
-	function run() {
-		document.getElementById('output').srcdoc = createCode();
-	}
-	var oldValue = code.innerHTML;
+	var oldValue;
 	function handleCode() {
 		if (code.value != oldValue) {
 			oldValue = code.value;
-			if (!save.classList.contains('progress')) save.textContent = 'Save';
-			run();
+			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 		}
 	}
-	var timeout = setTimeout(handleCode, 1000);
+	var timeout = setTimeout(handleCode, 100);
 	code.addEventListener('keyup', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 	});
 	code.addEventListener('keydown', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 	});
 	code.addEventListener('keypress', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 		onbeforeunload = function() {
 			return 'You have unsaved code.';
 		};
 	});
-	run();
+	handleCode();
 </script>

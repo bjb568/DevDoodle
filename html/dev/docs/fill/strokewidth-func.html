@@ -89,7 +89,6 @@ line(25, 105, 375, 105);
 			e.preventDefault();
 		}
 		// console.log(e.keyCode);
-		run();
 	});
 	code.addEventListener('keydown', function(e) {
 		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
@@ -108,35 +107,28 @@ line(25, 105, 375, 105);
 			}
 		}
 	});
-	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
-	}
-	function run() {
-		document.getElementById('output').srcdoc = createCode();
-	}
-	var oldValue = code.innerHTML;
+	var oldValue;
 	function handleCode() {
 		if (code.value != oldValue) {
 			oldValue = code.value;
-			if (!save.classList.contains('progress')) save.textContent = 'Save';
-			run();
+			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
 		}
 	}
-	var timeout = setTimeout(handleCode, 1000);
+	var timeout = setTimeout(handleCode, 100);
 	code.addEventListener('keyup', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 	});
 	code.addEventListener('keydown', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 	});
 	code.addEventListener('keypress', function() {
 		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 1000);
+		timeout = setTimeout(handleCode, 100);
 		onbeforeunload = function() {
 			return 'You have unsaved code.';
 		};
 	});
-	run();
+	handleCode();
 </script>
