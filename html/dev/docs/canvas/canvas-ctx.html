@@ -1,13 +1,13 @@
-<h1>Using canvas and ctx</h1>
+<h1>canvas and ctx</h1>
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
  * The canvas variable holds the DOM object representing the canvas element and ctx holds the 2D context of the canvas.
  * Don't understand what that means? Go here:
- * http://www.w3schools.com/html/html5_canvas.asp
+ * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial
 */
 
-//The DevDoodle library is built on top of the properties and methods of ctx and you can change the canvas with ctx as shown in the above link. There's a lot of useful things you can do with ctx you can't do with the library, but it's unfortunately not as convenient as the DevDoodle library.
+//The DevDoodle Canvas library is built on top of the properties and methods of ctx and you can change the canvas with ctx as shown in the above link. There's a lot of useful things you can do with ctx you can't do with the library, but it's unfortunately not as convenient as the DevDoodle Canvas library.
 
 //For example, you can measure the width of a string in pixels if it were passed through text().
 font("20px times");
@@ -23,12 +23,7 @@ canvas.addEventListener('mousedown', function() {
 	stroke(none);
 	i++;
 	text(0, 20, "You've pressed the mouse "+i+" times!");
-},false);
-
-/**See also:
-  font(f): http://devdoodle.net/dev/101/
-  print(input): http://devdoodle.net/dev/83/
-*/
+}, false);
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>

@@ -1,8 +1,8 @@
-<h1>Using the draw loop</h1>
+<h1>draw() loop</h1>
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
- * The draw loop is a function that is called repeatedly (if not set at any specific speed, it is called 30 times per second) and is meant to be used for animation or interaction.
+ * The draw loop is a function that is called repeatedly (by default 30 times per second) to be used for animation or interaction.
 */
 
 var counter = 0;
@@ -16,16 +16,13 @@ draw = function() {
 	rect(mouseX-10, mouseY-10, 20, 20);
 	counter++;
 };
-//This isn't a very rigorous example, but as the draw loop is called so fast and repeatedly, it can be very useful for animation and interaction.
 
 //WARNING: If you are going to be doing a lot in your draw loop, go down to the frameRate documentation and slow down the draw loop. Calling a function that does a lot at a very fast speed can cause a lot of lag!
 
 //WARNING: Whenever the draw loop is called, even if you haven't set the draw loop, the fill is set to white, the stroke is set to red, and the stroke width is set to 2 pixels! Keep this in mind when programming!
 
-/**See also:
-  Using frameRate: http://devdoodle.net/dev/103/
-  rand([x[, y]]): http://devdoodle.net/dev/111/
-  Using mouseX and mouseY: http://devdoodle.net/dev/114/
+/** See also:
+ * frameRate: http://devdoodle.net/dev/docs/draw/framerate
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

@@ -1,14 +1,14 @@
-<h1>Using Math Properties and Methods as Global Variables</h1>
+<h1>Globally-scoped Math</h1>
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
- * In the DevDoodle library, all properties and methods of Math are global variables for the user's convenience.
+ * In the DevDoodle Canvas library, all properties and methods of Math are global variables for the user's convenience.
  * Don't know what's in the Math object? Go here:
  * http://devdoodle.net/dev/104/
 */
 
 print(PI);
-print(TAU); //TAU, 2*PI, is added by the DevDoodle library!
+print(TAU); //TAU, 2*PI, is added by the DevDoodle Canvas library!
 print(log(1));
 print(sin(PI/2));
 print(random());
@@ -19,10 +19,10 @@ for (var i = -200; i &lt; 200; i++) {
 	point(i+200, 200+50*sin(i/20));
 }
 
-/**See also:
-  rand([x[, y]]): http://devdoodle.net/dev/111/
-  Number.prototype.bound(l[, h]): http://devdoodle.net/dev/112/
-  print(input): http://devdoodle.net/dev/83/
+/** See also:
+ * rand([x[, y]]): http://devdoodle.net/dev/docs/math/rand-func
+ * Number.prototype.bound(l[, h]): http://devdoodle.net/dev/docs/math/number-proto-bound
+ * print(input): http://devdoodle.net/dev/docs/console/print-func
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>

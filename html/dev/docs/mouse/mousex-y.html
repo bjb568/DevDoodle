@@ -1,4 +1,4 @@
-<h1>Using mouseX and mouseY</h1>
+<h1>mouseX and mouseY</h1>
 <div id="row" class="row">
 	<textarea id="code" autofocus="">
 /**
@@ -15,10 +15,9 @@ draw = function() {
 	text(mouseX-((mouseX+textWidth>400)?textWidth:0), mouseY+(mouseY&lt;30?30:0), "("+mouseX.toFixed(0)+", "+mouseY.toFixed(0)+")");
 };
 
-/**See also:
-  Using mousePressed: http://devdoodle.net/dev/115/
-  Using the draw loop: http://devdoodle.net/dev/102/
-  font(f): http://devdoodle.net/dev/101/
+/** See also:
+ * mousePressed: http://devdoodle.net/dev/docs/mouse/mousepressed
+ * draw() loop: http://devdoodle.net/dev/docs/draw/draw-loop
 */
 	</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
