@@ -44,10 +44,10 @@ draw = function() {
 	}
 	
 	//Remember that calling the .bound() method of a variable number does not change the value of the variable. .bound() only returns another number.
-	if (mode%2 && y !== y.bound(100, 300)) {
+	if (mode%2 &amp;&amp; y !== y.bound(100, 300)) {
 		y = y.bound(100, 300);
 		mode++;
-	} else if (!(mode%2) && x !== x.bound(100, 300)){
+	} else if (!(mode%2) &amp;&amp; x !== x.bound(100, 300)){
 		x = x.bound(100, 300);
 		mode++;
 	}

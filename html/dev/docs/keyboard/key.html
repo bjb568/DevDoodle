@@ -59,7 +59,7 @@ draw = function() {
 		lines = string.split("\n");
 	}
 	//You need to press the Backspace key for a significant amount of time (not a light tap) for this to work. I slowed it down to control how many letters got deleted at a time.
-	if (keyCodes[8] && !(counter%3)) {
+	if (keyCodes[8] &amp;&amp; !(counter%3)) {
 		string = string.substring(0, string.length-1);
 		lines = string.split("\n");
 	}
