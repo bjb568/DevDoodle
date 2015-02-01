@@ -387,8 +387,8 @@ var statics = {
 		title: 'bg([shade] [r, g, b] [color]) | Fill and Stroke | Docs',
 		clean: true
 	},
-	'/dev/docs/fill/strokew-func': {
-		path: './html/dev/docs/fill/strokew-func.html',
+	'/dev/docs/fill/strokewidth-func': {
+		path: './html/dev/docs/fill/strokewidth-func.html',
 		title: 'strokeWidth(w) | Fill and Stroke | Docs',
 		clean: true
 	},
@@ -437,8 +437,8 @@ var statics = {
 		title: 'Using key | Keyboard | Docs',
 		clean: true
 	},
-	'/dev/docs/math/properties-methods': {
-		path: './html/dev/docs/math/properties-methods.html',
+	'/dev/docs/math/global-math': {
+		path: './html/dev/docs/math/global-math.html',
 		title: 'Using Math Properties and Methods as Global Variables | Math | Docs',
 		clean: true
 	},
@@ -447,8 +447,8 @@ var statics = {
 		title: 'rand([x[, y]]) | Math | Docs',
 		clean: true
 	},
-	'/dev/docs/math/number-func': {
-		path: './html/dev/docs/math/number-func.html',
+	'/dev/docs/math/number-proto-bound': {
+		path: './html/dev/docs/math/number-proto-bound.html',
 		title: 'Number.prototype.bound(l[, h]) | Math | Docs',
 		clean: true
 	},
