@@ -270,6 +270,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
+		res.write('<script>var jsFormConfirm; addEventListener(\'click\', function() { if (!jsFormConfirm) { jsFormConfirm = true; var i = document.createElement(\'input\'); i.type = \'hidden\'; i.name = \'check\'; i.value = \'JS-confirm\'; document.getElementById(\'ccreate\').appendChild(i); } });</script>')
 		respondPageFooter(res);
 	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content input[type=text], button { display: block }</style>'});
 }
@@ -954,6 +955,7 @@ http.createServer(function(req,	res) {
 					post = querystring.parse(post);
 					if (!post.referer) post.referer = req.headers.referer;
 					if (post.create) {
+						if (post.check != 'JS-confirm') return errorPage[403](req, res, user, 'Suspicious request.');
 						if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], user, req, res, post, false, true, true);
 						var errors = [],
 							nfillm,
