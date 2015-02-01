@@ -270,6 +270,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit">Submit</button>\n');
 		res.write('</form>\n');
+		res.write('<script>var jsFormConfirm; addEventListener(\'click\', function() { if (!jsFormConfirm) { jsFormConfirm = true; var i = document.createElement(\'input\'); i.type = \'hidden\'; i.name = \'check\'; i.value = \'JS-confirm\'; document.getElementById(\'ccreate\').appendChild(i); } });</script>')
 		respondPageFooter(res);
 	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content input[type=text], button { display: block }</style>'});
 }
@@ -286,7 +287,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
 		res.write('\t<option value="N">Private</option>\n');
-		res.write('\t<option value="M">♦ only</option>\n');
+		if (user.level == 5) res.write('\t<option value="M">♦ only</option>\n');
 		res.write('</select>\n');
 		res.write('</div>\n');
 		res.write('<button type="submit">Submit</button>\n');
@@ -723,7 +724,7 @@ http.createServer(function(req,	res) {
 							res.writeHead(400);
 							return res.end('Error: Invalid program id.');
 						}
-						if (program.user.toString() != user.name.toString() && user.level != 2) {
+						if (program.user.toString() != user.name.toString() && user.level < 4) {
 							res.end(403);
 							return res.end('Error: You may delete only your own programs.');
 						}
@@ -751,7 +752,7 @@ http.createServer(function(req,	res) {
 							res.writeHead(400);
 							return res.end('Error: Invalid program id.');
 						}
-						if (program.user.toString() != user.name.toString() && user.level != 2) {
+						if (program.user.toString() != user.name.toString() && user.level < 4) {
 							res.end(403);
 							return res.end('Error: You may undelete only your own programs.');
 						}
@@ -954,6 +955,7 @@ http.createServer(function(req,	res) {
 					post = querystring.parse(post);
 					if (!post.referer) post.referer = req.headers.referer;
 					if (post.create) {
+						if (post.check != 'JS-confirm') return errorPage[403](req, res, user, 'Suspicious request.');
 						if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], user, req, res, post, false, true, true);
 						var errors = [],
 							nfillm,
@@ -1007,17 +1009,17 @@ http.createServer(function(req,	res) {
 						});
 					} else {
 						if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], user, req, res, post, true, true, post.name && !post.pass);
-						dbcs.users.findOne({name: post.name}, function(err, user) {
+						dbcs.users.findOne({name: post.name}, function(err, fuser) {
 							if (err) throw err;
-							if (!user) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-							if (user.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], user, req, res, post);
-							if (user.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
-							crypto.pbkdf2(post.pass + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (!fuser) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
+							if (fuser.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], user, req, res, post);
+							if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
+							crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 								if (err) throw err;
-								if (key.toString('base64') != user.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
+								if (key.toString('base64') != fuser.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
 								var idToken = crypto.randomBytes(128).toString('base64');
 								respondPage('Login Success', user, req, res, function() {
-									res.write('<p>Welcome back, ' + user.name + '. You have ' + user.rep + ' reputation.</p>');
+									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
 									var referer = url.parse(post.referer);
 									if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
 									respondPageFooter(res);
@@ -1026,9 +1028,9 @@ http.createServer(function(req,	res) {
 										path: '/',
 										expires: new Date(new Date().setDate(new Date().getDate() + 30))
 									}),
-									user: user
+									user: fuser
 								});
-								dbcs.users.update({name: user.name}, {
+								dbcs.users.update({name: fuser.name}, {
 									$push: {
 										cookie: {
 											token: idToken,

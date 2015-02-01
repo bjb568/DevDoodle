@@ -87,7 +87,7 @@ small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 .comment:not(:hover) .sctrls { opacity: .4 }
 .comment img { max-height: 200px }
 .c-sig > * { color: #666 }
-.ctrls :hover { color: #000 }
+.ctrls :hover, .diamond { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
@@ -184,9 +184,15 @@ fieldset {
 	font-size: 0.9em;
 }
 ul, ol, p { margin: 6px 0 2px 0 }
-.error {
+#err, .error {
 	background: #f00;
 	color: #fff;
+}
+#err a { color: #fff }
+#err > * {
+	display: block;
+	text-align: center;
+	padding: 3em;
 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
@@ -239,12 +245,6 @@ input[type=text], input[type=password], textarea {
 textarea {
 	font-size: .9em;
 	display: block;
-}
-#err > * {
-	display: block;
-	text-align: center;
-	margin: 3em;
-	color: #fff;
 }
 .score {
 	float: left;
