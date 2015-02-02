@@ -1,0 +1,188 @@
+<h1>keyCodes object</h1>
+<div id="row" class="row">
+	<textarea id="code" autofocus="">
+/**
+ * keyCodes is an object (not an array) that keeps track of what keys are and aren't being pressed.
+*/
+
+//This stores things associated with a key according to the key's keyCode.
+var keys = [];
+for (var i = 48; i &lt; 58; i++) {
+	keys[i] = i-48;
+}
+for (var i = 65; i &lt; 91; i++) {
+	keys[i] = String.fromCharCode(i+32);
+}
+for (var i = 96; i &lt; 106; i++) {
+	keys[i] = i-96;
+}
+for (var i = 112; i &lt; 123; i++) {
+	keys[i] = "F"+(i-111);
+}
+keys[8] = "Backspace";
+keys[9] = "Tab";
+keys[13] = "Enter";
+keys[16] = "Shift";
+keys[17] = "Ctrl";
+keys[18] = "Alt";
+keys[20] = "Caps Lock";
+keys[27] = "Esc";
+keys[37] = "Left Arrow";
+keys[38] = "Up Arrow";
+keys[39] = "Right Arrow";
+keys[40] = "Down Arrow";
+keys[46] = "Delete";
+keys[106] = "*";
+keys[107] = "+";
+keys[109] = "-";
+keys[111] = "/";
+keys[144] = "Num Lock";
+keys[186] = ";";
+keys[187] = "=";
+keys[188] = ",";
+keys[189] = "-";
+keys[190] = ".";
+keys[191] = "/";
+keys[192] = "`";
+keys[219] = "[";
+keys[220] = "\\";
+keys[221] = "]";
+keys[222] = "'";
+
+font("20px serif");
+draw = function() {
+	var i = 0;
+	bg(0);
+	fill(255);
+	stroke(none);
+	
+	//This loops through keyCodes to find which keys are being pressed.
+	for (var keyCode in keyCodes) {
+		i++;
+		text(0, 20*i, keyCode);
+		if (keys[keyCode] !== undefined) {
+			text(400-ctx.measureText(keys[keyCode]).width, 20*i, keys[keyCode]);
+		}
+	}
+	
+	//This draws a green background and some text if the space bar is pressed.
+	if (keyCodes[32]) {
+		bg(0, 255, 0);
+		fill(0, 127, 127);
+		text(80.5, 200, "You're pressing the space bar!");
+	}
+};
+
+/** See also:
+ * key variable: http://devdoodle.net/dev/docs/keyboard/key
+ * draw() loop: http://devdoodle.net/dev/docs/draw/draw-loop
+ * canvas and ctx http://devdoodle.net/dev/docs/canvas/canvas-ctx
+*/
+	</textarea>
+	<iframe id="output" sandbox="allow-scripts"></iframe>
+</div>
+<style>
+	#code {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		resize: none;
+		margin-bottom: 8px;
+	}
+	#row { height: calc(100% - 2rem) }
+	#code, #output { height: 100% }
+	#output { float: right }
+	#code { width: 55% }
+	#output { width: 44% }
+</style>
+<script>
+	var footerOff = true,
+		noPageOverflow = 400,
+		pageOverflowMobile = true,
+		code = document.getElementById('code');
+	code.addEventListener('keypress', function(e) {
+		var oldSelectionStart = this.selectionStart;
+		if (e.keyCode === 13) {
+			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					? 0
+					: (
+						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						? (this.eIndent = false || 2) 
+						: 1
+					)
+				);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 34) {
+			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 39) {
+			this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 40) {
+			this.value = this.value.substr(0, this.selectionStart) + '()' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 91) {
+			this.value = this.value.substr(0, this.selectionStart) + '[]' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 123) {
+			this.value = this.value.substr(0, this.selectionStart) + '{}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		}
+		// console.log(e.keyCode);
+	});
+	code.addEventListener('keydown', function(e) {
+		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
+			console.log(this.value[this.selectionStart - 1] == '(')
+			if (
+				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
+				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
+				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
+				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
+				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
+			) {
+				var oldSelectionStart = this.selectionStart;
+				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
+				this.selectionEnd = --oldSelectionStart;
+				e.preventDefault();
+			}
+		}
+	});
+	var oldValue;
+	function handleCode() {
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+		}
+	}
+	var timeout = setTimeout(handleCode, 100);
+	code.addEventListener('keyup', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keydown', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keypress', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
+	});
+	handleCode();
+</script>

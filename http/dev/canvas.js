@@ -94,33 +94,22 @@ function rect(x,y,w,h) {
 	ctx.fillRect(x,y,w,h);
 	ctx.strokeRect(x,y,w,h);
 }
-function point(x,y) {
-	rect(x,y,1,1);
+function point(x, y) {
+	line(x, y, x + 0.01, y + 0.01);
 }
 function ellipse(cx, cy, rx, ry) {
 	if (!cx && cx !== 0) throw 'Invalid or missing argument[0] for ellipse';
 	if (!cy && cy !== 0) throw 'Invalid or missing argument[1] for ellipse';
 	if (!(rx >= 0)) throw 'Invalid or missing argument[2] for ellipse';
 	if (!(ry >= 0)) throw 'Invalid or missing argument[3] for ellipse';
-	if (rx < 1.5 && ry < 1.5) {
-		var beforeWidth = ctx.lineWidth;
-		ctx.lineWidth = (rx + ry) / 2;
-		point(cx,cy);
-		ctx.lineWidth = beforeWidth;
-	} else if (rx < 1.5 || ry < 1.5) {
-		rx = abs(rx) > 2 ? rx : 0;
-		ry = abs(ry) > 2 ? ry : 0;
-		line(cx - rx, cy - ry, cx + rx, cy + ry);
-	} else {
-		ctx.save();
-		ctx.beginPath();
-		ctx.translate(cx - rx, cy - ry);
-		ctx.scale(rx, ry);
-		ctx.arc(1, 1, 1, 0, TAU, false);
-		ctx.restore();
-		ctx.fill();
-		ctx.stroke();
-	}
+	ctx.save();
+	ctx.beginPath();
+	ctx.translate(cx - rx, cy - ry);
+	ctx.scale(rx, ry);
+	ctx.arc(1, 1, 1, 0, TAU, false);
+	ctx.restore();
+	ctx.stroke();
+	ctx.fill();
 }
 function textAlign(h, v) {
 	if (arguments.length !== 2) throw 'textAlign expects 2 arguments';
@@ -147,7 +136,7 @@ function bg() {
 function size(x, y) {
 	canvas.width = width = x;
 	canvas.height = height = y;
-	bg('#000');
+	alert();
 }
 function resetLog() {
 	var node = document.getElementById('console'), child;
