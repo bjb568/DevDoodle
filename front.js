@@ -452,16 +452,6 @@ var statics = {
 		title: 'Number.prototype.bound(l[, h]) | Docs',
 		clean: true
 	},
-	'/dev/docs/size/size-func': {
-		path: './html/dev/docs/size/size-func.html',
-		title: 'size(x, y) | Docs',
-		clean: true
-	},
-	'/dev/docs/size/width-height': {
-		path: './html/dev/docs/size/width-height.html',
-		title: 'width and height variables | Docs',
-		clean: true
-	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
 		title: 'print(input) | Docs',
@@ -470,6 +460,16 @@ var statics = {
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
 		title: 'resetLog() | Docs',
+		clean: true
+	},
+	'/dev/docs/canvas/size-func': {
+		path: './html/dev/docs/size/size-func.html',
+		title: 'size(x, y) | Docs',
+		clean: true
+	},
+	'/dev/docs/canvas/width-height': {
+		path: './html/dev/docs/size/width-height.html',
+		title: 'width and height variables | Docs',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
