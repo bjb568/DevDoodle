@@ -136,7 +136,7 @@ function bg() {
 function size(x, y) {
 	canvas.width = width = x;
 	canvas.height = height = y;
-	bg('#000');
+	alert();
 }
 function resetLog() {
 	var node = document.getElementById('console'), child;
