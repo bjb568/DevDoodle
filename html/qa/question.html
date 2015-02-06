@@ -1,0 +1,227 @@
+<h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" style="font-size: 0.8em; width: 100%;" hidden="" /></h1>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
+<div class="pad vote lft">
+	<svg id="mup" class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg>
+	<svg id="mdn" class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg>
+	<svg id="mfl" class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg>
+</div>
+<div id="q-content">
+	<div id="q-body" class="hglt pad br">
+		$description
+		<code class="blk">$code</code>
+		<p><strong>$question</strong></p>
+	</div>
+	<div class="clearfix">
+		<div id="tags" class="lft">$cat</div>
+		<div class="rit user user-$op-name">
+			<img src="$op-pic" width="40" height="40" />
+			<div>
+				<a href="/user/$op-name">$op-name</a>
+				<small class="rep">$op-rep</small>
+			</div>
+		</div>
+		<small class="blk sumar lft" style="clear: left"><a href="#edit" class="grey">Edit</a> <line /> <a class="grey">Delete</a></small>
+	</div>
+</div>
+<form id="q-edit" style="margin-left: 32px" hidden="">
+	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
+	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
+	$ecat
+	<div>
+		<button type="submit">Submit Edit</button>
+		<button type="reset" id="cancel-edit">Cancel</button>
+	</div>
+</form>
+<div class="indt umar">
+	<hr class="nomar" />
+	<div id="comments">$qcommentstr</div>
+	<form id="comment" class="target umar">
+		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+		<button type="submit">Post</button>
+		<button type="reset" id="reset">Cancel</button>
+	</form>
+	<a id="addcomment" href="#comment" style="font-weight: normal;" class="small">Add comment</a>
+</div>
+<hr class="nomar bumar" />
+<!-- <h2 class="sumar">1 Answer</h2>
+<div id="answers"><div class="row"><div class="pad vote"><a href="javascript:answer.up('30')"><svg id="aup-30" class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a><a href="javascript:answer.dn('30')"><svg id="adn-30" class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a><a href="javascript:answer.fl('30')"><svg id="afl-30" class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a></div><div style="float: none; margin-left: 32px;"><div class="answer umar pad hglt br clearfix" id="30">
+This text will be replaced
+</div>
+<form id="edit-30" action="javascript:answer.editSubmit(30,1)" hidden=""><textarea id="edit-ta-30" class="a-edit"></textarea><button type="submit">Submit Edit</button> <button type="button" onclick="answer.editSubmit(30)">Cancel</button></form></div></div></div>
+<h2 class="bumar">Answer this question</h2>
+<form id="answer" class="umar rel" action="javascript:answer.add()">
+	<textarea id="answerta" name="answer"></textarea>
+	<div id="answertips" class="pad abs">
+		<h3>Thanks for answering!</h3>
+		<p>While answering, make sure to:</p>
+		<ul>
+			<li><strong>Answer the question</strong>: figure out specifically what the asker wants to know and address that.</li>
+			<li><strong>Cite your sources</strong>: linking to reputable sources can help readers find what they need easier and makes your answer sound informed and accurate.</li>
+			<li><strong>Explain thuroly</strong>: providing a good explanation can help readers grasp the concept you're writing about – remember that they don't necessarily know as much about the technology as you.</li>
+		</ul>
+		<p>Make sure you <em>don't</em>:</p>
+		<ul>
+			<li><strong>Post only a link</strong>: links might break, so a link-only answer could become useless in time. Instead, quote or paraphrase relevant material from it and add your own ideas.</li>
+			<li><strong>Add your opinion</strong>: present the facts and let the reader make up their own opinion.</li>
+			<li><strong>Post a comment as an answer</strong>: answers should directly address the question – if you have the same problem or just want to express your thanks, vote up.</li>
+		</ul>
+	</div>
+	<button>Submit</button>
+</form> -->
+<style>
+	.q-editing h1 { border-bottom: none }
+	#q-content { margin-left: 32px }
+	#q-body { margin-bottom: 8px }
+	#q-edit textarea, .a-edit textarea, #answerta {
+		width: 100%;
+		max-height: 70vmin;
+		min-height: 200px;
+	}
+	#comments { margin: 8px 0 }
+	.up, .dn {
+		width: 20px;
+		height: 20px;
+		fill: #999;
+		margin-bottom: 4px;
+	}
+	.up:hover, .dn:hover {
+		fill: #aaa;
+		transition: fill 0.1s;
+	}
+	.up:active, .dn:active {
+		fill: #888;
+		transition: none;
+	}
+	.up.clkd, .dn.clkd { fill: #f90 }
+	.fl {
+		width: 20px;
+		height: 24px;
+		fill: #f66;
+	}
+	.fl:hover {
+		fill: #f44;
+		transition: fill 0.2s;
+	}
+	.fl.clkd { fill: #f00 }
+	.fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	.comment .up, .comment .dn { width: 18px }
+	#comment:target + #addcomment { display: none }
+	#answer, #answerta { z-index: 1 }
+	#answerta:focus + #answertips, #answertips:hover {
+		opacity: 1;
+		bottom: calc(100% + 12px);
+		left: 0;
+		transition: opacity .7s, bottom .7s;
+	}
+	#answertips {
+		z-index: -1;
+		bottom: calc(100% - 240px);
+		left: 1000%;
+		background: #ffa;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+		border: 1px solid #888;
+		opacity: 0;
+		transition: opacity .3s ease-out, bottom .6s, left 0 .6s;
+	}
+</style>
+<script>
+	function handleLocationUpdate() {
+		var e = document.getElementById(location.hash.substr(1)),
+			f;
+		if (e) f = e.getElementsByTagName('textarea')[0];
+		if (f) e.focus();
+		else if (location.hash == '#edit') {
+			document.body.classList.add('q-editing');
+			document.getElementById('q-edit').hidden = 0;
+			document.getElementById('title').hidden = 1;
+			document.getElementById('title-edit').hidden = 0;
+			document.getElementById('q-content').hidden = 1;
+			document.getElementById('q-body-edit').focus();
+		}
+	}
+	addEventListener('load', handleLocationUpdate);
+	addEventListener('hashchange', handleLocationUpdate);
+	document.getElementById('cancel-edit').onclick = function() {
+		location.hash = '';
+		document.body.classList.remove('q-editing');
+		document.getElementById('q-edit').hidden = 1;
+		document.getElementById('title').hidden = 0;
+		document.getElementById('title-edit').hidden = 1;
+		document.getElementById('q-content').hidden = 0;
+	}
+	document.getElementById('addcomment').onclick = function() {
+		setTimeout(function() {
+			document.getElementById('commentta').focus();
+		}, 0);
+	};
+	var socket = new WebSocket('ws://' + location.hostname + ':81/q/$id');
+	document.getElementById('comment').onsubmit = function(e) {
+		socket.send(JSON.stringify({
+			event: 'post',
+			body: document.getElementById('commentta').value
+		}));
+		document.getElementById('commentta').value = '';
+		document.getElementById('reset').onclick();
+		e.preventDefault();
+	};
+	document.getElementById('reset').onclick = function() {
+		location.hash = '';
+		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = innerHeight;
+	};
+	socket.onmessage = function(e) {
+		console.log(e.data);
+		try {
+			var data = JSON.parse(e.data);
+		} catch(err) {
+			console.log(err);
+			return alert('JSON Error. Response was: ' + e.data);
+		}
+		if (data.event == 'add') {
+			var div = document.createElement('div');
+			div.classList.add('comment');
+			div.innerHTML = ' ' + markdown(data.body);
+			if ($rep >= 50) {
+				div.insertBefore(document.getElementById('content').children[1].cloneNode(true), div.firstChild);
+				div.firstChild.firstChild.onclick = upvoteComment;
+				var score = document.createElement('span');
+				score.classList.add('score');
+				score.appendChild(document.createTextNode(score.dataset.score = 0));
+				div.insertBefore(score, div.firstChild);
+			}
+			var sig = document.createElement('span');
+			sig.classList.add('c-sig');
+			sig.appendChild(document.createTextNode('-'));
+			var a = document.createElement('a');
+			a.href = '/user/' + data.user;
+			a.appendChild(document.createTextNode(data.user))
+			sig.appendChild(a);
+			sig.appendChild(document.createTextNode(', '));
+			var permalink = document.createElement('a');
+			if (!data.time) data.time = new Date().getTime();
+			permalink.appendChild(agot(data.time));
+			permalink.href = '#' + (div.id = 'c' + data.id);
+			sig.appendChild(permalink);
+			div.appendChild(sig);
+			document.getElementById('comments').appendChild(div);
+		} else if (data.event == 'scorechange') {
+			var c = document.getElementById('c' + data.id);
+			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
+		} else if (data.event == 'err') alert('Error: ' + data.body);
+	};
+	function upvoteComment() {
+		this.classList.toggle('clkd');
+		socket.send(JSON.stringify({
+			event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+			id: parseInt(this.parentNode.parentNode.id.substr(1))
+		}));
+	}
+	var comments = document.getElementsByClassName('comment');
+	for (var i = 0; i &lt; comments.length; i++) {
+		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+	}
+</script>

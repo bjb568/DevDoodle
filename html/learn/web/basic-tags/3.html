@@ -1,0 +1,49 @@
+Basic Tags
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Tags</h1>
+			<h2>Comments</h2>
+			<p>As you saw in the last lesson, a comment is used to comment (no joke!) in the code. Why would we need to comment on the code? Altho comments don't affect the browser and what the end user will see, it helps you, the developer, stay organized. Unlike most HTML tags, comments start with <code>&lt;!--</code> and end with <code>--></code>. You can put anything in a comment.</p>
+			<code class="blk">&lt;!-- This is what a comment looks like. It doesn't functionally do anything. --></code>
+			<p>To move on, write a comment containing anything you want!</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p>Did you write the comment correctly? It looks like this: <code>&lt;!-- --></code></p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../2/" class="lft">Back</a><a href="../4/" class="rit">Next</a></div>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;/head>
+	&lt;body>&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	function submit() {
+		if (document.getElementById('html').value.match(/&lt;!--.*-->/i)) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed').classList.remove('show');
+		} else {
+			document.getElementById('failed').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
+</script>

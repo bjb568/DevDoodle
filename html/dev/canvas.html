@@ -1,0 +1,427 @@
+<section id="main">
+	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
+	<div id="row" class="row">
+		<textarea id="code" autofocus="">$code</textarea>
+		<iframe id="output" sandbox="allow-scripts"></iframe>
+	</div>
+</section>
+<section id="meta">
+	<div class="rit user user-$op-name">
+		<img src="$op-pic" width="40" height="40" />
+		<div>
+			<a href="/user/$op-name">$op-name</a>
+			<small class="rep">$op-rep</small>
+		</div>
+	</div>
+	Created <time datetime="$created">67 days ago</time>, Updated <time id="updated" datetime="$updated">67 days ago</time>.
+	$forked
+	<div class="umar">
+		<svg id="up" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23" /></svg>
+		<svg id="dn" xmlns="http://www.w3.org/2000/svg"><polygon points="11,23 1,1 21,1" /></svg>
+		<svg id="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg>
+	</div>
+	<div id="comments" class="umar">$comments</div>
+	<form id="comment" class="target umar">
+		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+		<button type="submit">Post</button>
+		<button type="reset" id="reset">Cancel</button>
+	</form>
+	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
+	$forks
+</section>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
+<style>
+	*::-webkit-input-placeholder { color: #888 }
+	*::-moz-placeholder { color: #999 }
+	html, #content, #footer, #main { background: #000 }
+	#content { padding-bottom: 4px }
+	#main a:hover { color: #4ff }
+	#main a:active { color: #06f }
+	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+	#main { clear: both }
+	#meta {
+		clear: both;
+		padding: 4px;
+		margin-top: 8px;
+		background: rgba(255, 255, 255, .8);
+		color: #000;
+	}
+	#code, #output {
+		width: 95%;
+		outline: none;
+	}
+	#main { height: 500px }
+	#row { height: calc(100% - 2rem - 2px) }
+	#code {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		border: 1px solid #fff;
+		resize: none;
+		margin-bottom: 8px;
+	}
+	#code, #output { height: calc(50% - 4px) }
+	@media (min-width: 600px) {
+		h1 {
+			height: 1.65rem;
+			margin-bottom: .35em;
+		}
+		#code, #output { height: 100% }
+		#code { width: 60% }
+		#output {
+			width: 39%;
+			float: right;
+		}
+	}
+	@media (min-width: 600px) and (max-width: 800px) {
+		#code { width: 55% }
+		#output { width: 44% }
+	}
+	@media (min-width: 1500px) {
+		#code { margin-bottom: 0 }
+	}
+	@media (min-width: 1600px) {
+		#code { width: 65% }
+		#output { width: 34% }
+	}
+	#save.progress {
+		cursor: progress;
+		color: #4ff;
+	}
+	#up, #dn {
+		width: 22px;
+		height: 24px;
+		fill: #777;
+	}
+	#up:hover, #dn:hover {
+		fill: #888;
+		transition: fill 0.1s;
+	}
+	#up:active, #dn:active {
+		fill: #666;
+		transition: none;
+	}
+	#up.clkd, #dn.clkd {
+		fill: #f90;
+	}
+	#fl {
+		width: 20px;
+		height: 24px;
+		fill: #f44;
+		margin-left: 12px;
+	}
+	#fl:hover {
+		fill: #f55;
+		transition: fill 0.2s;
+	}
+	#fl.clkd {
+		fill: #f00;
+	}
+	#fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+	#comment:target + #addcomment { display: none }
+	.up {
+		width: 18px;
+		height: 20px;
+		fill: #888;
+	}
+	.up:hover {
+		fill: #999;
+		transition: fill 0.1s;
+	}
+	.up:active {
+		fill: #777;
+		transition: none;
+	}
+	.up.clkd { fill: #f90 }
+	.fl {
+		width: 20px;
+		height: 20px;
+		fill: #f88;
+	}
+	.fl:hover {
+		fill: #f66;
+		transition: fill 0.2s;
+	}
+	.fl.clkd { fill: #f00 }
+	.fl:active {
+		transition: fill 0.1s;
+		fill: #c00;
+	}
+</style>
+<script>
+	var footerOff = true,
+		noPageOverflow = 400,
+		pageOverflowMobile = true,
+		mainContentEl = document.getElementById('main'),
+		code = document.getElementById('code'),
+		save = document.getElementById('save'),
+		up = document.getElementById('up'),
+		dn = document.getElementById('dn');
+	code.addEventListener('keypress', function(e) {
+		var oldSelectionStart = this.selectionStart;
+		if (e.keyCode == 13) {
+			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					? 0
+					: (
+						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						? (this.eIndent = false || 2) 
+						: 1
+					)
+				);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		} else if ((this.value[this.selectionStart] || '').match(/[^\s\,\(\[\{]/)) {
+			return;
+		} else if (e.keyCode == 34) {
+			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 39) {
+			this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 40) {
+			this.value = this.value.substr(0, this.selectionStart) + '()' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 91) {
+			this.value = this.value.substr(0, this.selectionStart) + '[]' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 123) {
+			this.value = this.value.substr(0, this.selectionStart) + '{}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		}s
+	});
+	code.addEventListener('keydown', function(e) {
+		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
+			console.log(this.value[this.selectionStart - 1] == '(')
+			if (
+				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
+				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
+				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
+				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
+				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
+			) {
+				var oldSelectionStart = this.selectionStart;
+				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
+				this.selectionEnd = --oldSelectionStart;
+				e.preventDefault();
+			}
+		}
+	});
+	var oldValue;
+	function handleCode() {
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			if (!save.classList.contains('progress')) save.textContent = 'Save';
+			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+		}
+	}
+	var timeout = setTimeout(handleCode, 100);
+	code.addEventListener('keyup', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keydown', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keypress', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
+	});
+	handleCode();
+	save.onclick = function() {
+		if (save.classList.contains('progress')) return;
+		save.classList.add('progress');
+		var savingTimeout = setTimeout(function() {
+			if (save.textContent == 'Save') save.textContent = 'Saving…';
+		}, 200);
+		request('/api/program/save?type=1', function(res) {
+			if (res.indexOf('Error') == 0) {
+				clearTimeout(savingTimeout);
+				alert(res);
+				save.textContent = 'Save';
+			} else if (res.indexOf('Location') == 0) {
+				onbeforeunload = null;
+				location.href = res.split(' ')[1];
+			} else if (res == 'Success') {
+				onbeforeunload = null;
+				save.textContent = 'Saved';
+				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
+			} else {
+				clearTimeout(savingTimeout);
+				alert('Unknown error. Response was: ' + res);
+			}
+			save.classList.remove('progress');
+		}, 'code=' + encodeURIComponent(code.value));
+	};
+	(document.getElementById('fork') || {}).onclick = function() {
+		var e = this;
+		if (e.classList.contains('progress')) return;
+		e.classList.add('progress');
+		e.textContent = 'Saving…';
+		var e = e.previousSibling.previousSibling;
+		e.hidden = e.previousSibling.previousSibling.hidden = true;
+		request('/api/program/save?type=1&amp;fork=1', function(res) {
+			if (res.indexOf('Error') == 0) {
+				e.hidden = false;
+				e = e.nextSibling.nextSibling;
+				e.hidden = false;
+				e.nextSibling.nextSibling.textContent = 'Fork';
+				alert(res);
+			} else if (res.indexOf('Location') == 0) {
+				onbeforeunload = null;
+				location.href = res.split(' ')[1];
+			} else alert('Unknown error. Response was: ' + res);
+			e.classList.remove('progress');
+		}, 'code=' + encodeURIComponent(code.value));
+	};
+	if (document.getElementById('meta')) {
+		if ($mine) {
+			document.getElementById('title').onclick = function() {
+				this.hidden = true;
+				var edit = document.getElementById('edit-title');
+				edit.hidden = false;
+				edit.focus();
+			};
+			document.getElementById('edit-title').onblur = function() {
+				request('/api/program/edit-title', function(res) {
+					var edit = document.getElementById('edit-title');
+					if (res.indexOf('Error') == 0) {
+						alert(res);
+						edit.value = document.getElementById('title').textContent;
+					} else if (res == 'Success') {
+						edit.hidden = true;
+						var title = document.getElementById('title');
+						title.textContent = edit.value.substr(0, 92) || 'Untitled';
+						if (!edit.value) edit.value = 'Untitled';
+						title.hidden = false;
+					} else alert('Unknown error. Response was: ' + res);
+				}, 'title=' + encodeURIComponent(this.value));
+			};
+			document.getElementById('edit-title').onkeypress = function(e) {
+				if (e.keyCode == 13) this.onblur.call(this);
+			};
+		}
+		up.onclick = function() {
+			request('/api/program/vote', function(res) {
+				if (res.indexOf('Error') == 0) alert(res);
+				else if (res == 'Success') {
+					document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
+					up.classList.toggle('clkd');
+					dn.classList.remove('clkd');
+				} else alert('Unknown error. Response was: ' + res);
+			}, 'val=' + (this.classList.contains('clkd') ? 0 : 1));
+		};
+		dn.onclick = function() {
+			request('/api/program/vote', function(res) {
+				if (res.indexOf('Error') == 0) alert(res);
+				else if (res == 'Success') {
+					document.getElementsByClassName('user-$op')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+					dn.classList.toggle('clkd');
+					up.classList.remove('clkd');
+				} else alert('Unknown error. Response was: ' + res);
+			}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
+		};
+		document.getElementById('addcomment').onclick = function() {
+			setTimeout(function() {
+				document.getElementById('commentta').focus();
+			}, 0);
+		};
+		var socket = new WebSocket('ws://' + location.hostname + ':81/dev/$id');
+		document.getElementById('comment').onsubmit = function(e) {
+			socket.send(JSON.stringify({
+				event: 'post',
+				body: document.getElementById('commentta').value
+			}));
+			document.getElementById('commentta').value = '';
+			document.getElementById('reset').onclick();
+			e.preventDefault();
+		};
+		document.getElementById('reset').onclick = function() {
+			location.hash = '';
+			history.replaceState('', document.title, window.location.pathname);
+			document.body.scrollTop = innerHeight;
+		};
+		socket.onmessage = function(e) {
+			console.log(e.data);
+			try {
+				var data = JSON.parse(e.data);
+			} catch(err) {
+				console.log(err);
+				return alert('JSON Error. Response was: ' + e.data);
+			}
+			if (data.event == 'add') {
+				var div = document.createElement('div');
+				div.classList.add('comment');
+				div.innerHTML = ' ' + markdown(data.body);
+				if ($rep >= 50) {
+					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.firstChild.firstChild.onclick = upvoteComment;
+					var score = document.createElement('span');
+					score.classList.add('score');
+					score.appendChild(document.createTextNode(score.dataset.score = 0));
+					div.insertBefore(score, div.firstChild);
+				}
+				var sig = document.createElement('span');
+				sig.classList.add('c-sig');
+				sig.appendChild(document.createTextNode('-'));
+				var a = document.createElement('a');
+				a.href = '/user/' + data.user;
+				a.appendChild(document.createTextNode(data.user))
+				sig.appendChild(a);
+				sig.appendChild(document.createTextNode(', '));
+				var permalink = document.createElement('a');
+				if (!data.time) data.time = new Date().getTime();
+				permalink.appendChild(agot(data.time));
+				permalink.href = '#' + (div.id = 'c' + data.id);
+				sig.appendChild(permalink);
+				div.appendChild(sig);
+				document.getElementById('comments').appendChild(div);
+			} else if (data.event == 'scorechange') {
+				var c = document.getElementById('c' + data.id);
+				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
+			} else if (data.event == 'err') alert('Error: ' + data.body);
+		};
+		var deletebutton = document.getElementById('delete');
+		if (deletebutton) {
+			deletebutton.onclick = function() {
+				if (confirm('Do you want to delete this program?')) {
+					request('/api/program/delete', function(res) {
+						if (res.indexOf('Error') == 0) alert(res);
+						else if (res == 'Success') location.reload();
+						else alert('Unknown error. Response was: ' + res);
+					});
+				}
+			};
+		}
+		function upvoteComment() {
+			this.classList.toggle('clkd');
+			socket.send(JSON.stringify({
+				event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+				id: parseInt(this.parentNode.parentNode.id.substr(1))
+			}));
+		}
+		var comments = document.getElementsByClassName('comment');
+		for (var i = 0; i &lt; comments.length; i++) {
+			comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+		}
+	}
+</script>

@@ -1,0 +1,70 @@
+Basic Tags
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Tags</h1>
+			<h2>Headers</h2>
+			<p>If you look at a newspaper, you'll most likely notice the big black letters that spell out the headline. In HTML, these are called headers; they're quite useful.</p>
+			<h3>"H" is for Header</h3>
+			<p>In an article in the paper there are multiple levels of headings. There's the article title, sub-headings for the article, sub-sub-headings for the sub-headings... let's try not to get too creative here. So how would we write those in HTML? Well, we use an "h" for header then a number from 1-6, where 1 is the most important and highest in the hierarchy (rendered as the largest in your browser), and 6 means the least important and lowest on the hierarchy (rendered as the smallest in your browser). In general, there should be 1 level-1 header (&lt;h1>) per page and only a heading of <em>one level lower</em> rank following another heading.</p>
+			<code class="blk">&lt;h1>I'm going to be big and important! :D&lt;/h1>
+&lt;h6>I'm going to be tiny and detailed. :(&lt;/h6></code>
+			<p>To move on, write all the possible header tags from largest to smallest, and in each one, put "Smaller".</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
+			</div>
+			<div id="failed1" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p>Did you write the tags correctly? Remember, there are 6 sizes, and they look like this:</p>
+				<code class="blk">&lt;h1>&lt;/h1>
+&lt;h2>&lt;/h2>
+&lt;h3>&lt;/h3>
+&lt;h4>&lt;/h4>
+&lt;h5>&lt;/h5>
+&lt;h6>&lt;/h6></code>
+			</div>
+			<div id="failed2" class="failed clearfix">
+				<h2>Almost!</h2>
+				<p>Make sure to write "smaller" in between the header tags, like this: <code>&lt;h1>&lt;/h1></code></p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../1/" class="lft">Back</a><a href="../3/" class="rit">Next</a></div>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html>
+	&lt;head>&lt;/head>
+	&lt;body>
+		&lt;!-- Hi! I'm a comment, you're going to learn about me in the next lesson, so go ahead and delete me, and replace me with the header tags.-->
+	&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	function submit() {
+		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;h1>smaller&lt;\/h1>\s*&lt;h2>smaller&lt;\/h2>\s*&lt;h3>smaller&lt;\/h3>\s*&lt;h4>smaller&lt;\/h4>\s*&lt;h5>smaller&lt;\/h5>\s*&lt;h6>smaller&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed2').classList.remove('show');
+		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;h1>[\s\S]*&lt;\/h1>\s*&lt;h2>[\s\S]*&lt;\/h2>\s*&lt;h3>[\s\S]*&lt;\/h3>\s*&lt;h4>[\s\S]*&lt;\/h4>\s*&lt;h5>[\s\S]*&lt;\/h5>\s*&lt;h6>[\s\S]*&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+			document.getElementById('failed2').classList.add('show');
+			document.getElementById('passed').classList.remove('show');
+			document.getElementById('failed1').classList.remove('show');
+		} else {
+			document.getElementById('failed1').classList.add('show');
+			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('passed').classList.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
+</script>

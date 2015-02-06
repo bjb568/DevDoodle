@@ -1,0 +1,45 @@
+Setting up a page - Using a Doctype
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>Setting up a page - Using a Doctype</h2>
+			<p>The first thing you do when you write an HTML page is define the doctype.</p>
+			<code class="blk">&lt;!DOCTYPE html></code>
+			<p>This tells the browser that the page is in HTML5. There are other doctypes, but right now you only need to know the doctype of HTML5. Type it in the code area to continue.</p>
+			<button id="check" class="blk" onclick="submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				Did you copy the HTML5 doctype correctly?
+			</div>
+		</div>
+		<div id="cntrls"><a href="../1/" class="lft">Back</a><a href="../3/" class="rit">Next</a></div>
+	</div>
+	<textarea id="html"></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').srcdoc = document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+	function submit() {
+		if (document.getElementById('html').value.trim().toLowerCase() == '&lt;!doctype html>') {
+			document.getElementById('passed').classList.add('show');
+			document.getElementById('failed').classList.remove('show');
+		} else {
+			document.getElementById('failed').classList.add('show');
+			document.getElementById('passed').classLzist.remove('show');
+		}
+		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	}
+</script>

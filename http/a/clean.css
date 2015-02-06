@@ -1,0 +1,469 @@
+html { background: #000 }
+body {
+	font-family: helvetica, sans-serif;
+	-webkit-text-size-adjust: none;
+	tab-size: 4;
+	line-height: 1.2;
+	color: #eee;
+}
+* {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-overflow-scrolling: touch;
+	-webkit-font-smoothing: antialiased;
+	font-smoothing: antialiased;
+}
+::-webkit-input-placeholder {
+	color: #555;
+	font-size: .85em;
+	line-height: 1.5em;
+}
+@keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+@-webkit-keyframes target { 
+	0%, 30% {
+		background: #f70;
+	}
+}
+:not(.target):target {
+	animation: target 1s;
+	-webkit-animation: target 1s;
+}
+.blk { display: block }
+.ib { display: inline-block }
+[hidden], .target:not(:target), #content > .sctrls { display: none }
+.rel, .comment { position: relative }
+.abs, .ctrls { position: absolute }
+.fullwidth { width: 100% }
+.maxwidth, img { max-width: 100% }
+.rit, .user, h1 small, h2 small, .c-sig { float: right }
+.lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
+.nofloat { float: none }
+:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child { margin-top: 0 }
+.mar { margin: 6px }
+.nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
+.tumar, h1 + *, h2:not(.title) + *, h3:not(.title) + *, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
+.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
+.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
+.bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
+.bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
+.lftpad, .user { margin-left: 6px }
+.indt { margin-left: 32px }
+.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
+.noborder, iframe { border: none }
+.scrl { overflow: auto }
+.scrlx { overflow-x: auto }
+.scrly, #sidebar { overflow-y: auto }
+.br, .desc, aside.rit { border-radius: 4px }
+.hglt, .desc, .comment, section, article { background: #333 }
+code { padding: 2px }
+.shglt { background: #444 }
+code, iframe:not([seamless]) { background: #fff }
+.mono, .ctrls { font-family: monospace }
+.ctrls a { padding: 0 2px }
+.grey, a.small, .c-sig, .ctrls a { color: #aaa }
+.disabled, a.disabled:hover, a.disabled:active { color: #666 }
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
+.red { color: #f00 }
+.large { font-size: 1.2em }
+.larger, .ctrls { font-size: 1.4em }
+em {
+	color: #f96;
+	font-style: normal;
+}
+code { color: #000 }
+.ctrls {
+	top: 100%; right: -1px;
+	z-index: 1;
+	background: #cef;
+	line-height: 16px;
+	padding-bottom: 1px;
+}
+.comment:last-child:not(:first-child) .ctrls {
+	top: auto;
+	bottom: 100%;
+}
+.comment .sctrls {
+	float: left;
+	padding: 2px 2px 0 0;
+	height: 16px;
+}
+.comment:not(:hover) .sctrls { opacity: .4 }
+.comment img { max-height: 200px }
+.c-sig, .c-sig > * { color: #ccc }
+.ctrls :hover { color: #000 }
+.ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
+.ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
+.ctrls :last-child { font-size: 0.9em }
+input[type=text].large, input[type=password].large { font-size: 1.3em }
+.comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
+blockquote {
+	border-left: 2px solid #fa0;
+	padding: 4px;
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+code.blk {
+	white-space: pre;
+	max-height: 600px;
+	max-width: 100%;
+	overflow: auto;
+	word-break: normal;
+	hyphens: none;
+	-webkit-hyphens: none;
+}
+h1 small, h2 small { font-size: .85rem }
+h1 small { margin: .5em }
+h2 small { margin: .2em .2em 0 0 }
+fieldset {
+	padding: 0;
+	border: none;
+}
+.popup {
+	position: absolute;
+	top: 20%; right: 20%; left: 20%;
+	background: rgba(240, 240, 240, .95);
+	box-shadow: 1px 1px 8px #000;
+}
+.user {
+	 background: #9ef;
+	 color: #000;
+	 min-width: 140px;
+	 display: inline-block;
+	 padding: 4px 8px 4px 4px;
+	 text-align: left;
+}
+.user div {
+	margin-left: 4px;
+}
+.user a { display: block }
+.program {
+	display: inline-block;
+	vertical-align: top;
+	max-width: 95%;
+}
+.program div {
+	width: 600px;
+	max-width: 100%;
+	max-height: 400px;
+	height: 28vw;
+	min-height: 180px;
+	overflow: auto;
+}
+.program iframe {
+	width: 100%;
+	height: calc(100% - 4px);
+}
+.program:nth-child(n+6) { display: none }
+@media (min-width: 500px) {
+	.program { max-width: 49% }
+	.program:nth-child(-n+7) { display: inline-block }
+}
+@media (min-width: 900px) {
+	.program { max-width: 33% }
+	.program:nth-child(-n+10) { display: inline-block }
+}
+@media (min-width: 1300px) {
+	.program { max-width: calc(25% - 4px) }
+	.program div { height: 20vw }
+	.program:nth-child(-n+13) { display: inline-block }
+}
+@media (min-width: 1700px) {
+	.program { max-width: calc(20% - 4px) }
+	.program div { height: 16vw }
+	.program:nth-child(-n+16) { display: inline-block }
+}
+.comment { margin-top: 3px }
+.comment #up, .comment #dn { width: 18px }
+.comment .hover {
+	float: left;
+	opacity: 0.3;
+	padding: 2px 2px 0 0;
+	height: 16px;
+}
+.comment:hover .hover { opacity: 1 }
+.comment .rit {
+	color: #666;
+	font-size: 0.9em;
+}
+ul, ol, p { margin: 6px 0 2px 0 }
+#err, .error {
+	background: #f00;
+	color: #fff;
+}
+#err a, .diamond { color: #fff }
+#err > * {
+	display: block;
+	text-align: center;
+	padding: 3em;
+}
+.center { margin: 0 auto }
+.center-text, #footer, #nav { text-align: center }
+.pre { white-space: pre-wrap }
+.clear, footer, .clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
+	content: '';
+	display: block;
+	clear: both;
+}
+h1, h2, h3, h4, h5, h6 {
+	color: #fff;
+	margin-top: .2em; margin-bottom: .2em;
+	font-family: Tahoma, Helvetica;
+}
+h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
+	font-weight: normal;
+	font-family: Verdana;
+}
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
+h1 {
+	border-bottom: 1px solid #aaa;
+	font-size: 1.5em;
+	line-height: 1;
+	padding-bottom: 1px;
+	vertical-align: bottom;
+}
+.comment h1, hr { border-bottom: none }
+h2, h1.title, article h1 { font-size: 1.3em }
+h3, h2.title, article h2, article article h1 {
+	margin-top: .5em;
+	font-size: 1.1em;
+}
+a, .ctrl {
+	color: #eee;
+	font-weight: bold;
+	text-decoration: none;
+	transition: color .2s;
+	cursor: pointer;
+}
+a:hover, .ctrl:hover { color: #4ff }
+a:active, .ctrl:active { color: #faa }
+.user a { color: #000 }
+.user a:hover { color: #15f }
+.user a:active { color: #02d }
+a.blk:hover { background: #222 }
+a.blk:hover:not(:active) { color: #ff2 }
+p a, .comment a { text-decoration: underline }
+.c-sig a, .ctrls a { text-decoration: none }
+input[type=text], input[type=password], textarea {
+	font-family: helvetica;
+	font-size: .8em;
+}
+textarea {
+	font-size: .9em;
+	display: block;
+}
+.score {
+	float: left;
+	display: block;
+	margin-right: 4px;
+	color: #f00;
+	padding: 0 4px;
+}
+.score[data-score="0"] { display: none }
+.score[data-score="1"] { color: #888 }
+.score[data-score="2"] { color: #666 }
+.score[data-score="3"] { color: #444 }
+.score[data-score="4"] { color: #222 }
+.score[data-score="5"] { color: #000 }
+.score[data-score="6"] { color: #001 }
+.score[data-score="7"] { color: #002 }
+.score[data-score="8"] { color: #003 }
+.score[data-score="9"] { color: #004 }
+.score[data-score="10"] { color: #005 }
+.score[data-score="11"] { color: #006 }
+.score[data-score="12"] { color: #007 }
+.score[data-score="13"] { color: #008 }
+.score[data-score="14"] { color: #009 }
+.score[data-score="15"] { color: #00a }
+.score[data-score="16"] { color: #00b }
+.score[data-score="17"] { color: #00c }
+.score[data-score="18"] { color: #00d }
+.score[data-score="19"] { color: #00e }
+.score[data-score="20"] { color: #00f }
+.score[data-score="21"] { color: #33f }
+.score[data-score="22"] { color: #66f }
+.score[data-score="23"] { color: #f90 }
+.score[data-score="24"] { color: #f80 }
+.score[data-score="25"] { color: #f70 }
+.score[data-score="26"] { color: #f60 }
+.score[data-score="27"] { color: #f50 }
+.score[data-score="28"] { color: #f40 }
+.score[data-score="29"] { color: #f30 }
+.score[data-score="30"] { color: #f20 }
+.score[data-score="31"] { color: #f10 }
+#nav {
+	padding: 0 2px 6px 2px;
+	font-size: 0;
+	background: #000;
+}
+#nav * {
+	padding: 0 4px;
+	color: #ddd;
+	font-weight: normal;
+	font-size: .9rem;
+	line-height: 1.5;
+}
+#logo {
+	display: block;
+	width: 180px;
+	margin: 0 auto 4px;
+	line-height: 0;
+	max-width: 100%;
+}
+#nav form {
+	padding: 4px 0;
+	line-height: 1;
+	display: inline-block;
+}
+#nav input {
+	width: 160px;
+	max-width: 100%;
+	color: #000;
+}
+#logo img {
+	max-height: 100%;
+	padding: 4px 6px;
+}
+#content { padding-bottom: 4px }
+#nav > .active { position: relative }
+#nav .unread:not(.active) {
+	background: #d00;
+	color: #fff;
+}
+#nav .unread:not(.active):hover { background: #f00 }
+#nav .unread:not(.active):active { background: #c00 }
+@media (min-width: 380px) and (max-width: 799px) { 
+	#nav > :not(.active) + nav + a:nth-child(5):not(.active) { border-right: 1px solid #aaa }
+}
+@media (max-width: 799px) {
+	#nav > a.active { text-decoration: underline }
+	#nav nav > a.active { font-weight: bold }
+	#nav :not(.active) + nav { display: none }
+	#nav nav {
+		background: #333;
+		display: inline-block;
+	}
+}
+@media (min-width: 140px) and (max-width: 240px) {
+	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after,
+	#nav > .active + nav + :nth-child(7)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
+		white-space: pre;
+		content: '\a';
+	}
+}
+@media (min-width: 240px) and (max-width: 380px) {
+	#nav > :nth-child(6)::before {
+		white-space: pre;
+		content: ' ';
+	}
+}
+@media (min-width: 240px) and (max-width: 799px) {
+	#nav a:not(#logo) { margin-top: 4px }
+	#nav nav { margin-right: 6px }
+	#nav form {
+		margin: 0 3px;
+		max-width: calc(100% - 12px);
+	}
+}
+@media (min-width: 280px) and (max-width: 379px) {
+	#nav > .active + nav + :nth-child(5)::after {
+		white-space: pre;
+		content: '\a';
+	}
+}
+@media (max-width: 610px), (min-width: 750px) { 
+	#nav input { width: 184px }
+}
+@media (max-width: 700px) {
+	.main { width: 100% }
+	.sidebar.nonvital { display: none }
+	.sidebar { margin-top: 8px }
+}
+aside.rit { background: rgba(255, 255, 100, 0.5) }
+@media (min-width: 701px) {
+	.half { float: left }
+	.half.rit, .half:not(.rit) + .half:last-child { float: right }
+	.half { width: 49.5% }
+	aside.rit {
+		width: calc(10% + 300px);
+		margin-left: 6px;
+	}
+}
+@media (min-width: 380px) { 
+	#nav {
+		padding: 0;
+		text-align: right;
+	}
+	#logo {
+		float: left;
+		width: 144px;
+		margin: 0;
+	}
+	#nav nav { display: inline-block }
+}
+@media (min-width: 360px) {
+	line {
+		display: inline-block;
+		width: 1px; height: 1.2em;
+		background: #888;
+		vertical-align: sub;
+	}
+}
+@media (min-width: 800px) {
+	#nav {
+		padding: 0;
+		background: #111;
+	}
+	#nav > a { transition: background .15s }
+	#nav a:not(.active):hover {
+		background: #262626;
+		color: #fff;
+	}
+	#nav .active { color: #fff }
+	#nav > a:active:not(.active), #nav > a.active { background: #000 }
+	#nav nav > a {
+		display: inline-block;
+		line-height: 1.5;
+	}
+	#nav nav > a.active { background: #444 }
+	#nav > *, #nav form {
+		display: inline-block;
+		padding: 0 12px;
+		background: #1a1a1a;
+		line-height: 2rem;
+	}
+	#logo {
+		display: inline-block; position: relative;
+		width: auto; height: 100%;
+		margin: 0;
+	}
+	#logo:hover div { background: rgba(255, 255, 255, .3) }
+	#logo:active div { background: rgba(0, 0, 0, .2) }
+	#logo div {
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		transition: background .1s;
+		content: '';
+	}
+	#logo img { padding-bottom: 4px }
+}
+@media (min-width: 800px) { 
+	#cont { margin: 0 auto }
+	#logo { height: 2rem }
+	#nav > :nth-child(-n+5) { float: left }
+	#nav > :nth-child(7) { border-left: 1px solid #444 }
+	#nav > a:not(#logo) { border-right: 1px solid #444 }
+	#nav nav {
+		position: absolute;
+		z-index: 1;
+		top: 2rem;
+		border-top: 1px solid #888;
+	}
+	#nav nav:nth-child(4) { left: calc(14.125rem + 11px) }
+	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
+	#nav :not(:hover) + nav:not(:hover) { display: none }
+}

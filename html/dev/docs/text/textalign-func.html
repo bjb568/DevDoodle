@@ -1,0 +1,137 @@
+<h1>textAlign(h, v)</h1>
+<div id="row" class="row">
+	<textarea id="code" autofocus="">
+/**
+ * The textAlign() function aligns the text and specifies where relative to the point passed into text the text will be drawn.
+ * 
+ * Usage:
+ * textAlign(h, v)
+*/
+
+fill(255);
+stroke(255);
+font("30px times")
+
+var horizontalAligns = ["start", "end", "left", "center", "right"];
+var verticalAligns = ["top", "bottom", "middle", "alphabetic", "hanging"];
+
+// Alter i and j so they are either 0, 1, 2, 3, or 4 and press Restart to see the effect of the different arguments passed into textAlign. 
+
+var i = 0, j = 0;
+point(200, 200);
+strokeWidth(0);
+textAlign(horizontalAligns[i], verticalAligns[j]);
+text(200, 200, horizontalAligns[i]+verticalAligns[j]);
+
+/** See also:
+ * text(x, y, t): http://devdoodle.net/dev/docs/text/text-func
+ * font(f): http://devdoodle.net/dev/docs/text/font-func
+*/
+	</textarea>
+	<iframe id="output" sandbox="allow-scripts"></iframe>
+</div>
+<style>
+	#code {
+		color: #fff;
+		background: #000;
+		font-family: monospace;
+		font-size: 1rem;
+		resize: none;
+		margin-bottom: 8px;
+	}
+	#row { height: calc(100% - 2rem) }
+	#code, #output { height: 100% }
+	#output { float: right }
+	#code { width: 55% }
+	#output { width: 44% }
+</style>
+<script>
+	var footerOff = true,
+		noPageOverflow = 400,
+		pageOverflowMobile = true,
+		code = document.getElementById('code');
+	code.addEventListener('keypress', function(e) {
+		var oldSelectionStart = this.selectionStart;
+		if (e.keyCode === 13) {
+			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
+			var tabs = this.value.substr(0, oldSelectionStart)
+				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+				.split('\t').length
+				- (
+					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					? 0
+					: (
+						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						? (this.eIndent = false || 2) 
+						: 1
+					)
+				);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
+			this.selectionStart = ++oldSelectionStart + tabs;
+			this.selectionEnd = this.selectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 34) {
+			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 39) {
+			this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 40) {
+			this.value = this.value.substr(0, this.selectionStart) + '()' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 91) {
+			this.value = this.value.substr(0, this.selectionStart) + '[]' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		} else if (e.keyCode == 123) {
+			this.value = this.value.substr(0, this.selectionStart) + '{}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = ++oldSelectionStart;
+			e.preventDefault();
+		}
+		// console.log(e.keyCode);
+	});
+	code.addEventListener('keydown', function(e) {
+		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
+			console.log(this.value[this.selectionStart - 1] == '(')
+			if (
+				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
+				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
+				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
+				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
+				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
+			) {
+				var oldSelectionStart = this.selectionStart;
+				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
+				this.selectionEnd = --oldSelectionStart;
+				e.preventDefault();
+			}
+		}
+	});
+	var oldValue;
+	function handleCode() {
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
+		}
+	}
+	var timeout = setTimeout(handleCode, 100);
+	code.addEventListener('keyup', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keydown', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+	});
+	code.addEventListener('keypress', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
+		onbeforeunload = function() {
+			return 'You have unsaved code.';
+		};
+	});
+	handleCode();
+</script>
