@@ -256,6 +256,9 @@ function errorsHTML(errs) {
 
 function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 	if (!post) post = {};
+	var num = 0;
+	while (num == 0) num = Math.floor(Math.random() * 25 - 12);
+	var type = Math.floor(Math.random() * 3);
 	respondPage('Login', user, req, res, function() {
 		res.write('<h1>Log in</h1>\n');
 		res.write(errorsHTML(errs));
@@ -266,13 +269,17 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<div id="ccreate">\n');
 		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
 		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
+		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>\n');
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
-		res.write('<button type="submit">Submit</button>\n');
+		res.write('<button type="submit" class="umar">Submit</button>\n');
 		res.write('</form>\n');
 		res.write('<script>var jsFormConfirm; addEventListener(\'click\', function() { if (!jsFormConfirm) { jsFormConfirm = true; var i = document.createElement(\'input\'); i.type = \'hidden\'; i.name = \'check\'; i.value = \'JS-confirm\'; document.getElementById(\'ccreate\').appendChild(i); } });</script>')
 		respondPageFooter(res);
-	}, {inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content input[type=text], button { display: block }</style>'});
+	}, {
+		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content :not(p) > input[type=text], button { display: block }\n'
+			+ '#sec { font-size: 0 } #sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')²: \' } #sec::before, #sec input { font-size: 1rem }</style>'
+	});
 }
 
 function respondCreateRoomPage(errs, user, req, res, post) {
@@ -1099,6 +1106,47 @@ http.createServer(function(req,	res) {
 					if (!post.referer) post.referer = req.headers.referer;
 					if (post.create) {
 						if (post.check != 'JS-confirm') return errorPage[403](req, res, user, 'Suspicious request.');
+						for (var i = -12; i <= 12; i++) {
+							if (i == 0) continue;
+							var str = post['sec' + i],
+								fail;
+							if (!str) continue;
+							fail |= str.match(/[a-wyz]/i);
+							str = str.replace(/x\s*\*\s*x|x\s*\*\*\s*2|x²/, 'x^2').replace(/\s/g, '');
+							fail |= str.match(/[^\d\+-^x]/);
+							var arr = [],
+								lstart = 0;
+							for (var j = 0; j < str.length; j++) {
+								if (str[j] == '+' || str[j] == '-') {
+									arr.push(str.substring(lstart, j));
+									lstart = j;
+								}
+							}
+							arr.push(str.substr(lstart));
+							var cA, cB, cC;
+							for (j in arr) {
+								if (arr[j].length == 1) fail = true;
+								if (arr[j][0] == '+') arr[j] = (arr[j].match(/\d/) ? '' : '1') + arr[j].substr(1);
+								fail |= arr[j].match(/\d\D+\d/);
+								fail |= arr[j].match(/x.*x/);
+								fail |= arr[j].match(/^.*^/);
+								fail |= arr[j].indexOf('+') != -1;
+								var n = parseInt(arr[j].replace(/[^\d-]/g, ''));
+								if (arr[j].substring(arr[j].length - 3, arr[j].length) == 'x^2') {
+									fail |= n != 1 && arr[j].length != 3;
+									cA = true;
+								} else if (arr[j][arr[j].length - 1] == 'x') {
+									fail |= n != 2 * i;
+									fail |= arr[j].indexOf('^') != -1;
+									cB = true;
+								} else if (!arr[j].match(/[^\d-]/)) {
+									fail |= n != i * i;
+									cC = true;
+								} else fail = true;
+							}
+							if (fail || !cA || !cB || !cC) return respondLoginPage(['Incorrect response to security question.'], user, req, res, post, true, true, true);
+							break;
+						}
 						if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], user, req, res, post, false, true, true);
 						var errors = [],
 							nfillm,
@@ -1109,11 +1157,11 @@ http.createServer(function(req,	res) {
 						if (!post.name.match(/^[a-zA-Z0-9-]+$/) && (nfilln = true)) errors.push('Name may only contain alphanumeric characters and dashes.');
 						if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
 						if (post.pass != post.passc) errors.push('Passwords don\'t match.');
+						if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
 						var uniqueChars = [];
 						for (var i = 0; i < post.pass.length; i++) {
 							if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
 						}
-						if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
 						if (uniqueChars.length < 8) {
 							errors.push('Password is too simple.');
 							if (!nfillm && !nfilln) fpass = true;
