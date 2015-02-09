@@ -264,20 +264,20 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
-		res.write('<input type="text" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' />\n');
-		res.write('<input type="password" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' />\n');
+		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
+		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>\n');
 		res.write('<div id="ccreate">\n');
-		res.write('<input type="password" name="passc" placeholder="Confirm Password" />\n');
-		res.write('<input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' />\n');
+		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span></div>\n');
+		res.write('<div><input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>\n');
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
-		res.write('<button type="submit" class="umar">Submit</button>\n');
+		res.write('<button type="submit" id="submit" class="umar">Submit</button>\n');
 		res.write('</form>\n');
-		res.write('<script>var jsFormConfirm; addEventListener(\'click\', function() { if (!jsFormConfirm) { jsFormConfirm = true; var i = document.createElement(\'input\'); i.type = \'hidden\'; i.name = \'check\'; i.value = \'JS-confirm\'; document.getElementById(\'ccreate\').appendChild(i); } });</script>')
+		res.write('<script src="login.js"></script>')
 		respondPageFooter(res);
 	}, {
-		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#content :not(p) > input[type=text], button { display: block }\n'
+		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#submit { display: block }\n'
 			+ '#sec { font-size: 0 } #sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')²: \' } #sec::before, #sec input { font-size: 1rem }</style>'
 	});
 }
@@ -1162,7 +1162,12 @@ http.createServer(function(req,	res) {
 						for (var i = 0; i < post.pass.length; i++) {
 							if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
 						}
-						if (uniqueChars.length < 8) {
+						var matches = post.pass.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
+							penalty = 0;
+						for (var i = 0; i < matches.length; i++) {
+							penalty += Math.sqrt(matches[i].length) / 5;
+						}
+						if (uniqueChars.length + uniqueChars.length - penalty + post.pass.length / 10 < 8) {
 							errors.push('Password is too simple.');
 							if (!nfillm && !nfilln) fpass = true;
 						}
