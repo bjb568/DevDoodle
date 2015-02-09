@@ -1165,9 +1165,9 @@ http.createServer(function(req,	res) {
 						var matches = post.pass.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
 							penalty = 0;
 						for (var i = 0; i < matches.length; i++) {
-							penalty += Math.sqrt(matches[i].length) / 5;
+							penalty += matches[i].length;
 						}
-						if (uniqueChars.length + uniqueChars.length - penalty + post.pass.length / 10 < 8) {
+						if (uniqueChars.length + uniqueChars.length - Math.sqrt(penalty) / 3 + post.pass.length / 10 < 8) {
 							errors.push('Password is too simple.');
 							if (!nfillm && !nfilln) fpass = true;
 						}

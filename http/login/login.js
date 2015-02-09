@@ -36,9 +36,9 @@ create.onchange = namef.onkeypress = namef.onkeydown = namef.onkeyup = pass.onke
 		var matches = pass.value.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
 			penalty = 0;
 		for (var i = 0; i < matches.length; i++) {
-			penalty += Math.sqrt(matches[i].length) / 5;
+			penalty += matches[i].length;
 		}
-		var strength = uniqueChars.length - penalty + pass.value.length / 10;
+		var strength = uniqueChars.length - Math.sqrt(penalty) / 3 + pass.value.length / 10;
 		if (!pass.value) {
 			passStrength.textContent = '';
 			fail = true;
