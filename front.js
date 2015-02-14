@@ -485,9 +485,6 @@ var statics = {
 		title: 'canvas and ctx | Docs',
 		clean: true
 	},
-	'/learn/': {
-		path: './html/learn/learn.html'
-	},
 	'/learn/web/': {
 		path: './html/learn/web/web.html',
 		title: 'Web'
