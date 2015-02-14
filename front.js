@@ -728,37 +728,28 @@ http.createServer(function(req,	res) {
 							dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 								if (err) throw err;
 								var i = last ? last._id + 1 : 1;
-								if (type == 2) {
-									dbcs.programs.insert({
-										type: type,
-										fork: program._id,
-										title: 'Fork of ' + program.title.substr(0, 84),
-										html: (post.html || '').toString(),
-										css: (post.css || '').toString(),
-										js: (post.js || '').toString(),
-										user: user.name,
-										created: new Date().getTime(),
-										updated: new Date().getTime(),
-										score: 0,
-										hotness: 0,
-										upvotes: 0,
-										_id: i
-									});
-								} else {
-									dbcs.programs.insert({
-										type: type,
-										fork: program._id,
-										title: 'Fork of ' + program.title.substr(0, 84),
-										code: (post.code || '').toString(),
-										user: user.name,
-										created: new Date().getTime(),
-										updated: new Date().getTime(),
-										score: 0,
-										hotness: 0,
-										upvotes: 0,
-										_id: i
-									});
+								var tprogram = {
+									type: type,
+									user: user.name,
+									created: new Date().getTime(),
+									updated: new Date().getTime(),
+									score: 0,
+									hotness: 0,
+									upvotes: 0,
+									_id: i
+								};
+								if (type == 1) {
+									tprogram.code = (post.code || '').toString();
+								} else if (type == 2) {
+									tprogram.html = (post.html || '').toString();
+									tprogram.css = (post.css || '').toString();
+									tprogram.js = (post.js || '').toString();
 								}
+								if (program) {
+									tprogram.fork = program._id;
+									tprogram.title = 'Fork of ' + (program.title || 'Untitled').substr(0, 84);
+								}
+								dbcs.programs.insert(tprogram);
 								res.writeHead(200);
 								res.end('Location: /dev/' + i);
 							});
