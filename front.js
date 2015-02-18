@@ -554,7 +554,10 @@ http.createServer(function(req,	res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				if (req.url.pathname == '/me/changemail') {
+				if (req.url.pathname == '/notif') {
+					res.writeHead(200);
+					res.end(user && user.unread ? '1' : '');
+				} else if (req.url.pathname == '/me/changemail') {
 					var newmail = post.newmail;
 					if (!newmail) {
 						res.writeHead(400);

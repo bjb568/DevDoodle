@@ -622,6 +622,10 @@ $textarea
 		if (!document.hidden) {
 			document.title = title;
 			unread = 0;
+			request('/api/notif', function(res) {
+				if (res) document.getElementById('nav').children[7].classList.add('unread');
+				else document.getElementById('nav').children[7].classList.remove('unread');
+			});
 		}
 	});
 </script>
