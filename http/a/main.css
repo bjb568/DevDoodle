@@ -94,7 +94,7 @@ small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 input[type=text].large, input[type=password].large { font-size: 1.3em }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
-	border-left: 2px solid #fa0;
+	border-left: 2px solid #f90;
 	padding: 4px;
 	margin-top: 6px;
 	margin-bottom: 6px;
