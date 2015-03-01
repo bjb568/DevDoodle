@@ -55,6 +55,7 @@ db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
 		if (err) throw err;
+		db.ensureIndex('questions', {description: 'text'});
 		var i = usedDBCs.length;
 		while (i--) {
 			db.collection(usedDBCs[i], function(err, collection) {
@@ -692,6 +693,24 @@ http.createServer(function(req,	res) {
 						});
 						res.writeHead(200);
 						res.end('Location: /qa/' + id);
+					});
+				} else if (req.url.pathname == '/question/search') {
+					var samelang = [],
+						otherlang = [];
+					dbcs.questions.find({
+						$text: {$search: post.search}
+					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(6).each(function(err, question) {
+						if (err) throw err;
+						res.writeHead(200);
+						if (question) {
+							var q = {
+								_id: question._id,
+								title: question.title,
+								body: question.description
+							};
+							if (question.lang == post.lang) samelang.push(q);
+							else otherlang.push(q);
+						} else res.end(JSON.stringify(samelang.concat(otherlang).splice(0, 12)));
 					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);

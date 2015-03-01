@@ -1,5 +1,5 @@
 <h1>New Question</h1>
-<form id="form" method="post" action="preview">
+<form id="form" method="post">
 	<aside class="rit">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title should try to efficiently capture the essence of the question. Try to avoid titles like:</p>
@@ -23,14 +23,9 @@
 		<div id="err1" class="err"></div>
 	</fieldset>
 	<fieldset id="step1" class="hidden">
-		<h2>Has your question already been asked before?</h2>
-		<div id="duplist" class="hglt pad bmar">
-			<h3>Question 1 title</h3>
-			<p>Question 1 body</p>
-			<h3>Question 2 title</h3>
-			<p>Question 2 body</p>
-			<h3>Question 3 title</h3>
-			<p>Question 3 body</p>
+		<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
+		<div class="hglt pad bmar">
+			<ul id="duplist"></ul>
 		</div>
 		<button type="submit" id="submit2" disabled="">None of these are the same as my question</button>
 	</fieldset>
@@ -96,7 +91,6 @@
 		padding: 2px 6px;
 		box-shadow: 1px 1px 2px #666;
 	}
-	#step1, #step2, #step3, #step4 { min-height: 300px }
 	.hidden, #step1.hidden > *, #step2.hidden > *, #step3.hidden > *, #step4.hidden > * {
 		height: 0;
 		overflow: hidden;
@@ -104,41 +98,12 @@
 		resize: none;
 		border: none;
 	}
-	#duplist, #step1 h2 { overflow: hidden }
+	#step1 h2 { overflow: hidden }
 	h2 {
 		transition: height .5s;
 		height: 1.3em;
 	}
 	#options label { display: inline }
-	#duplist {
-		transition: height 1s .2s;
-		height: 400px;
-		position: relative;
-	}
-	#duplist h3 {
-		width: 50%;
-		overflow: hidden;
-		cursor: pointer;
-		margin: 0;
-		padding: 0 4px 8px 0;
-		position: relative;
-	}
-	#duplist h3::after {
-		content: '';
-		display: block;
-		position: absolute;
-		right: 12px; bottom: 0; left: 0;
-		height: 1px;
-		background: #aaa;
-	}
-	#duplist p {
-		padding: 4px;
-		position: absolute;
-		top: 0; right: 0; left: 50%; bottom: 0;
-		overflow: auto;
-		display: none;
-	}
-	#duplist h3:hover + p, #duplist p:hover { display: block }
 	textarea {
 		width: 100%;
 		height: 240px;
@@ -176,13 +141,18 @@
 		background: #f00;
 	}
 	.err:empty { opacity: 0 }
+	#duplist:empty::after {
+		content: 'Loading possible duplicates…';
+		color: #666;
+		font-size: 0.8em;
+	}
 </style>
 <script>
 	var step = 0,
 		langsug = document.getElementById('langsug'),
 		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
 		waiting = false;
-	document.getElementById('lang').addEventListener('keyup', function() {
+	document.getElementById('lang').addEventListener('keyup', function(e) {
 		if (!(langsug.hidden = !this.value)) {
 			var firstChild;
 			while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
@@ -208,6 +178,45 @@
 			}
 		}
 	});
+	document.getElementById('lang').addEventListener('keydown', function(e) {
+		if (this.value &amp;&amp; e.keyCode == 9) {
+			this.value = langsug.firstChild.textContent;
+			document.getElementById('form').onsubmit();
+		}
+	});
+	function findDups() {
+		request('/api/question/search', function(res) {
+			try {
+				res = JSON.parse(res);
+			} catch(e) {
+				alert('JSON Error. Response was: ' + res);
+				res = [];
+			}
+			var duplist = document.getElementById('duplist'), fc;
+			while (fc = duplist.firstChild) duplist.removeChild(fc);
+			for (var i = 0; i &lt; res.length; i++) {
+				var li = document.createElement('li'),
+					h3 = document.createElement('h3'),
+					a = document.createElement('a');
+				a.appendChild(document.createTextNode(res[i].title));
+				a.href = res[i]._id;
+				h3.appendChild(a);
+				li.appendChild(h3);
+				var blockquote = document.createElement('blockquote');
+				blockquote.innerHTML = markdown(res[i].body);
+				li.appendChild(blockquote);
+				duplist.appendChild(li);
+			}
+			if (!res.length) {
+				duplist.appendChild(document.createTextNode('No related questions found.'));
+				document.getElementById('form').onsubmit();
+			}
+		}, 'lang=' + encodeURIComponent(document.getElementById('lang').value) + '&amp;search=' + encodeURIComponent(document.getElementById('title').value));
+	}
+	document.getElementById('reload-dups').onclick = function(e) {
+		e.preventDefault();
+		findDups();
+	};
 	document.getElementById('lang').addEventListener('blur', function() {
 		langsug.hidden = true;
 	});
@@ -215,8 +224,10 @@
 		langsug.hidden = !this.value;
 	});
 	document.getElementById('form').onsubmit = function(e) {
-		e.preventDefault();
-		if (waiting) return;
+		if (e) {
+			e.preventDefault();
+			if (waiting) return;
+		}
 		if (step == 0) {
 			if (document.getElementById('title').value.length &lt; 12) {
 				document.getElementById('title').focus();
@@ -243,7 +254,8 @@
 			waiting = true;
 			setTimeout(function() {
 				waiting = document.getElementById('submit2').disabled = false;
-			}, 10000);
+			}, 6000);
+			findDups();
 		} else if (step == 1) {
 			step = 2;
 			document.getElementById('submit2').hidden = true;
@@ -293,6 +305,7 @@
 				document.getElementById('tags').focus();
 			}, 400);
 			document.getElementById('form').onsubmit = null;
+			document.getElementById('form').action = 'preview';
 		}
 	};
 	var e = document.getElementById('sublangs').getElementsByTagName('div');
