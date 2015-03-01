@@ -99,7 +99,7 @@ code { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
-input[type=text].large, input[type=password].large { font-size: 1.3em }
+input[type=text].large, input[type=search].large, input[type=password].large { font-size: 1.3em }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
 	border-left: 2px solid #fa0;
@@ -248,7 +248,7 @@ a.blk:hover { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
 p a, .comment a { text-decoration: underline }
 .c-sig a, .ctrls a { text-decoration: none }
-input[type=text], input[type=password], textarea {
+input[type=text], input[type=search], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: .8em;
 }
