@@ -49,13 +49,17 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
+	usedDBCs = ['users', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
 
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
 		if (err) throw err;
-		db.ensureIndex('questions', {description: 'text'});
+		db.createCollection('questions', function(err, collection) {
+			if (err) throw err;
+			db.ensureIndex('questions', {description: 'text'});
+			dbcs.questions = collection;
+		});
 		var i = usedDBCs.length;
 		while (i--) {
 			db.collection(usedDBCs[i], function(err, collection) {
