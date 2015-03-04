@@ -26,3 +26,8 @@ Before submitting a bug, try hard-reloading.
 - `node front.js` with sudo (or change it's port to ≥ 1024 via command line argument (e.g. `node front 1337`))
 - `node buildpage.js`
 - `node sockets.js` with sudo (changing port is not supported since port 81 is hard coded into client side javascript)
+
+Apparently node processes don't need to run as root if you do this first (on Linux):
+
+	sudo apt-get install libcap2-bin
+	setcap 'cap_net_bind_service=+ep' /usr/bin/nodejs
