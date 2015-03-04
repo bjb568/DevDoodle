@@ -49,12 +49,17 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
+	usedDBCs = ['users', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
 
 db.open(function(err, db) {
 	if (err) throw err;
 	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
 		if (err) throw err;
+		db.createCollection('questions', function(err, collection) {
+			if (err) throw err;
+			db.ensureIndex('questions', {description: 'text'});
+			dbcs.questions = collection;
+		});
 		var i = usedDBCs.length;
 		while (i--) {
 			db.collection(usedDBCs[i], function(err, collection) {
@@ -88,7 +93,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	delete header.nonotif;
 	delete header.clean;
 	if (clean) inhead += '<script>var footerOff = true;</script>';
-	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
+	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
@@ -554,7 +559,10 @@ http.createServer(function(req,	res) {
 			req.on('end', function() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				if (req.url.pathname == '/me/changemail') {
+				if (req.url.pathname == '/notif') {
+					res.writeHead(200);
+					res.end(user && user.unread ? '1' : '');
+				} else if (req.url.pathname == '/me/changemail') {
 					var newmail = post.newmail;
 					if (!newmail) {
 						res.writeHead(400);
@@ -689,6 +697,24 @@ http.createServer(function(req,	res) {
 						});
 						res.writeHead(200);
 						res.end('Location: /qa/' + id);
+					});
+				} else if (req.url.pathname == '/question/search') {
+					var samelang = [],
+						otherlang = [];
+					dbcs.questions.find({
+						$text: {$search: post.search}
+					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(6).each(function(err, question) {
+						if (err) throw err;
+						res.writeHead(200);
+						if (question) {
+							var q = {
+								_id: question._id,
+								title: question.title,
+								body: question.description
+							};
+							if (question.lang == post.lang) samelang.push(q);
+							else otherlang.push(q);
+						} else res.end(JSON.stringify(samelang.concat(otherlang).splice(0, 12)));
 					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);
