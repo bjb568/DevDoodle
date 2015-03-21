@@ -614,8 +614,15 @@ $textarea
 	var hashchangeready = !hash;
 	addEventListener('hashchange', function(e) {
 		if (hashchangeready) {
-			var hash = e.newURL.split('#', 2)[1];
-			if (hash &amp;&amp; !document.getElementById(hash)) location.reload();
+			var hash = parseInt(e.newURL.split('#', 2)[1]);
+			if (hash &amp;&amp; !document.getElementById(hash)) {
+				request('/api/chat/' + hash, function(res) {
+					try {
+						res = JSON.parse(res);
+						if (res.room == $id) location.reload();
+					} catch(e) {}
+				});
+			}
 		} else hashchangeready = true;
 	});
 	document.addEventListener('visibilitychange', function() {

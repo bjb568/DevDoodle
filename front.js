@@ -594,6 +594,27 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (i = req.url.pathname.match(/\/chat\/(\d+)/)) {
+					dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
+						if (err) throw err;
+						if (!doc) {
+							res.writeHead(404);
+							res.end('Error: Invalid message id.');
+						} else if (doc.deleted) {
+							res.writeHead(403);
+							return res.end('Error: Message has been deleted.');
+						} else {
+							res.writeHead(200);
+							res.end(JSON.stringify({
+								id: doc._id,
+								body: doc.body,
+								user: doc.user,
+								time: doc.time,
+								stars: doc.stars,
+								room: doc.room
+							}));
+						}
+					});
 				} else if (req.url.pathname == '/chat/changeroomtype') {
 					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
 						id = i ? parseInt(i[1]) : 0;
