@@ -492,7 +492,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#logo { height: 2rem }
 	#nav input {
 		width: 100%;
-		font-size: 1.1rem;
+		font-size: 1.1em;
 	}
 	#nav > .active::before {
 		content: '';
