@@ -60,6 +60,18 @@ $textarea
 	};
 	ctrlsEdit.textContent = '✎';
 	ctrlsEdit.onclick = function() {
+		ta.hists = ta.hists || {};
+		ta.hists[editing] = ta.hist;
+		ta.hist = ta.hists[false] || [{
+			body: ta.value,
+			start: 0,
+			end: 0
+		}];
+		ta.hIndex = ta.hist.length - 1;
+		ta.value = ta.hist[ta.hIndex].body;
+		var e = document.getElementsByClassName('editing')[0];
+		if (e) e.classList.remove('editing');
+		editing = true;
 		var msg = this.parentNode.parentNode;
 		msg.classList.add('editing');
 		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top;
@@ -454,6 +466,7 @@ $textarea
 				editing = false;
 				btn.onclick = send;
 				btn.textContent = 'Send';
+				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
 			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
@@ -629,10 +642,6 @@ $textarea
 		if (!document.hidden) {
 			document.title = title;
 			unread = 0;
-			request('/api/notif', function(res) {
-				if (res) document.getElementById('nav').children[7].classList.add('unread');
-				else document.getElementById('nav').children[7].classList.remove('unread');
-			});
 		}
 	});
 </script>
@@ -681,8 +690,14 @@ $textarea
 		background: #faa;
 		border-radius: 4px;
 	}
-	.editing { background: #4af }
-	.deleted { background: #d44 }
+	.editing, .deleted { position: relative }
+	.editing::before, .deleted::before {
+		content: '';
+		position: absolute;
+		top: 0; right: 0; bottom: 0; left: 0;
+	}
+	.deleted::before { background: rgba(255, 128, 128, 0.95) }
+	.editing::before { background: rgba(48, 168, 255, 0.4) }
 	#pingsug {
 		position: absolute;
 		margin-top: -18px;
