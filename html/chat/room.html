@@ -690,8 +690,14 @@ $textarea
 		background: #faa;
 		border-radius: 4px;
 	}
-	.editing { background: #4af }
-	.deleted { background: #d44 }
+	.editing, .deleted { position: relative }
+	.editing::before, .deleted::before {
+		content: '';
+		position: absolute;
+		top: 0; right: 0; bottom: 0; left: 0;
+	}
+	.deleted::before { background: rgba(255, 128, 128, 0.95) }
+	.editing::before { background: rgba(48, 168, 255, 0.4) }
 	#pingsug {
 		position: absolute;
 		margin-top: -18px;
