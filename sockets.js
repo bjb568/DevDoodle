@@ -338,11 +338,8 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'You must specify a flag description.'
 							}));
-							dbcs.chat.update({_id: post._id}, {
-								$set: {
-									reviews: 3,
-									lastFlag: new Date().getTime()
-								},
+							var changes = {
+								$set: {reviewing: new Date().getTime()},
 								$push: {
 									flags: {
 										body: message.body,
@@ -350,7 +347,9 @@ wss.on('connection', function(tws) {
 										user: tws.user.name
 									}
 								}
-							});
+							};
+							if (post.deleted && !post.mod) changes['$set'].mod = 'Deleted';
+							dbcs.chat.update({_id: post._id}, changes);
 							tws.trysend(JSON.stringify({
 								event: 'notice',
 								body: 'Post #' + message.id + ' flagged.'
@@ -377,7 +376,7 @@ wss.on('connection', function(tws) {
 								time: new Date().getTime(),
 								by: [tws.user.name]
 							});
-							dbcs.chat.update({_id: post._id}, {$set: {deleted: true}});
+							dbcs.chat.update({_id: post._id}, {$set: {deleted: 1}});
 							var sendto = [];
 							for (var i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
@@ -401,6 +400,10 @@ wss.on('connection', function(tws) {
 							if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
 								event: 'err',
 								body: 'You may undelete only your own messages.'
+							}));
+							if (post.deleted > 1) return tws.trysend(JSON.stringify({
+								event: 'err',
+								body: 'You may undelete only messages that you have deleted.'
 							}));
 							dbcs.chathistory.insert({
 								message: post._id,

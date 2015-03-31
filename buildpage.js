@@ -597,7 +597,7 @@ http.createServer(function(req,	res) {
 						res.write('<li>\n');
 						if (data.event == 'edit') {
 							revisions++;
-							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>):\n');
+							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>)' + (data.note ? ' ' + data.note : '') + ':\n');
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 						} else if (data.event == 'delete' || data.event == 'undelete') {
 							var deletersstr = '',
@@ -914,24 +914,96 @@ http.createServer(function(req,	res) {
 				res.write('<p>You must have level 2 moderator tools to access this queue.</p>');
 				return respondPageFooter(res);
 			}
-			dbcs.chat.findOne({
-				reviews: {$gt: 0},
-				reviewers: {$not: {$in: [user.name]}}
-			}, function(err, message) {
+			var query = {
+				reviewing: {$exists: true},
+				reviewers: {$ne: user.name},
+				// user: {$ne: user.name}
+			};
+			if (user.level < 4) query.mod = {$exists: false};
+			res.write('<div id="posts">');
+			dbcs.chat.find(query).sort({mod: -1, lastFlag: -1}).each(function(err, message) {
 				if (err) throw err;
 				if (message) {
-					dbcs.chatrooms.findOne({_id: message.room}, function(err, room) {
-						if (err) throw err;
-						res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a> in <a href="/chat/' + message.room + '">' + room.name + '</a>:\n');
-						res.write('<blockquote><pre>' + html(message.body) + '</pre></blockquote>\n');
-						respondPageFooter(res);
-					});
+					res.write('<section id="' + message._id + '">')
+					res.write('<h2><a href="#' + message._id + '">#</a>' + message._id + '</h2>');
+					res.write('<div class="indt">');
+					if (message.mod) res.write('<p class="large red">Mod-only; ' + message.mod + '</p>');
+					res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a>:\n');
+					res.write('<blockquote class="op"><pre>' + html(message.body) + '</pre></blockquote>\n');
+					res.write('<form hidden="" onsubmit="arguments[0].preventDefault(); ' +
+						'request(\'/api/chat/msg/' + message._id + '/edit\', ' +
+							'function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } }, ' +
+						'\'body=\' + encodeURIComponent(this.firstChild.value))">');
+					res.write('<textarea class="edit fullwidth" rows="6">' + html(message.body) + '</textarea>\n');
+					res.write('<div><button type="submit">Submit Edit</button> <button type="reset" onclick="this.parentNode.parentNode.hidden = true; this.parentNode.parentNode.previousSibling.previousSibling.hidden = false">Cancel Edit</button></div>\n');
+					res.write('</form>');
+					res.write('Quality score: ' + (
+						message.stars || 1
+						- (message.body.length < 8 ? 1 : 0)
+						- (message.body.length > 700 ? 2 : 0)
+						- (message.body.match(/\b(i|u|r)\b/) ? 1 : 0)
+						- (message.body.match(/\b(im|ur|u|r|pls|plz|omg)\W/i) ? 1 : 0)
+						- (message.body.match(/^\W+[a-z]/) ? 1 : 0)
+						- (message.body.match(/\w\s+:/) ? 1 : 0)
+						- (message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || []).length
+						- (message.body.match(/(.+)\s*\1\s*\1/g) || []).length
+						- (message.body.match(/\!\!+/g) || []).length
+						- (message.body.match(/\b[A-Z]\w*\b/) ? 0 : 1)
+						- ((message.body.match(/\b[A-Z]\w*\b/g) || []).length / ((message.body.match(/\b\w+\b/g) || []).length + 2) > 0.5 ? 2 : 0)
+						+ ((message.body.match(/\w{8,}/g) || []).length > 3 ? 1 : 0)
+						+ ((message.body.match(/\. [A-Z]/g) || []).length > 3 ? 1 : 0)
+						+ (message.body.indexOf(', ') != -1 ? 1 : 0)
+					) + ', Length: ' + message.body.length + ', Uppercase ratio: ' + (Math.round((message.body.match(/[A-Z]/g) || []).length / (message.body.match(/[a-z]/g) || []).length * 100) / 100));
+					res.write('<h3>Comments</h3>');
+					for (var i = 0; i < message.flags.length; i++) {
+						res.write('<div>');
+						res.write('<a href="/user/' + message.flags[i].user + '">' + message.flags[i].user + '</a>, <time datetime="' + new Date(message.flags[i].time).toISOString() + '"></time>:');
+						res.write('<blockquote>' + markdown(message.flags[i].body) + '</blockquote>');
+						res.write('</div>');
+					}
+					res.write('<div class="actions">');
+					if (!message.deleted) res.write('<span><a class="bad" title="Soft-delete this post" onclick="' +
+						'request(\'/api/chat/msg/' + message._id + '/delv\', function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } })' +
+						'">Vote to Delete</a></span> ');
+					res.write('<span><a class="bad" title="Publicly edit this post" onclick="var e = document.getElementById(\'' + message._id + '\').getElementsByTagName(\'form\')[0]; e.hidden = false; e.previousSibling.previousSibling.hidden = true">Edit</a></span> ');
+					if (!message.mod) res.write('<span><a class="bad" title="Push this post to the mod queue with a comment explaining what actions you wish to be performed by moderators" onclick="' +
+						'var body = prompt(\'Enter your comment.\'); if (body) request(\'/api/chat/msg/' + message._id + '/rcomment\', function(res) { ' +
+							'if (res.substr(0, 4) == \'Ok: \') { var e = document.createElement(\'div\'), f = document.getElementById(\'' + message._id + '\').children[1]; e.innerHTML = res.substr(4); f.insertBefore(e, f.lastChild) } else { alert(res) } ' +
+							'}, \'mod=1&amp;body=\' + encodeURIComponent(body))' +
+						'">Request Mod Action</a></span> ');
+					res.write('<span><a class="warn" title="This post looks ok" onclick="' +
+						'request(\'/api/chat/msg/' + message._id + '/nanv\', function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } })' +
+						'">' + (message.deleted ? 'Vote to Undelete' : 'Dispute flag') + '</a></span> ');
+					res.write('<span><a title="Add a comment for other reviewers" onclick="' +
+						'var body = prompt(\'Enter your comment.\'); if (body) request(\'/api/chat/msg/' + message._id + '/rcomment\', function(res) { ' +
+							'if (res.substr(0, 4) == \'Ok: \') { var e = document.createElement(\'div\'), f = document.getElementById(\'' + message._id + '\').children[1]; e.innerHTML = res.substr(4); f.insertBefore(e, f.lastChild) } else { alert(res) } ' +
+							'}, \'body=\' + encodeURIComponent(body))' +
+						'">Comment</a></span> ');
+					res.write('<span><a title="Go to the next post without performing an action on this one" onclick="request(\'/api/chat/msg/' + message._id + '/rskip\'); document.getElementById(\'' + message._id + '\').hidden = true;">Skip</a></span>');
+					res.write('</div>');
+					res.write('</div>');
+					res.write('</section>');
 				} else {
-					res.write('There are no items for you to review.');
+					res.write('</div>');
 					respondPageFooter(res);
 				}
 			});
-		}, {inhead: '<style>pre { margin: 0 }</style>', clean: true});
+		}, {
+			inhead: '<style>' +
+						'#posts:empty::after { content: \'There are no items for you to review at this time.\'} ' +
+						'blockquote { overflow-x: auto } ' +
+						'pre { margin: 0 } ' +
+						'section { background: #222; padding: 4px } ' +
+						'.op { font-size: 1.3em } ' +
+						'.actions { font-size: 1.18em } ' +
+						'.actions span { padding: 12px } ' +
+						'.bad { color: #e44 } ' +
+						'.bad:hover { color: #f00 } ' +
+						'.warn { color: #bb0 } ' +
+						'.warn:hover { color: #ff0 }' +
+					'</style>',
+			clean: true
+		});
 	} else return errorPage[404](req, res, user);
 }).listen(process.argv[2] || 8000);
 console.log('buildpage.js running on port ' + (process.argv[2] || 8000));
