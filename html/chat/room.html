@@ -60,6 +60,18 @@ $textarea
 	};
 	ctrlsEdit.textContent = '✎';
 	ctrlsEdit.onclick = function() {
+		ta.hists = ta.hists || {};
+		ta.hists[editing] = ta.hist;
+		ta.hist = ta.hists[false] || [{
+			body: ta.value,
+			start: 0,
+			end: 0
+		}];
+		ta.hIndex = ta.hist.length - 1;
+		ta.value = ta.hist[ta.hIndex].body;
+		var e = document.getElementsByClassName('editing')[0];
+		if (e) e.classList.remove('editing');
+		editing = true;
 		var msg = this.parentNode.parentNode;
 		msg.classList.add('editing');
 		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top;
@@ -454,6 +466,7 @@ $textarea
 				editing = false;
 				btn.onclick = send;
 				btn.textContent = 'Send';
+				this.value = '';
 				cont.scrollTop = cont.scrollHeight;
 			} else if (e.keyCode == 38 &amp;&amp; !this.value &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
