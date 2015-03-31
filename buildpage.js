@@ -917,7 +917,7 @@ http.createServer(function(req,	res) {
 			var query = {
 				reviewing: {$exists: true},
 				reviewers: {$ne: user.name},
-				// user: {$ne: user.name}
+				user: {$ne: user.name}
 			};
 			if (user.level < 4) query.mod = {$exists: false};
 			res.write('<div id="posts">');
