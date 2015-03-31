@@ -692,6 +692,234 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/delv/)) {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to cast deletion votes.');
+					}
+					if (user.level < 2) {
+						res.writeHead(403);
+						return res.end('Error: You must be a level 2 moderator to cast delete votes.');
+					}
+					var id = i ? parseInt(i[1]) : 0;
+					dbcs.chat.findOne({_id: id}, function(err, msg) {
+						if (err) throw err;
+						if (!msg) {
+							res.writeHead(400);
+							return res.end('Error: Invalid message id.');
+						}
+						if (user.level >= 4 && !msg.deleted) {
+							dbcs.chat.update({_id: msg._id}, {$set: {deleted: 2}});
+							dbcs.chathistory.insert({
+								message: msg._id,
+								event: 'delete',
+								time: new Date().getTime(),
+								by: (msg.dels || []).concat(user.name)
+							});
+							res.writeHead(204);
+							return res.end();
+						}
+						if ((msg.reviewers || []).indexOf(user.name) != -1) {
+							res.writeHead(403);
+							return res.end('Error: You have already reviewed this post.');
+						}
+						var changes = {
+							$push: {
+								dels: {
+									time: new Date().getTime(),
+									user: user.name
+								},
+								reviewers: user.name
+							}
+						};
+						if ((msg.dels || []).length == 2) {
+							if (msg.nans.length == 2) changes['$set'].mod = 'Controversial';
+							else {
+								changes['$set'] = {mod: 'Handled'};
+								changes['$unset'] = {reviewing: 1};
+							}
+							if (!msg.deleted) {
+								changes['$set'] = {deleted: 2};
+								dbcs.chathistory.insert({
+									message: msg._id,
+									event: 'delete',
+									time: new Date().getTime(),
+									by: msg.dels.concat(user.name)
+								});
+							}
+						}
+						dbcs.chat.update({_id: id}, changes);
+						res.writeHead(204);
+						res.end();
+					});
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/nanv/)) {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to dispute flags.');
+					}
+					if (user.level < 2) {
+						res.writeHead(403);
+						return res.end('Error: You must be a level 2 moderator to dispute flags.');
+					}
+					var id = i ? parseInt(i[1]) : 0;
+					dbcs.chat.findOne({_id: id}, function(err, msg) {
+						if (err) throw err;
+						if (!msg) {
+							res.writeHead(400);
+							return res.end('Error: Invalid message id.');
+						}
+						if (user.level >= 4 && msg.deleted) {
+							dbcs.chat.update({_id: msg._id}, {$set: {deleted: 0}});
+							dbcs.chathistory.insert({
+								message: msg._id,
+								event: 'undelete',
+								time: new Date().getTime(),
+								by: (msg.nans || []).concat(user.name)
+							});
+							res.writeHead(204);
+							return res.end();
+						}
+						if ((msg.reviewers || []).indexOf(user.name) != -1) {
+							res.writeHead(403);
+							return res.end('Error: You have already reviewed this post.');
+						}
+						var changes = {
+							$push: {
+								nans: {
+									time: new Date().getTime(),
+									user: user.name
+								},
+								reviewers: user.name
+							}
+						};
+						if ((msg.nans || []).length == 2) {
+							if (msg.dels.length == 2) changes['$set'].mod = 'Controversial';
+							else {
+								changes['$set'] = {mod: 'Handled'};
+								changes['$unset'] = {reviewing: 1};
+							}
+							if (msg.deleted) {
+								changes['$set'] = {deleted: 0};
+								dbcs.chathistory.insert({
+									message: msg._id,
+									event: 'undelete',
+									time: new Date().getTime(),
+									by: msg.dels.concat(user.name)
+								});
+							}
+						}
+						dbcs.chat.update({_id: id}, changes);
+						res.writeHead(204);
+						res.end();
+					});
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rcomment/)) {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to add review comments.');
+					}
+					if (user.level < 2) {
+						res.writeHead(403);
+						return res.end('Error: You must be a level 2 moderator to add review comments.');
+					}
+					if (!post.body) {
+						res.writeHead(400);
+						return res.end('Error: Please enter a comment body.');
+					}
+					if (post.body.length > 2000) {
+						res.writeHead(400);
+						return res.end('Error: Comment length may not exceed 2000 characters.');
+					}
+					var id = i ? parseInt(i[1]) : 0;
+					dbcs.chat.findOne({_id: id}, function(err, msg) {
+						if (err) throw err;
+						if (!msg) {
+							res.writeHead(400);
+							return res.end('Error: Invalid message id.');
+						}
+						if (post.mod && (msg.reviewers || []).indexOf(user.name) != -1) {
+							res.writeHead(403);
+							return res.end('Error: You have already reviewed this post.');
+						}
+						if (post.mod && msg.mod) {
+							res.writeHead(403);
+							return res.end('Error: This post is already mod-only. You may still leave a regular comment.');
+						}
+						var changes = {
+							$push: {
+								flags: {
+									body: post.body,
+									time: new Date().getTime(),
+									user: user.name
+								}
+							}
+						};
+						if (post.mod) {
+							changes['$set'] = {mod: 'User-req'};
+							changes['$push'].reviewers = user.name;
+						}
+						dbcs.chat.update({_id: id}, changes);
+						res.writeHead(200);
+						res.write('Ok: ');
+						res.write('<a href="/user/' + user.name + '">' + user.name + '</a>, <time datetime="' + new Date().toISOString() + '"></time>:');
+						res.end('<blockquote>' + markdown(post.body) + '</blockquote>');
+					});
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/edit/)) {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to edit chat messages in review.');
+					}
+					if (user.level < 2) {
+						res.writeHead(403);
+						return res.end('Error: You must be a level 2 moderator to edit chat messages in review.');
+					}
+					if (!post.body) {
+						res.writeHead(400);
+						return res.end('Error: Body text required.');
+					}
+					if (post.body.length > 2000) {
+						res.writeHead(400);
+						return res.end('Error: Chat message length may not exceed 2880 characters.');
+					}
+					var id = i ? parseInt(i[1]) : 0;
+					dbcs.chat.findOne({_id: id}, function(err, msg) {
+						if (err) throw err;
+						if (!msg) {
+							res.writeHead(400);
+							return res.end('Error: Invalid message id.');
+						}
+						var changes = {$set: {body: post.body}};
+						if ((msg.reviewers || []).indexOf(user.name) == -1) changes['$push'] = {reviewers: user.name};
+						dbcs.chat.update({_id: id}, changes);
+						dbcs.chathistory.insert({
+							message: msg._id,
+							event: 'edit',
+							time: new Date().getTime(),
+							body: msg.body,
+							note: '<span title="Overridden as review action in response to flag">overridden</span> by <a href="/user/' + user.name + '">' + user.name + '</a>'
+						});
+						res.writeHead(204);
+						res.end();
+					});
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rskip/)) {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to skip in review.');
+					}
+					if (user.level < 2) {
+						res.writeHead(403);
+						return res.end('Error: You must be a level 2 moderator to skip in review.');
+					}
+					var id = i ? parseInt(i[1]) : 0;
+					dbcs.chat.findOne({_id: id}, function(err, msg) {
+						if (err) throw err;
+						if (!msg) {
+							res.writeHead(400);
+							return res.end('Error: Invalid message id.');
+						}
+						dbcs.chat.update({_id: id}, {$push: {reviewers: user.name}});
+						res.writeHead(204);
+						res.end();
+					});
 				} else if (req.url.pathname == '/qa/newquestion') {
 					if (!user) {
 						res.writeHead(403);
