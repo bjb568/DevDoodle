@@ -373,6 +373,12 @@ textarea {
 	.sidebar.nonvital { display: none }
 	.sidebar { margin-top: 8px }
 }
+@media (max-width: 600px) {
+	body { font-size: 0.95em }
+}
+@media (max-width: 400px) {
+	body { font-size: 0.9em }
+}
 aside.rit { background: rgba(255, 255, 100, 0.5) }
 @media (min-width: 701px) {
 	.half { float: left }
@@ -492,7 +498,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#logo { height: 2rem }
 	#nav input {
 		width: 100%;
-		font-size: 1.1em;
+		font-size: 1.3rem;
 	}
 	#nav > .active::before {
 		content: '';
