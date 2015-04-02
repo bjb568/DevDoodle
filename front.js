@@ -57,7 +57,7 @@ db.open(function(err, db) {
 		if (err) throw err;
 		db.createCollection('questions', function(err, collection) {
 			if (err) throw err;
-			db.ensureIndex('questions', {description: 'text'});
+			db.createIndex('questions', {description: 'text'}, {}, function() {});
 			dbcs.questions = collection;
 		});
 		var i = usedDBCs.length;
