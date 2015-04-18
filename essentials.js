@@ -19,7 +19,7 @@ function spanMarkdown(input) {
 		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
 		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/g, '$1<img src="$2" />')
 		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
-		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
+		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'));
 }
 function inlineMarkdown(input) {
 	var output = '',
@@ -106,7 +106,7 @@ function inlineMarkdown(input) {
 		} else output += html(input[i]);
 	}
 	output += spanMarkdown(span);
-	if (current.length) warning('Unclosed tags');
+	if (current.length) warning('Unclosed tags. <' + current.join('>, <') + '>');
 	for (var i = current.length - 1; i >= 0; i--) output += '</' + current[i] + '>';
 	return output;
 }
