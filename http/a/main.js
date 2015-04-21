@@ -13,128 +13,132 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 HTMLCollection.prototype.indexOf = NodeList.prototype.indexOf = Array.prototype.indexOf;
+HTMLCollection.prototype.forEach = NodeList.prototype.forEach = Array.prototype.forEach;
+HTMLElement.prototype.insertAfter = function(newEl, refEl) {
+	if (refEl.nextSibling) refEl.parentNode.insertBefore(newEl, refEl.nextSibling);
+	else refEl.parentNode.appendChild(newEl);
+};
 
 function html(input, replaceQuoteOff) {
 	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
 	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
 }
-function markdownEscape(input) {
-	return input.replaceAll(['\\', '`', '*', '_', '-', '+', '.', '#', '>', '(', ')', '^', '$'], ['\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u000e', '\u000f', '\u0010', '\u0011', '\u0012', '\u0013', '\u0014']);
+
+var mdWarnings = [];
+function warning(message) {
+	console.log(message);
+	mdWarnings.push(message);
+}
+function spanMarkdown(input) {
+	input = html(input);
+	while (input.match(/\^([\w\^]+)/)) input = input.replace(/\^([\w\^]+)/, '<sup>$1</sup>');
+	return input
+		.replaceAll('\u0001', '^')
+		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
+		.replaceAll('\u0002', '[')
+		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
+		.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
+		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/g, '<img src="$1" />')
+		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
+		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/g, '$1<img src="$2" />')
+		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
+		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'));
 }
 function inlineMarkdown(input) {
-	var backslash = '\u0001';
-	input = input.replaceAll('\\\\', backslash);
-	var graveaccent = '\u0002';
-	input = input.replaceAll('\\`', graveaccent);
-	var asterisk = '\u0003';
-	input = input.replaceAll('\\*', asterisk);
-	var underscore = '\u0004';
-	input = input.replaceAll('\\_', underscore);
-	var dash = '\u0005';
-	input = input.replaceAll('\\-', dash);
-	var plus = '\u0006';
-	input = input.replaceAll('\\+', plus);
-	var dot = '\u000e';
-	input = input.replaceAll('\\.', dot);
-	var hash = '\u000f';
-	input = input.replaceAll('\\#', hash);
-	var gt = '\u0010';
-	input = input.replaceAll('\\>', gt);
-	var paren = '\u0011';
-	input = input.replaceAll('\\(', paren);
-	var cparen = '\u0012';
-	input = input.replaceAll('\\)', cparen);
-	var carrot = '\u0013';
-	input = input.replaceAll('\\^', carrot);
-	var dollar = '\u0014';
-	input = input.replaceAll('\\$', dollar);
-	var open = [];
-	return input.split('`').map(function(val, i, arr) {
-		if (i % 2) return '<code>' + html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt, paren, cparen, carrot, dollar], ['\\\\', '\\`', '\\*', '\\_', '\\-', '\\+', '\\.', '\\#', '\\>', '\\(', '\\)', '\\^'])) + '</code>';
-		var parsed = val
-			.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
-				return '![' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
-			})
-			.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, function(match, p1, p2) {
-				return '[' + markdownEscape(p1) + '](' + markdownEscape(p2) + ')';
-			})
-			.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1, p2) {
-				return markdownEscape(p1) + markdownEscape(p2);
-			})
-			.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, function(match, p1) {
-				return markdownEscape(p1);
-			})
-			.replaceAll('**', '_')
-		.split('*').map(function(val, i, arr) {
-			var parsed = val.split('_').map(function(val, i, arr) {
-				var parsed = val.split('---').map(function(val, i, arr) {
-					var parsed = val.split('+++').map(function(val, i, arr) {
-						var parsed = html(val.replaceAll([backslash, graveaccent, asterisk, underscore, dash, plus, dot, hash, gt], ['\\', '`', '*', '_', '-', '+', '.', '#', '>']), true)
-							.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '<img src="$1" />')
-							.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/, '$1<img src="$2" />')
-							.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
-							.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'))
-							.replace(/\^(\w+)/g, '<sup>$1</sup>');
-						if (i % 2) {
-							var p = open.indexOf('</ins>');
-							if (p != -1) {
-								open.splice(p, 1);
-								return '</ins>' + parsed;
-							} else if (arr[i + 1] === undefined) {
-								open.push('</ins>');
-								return '<ins>' + parsed;
-							}
-						}
-						return i % 2 ? '<ins>' + parsed + '</ins>' : parsed;
-					}).join('');
-					if (i % 2) {
-						var p = open.indexOf('</del>');
-						if (p != -1) {
-							open.splice(p, 1);
-							return '</del>' + parsed;
-						} else if (arr[i + 1] === undefined) {
-							open.push('</del>');
-							return '<del>' + parsed;
-						}
-					}
-					return i % 2 ? '<del>' + parsed + '</del>' : parsed;
-				}).join('');
-				if (i % 2) {
-					var p = open.indexOf('</strong>');
-					if (p != -1) {
-						open.splice(p, 1);
-						return '</strong>' + parsed;
-					} else if (arr[i + 1] === undefined) {
-						open.push('</strong>');
-						return '<strong>' + parsed;
-					}
-				}
-				return i % 2 ? '<strong>' + parsed + '</strong>' : parsed;
-			}).join('');
-			if (i % 2) {
-				var p = open.indexOf('</em>');
-				if (p != -1) {
-					open.splice(p, 1);
-					return '</em>' + parsed;
-				} else if (arr[i + 1] === undefined) {
-					open.push('</em>');
-					return '<em>' + parsed;
-				}
+	var output = '',
+		span = '',
+		current = [],
+		tags = {
+			'`': 'code',
+			'``': 'samp',
+			'*': 'em',
+			'**': 'strong',
+			'_': 'i',
+			'–––': 's',
+			'+++': 'ins',
+			'---': 'del',
+			'[c]': 'cite',
+			'[m]': 'mark',
+			'[u]': 'u',
+			'[v]': 'var',
+			'::': 'kbd',
+			'"': 'q'
+		},
+		stags = {
+			sup: {
+				start: '^(',
+				end: ')^'
+			},
+			sub: {
+				start: 'v(',
+				end: ')v'
+			},
+			small: {
+				start: '[sm]',
+				end: '[/sm]'
 			}
-			return i % 2 ? '<em>' + parsed + '</em>' : parsed;
-		}).join('');
-		return parsed.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\$\(([^)]+)\)/g, '<sub>$1</sub>').replaceAll([paren, cparen, carrot, dollar], ['(', ')', '^', '$']);
-	}).join('') + open.join('');
+		};
+	outer: for (var i = 0; i < input.length; i++) {
+		if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
+			if (input[i] == '\\') span += input[++i].replace('^', '\u0001').replace('[', '\u0002');
+			else {
+				for (var l = 3; l > 0; l--) {
+					if (tags[input.substr(i, l)]) {
+						output += spanMarkdown(span);
+						span = '';
+						if (current[current.length - 1] == tags[input.substr(i, l)]) output += '</' + current.pop() + '>';
+						else {
+							if (current.indexOf(tags[input.substr(i, l)]) != -1) warning('Illegal nesting of "' + input.substr(i, l) + '"');
+							output += '<' + tags[input.substr(i, l)] + '>';
+							current.push(tags[input.substr(i, l)]);
+						}
+						i += l - 1;
+						continue outer;
+					}
+				}
+				for (var j in stags) {
+					for (var l = 5; l > 0; l--) {
+						if (stags[j].start == input.substr(i, l)) {
+							output += spanMarkdown(span) + '<' + j + '>';
+							span = '';
+							current.push(stags[j].end);
+							i += l - 1;
+							continue outer;
+						} else if (stags[j].end == input.substr(i, l)) {
+							if (current[current.length - 1] == stags[j].end) {
+								output += spanMarkdown(span) + '</' + j + '>';
+								span = '';
+								current.pop();
+								i += l - 1;
+								continue outer;
+							} else warning('Illegal close tag "' + stags[j].end + '" found');
+						}
+					}
+				}
+				span += input[i];
+			}
+		} else if (current[current.length - 1] == 'code' && input[i] == '`') {
+			current.pop();
+			output += '</code>';
+		} else if (current[current.length - 1] == 'samp' && input.substr(i, 2) == '``') {
+			current.pop();
+			output += '</samp>';
+			i++;
+		} else output += html(input[i]);
+	}
+	output += spanMarkdown(span);
+	if (current.length) warning('Unclosed tags. <' + current.join('>, <') + '>');
+	for (var i = current.length - 1; i >= 0; i--) output += '</' + current[i] + '>';
+	return output;
 }
 function markdown(input) {
-	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}) /)) return inlineMarkdown(input);
+	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 3) != '>! ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}|cite\[\d+\]:) /) && !input.match(/^[-–—]{12,}$/)) return inlineMarkdown(input);
 	var blockquote = '',
 		ul = '',
 		ol = '',
 		li = '',
-		code = '';
+		code = '',
+		i;
 	return input.split('\n').map(function(val, i, arr) {
 		if (!val) return '';
 		var f;
@@ -147,6 +151,16 @@ function markdown(input) {
 				var arg = blockquote + val;
 				blockquote = '';
 				return '<blockquote>' + markdown(arg) + '</blockquote>';
+			}
+		} else if (val.substr(0, 3) == '>! ') {
+			val = val.substr(3);
+			if (arr[i + 1] && arr[i + 1].substr(0, 3) == '>! ') {
+				blockquote += val + '\n';
+				return '';
+			} else {
+				var arg = blockquote + val;
+				blockquote = '';
+				return '<blockquote class="spoiler">' + markdown(arg) + '</blockquote>';
 			}
 		} else if (val.substr(0, 2) == '- ' || val.substr(0, 2) == '* ') {
 			if (!ul) ul = '<ul>';
@@ -226,9 +240,136 @@ function markdown(input) {
 			return '';
 		} else if ((f = val.match(/^#{1,6} /)) && (f = f[0].length - 1)) {
 			return '<h' + f + '>' + inlineMarkdown(val.substr(f + 1)) + '</h' + f + '>';
+		} else if (val.match(/^[-–—]{12,}$/)) {
+			return '<hr />';
+		} else if (i = val.match(/^cite\[(\d+)\]: /)) {
+			return '<div><sup class="reference-list">' + i[1] + '</sup> ' + inlineMarkdown(val.substr(i[0].length)) + '</div>';
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
 }
+
+HTMLTextAreaElement.prototype.mdValidate = function(correct) {
+	var i = mdWarnings.length;
+	markdown(this.value);
+	var preverr = this.previousSibling && this.previousSibling.classList.contains('md-err') ? this.previousSibling : null,
+		err = mdWarnings[i];
+	this.lastErrored = err && correct;
+	if (err && (correct || preverr || this.value.substr(0, this.selectionEnd || Infinity).match(/\s$/))) {
+		if (preverr) {
+			if (preverr.firstChild.nodeValue == err) {
+				if (this.lastErrored && err && correct) {
+					var input = this.value,
+						output = '',
+						span = '',
+						current = [],
+						tags = {
+							'`': 'code',
+							'``': 'samp',
+							'*': 'em',
+							'**': 'strong',
+							'_': 'i',
+							'–––': 's',
+							'+++': 'ins',
+							'---': 'del',
+							'[c]': 'cite',
+							'[m]': 'mark',
+							'[u]': 'u',
+							'[v]': 'var',
+							'::': 'kbd',
+							'"': 'q'
+						},
+						stags = {
+							sup: {
+								start: '^(',
+								end: ')^'
+							},
+							sub: {
+								start: 'v(',
+								end: ')v'
+							},
+							small: {
+								start: '[sm]',
+								end: '[/sm]'
+							}
+						};
+					outer: for (var i = 0; i < input.length; i++) {
+						if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
+							if (input[i] == '\\') span += input[++i];
+							else {
+								for (var l = 4; l >= 0; l--) {
+									if (tags[input.substr(i, l)]) {
+										output += span;
+										span = '';
+										if (['code', 'samp'].indexOf(tags[input.substr(i, l)]) == -1) output += '\\' + input.substr(i, l);
+										else if (current[current.length - 1] == tags[input.substr(i, l)]) {
+											current.pop();
+											output += '\\' + input.substr(i, l);
+										} else {
+											output += '\\' + input.substr(i, l);
+											current.push(tags[input.substr(i, l)]);
+										}
+										i += l - 1;
+										continue outer;
+									}
+								}
+								for (var j in stags) {
+									for (var l = 5; l >= 0; l--) {
+										if (stags[j].start == input.substr(i, l)) {
+											output += span + '\\' + input.substr(i, l);
+											span = '';
+											i += l - 1;
+											continue outer;
+										} else if (stags[j].end == input.substr(i, l)) {
+											if (current[current.length - 1] == stags[j].end) {
+												output += span + '\\' + input.substr(i, l);
+												span = '';
+												i += l - 1;
+												continue outer;
+											}
+										}
+									}
+								}
+								span += input[i];
+							}
+						} else if (current[current.length - 1] == 'code' && input[i] == '`') {
+							current.pop();
+							output += '`';
+						} else if (current[current.length - 1] == 'samp' && input.substr(i, 2) == '``') {
+							current.pop();
+							output += '``';
+							i++;
+						} else output += input[i];
+					}
+					output += span;
+					if (current[current.length - 1] == 'code' && input[i] == '`') {
+						output += '`';
+					} else if (current[current.length - 1] == 'samp' && input.substr(i, 2) == '``') {
+						output += '``';
+					}
+					this.value = output;				
+					return true;
+				}
+				return err;
+			}
+			preverr.parentNode.removeChild(preverr);
+		}
+		var span = document.createElement('span');
+		span.classList.add('md-err');
+		span.appendChild(document.createTextNode(err));
+		this.parentNode.insertBefore(span, this);
+	} else if (preverr) preverr.parentNode.removeChild(preverr);
+	return err;
+};
+
+function mdValidateBody() {
+	setTimeout(function(e) {
+		e.mdValidate();
+	}, 0, document.activeElement);
+}
+
+addEventListener('keyup', mdValidateBody);
+addEventListener('keydown', mdValidateBody);
+addEventListener('keypress', mdValidateBody);
 
 var noPageOverflow = noPageOverflow || false,
 	pageOverflowMobile = pageOverflowMobile || false,

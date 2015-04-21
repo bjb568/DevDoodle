@@ -586,7 +586,7 @@ $textarea
 		ta.addEventListener('keypress', pingsugs);
 	};
 	function send() {
-		if (!ta.value) return;
+		if (!ta.value || ta.mdValidate(true)) return;
 		socket.send(JSON.stringify({event: 'post', body: ta.value}));
 		location.hash = '';
 		ta.value = '';
@@ -594,6 +594,7 @@ $textarea
 		ta.focus();
 	}
 	function edit() {
+		if (!ta.value || ta.mdValidate(true)) return;
 		socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
 		document.getElementsByClassName('editing')[0].classList.remove('editing');
 		ta.hists = ta.hists || {};
