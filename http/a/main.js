@@ -82,7 +82,7 @@ function inlineMarkdown(input) {
 		if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
 			if (input[i] == '\\') span += input[++i].replace('^', '\u0001').replace('[', '\u0002');
 			else {
-				for (var l = 4; l >= 0; l--) {
+				for (var l = 3; l > 0; l--) {
 					if (tags[input.substr(i, l)]) {
 						output += spanMarkdown(span);
 						span = '';
@@ -97,7 +97,7 @@ function inlineMarkdown(input) {
 					}
 				}
 				for (var j in stags) {
-					for (var l = 5; l >= 0; l--) {
+					for (var l = 5; l > 0; l--) {
 						if (stags[j].start == input.substr(i, l)) {
 							output += spanMarkdown(span) + '<' + j + '>';
 							span = '';
@@ -111,9 +111,7 @@ function inlineMarkdown(input) {
 								current.pop();
 								i += l - 1;
 								continue outer;
-							} else {
-								warning('Illegal close tag "' + stags[j].end + '" found');
-							}
+							} else warning('Illegal close tag "' + stags[j].end + '" found');
 						}
 					}
 				}
