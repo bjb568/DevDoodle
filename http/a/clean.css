@@ -67,7 +67,7 @@ iframe:not([seamless]) { background: #fff }
 .disabled, a.disabled:hover, a.disabled:active { color: #666 }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
-small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { text-decoration: none }
 small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
 .large { font-size: 1.2em }
@@ -255,19 +255,22 @@ h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
 	font-size: 1.1em;
 }
+
+
+#nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { text-decoration: none }
 a, .ctrl {
-	color: #eee;
-	font-weight: bold;
-	text-decoration: none;
-	transition: color .2s;
+	color: #fff;
+	transition: color .1s;
 	cursor: pointer;
 }
-a:hover, .ctrl:hover { color: #4ff }
+a:visited { color: #ccc; }
+a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }
 .user a { color: #000 }
 .user a:hover { color: #15f }
 .user a:active { color: #02d }
-a.blk:hover { background: #222 }
+a.blk { font-weight: bold }
+a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
 p a, .comment a { text-decoration: underline }
 .c-sig a, .ctrls a { text-decoration: none }
