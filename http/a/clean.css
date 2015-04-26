@@ -499,3 +499,14 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
+@media (min-width: 1500px) {
+	#content:nth-child(2):nth-last-child(3) {
+		float: left;
+		width: calc(-94px + 84%);
+	}
+	#sidebar {
+		float: right;
+		width: calc(88px + 16%);
+		margin: 6px 6px 6px 0;
+	}
+}
