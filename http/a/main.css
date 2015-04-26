@@ -64,7 +64,9 @@ code { padding: 2px; }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
 .disabled, a.disabled:hover, a.disabled:active { color: #999 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
-small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
+abbr { border-bottom: 1px dashed #222 }
+.reference { color: #080 }
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
