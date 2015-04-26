@@ -1,76 +1,96 @@
 <h1>Formatting Help</h1>
 <p>Our <a href="https://github.com/bjb568/Markdown-HTML" title="Github repository">markdown-inspired formatting parser</a> allows you to add formatting to your post such as <em>emphasis</em> and <code>code</code>.</p>
-<h2>Inline formatting</h2>
-<p>Inline formatting (formatting that won't cause a line break) is written as a formatting sequence followed by the affected text followed by the same formatting sequence.</p>
+<h2 id="inline">Inline formatting <a class="grey" href="#inline">#</a></h2>
+<p>Inline formatting consist of <em>simple tags</em>, <em>special tags</em>, and spans.</p>
+<h3 id="simple-tags">Simple tags <a class="grey" href="#simple-tags">#</a></h3>
+<p>Simple tags consist of a markdown character sequence, a text span, then the same sequence. They can be nested in any other tag except themselves. Text within a simple tag is parsed with the exception of code and samp tags.</p>
+<div class="umar clearfix">
+	<table>
+		<thead>
+			<tr><th>M↓</th> <th>HTML</th></tr>
+		</thead>
+		<tbody>
+			<tr><td><code>`</code></td> <td><code>code</code></td></tr>
+			<tr><td><code>``</code></td> <td><code>samp</code></td></tr>
+			<tr><td><code>*</code></td> <td><code>em</code></td></tr>
+			<tr><td><code>**</code></td> <td><code>strong</code></td></tr>
+			<tr><td><code>_</code></td> <td><code>i</code></td></tr>
+			<tr><td><code>–––</code></td> <td><code>s</code></td></tr>
+			<tr><td><code>+++</code></td> <td><code>ins</code></td></tr>
+			<tr><td><code>---</code></td> <td><code>del</code></td></tr>
+			<tr><td><code>[c]</code></td> <td><code>cite</code></td></tr>
+			<tr><td><code>[m]</code></td> <td><code>mark</code></td></tr>
+			<tr><td><code>[u]</code></td> <td><code>u</code></td></tr>
+			<tr><td><code>[v]</code></td> <td><code>var</code></td></tr>
+			<tr><td><code>::</code></td> <td><code>kbd</code></td></tr>
+			<tr><td><code>"</code></td> <td><code>q</code></td></tr>
+		</tbody>
+	</table>
+	<div>
+		<h4>Example: strong emphasis</h4>
+		<code class="blk">**I** prefer green elephants, but **he** prefers pink ones.</code>
+		<blockquote><strong>I</strong> prefer green elephants, but <strong>he</strong> prefers pink ones.</blockquote>
+		<h4 id="esc">Escapement <a class="grey" href="#esc">#</a></h4>
+		<p>To write literal formatting characters, for example the literal string "3*4*5 = 60", escape the parsed characters with a backslash (<code>3\*4\*5 = 60</code>). To write a literal backslash, escape it with another backslash.</p>
+		<code class="blk">*emphasis* \*just asterisks\*</code>
+		<blockquote><em>emphasis</em> *just asterisks*</blockquote>
+	</div>
+</div>
+<h3 id="special-tags">Special tags <a class="grey" href="#special-tags">#</a></h3>
+<p>Special tags consist of a starting markdown character sequence, a text span, then an ending character sequence. They can be nested in themselves and any other tag. Text within a special tag is parsed.</p>
+<div class="umar clearfix">
+	<table>
+		<thead>
+			<tr><th>Start</th> <th>End</th> <th>HTML</th></tr>
+		</thead>
+		<tbody>
+			<tr><td><code>^(</code></td> <td><code>)^</code></td> <td><code>sup</code></td></tr>
+			<tr><td><code>v(</code></td> <td><code>)v</code></td> <td><code>sub</code></td></tr>
+			<tr><td><code>[sm]</code></td> <td><code>[/sm]</code></td> <td><code>small</code></td></tr>
+		</tbody>
+	</table>
+	<div>
+		<h4>Example: small text</h4>
+		<code class="blk">Free unicorns! [sm]may eat your daisies[/sm].</code>
+		<blockquote>Free unicorns! <small>may eat your daisies</small>.</blockquote>
+	</div>
+</div>
+<h3 id="text-spans">Text spans <a class="grey" href="#text-spans">#</a></h3>
+<p>Text spans are the bits of text between tags. They have markdown features of their own.</p>
+<ul>
+	<li>
+		<h4 id="links" class="title">Links <a class="grey" href="#links">#</a></h4>
+		<p>Bare URLs with http:// or https:// are automatically turned into a link:</p>
+		<code class="blk">http://example.com</code>
+		<blockquote><a href="http://example.com">example.com</a></blockquote>
+		<p>But it is preferable to use a link title:</p>
+		<code class="blk">[Example title](http://example.com)</code>
+		<blockquote><a href="http://example.com">Example title</a></blockquote>
+	</li>
+	<li>
+		<h4 id="images" class="title">Images <a class="grey" href="#images">#</a></h4>
+		<p>Embedded mages have similar syntax as links, just with an <code>!</code>. Alt text is shown when images are disabled or otherwise unavailable.</p>
+		<code class="blk">![Alt text](http://devdoodle.net/a/logo1square.png)</code>
+		<blockquote><img src="http://devdoodle.net/a/logo1square.png" alt="Alt text" width="100" /></blockquote>
+	</li>
+	<li>
+		<h4 id="abbrs" class="title">Abbreviations <a class="grey" href="#abbrs">#</a></h4>
+		<p>An expantion of an abbreviation is shown as hover text.</p>
+		<code class="blk">[HTML|Hyper Text Markup Language] is a markup language used for web pages.</code>
+		<blockquote><abbr title="Hyper Text Markup Language">HTML</abbr> is a markup language used for web pages.</blockquote>
+	</li>
+	<li>
+		<h4 id="refs" class="title">References <a class="grey" href="#refs">#</a></h4>
+		<p>A reference consists of a number and optional explanatory hover text. The number corresponds to the reference in a <a href="#reflist">reference list</a>, usually placed at the bottom of a post.</p>
+		<code class="blk">Pigs can't fly[[1]Page 42, start of paragraph 2].</code>
+		<blockquote><div id="output">Pigs can't fly<sup class="reference" title="Page 42, start of paragraph 2">[1]</sup>.</div></blockquote>
+	</li>
+</ul>
+<h2 id="block">Block formatting <a class="grey" href="#block">#</a></h2>
+<p>Block formatting controls the type of block a line is in. By default, lines are separated into paragraphs.</p>
 <section>
-	<h3>Links</h3>
-	<p>Bare URLs with http:// or https:// are automatically turned into a link:</p>
-	<code class="blk">http://example.com</code>
-	<blockquote><a href="http://example.com">example.com</a></blockquote>
-	<p>But it is preferable to use a link title:</p>
-	<code class="blk">[Example title](http://example.com)</code>
-	<blockquote><a href="http://example.com">Example title</a></blockquote>
-</section>
-<section>
-	<h3>Images</h3>
-	<p>Images have similar syntax as links, just with an <code>!</code>. Alt text is shown when images are disabled or otherwise unavailable.</p>
-	<code class="blk">![Alt text](http://devdoodle.net/a/logo1square.png)</code>
-	<blockquote><img src="http://devdoodle.net/a/logo1square.png" alt="Alt text" width="100" /></blockquote>
-</section>
-<section>
-	<h3>Emphasis</h3>
-	<code class="blk">Use an asterisk to *emphasize* text that is slightly more important or is stressed in speech.</code>
-	<blockquote>Use an asterisk to <em>emphasize</em> text that is slightly more important or is stressed in speech.</blockquote>
-</section>
-<section>
-	<h3>Strong Emphasis</h3>
-	<code class="blk">Use an underscore to add _strong emphasis_ to text that is more important.</code>
-	<blockquote>Use an underscore to add <strong>strong emphasis</strong> to text that is more important.</blockquote>
-</section>
-<section>
-	<h3>Deleted Text</h3>
-	<code class="blk">Use 3 dashes to indicate ---deleted text--- which was once, but is no longer relevant, useful, or accurate.</code>
-	<blockquote>Use 3 dashes to indicate <del>deleted text</del> which was once, but is no longer relevant, useful, or accurate.</blockquote>
-</section>
-<section>
-	<h3>Inserted Text</h3>
-	<code class="blk">Use 3 plusses to indicate +++inserted text+++ which was added later to the post, especially if it replaced deleted text.</code>
-	<blockquote>Use 3 plusses to indicate <ins>inserted text</ins> which was added later to the post, especially if it replaced deleted text.</blockquote>
-</section>
-<section>
-	<h3>Inline Code <small>(not parsed)</small></h3>
-	<code class="blk">To indicate `code`, enclose it in backticks.</code>
-	<blockquote>To indicate <code>code</code>, enclose it in backticks.</blockquote>
-</section>
-<section>
-	<h3>Nesting</h3>
-	<p>You can combine multiple formatting commands, placing one inside another. This is called <em>nesting</em>.</p>
-	<code class="blk">---deleted text with *emphasis* inside---</code>
-	<blockquote><del>deleted text with <em>emphasis</em> inside</del></blockquote>
-</section>
-<section>
-	<h3>Escapement</h3>
-	<p>To write literal control characters, for example the literal string "3*4*5 = 60", escape the parsed characters with a backslash (<code>3\*4\*5 = 60</code>). To write a literal backslash, escape it with another backslash.</p>
-	<code class="blk">*emphasis* \*just asterisks\*</code>
-	<blockquote><em>emphasis</em> *just asterisks*</blockquote>
-</section>
-<section>
-	<h3>Super/sub-script</h3>
-	<p>For convenience, a superscripted string consisting of just word characters (alphanumeric or underscore (<code>_</code>)) can be written with just a carrot.</p>
-	<code class="blk">5^2 = 25</code>
-	<blockquote>5<sup>2</sup> = 25</blockquote>
-	<p>Otherwise parenthesis are needed.</p>
-	<code class="blk">3^(3^(3)) = 7625597484987</code>
-	<blockquote>3<sup>3<sup>3</sup></sup> = 7625597484987</blockquote>
-	<p>A dollar sign (<code>$</code>) is used for subscript.</p>
-	<code class="blk">a$(n) = 4n</code>
-	<blockquote>a<sub>n</sub> = 4n</blockquote>
-</section>
-<h2>Block formatting</h2>
-<p>Block formatting is the control of the type of block a line is placed in. By default, every line is put into a paragraph block.</p>
-<section>
-	<h3>Blockquote</h3>
-	<p>Blockquotes can contain any material a post can.</p>
+	<h3 id="blockquote">Blockquote <a class="grey" href="#blockquote">#</a></h3>
+	<p>Blockquotes can contain anything a post can. Each line in a blockquote starts with <code>> </code>.</p>
 	<code class="blk">> Blockquote
 > > Blockquote inside a blockquote</code>
 	<blockquote>
@@ -81,7 +101,7 @@
 	</blockquote>
 </section>
 <section>
-	<h3>Unordered list</h3>
+	<h3 id="ul">Unordered list <a class="grey" href="#ul">#</a></h3>
 	<p>Unordered lists items are started with a dash (<code>- </code>) or an asterisk (<code>* </code>). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
 	<code class="blk">* Item 1
 - Item 2
@@ -97,7 +117,7 @@
 	</blockquote>
 </section>
 <section>
-	<h3>Ordered list</h3>
+	<h3 id="ol">Ordered list <a class="grey" href="#ol">#</a></h3>
 	<p>Ordered lists are like unordered lists, except that items have a defined order and are usually rendered with numbers prefixed to list items. Items are started with a sequence of one or more digits (0-9) or a single letter (A-Z, case insensitive) followed by either <code>)</code> or <code>.</code> (period character). Additional lines inside a list item must be indented by 4 spaces or a tab character.</p>
 	<code class="blk">1. Item 1
 b. Item 2
@@ -117,7 +137,7 @@ C) Item 3
 	</blockquote>
 </section>
 <section>
-	<h3>Block code <small>(not parsed)</small></h3>
+	<h3 id="blockcode">Block code <a class="grey" href="#blockcode">#</a></h3>
 	<p>Lines indented by 4 spaces or a tab character (or more depending on nesting in lists) are not parsed and are put in a code block.</p>
 	<code class="blk">    function multiply3(a, b, c) {
         return a * b * c;
@@ -128,3 +148,56 @@ C) Item 3
 }</code>
 	</blockquote>
 </section>
+<section>
+	<h3 id="header">Headers <a class="grey" href="#header">#</a></h3>
+	<p>6 levels of headers can be created with 1-6 <code>#</code>s followed by a space.</p>
+	<code class="blk"># Level 1 header
+## Level 2 header
+### Level 3 header</code>
+	<blockquote>
+		<h1>Level 1 header</h1>
+		<h2>Level 2 header</h2>
+		<h3>Level 3 header</h3>
+	</blockquote>
+</section>
+<section>
+	<h3 id="hr">Horizontal rule <a class="grey" href="#hr">#</a></h3>
+	<p>A horizontal rule separates 2 sections of a post. It can be created with 12 or more <code>-</code> (dash) or <code>–</code> (long dash).</p>
+	<code class="blk">Section A.
+------------
+Section B.</code>
+	<blockquote>
+		<p>Section A.</p>
+		<hr />
+		<p>Section B.</p>
+	</blockquote>
+</section>
+<section>
+	<h3 id="reflist">Reference List <a class="grey" href="#reflist">#</a></h3>
+	<p>A reference list, typically at the end of a post, lists the sources and references used in the post. Each numbered item can be refernced as an <a href="#refs">inline reference</a>. Items usually include the <code>[c]</code> <i>cite</i> element.</p>
+	<code class="blk">All giraffes are giraffes[[1]By an inductive argument described on page 144].
+
+cite[1]: Chapter 2 of [c][example document](http://example.com)[c].</code>
+	<blockquote>
+		<p>All giraffes are giraffes<sup class="reference" title="By an inductive argument described on page 144">[1]</sup>.</p>
+		<div><sup class="reference-list">1</sup> Chapter 2 of <cite><a href="http://example.com">example document</a></cite>.</div>
+	</blockquote>
+</section>
+<style>
+	section { padding: 6px }
+	:not(:hover) > a.grey { display: none }
+	table {
+		background: rgba(255, 255, 192, 0.5);
+		padding: 4px;
+		margin: 6px 8px 6px 32px;
+	}
+	table code {
+		display: inline-block;
+		min-width: 5em;
+		text-align: center;
+	}
+	@media (min-width: 550px) {
+		table { float: left }
+		table ~ div { overflow: hidden }
+	}
+</style>
