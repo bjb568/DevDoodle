@@ -63,8 +63,10 @@ code { padding: 2px; }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
 .disabled, a.disabled:hover, a.disabled:active { color: #999 }
-small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
-small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { text-decoration: none }
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
+abbr { border-bottom: 1px dashed #222 }
+.reference { color: #080 }
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
@@ -246,18 +248,21 @@ h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
 	font-size: 1.1em;
 }
+#nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { text-decoration: none }
 a, .ctrl {
 	color: #000;
-	font-weight: bold;
-	text-decoration: none;
-	transition: color .2s;
+	transition: color .1s;
 	cursor: pointer;
 }
+a:visited { color: #444 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
-a.blk:hover { background: rgba(255, 255, 255, .2) }
-a.blk:hover:not(:active) { color: #002 }
-p a, .comment a { text-decoration: underline }
+a.blk {
+	color: #000;
+	font-weight: bold;
+}
+a.blk:hover, a.blk:active { background: rgba(255, 255, 255, .2) }
+a.blk:active { color: #00f }
 .c-sig a, .ctrls a { text-decoration: none }
 input[type=text], input[type=search], input[type=password], textarea {
 	font-family: helvetica;

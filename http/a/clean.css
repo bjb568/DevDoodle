@@ -20,12 +20,12 @@ body {
 }
 @keyframes target { 
 	0%, 30% {
-		background: #f70;
+		background: #fc0;
 	}
 }
 @-webkit-keyframes target { 
 	0%, 30% {
-		background: #f70;
+		background: #fc0;
 	}
 }
 :not(.target):target {
@@ -59,23 +59,24 @@ body {
 .scrly, #sidebar { overflow-y: auto }
 .br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, section, article { background: #333 }
-code { padding: 2px }
 .shglt { background: #444 }
-code, iframe:not([seamless]) { background: #fff }
+iframe:not([seamless]) { background: #fff }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #aaa }
 .disabled, a.disabled:hover, a.disabled:active { color: #666 }
-small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { font-weight: normal }
+abbr { border-bottom: 1px dashed #222 }
+.reference { color: #080 }
+small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer { text-decoration: none }
 small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
-em {
-	color: #f96;
-	font-style: normal;
+code {
+	padding: 2px;
+	color: #fff;
+	background: #333;
 }
-code { color: #000 }
 .ctrls {
 	top: 100%; right: -1px;
 	z-index: 1;
@@ -115,6 +116,27 @@ code.blk {
 	word-break: normal;
 	hyphens: none;
 	-webkit-hyphens: none;
+}
+.md-err {
+	position: absolute;
+	display: inline-block;
+	margin-top: -1.3em;
+	background: #f00;
+	color: #fff;
+	padding: 2px 8px;
+	box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+	animation: fadein 0.5s;
+	-webkit-animation: fadein 0.5s;
+}
+@keyframes fadein { 
+	from {
+		opacity: 0;
+	}
+}
+@-webkit-keyframes fadein { 
+	from {
+		opacity: 0;
+	}
 }
 h1 small, h2 small { font-size: .85rem }
 h1 small { margin: .5em }
@@ -159,6 +181,7 @@ fieldset {
 	height: calc(100% - 4px);
 }
 .program:nth-child(n+6) { display: none }
+.lim-programs .program:nth-child(n+4) { display: none }
 @media (min-width: 500px) {
 	.program { max-width: 49% }
 	.program:nth-child(-n+7) { display: inline-block }
@@ -232,19 +255,22 @@ h3, h2.title, article h2, article article h1 {
 	margin-top: .5em;
 	font-size: 1.1em;
 }
+
+
+#nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { text-decoration: none }
 a, .ctrl {
-	color: #eee;
-	font-weight: bold;
-	text-decoration: none;
-	transition: color .2s;
+	color: #fff;
+	transition: color .1s;
 	cursor: pointer;
 }
-a:hover, .ctrl:hover { color: #4ff }
+a:visited { color: #ccc; }
+a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }
 .user a { color: #000 }
 .user a:hover { color: #15f }
 .user a:active { color: #02d }
-a.blk:hover { background: #222 }
+a.blk { font-weight: bold }
+a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
 p a, .comment a { text-decoration: underline }
 .c-sig a, .ctrls a { text-decoration: none }
@@ -383,6 +409,12 @@ textarea {
 	.sidebar.nonvital { display: none }
 	.sidebar { margin-top: 8px }
 }
+@media (max-width: 600px) {
+	body { font-size: 0.95em }
+}
+@media (max-width: 400px) {
+	body { font-size: 0.9em }
+}
 aside.rit { background: rgba(255, 255, 100, 0.5) }
 @media (min-width: 701px) {
 	.half { float: left }
@@ -466,4 +498,15 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#nav nav:nth-child(4) { left: calc(14.125rem + 11px) }
 	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
+}
+@media (min-width: 1500px) {
+	#content:nth-child(2):nth-last-child(3) {
+		float: left;
+		width: calc(-94px + 84%);
+	}
+	#sidebar {
+		float: right;
+		width: calc(88px + 16%);
+		margin: 6px 6px 6px 0;
+	}
 }
