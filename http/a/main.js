@@ -525,9 +525,13 @@ addEventListener('DOMContentLoaded', function() {
 	minHeight();
 });
 
-request('/api/notif', function(res) {
-	if (res) document.getElementById('nav').children[7].classList.add('unread');
-	else document.getElementById('nav').children[7].classList.remove('unread');
+document.addEventListener('visibilitychange', function() {
+	if (!document.hidden) {
+		request('/api/notif', function(res) {
+			if (res) document.getElementById('nav').children[7].classList.add('unread');
+			else document.getElementById('nav').children[7].classList.remove('unread');
+		});
+	}
 });
 
 if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
