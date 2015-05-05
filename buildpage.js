@@ -392,7 +392,7 @@ http.createServer(function(req,	res) {
 			res.write('<h1>Notifications</h1>\n');
 			res.write('<ul id="notifs">\n');
 			for (var i = user.notifs.length - 1; i >= 0; i--) res.write(
-				'\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + user.notifs[i].body + '</blockquote>' +
+				'\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + markdown(user.notifs[i].body) + '</blockquote>' +
 				'-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n'
 			);
 			res.write('</ul>\n');
