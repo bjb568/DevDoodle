@@ -528,8 +528,7 @@ addEventListener('DOMContentLoaded', function() {
 document.addEventListener('visibilitychange', function() {
 	if (!document.hidden) {
 		request('/api/notif', function(res) {
-			if (res) document.getElementById('nav').children[7].classList.add('unread');
-			else document.getElementById('nav').children[7].classList.remove('unread');
+			document.getElementById('nav').children[7].classList.toggle('unread', res);
 		});
 	}
 });
