@@ -594,7 +594,7 @@ http.createServer(function(req,	res) {
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/(\d+)/)) {
+				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)/)) {
 					dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 						if (err) throw err;
 						if (!doc) {
