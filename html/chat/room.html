@@ -428,7 +428,7 @@ $textarea
 			if (!isNaN(hash)) {
 				location.hash = '';
 				location.hash = '#' + hash;
-			};
+			}
 			if (!document.getElementById('ts').hidden) tsMode = true;
 		} else if (data.event == 'info-update') {
 			document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
@@ -445,7 +445,34 @@ $textarea
 	socket.onclose = function() {
 		if (confirm('Connection error. Reload?')) location.reload();
 	};
+	function pingsugs() {
+		setTimeout(function() {
+			var before = ta.value.substr(0, ta.selectionStart),
+				str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
+				list = document.getElementById('pingsug'),
+				c;
+			while (c = list.firstChild) list.removeChild(c);
+			if (str[0] == '@') {
+				for (var i = users.length - 1; i >= 0; i--) {
+					if (users[i].substr(0, str.length - 1) == str.substr(1)) {
+						var span = document.createElement('span');
+						span.appendChild(document.createTextNode(users[i]));
+						span.onclick = function() {
+							var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
+							ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
+							ta.focus();
+							ta.selectionEnd = ta.selectionStart = before + this.textContent.length;
+						};
+						list.appendChild(span);
+					}
+				}
+			}
+		}, 0);
+	}
 	if (ta) {
+		ta.addEventListener('keydown', pingsugs);
+		ta.addEventListener('keyup', pingsugs);
+		ta.addEventListener('keypress', pingsugs);
 		ta.onkeypress = ta.onkeydown = function(e) {
 			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();
@@ -556,35 +583,8 @@ $textarea
 				this.value = this.value.substr(0, before) + list.firstChild.textContent + ' ' + this.value.substr(this.selectionStart);
 				this.selectionEnd = this.selectionStart = before + list.firstChild.textContent.length + 1;
 			}
-		}
-		function pingsugs() {
-			setTimeout(function() {
-				var before = ta.value.substr(0, ta.selectionStart),
-					str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
-					list = document.getElementById('pingsug'),
-					c;
-				while (c = list.firstChild) list.removeChild(c);
-				if (str[0] == '@') {
-					for (var i = users.length - 1; i >= 0; i--) {
-						if (users[i].substr(0, str.length - 1) == str.substr(1)) {
-							var span = document.createElement('span');
-							span.appendChild(document.createTextNode(users[i]));
-							span.onclick = function() {
-								var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
-								ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
-								ta.focus();
-								ta.selectionEnd = ta.selectionStart = before + this.textContent.length;
-							};
-							list.appendChild(span);
-						}
-					}
-				}
-			}, 0);
-		}
-		ta.addEventListener('keydown', pingsugs);
-		ta.addEventListener('keyup', pingsugs);
-		ta.addEventListener('keypress', pingsugs);
-	};
+		};
+	}
 	function send() {
 		if (!ta.value || ta.mdValidate(true)) return;
 		socket.send(JSON.stringify({event: 'post', body: ta.value}));

@@ -279,7 +279,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit" id="submit" class="umar">Submit</button>\n');
 		res.write('</form>\n');
-		res.write('<script src="login.js"></script>')
+		res.write('<script src="login.js"></script>');
 		respondPageFooter(res);
 	}, {
 		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#submit { display: block }\n'
@@ -511,7 +511,9 @@ var statics = {
 var cache = {};
 
 http.createServer(function(req,	res) {
-	var origURL = req.url, i, post;
+	var origURL = req.url,
+		i,
+		post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
 		return errorPage[414](req, res, user);
@@ -733,13 +735,13 @@ http.createServer(function(req,	res) {
 							}
 						};
 						if ((msg.dels || []).length == 2) {
-							if (msg.nans.length == 2) changes['$set'].mod = 'Controversial';
+							if (msg.nans.length == 2) changes.$set.mod = 'Controversial';
 							else {
-								changes['$set'] = {mod: 'Handled'};
-								changes['$unset'] = {reviewing: 1};
+								changes.$set = {mod: 'Handled'};
+								changes.$unset = {reviewing: 1};
 							}
 							if (!msg.deleted) {
-								changes['$set'] = {deleted: 2};
+								changes.$set = {deleted: 2};
 								dbcs.chathistory.insert({
 									message: msg._id,
 									event: 'delete',
@@ -793,13 +795,13 @@ http.createServer(function(req,	res) {
 							}
 						};
 						if ((msg.nans || []).length == 2) {
-							if (msg.dels.length == 2) changes['$set'].mod = 'Controversial';
+							if (msg.dels.length == 2) changes.$set.mod = 'Controversial';
 							else {
-								changes['$set'] = {mod: 'Handled'};
-								changes['$unset'] = {reviewing: 1};
+								changes.$set = {mod: 'Handled'};
+								changes.$unset = {reviewing: 1};
 							}
 							if (msg.deleted) {
-								changes['$set'] = {deleted: 0};
+								changes.$set = {deleted: 0};
 								dbcs.chathistory.insert({
 									message: msg._id,
 									event: 'undelete',
@@ -854,8 +856,8 @@ http.createServer(function(req,	res) {
 							}
 						};
 						if (post.mod) {
-							changes['$set'] = {mod: 'User-req'};
-							changes['$push'].reviewers = user.name;
+							changes.$set = {mod: 'User-req'};
+							changes.$push.reviewers = user.name;
 						}
 						dbcs.chat.update({_id: id}, changes);
 						res.writeHead(200);
@@ -888,7 +890,7 @@ http.createServer(function(req,	res) {
 							return res.end('Error: Invalid message id.');
 						}
 						var changes = {$set: {body: post.body}};
-						if ((msg.reviewers || []).indexOf(user.name) == -1) changes['$push'] = {reviewers: user.name};
+						if ((msg.reviewers || []).indexOf(user.name) == -1) changes.$push = {reviewers: user.name};
 						dbcs.chat.update({_id: id}, changes);
 						dbcs.chathistory.insert({
 							message: msg._id,
