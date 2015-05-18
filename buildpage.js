@@ -252,9 +252,7 @@ var typeIcons = {
 	mailform = fs.readFileSync('./html/user/mailform.html').toString();
 
 http.createServer(function(req,	res) {
-	var origURL = req.url,
-		cookies = cookie.parse(req.headers.cookie || ''),
-		user = JSON.parse(req.headers.user) || {},
+	var user = JSON.parse(req.headers.user) || {},
 		i;
 	req.url = url.parse(req.url, true);
 	console.log('Req ' + req.url.pathname);
@@ -837,6 +835,7 @@ http.createServer(function(req,	res) {
 			} else {
 				respondPage(post.title, user, req, res, function() {
 					fs.readFile('./html/learn/course.html', function(err, data) {
+						if (err) throw err;
 						res.write(
 							data.toString()
 							.replaceAll('$title', html(post.title))
@@ -924,7 +923,7 @@ http.createServer(function(req,	res) {
 			dbcs.chat.find(query).sort({mod: -1, lastFlag: -1}).each(function(err, message) {
 				if (err) throw err;
 				if (message) {
-					res.write('<section id="' + message._id + '">')
+					res.write('<section id="' + message._id + '">');
 					res.write('<h2><a href="#' + message._id + '">#</a>' + message._id + '</h2>');
 					res.write('<div class="indt">');
 					if (message.mod) res.write('<p class="large red">Mod-only; ' + message.mod + '</p>');

@@ -93,8 +93,9 @@ code {
 	padding: 2px 2px 0 0;
 	height: 16px;
 }
-.comment:not(:hover) .sctrls { opacity: .4 }
+.comment:not(:hover) .sctrls svg:not(.clkd) { opacity: .4 }
 .comment img { max-height: 200px }
+.c-sig { padding-left: 4px }
 .c-sig, .c-sig > * { color: #ccc }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
@@ -178,7 +179,7 @@ fieldset {
 }
 .program iframe {
 	width: 100%;
-	height: calc(100% - 4px);
+	height: calc(100% - 5px);
 }
 .program:nth-child(n+6) { display: none }
 .lim-programs .program:nth-child(n+4) { display: none }

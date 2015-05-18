@@ -76,7 +76,7 @@ function fill(color,g,b) {
 function stroke(color,g,b) {
 	ctx.strokeStyle = trans;
 	if (color >= 0) {
-		if (b >= 0) ctx.strokeStyle = rgb(color, g, b)
+		if (b >= 0) ctx.strokeStyle = rgb(color, g, b);
 		else ctx.strokeStyle = rgb(color, color, color);
 	} else ctx.strokeStyle = color;
 }
@@ -182,7 +182,7 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		mouseX = mouseX.bound(0,width);
 		mouseY = mouseY.bound(0,height);
 	});
-	document.getElementById('canvas').addEventListener('mousedown', function() {
+	canvas.addEventListener('mousedown', function() {
 		mousePressed = true;
 	});
 	addEventListener('mouseup', function() {
