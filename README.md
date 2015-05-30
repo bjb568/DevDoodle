@@ -19,6 +19,7 @@ Before submitting a bug, try hard-reloading.
 
 - Clone this repository
 - Install a recent version of node and mongodb (run the mongod process (you must create a data directory, if it doesn't already exist)).
+- `npm install`
 - Run a mongo shell process and:
 
 		> use DevDoodle
