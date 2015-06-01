@@ -1289,43 +1289,6 @@ https.createServer({
 					res.end('The API feature requested has not been implemented.');
 				}
 			});
-		} else if (req.url.pathname == '/qa/preview') {
-			if (req.method == 'POST') {
-				post = '';
-				req.on('data', function(data) {
-					if (req.abort) return;
-					post += data;
-					if (post.length > 1000000) {
-						errorPage[413](req, res, user);
-						req.abort = true;
-					}
-				});
-				req.on('end', function() {
-					if (req.abort) return;
-					post = querystring.parse(post);
-					respondPage(post.lang + ': ' + post.title, user, req, res, function() {
-						res.write('<h1>' + html(post.lang + ': ' + post.title) + '</h1>');
-						res.write(markdown(post.description));
-						if (post.code) res.write('<code class="blk">' + html(post.code) + '</code>');
-						res.write('<p><strong>' + html(post.question) + '</strong></p>');
-						res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
-						res.write('<hr />');
-						res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else if (res.substr(0, 10) == \'Location: \') location.href = res.substr(10); else alert(\'Unknown error. Response was: \' + res) }, ' + html(JSON.stringify(
-							'title=' + encodeURIComponent(post.title) +
-							'&lang=' + encodeURIComponent(post.lang) +
-							'&description=' + encodeURIComponent(post.description) +
-							'&question=' + encodeURIComponent(post.question) +
-							'&code=' + encodeURIComponent(post.code) +
-							'&type=' + encodeURIComponent(post.type) +
-							'&tags=' + encodeURIComponent(post.tags) +
-							'&gr=' + encodeURIComponent(post.gr || '') +
-							'&self=' + encodeURIComponent(post.self || '') +
-							'&bounty=' + encodeURIComponent(post.bounty || '')
-						)) + ')">Submit</button>');
-						respondPageFooter(res);
-					});
-				});
-			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/learn/new') {
 			if (req.method == 'GET') {
 				respondPage('New Lesson', user, req, res, function() {
