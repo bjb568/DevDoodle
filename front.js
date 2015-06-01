@@ -284,7 +284,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		respondPageFooter(res);
 	}, {
 		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#submit { display: block }\n'
-			+ '#sec { font-size: 0 } #sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')²: \' } #sec::before, #sec input { font-size: 1rem }</style>'
+			+ '#sec { font-size: 0 } #sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' } #sec::before, #sec input { font-size: 1rem }</style>'
 	});
 }
 
