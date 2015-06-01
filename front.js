@@ -542,7 +542,31 @@ var cache = {};
 https.createServer({
 	key: fs.readFileSync('../Secret/devdoodle.net.key'),
 	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')]
+	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+	ciphers: [
+		'ECDHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-ECDSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES256-GCM-SHA384',
+		'ECDHE-ECDSA-AES256-GCM-SHA384',
+		'DHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES128-SHA256',
+		'DHE-RSA-AES128-SHA256',
+		'ECDHE-RSA-AES256-SHA384',
+		'DHE-RSA-AES256-SHA384',
+		'ECDHE-RSA-AES256-SHA256',
+		'DHE-RSA-AES256-SHA256',
+		'HIGH',
+		'!aNULL',
+		'!eNULL',
+		'!EXPORT',
+		'!DES',
+		'!RC4',
+		'!MD5',
+		'!PSK',
+		'!SRP',
+		'!CAMELLIA'
+	].join(':'),
+	honorCipherOrder: true
 }, function(req, res) {
 	var origURL = req.url,
 		i,
