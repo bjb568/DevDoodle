@@ -79,6 +79,7 @@ This text will be replaced
 		min-height: 200px;
 	}
 	#comments { margin: 8px 0 }
+	code.blk:empty { display: none }
 	.up, .dn {
 		width: 20px;
 		height: 20px;
@@ -158,7 +159,7 @@ This text will be replaced
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket('ws://' + location.hostname + ':81/q/$id');
+	var socket = new WebSocket('wss://' + location.hostname + ':81/q/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
 			event: 'post',

@@ -251,102 +251,17 @@ function markdown(input) {
 HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 	var i = mdWarnings.length;
 	markdown(this.value);
-	var preverr = this.previousSibling && this.previousSibling.classList.contains('md-err') ? this.previousSibling : null,
+	var preverr = this.previousElementSibling && this.previousElementSibling.classList.contains('md-err') ? this.previousElementSibling : null,
 		err = mdWarnings[i];
 	this.lastErrored = err && correct;
 	if (err && (correct || preverr || this.value.substr(0, this.selectionEnd || Infinity).match(/\s$/))) {
 		if (preverr) {
 			if (preverr.firstChild.nodeValue == err) {
 				if (this.lastErrored && err && correct) {
-					var input = this.value,
-						output = '',
-						span = '',
-						current = [],
-						tags = {
-							'`': 'code',
-							'``': 'samp',
-							'*': 'em',
-							'**': 'strong',
-							'_': 'i',
-							'–––': 's',
-							'+++': 'ins',
-							'---': 'del',
-							'[c]': 'cite',
-							'[m]': 'mark',
-							'[u]': 'u',
-							'[v]': 'var',
-							'::': 'kbd',
-							'"': 'q'
-						},
-						stags = {
-							sup: {
-								start: '^(',
-								end: ')^'
-							},
-							sub: {
-								start: 'v(',
-								end: ')v'
-							},
-							small: {
-								start: '[sm]',
-								end: '[/sm]'
-							}
-						};
-					outer: for (var i = 0; i < input.length; i++) {
-						if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
-							if (input[i] == '\\') span += input[++i];
-							else {
-								for (var l = 4; l >= 0; l--) {
-									if (tags[input.substr(i, l)]) {
-										output += span;
-										span = '';
-										if (['code', 'samp'].indexOf(tags[input.substr(i, l)]) == -1) output += '\\' + input.substr(i, l);
-										else if (current[current.length - 1] == tags[input.substr(i, l)]) {
-											current.pop();
-											output += '\\' + input.substr(i, l);
-										} else {
-											output += '\\' + input.substr(i, l);
-											current.push(tags[input.substr(i, l)]);
-										}
-										i += l - 1;
-										continue outer;
-									}
-								}
-								for (var j in stags) {
-									for (var l = 5; l >= 0; l--) {
-										if (stags[j].start == input.substr(i, l)) {
-											output += span + '\\' + input.substr(i, l);
-											span = '';
-											i += l - 1;
-											continue outer;
-										} else if (stags[j].end == input.substr(i, l)) {
-											if (current[current.length - 1] == stags[j].end) {
-												output += span + '\\' + input.substr(i, l);
-												span = '';
-												i += l - 1;
-												continue outer;
-											}
-										}
-									}
-								}
-								span += input[i];
-							}
-						} else if (current[current.length - 1] == 'code' && input[i] == '`') {
-							current.pop();
-							output += '`';
-						} else if (current[current.length - 1] == 'samp' && input.substr(i, 2) == '``') {
-							current.pop();
-							output += '``';
-							i++;
-						} else output += input[i];
-					}
-					output += span;
-					if (current[current.length - 1] == 'code' && input[i] == '`') {
-						output += '`';
-					} else if (current[current.length - 1] == 'samp' && input.substr(i, 2) == '``') {
-						output += '``';
-					}
-					this.value = output;				
+					this.value = this.value.replace(/([^\\]?)(\\*)([`*_–\-+[(:"])/g, function(m, p1, p2, p3, i) {
+						if (i && !p1) return m;
+						return p1 + (p2.length % 2 ? p2 : p2 + '\\') + p3;
+					});
 					return true;
 				}
 				return err;
@@ -362,14 +277,9 @@ HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 };
 
 function mdValidateBody() {
-	setTimeout(function(e) {
-		e.mdValidate();
-	}, 0, document.activeElement);
-}
-
-addEventListener('keyup', mdValidateBody);
-addEventListener('keydown', mdValidateBody);
-addEventListener('keypress', mdValidateBody);
+	if (document.activeElement.mdValidate && document.activeElement.id != 'code') document.activeElement.mdValidate();
+};
+addEventListener('input', mdValidateBody);
 
 var noPageOverflow = noPageOverflow || false,
 	pageOverflowMobile = pageOverflowMobile || false,

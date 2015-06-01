@@ -1,226 +1,9 @@
-<section id="main">
-	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
-	<div class="row">
-		<div id="right" class="half">
-			<div id="outputbox" class="scrl"><iframe id="output" sandbox="allow-scripts"></iframe></div>
-			<button onclick="run(1)">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
-		</div>
-		<div id="left" class="half">
-			<textarea id="html" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML" wrap="off" autofocus="">$html</textarea>
-			<textarea id="css" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="CSS" wrap="off">$css</textarea>
-			<textarea id="js" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="JS" wrap="off">$js</textarea>
-		</div>
-	</div>
-</section>
-<section id="meta">
-	<div class="rit user user-$op-name">
-		<img src="$op-pic" width="40" height="40" />
-		<div>
-			<a href="/user/$op-name">$op-name</a>
-			<small class="rep">$op-rep</small>
-		</div>
-	</div>
-	Created <time datetime="$created"></time>, Updated <time id="updated" datetime="$updated"></time>.
-	$forked
-	<div class="umar">
-		<svg id="up" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23" /></svg>
-		<svg id="dn" xmlns="http://www.w3.org/2000/svg"><polygon points="11,23 1,1 21,1" /></svg>
-		<svg id="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg>
-	</div>
-	<div id="comments" class="umar">$comments</div>
-	<form id="comment" class="target umar">
-		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
-		<button type="submit">Post</button>
-		<button type="reset" id="reset">Cancel</button>
-	</form>
-	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
-	$forks
-</section>
-<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
-<style>
-	*::-webkit-input-placeholder { color: #888 }
-	*::-moz-placeholder { color: #999 }
-	html, #content, #footer, #main { background: #000 }
-	#main a:hover { color: #4ff }
-	#main a:active { color: #06f }
-	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
-	#meta {
-		clear: both;
-		padding: 4px;
-		margin-top: 8px;
-		background: rgba(255, 255, 255, .8);
-		color: #000;
-	}
-	#main textarea {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		width: 100%;
-		margin: 4px 0;
-	}
-	#main textarea:first-child { margin-top: 0 }
-	.half { max-width: 90vw }
-	#main textarea, #output {
-		max-width: 100%;
-		border: 1px solid #fff;
-		outline: none;
-		white-space: pre;
-	}
-	#output {
-		width: 100%;
-		height: calc(100% - 5px);
-	}
-	#outputbox { height: calc(100% - 24px) }
-	#left { height: 900px }
-	#right { height: 400px }
-	@media (min-width: 700px) {
-		.row { height: calc(100% - 2em) }
-		#left, #right {
-			height: 100%;
-			margin-bottom: 0;
-			max-width: 50%;
-		}
-		#left { float: left }
-		#right { float: right }
-	}
-	textarea {
-		height: calc(33.33% - 2px);
-		resize: none;
-	}
-	#save.progress {
-		cursor: progress;
-		color: #4ff;
-	}
-	#up, #dn {
-		width: 22px;
-		height: 24px;
-		fill: #777;
-	}
-	#up:hover, #dn:hover {
-		fill: #888;
-		transition: fill 0.1s;
-	}
-	#up:active, #dn:active {
-		fill: #666;
-		transition: none;
-	}
-	#up.clkd, #dn.clkd {
-		fill: #f90;
-	}
-	#fl {
-		width: 20px;
-		height: 24px;
-		fill: #f44;
-		margin-left: 12px;
-	}
-	#fl:hover {
-		fill: #f55;
-		transition: fill 0.2s;
-	}
-	#fl.clkd {
-		fill: #f00;
-	}
-	#fl:active {
-		transition: fill 0.1s;
-		fill: #c00;
-	}
-	#comment:target + #addcomment { display: none }
-	.up {
-		width: 18px;
-		height: 20px;
-		fill: #888;
-	}
-	.up:hover {
-		fill: #999;
-		transition: fill 0.1s;
-	}
-	.up:active {
-		fill: #777;
-		transition: none;
-	}
-	.up.clkd { fill: #f90 }
-	.fl {
-		width: 20px;
-		height: 20px;
-		fill: #f88;
-	}
-	.fl:hover {
-		fill: #f66;
-		transition: fill 0.2s;
-	}
-	.fl.clkd { fill: #f00 }
-	.fl:active {
-		transition: fill 0.1s;
-		fill: #c00;
-	}
-</style>
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = 700,
-		mainContentEl = document.getElementById('main'),
-		htmle = document.getElementById('html'),
-		css = document.getElementById('css'),
-		js = document.getElementById('js'),
-		save = document.getElementById('save')
+addEventListener('DOMContentLoaded', function() {
+	var code = document.getElementById('code'),
+		save = document.getElementById('save'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
-	var p = '';
-	function createCode() {
-		return '&lt;!DOCTYPE html>&lt;html>&lt;body>' + htmle.value + '&lt;style>' + css.value + '&lt;/style>&lt;script>alert=prompt=confirm=null;' + js.value + '&lt;/script>&lt;/body>&lt;/html>';
-	}
-	function run(f) {
-		if (document.getElementById('autorun').checked) {
-			if (!save.classList.contains('progress')) save.textContent = 'Save';
-			p = document.getElementById('output').srcdoc = createCode();
-		}
-	}
-	htmle.onkeypress = function(e) {
-		var oldSelectionStart = this.selectionStart;
-		if (e.keyCode == 13) {
-			var tabs = this.value.substr(0, oldSelectionStart)
-				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-				.split('\t').length
-				- (
-					(false/* Parse? */)
-					? 0
-					: 1
-				);
-			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
-			this.selectionStart = ++oldSelectionStart + tabs;
-			this.selectionEnd = this.selectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 34) {
-			if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
-			this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 39) {
-			if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
-			this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-			e.preventDefault();
-		}
-		onbeforeunload = function() {
-			return 'You have unsaved code.';
-		};
-	};
-	htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
-		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
-			if (
-				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
-				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
-				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
-				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
-				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
-			) {
-				var oldSelectionStart = this.selectionStart;
-				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
-				this.selectionEnd = --oldSelectionStart;
-				e.preventDefault();
-			}
-		}
-	};
-	css.onkeypress = js.onkeypress = function(e) {
+	code.addEventListener('keypress', function(e) {
 		var oldSelectionStart = this.selectionStart;
 		var pairChars = {};
 		pairChars[40] = '()';
@@ -242,7 +25,7 @@
 					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
 					? 0
 					: (
-						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
+						this.value[oldSelectionStart - 1] == ';' && this.eIndent
 						? (this.eIndent = false || 2) 
 						: 1
 					)
@@ -262,45 +45,77 @@
 			this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionStart);
 			this.selectionEnd = ++oldSelectionStart;
 			e.preventDefault();
-		} else if (endChars[e.keyCode] &amp;&amp; this.value[this.selectionStart] == endChars[e.keyCode]) {
+		} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
 			this.selectionStart = ++this.selectionEnd;
+			e.preventDefault();
+		} else if (e.keyCode == 61 && this.value.substr(this.selectionStart - 5, this.selectionStart) == 'draw ') {
+			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+			this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
 			e.preventDefault();
 		} else if (e.keyCode == 44) {
 			this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 			e.preventDefault();
 		}
+	});
+	code.addEventListener('keydown', function(e) {
+		if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
+			if (
+				(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
+				(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||
+				(this.value[this.selectionStart - 1] == '(' && this.value[this.selectionStart] == ')') ||
+				(this.value[this.selectionStart - 1] == '[' && this.value[this.selectionStart] == ']') ||
+				(this.value[this.selectionStart - 1] == '{' && this.value[this.selectionStart] == '}')
+			) {
+				var oldSelectionStart = this.selectionStart;
+				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
+				this.selectionEnd = --oldSelectionStart;
+				e.preventDefault();
+			}
+		}
+	});
+	var oldValue;
+	function handleCode() {
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			if (save && !save.classList.contains('progress')) save.textContent = 'Save';
+			document.getElementById('output').srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';alert=confirm=prompt=null;try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}</script></body></html>';
+		}
+	}
+	var timeout = setTimeout(handleCode, 100);
+	code.addEventListener('input', function() {
+		clearTimeout(timeout);
+		timeout = setTimeout(handleCode, 100);
 		onbeforeunload = function() {
 			return 'You have unsaved code.';
 		};
-	};
-	htmle.oninput = css.oninput = js.oninput = run;
-	run();
-	save.onclick = function() {
-		var e = this;
-		if (e.classList.contains('progress')) return;
-		e.classList.add('progress');
+	});
+	handleCode();
+	if (save) save.onclick = function() {
+		if (save.classList.contains('progress')) return;
+		save.classList.add('progress');
 		var savingTimeout = setTimeout(function() {
-			if (e.textContent == 'Save') e.textContent = 'Saving…';
+			if (save.textContent == 'Save') save.textContent = 'Saving…';
 		}, 200);
-		request('/api/program/save?type=2', function(res) {
+		request('/api/program/save?type=1', function(res) {
 			if (res.indexOf('Error') == 0) {
 				clearTimeout(savingTimeout);
 				alert(res);
-				e.textContent = 'Save';
+				save.textContent = 'Save';
 			} else if (res.indexOf('Location') == 0) {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
 			} else if (res == 'Success') {
 				onbeforeunload = null;
-				e.textContent = 'Saved';
+				save.textContent = 'Saved';
 				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 			} else {
 				clearTimeout(savingTimeout);
 				alert('Unknown error. Response was: ' + res);
 			}
-			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(htmle.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
+			save.classList.remove('progress');
+		}, 'code=' + encodeURIComponent(code.value));
 	};
 	(document.getElementById('fork') || {}).onclick = function() {
 		var e = this;
@@ -309,7 +124,7 @@
 		e.textContent = 'Saving…';
 		var e = e.previousSibling.previousSibling;
 		e.hidden = e.previousSibling.previousSibling.hidden = true;
-		request('/api/program/save?type=2&amp;fork=1', function(res) {
+		request('/api/program/save?type=1&fork=1', function(res) {
 			if (res.indexOf('Error') == 0) {
 				e.hidden = false;
 				e = e.nextSibling.nextSibling;
@@ -321,10 +136,10 @@
 				location.href = res.split(' ')[1];
 			} else alert('Unknown error. Response was: ' + res);
 			e.classList.remove('progress');
-		}, 'html=' + encodeURIComponent(htmle.value) + '&amp;css=' + encodeURIComponent(css.value) + '&amp;js=' + encodeURIComponent(js.value));
+		}, 'code=' + encodeURIComponent(code.value));
 	};
 	if (document.getElementById('meta')) {
-		if ($mine) {
+		if (window.mine) {
 			document.getElementById('title').onclick = function() {
 				this.hidden = true;
 				var edit = document.getElementById('edit-title');
@@ -354,7 +169,7 @@
 			request('/api/program/vote', function(res) {
 				if (res.indexOf('Error') == 0) alert(res);
 				else if (res == 'Success') {
-					document.getElementsByClassName('user-$op-name')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+					document.getElementsByClassName('user-$op-name')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
 					up.classList.toggle('clkd');
 					dn.classList.remove('clkd');
 				} else alert('Unknown error. Response was: ' + res);
@@ -375,7 +190,7 @@
 				document.getElementById('commentta').focus();
 			}, 0);
 		};
-		var socket = new WebSocket('wss://' + location.hostname + ':81/dev/$id');
+		var socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
 		document.getElementById('comment').onsubmit = function(e) {
 			socket.send(JSON.stringify({
 				event: 'post',
@@ -428,7 +243,13 @@
 			} else if (data.event == 'scorechange') {
 				var c = document.getElementById('c' + data.id);
 				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-			} else if (data.event == 'err') alert('Error: ' + data.body);
+			} else if (data.event == 'err') {
+				alert('Error: ' + data.body);
+				if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
+			}
+		};
+		socket.onclose = function() {
+			if (confirm('Connection error. Reload?')) location.reload();
 		};
 		var deletebutton = document.getElementById('delete');
 		if (deletebutton) {
@@ -450,8 +271,8 @@
 			}));
 		}
 		var comments = document.getElementsByClassName('comment');
-		for (var i = 0; i &lt; comments.length; i++) {
+		for (var i = 0; i < comments.length; i++) {
 			comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
 		}
 	}
-</script>
+});

@@ -1,30 +1,27 @@
 <h1>Globally-scoped Math</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">
-/**
- * In the DevDoodle Canvas library, all properties and methods of Math are global variables for the user's convenience.
- * Don't know what's in the Math object? Go here:
- * http://devdoodle.net/dev/104/
+	<textarea id="code" autofocus="">/**
+ * In the DevDoodle Canvas Library, all properties and methods of Math are applied to the global scope for the user's convenience.
+ * This Mozilla Developer Network page lists properties and methods of Math: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math
 */
 
 print(PI);
-print(TAU); //TAU, 2*PI, is added by the DevDoodle Canvas library!
+print(TAU); //TAU (2 * PI) is added by the DevDoodle Canvas Library!
 print(log(1));
-print(sin(PI/2));
+print(sin(TAU / 4));
 print(random());
 
 //Use the properties and methods of Math to your advantage!
 stroke(255);
 for (var i = -200; i &lt; 200; i++) {
-	point(i+200, 200+50*sin(i/20));
+	point(i + 200, 200 + 50 * sin(i / 20));
 }
 
 /** See also:
  * rand([x[, y]]): http://devdoodle.net/dev/docs/math/rand-func
  * Number.prototype.bound(l[, h]): http://devdoodle.net/dev/docs/math/number-proto-bound
  * print(input): http://devdoodle.net/dev/docs/console/print-func
-*/
-	</textarea>
+*/</textarea>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
 <style>
@@ -36,99 +33,27 @@ for (var i = -200; i &lt; 200; i++) {
 		resize: none;
 		margin-bottom: 8px;
 	}
-	#row { height: calc(100% - 2rem) }
 	#code, #output { height: 100% }
 	#output { float: right }
-	#code { width: 55% }
-	#output { width: 44% }
+	#code { width: calc(100% - 456px) }
+	#output { width: 450px }
+	@media (max-width: 1400px) {
+		#code, #output { zoom: 0.95 }
+	}
+	@media (max-width: 1200px) {
+		#code, #output { zoom: 0.9 }
+	}
+	@media (max-width: 1000px) {
+		#code, #output { zoom: 0.85 }
+	}
+	@media (max-width: 800px) {
+		#output { width: 44% }
+		#code { width: 55% }
+	}
 </style>
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,
 		pageOverflowMobile = true,
-		code = document.getElementById('code');
-	code.addEventListener('keypress', function(e) {
-		var oldSelectionStart = this.selectionStart;
-		if (e.keyCode === 13) {
-			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
-			var tabs = this.value.substr(0, oldSelectionStart)
-				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-				.split('\t').length
-				- (
-					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
-					? 0
-					: (
-						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
-						? (this.eIndent = false || 2) 
-						: 1
-					)
-				);
-			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
-			this.selectionStart = ++oldSelectionStart + tabs;
-			this.selectionEnd = this.selectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 34) {
-			this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
-			this.selectionEnd = ++oldSelectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 39) {
-			this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
-			this.selectionEnd = ++oldSelectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 40) {
-			this.value = this.value.substr(0, this.selectionStart) + '()' + this.value.substr(this.selectionStart);
-			this.selectionEnd = ++oldSelectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 91) {
-			this.value = this.value.substr(0, this.selectionStart) + '[]' + this.value.substr(this.selectionStart);
-			this.selectionEnd = ++oldSelectionStart;
-			e.preventDefault();
-		} else if (e.keyCode == 123) {
-			this.value = this.value.substr(0, this.selectionStart) + '{}' + this.value.substr(this.selectionStart);
-			this.selectionEnd = ++oldSelectionStart;
-			e.preventDefault();
-		}
-		// console.log(e.keyCode);
-	});
-	code.addEventListener('keydown', function(e) {
-		if (e.keyCode == 8 &amp;&amp; this.selectionStart == this.selectionEnd) {
-			console.log(this.value[this.selectionStart - 1] == '(')
-			if (
-				(this.value[this.selectionStart - 1] == '"' &amp;&amp; this.value[this.selectionStart] == '"') ||
-				(this.value[this.selectionStart - 1] == "'" &amp;&amp; this.value[this.selectionStart] == "'") ||
-				(this.value[this.selectionStart - 1] == '(' &amp;&amp; this.value[this.selectionStart] == ')') ||
-				(this.value[this.selectionStart - 1] == '[' &amp;&amp; this.value[this.selectionStart] == ']') ||
-				(this.value[this.selectionStart - 1] == '{' &amp;&amp; this.value[this.selectionStart] == '}')
-			) {
-				var oldSelectionStart = this.selectionStart;
-				this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
-				this.selectionEnd = --oldSelectionStart;
-				e.preventDefault();
-			}
-		}
-	});
-	var oldValue;
-	function handleCode() {
-		if (code.value != oldValue) {
-			oldValue = code.value;
-			document.getElementById('output').srcdoc = '&lt;!DOCTYPE html>&lt;html>&lt;head>&lt;title>Output frame&lt;/title>&lt;/head>&lt;style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}#console:empty{display:none}button{display:block}&lt;/style>&lt;body>&lt;canvas id="canvas">&lt;/canvas>&lt;div id="console">&lt;/div>&lt;button onclick="location.reload()">Restart&lt;/button>&lt;script src="/dev/canvas.js">&lt;/script>&lt;script>\'use strict\';try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}&lt;/script>&lt;/body>&lt;/html>';
-		}
-	}
-	var timeout = setTimeout(handleCode, 100);
-	code.addEventListener('keyup', function() {
-		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 100);
-	});
-	code.addEventListener('keydown', function() {
-		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 100);
-	});
-	code.addEventListener('keypress', function() {
-		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 100);
-		onbeforeunload = function() {
-			return 'You have unsaved code.';
-		};
-	});
-	handleCode();
+		mainContentEl = document.getElementById('row');
 </script>

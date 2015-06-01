@@ -23,7 +23,7 @@ $textarea
 	var noPageOverflow = 420,
 		audio = new Audio('/a/beep.mp3'),
 		hash = parseInt(location.hash.substr(1)),
-		socket = new WebSocket('ws://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
+		socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : '')),
 		username = '$user',
 		onBottom = true,
 		state = 1,
@@ -445,8 +445,8 @@ $textarea
 	socket.onclose = function() {
 		if (confirm('Connection error. Reload?')) location.reload();
 	};
-	function pingsugs() {
-		setTimeout(function() {
+	if (ta) {
+		ta.addEventListener('input', function() {
 			var before = ta.value.substr(0, ta.selectionStart),
 				str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
 				list = document.getElementById('pingsug'),
@@ -467,12 +467,7 @@ $textarea
 					}
 				}
 			}
-		}, 0);
-	}
-	if (ta) {
-		ta.addEventListener('keydown', pingsugs);
-		ta.addEventListener('keyup', pingsugs);
-		ta.addEventListener('keypress', pingsugs);
+		});
 		ta.onkeypress = ta.onkeydown = function(e) {
 			if (e.keyCode == 13 &amp;&amp; !e.shiftKey &amp;&amp; !e.metaKey) {
 				e.preventDefault();

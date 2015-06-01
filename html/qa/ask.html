@@ -1,6 +1,6 @@
 <h1>New Question</h1>
-<form id="form" method="post">
-	<aside class="rit">
+<form id="form" method="post" action="/api/qa/newquestion">
+	<aside id="titlehelp" class="rit">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title should try to efficiently capture the essence of the question. Try to avoid titles like:</p>
 		<ul>
@@ -22,38 +22,44 @@
 		<button type="submit" id="submit1">Next</button>
 		<div id="err1" class="err"></div>
 	</fieldset>
-	<fieldset id="step1" class="hidden">
+	<fieldset id="step1" class="hide">
 		<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
 		<div class="hglt pad bmar">
 			<ul id="duplist"></ul>
 		</div>
-		<button type="submit" id="submit2" disabled="">None of these are the same as my question</button>
+		<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
 	</fieldset>
-	<aside id="explainhelp" class="rit" hidden="">
+	<aside id="explainhelp" class="hide rit">
 		<h2>Explaining your problem</h2>
 		<p>In the description box, you want to describe your problem in detail. <em>Include any information needed to setup the environment, replicate the bug, or observe the problematic behavior.</em> Be <strong>clear</strong> about what exactly you did, struggled with, and would like us to help with. The core question box is for your specific request <em>in one well-written sentence</em>, for example "How can I flow foo thru bar?".</p>
 	</aside>
-	<fieldset id="step2" class="hidden">
+	<fieldset id="step2" class="hide">
 		<h2>Question Body</h2>
-		<textarea name="description" id="description" placeholder="Description"></textarea>
+		<div class="ta-cont">
+			<textarea name="description" id="description" placeholder="Description"></textarea>
+			<pre></pre>
+		</div>
 		<h2><input type="text" name="question" id="question" placeholder="Core Question" class="fullwidth" maxlength="144" /></h2>
-		<button type="submit" id="submit3">Next</button>
+		<button type="submit" id="submit3" hidden="">Next</button>
 		<div id="err3" class="err"></div>
 	</fieldset>
-	<aside id="codehelp" class="rit" hidden="">
+	<aside id="codehelp" class="hide rit">
 		<h2>Adding relevant code</h2>
-		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (wherever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>Your end code should be simple and short as possible, generally under 64 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
+		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (whatever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>After isolating the problem, you should have a small code snippit that reproduces the issue, generally under 48 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
 	</aside>
-	<fieldset id="step3" class="hidden">
+	<fieldset id="step3" class="hide">
 		<h2>Code</h2>
-		<textarea name="code" id="code" placeholder="//code"></textarea>
-		<button type="submit" id="submit4">Almost done!</button>
+		<div class="ta-cont">
+			<textarea name="code" id="code" placeholder="//code (optional)"></textarea>
+			<pre></pre>
+		</div>
+		<button type="submit" id="submit4" hidden="">Almost done!</button>
 	</fieldset>
-	<fieldset id="step4" class="hidden">
+	<fieldset id="step4" class="hide">
 		<h2>Categorization</h2>
 		<h3>My question is about…</h3>
 		<div id="types">
-			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" checked="" /> fixing non-working code</label>
+			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" /> fixing non-working code</label>
 			<label for="type-bug"><input type="radio" name="type" value="bug" id="type-bug" /> unexpected behavior in working code</label>
 			<label for="type-imp"><input type="radio" name="type" value="imp" id="type-imp" /> improving working code</label>
 			<label for="type-how"><input type="radio" name="type" value="how" id="type-how" /> how to achieve an end result</label>
@@ -62,97 +68,139 @@
 			<label for="type-the"><input type="radio" name="type" value="the" id="type-the" /> a theoretical scenario</label>
 		</div>
 		<h3>This question is specific to…</h3>
-		<div id="sublangs">
-			<label for="ck0"><input type="checkbox" name="ck0" id="ck0" /> Node.js</label>
-			<div class="indt">
-				<label for="ck0-0"><input type="checkbox" name="ck0-0" id="ck0-0" /> Express</label>
-				<label for="ck0-1"><input type="checkbox" name="ck0-1" id="ck0-1" /> hapi</label>
-			</div>
-			<label for="ck1"><input type="checkbox" name="ck1" id="ck1" /> jQuery</label>
-			<div class="indt">
-				<label for="ck1-0"><input type="checkbox" name="ck1-0" id="ck1-0" /> jQuery UI</label>
-			</div>
-		</div>
+		<input type="hidden" name="tags" id="tags-input" />
+		<div id="tags"></div>
 		<h3>Options</h3>
 		<div id="options">
 			<div><label for="gr"><input type="checkbox" name="gr" id="gr" /> General Reference</label> <small>(a broad question with only a single community-owned answer)</small></div>
 			<div><label for="self"><input type="checkbox" name="self" id="self" /> Self-answered</label> <small>(share your knowledge by answering your own question – you can still add an answer later if you don't check this)</small></div>
 			<div><label for="bounty"><input type="checkbox" name="bounty" id="bounty" /> Bounty</label> <small>(make question featured, costs 50 reputation per day which can be awarded to an answerer)</small></div>
-			<button type="submit" id="submit5" class="umar">Submit</button>
 		</div>
+		<button id="showpreview" class="umar" disabled="">Show Question Preview</button>
 	</fieldset>
 </form>
+<article id="preview" class="popup" hidden=""></article>
 <style>
 	form { padding: 0 4px }
-	h2 input, textarea { max-width: calc(50% + 400px) }
 	aside { clear: right }
+	label { display: table }
+	#options label { display: inline }
+	.ta-cont {
+		position: relative;
+		width: 100%;
+		min-height: 360px;
+	}
+	.ta-cont pre {
+		padding: 3px;
+		visibility: hidden;
+	}
+	.ta-cont pre, textarea {
+		position: absolute;
+		top: 0; left: 0;
+		width: 100%;
+		font-size: .9em;
+		font-family: inherit;
+		line-height: 1.2;
+		white-space: pre-wrap;
+	}
+	textarea {
+		resize: none;
+		height: 100%;
+	}
+	#step4 h3 { margin-bottom: 4px }
+	#types, #tags, #options { padding-left: 32px }
 	#langsug span {
 		background: #afa;
 		padding: 2px 6px;
 		box-shadow: 1px 1px 2px #666;
 	}
-	.hidden, #step1.hidden > *, #step2.hidden > *, #step3.hidden > *, #step4.hidden > * {
-		height: 0;
-		overflow: hidden;
-		padding: 0;
-		resize: none;
-		border: none;
-	}
-	#step1 h2 { overflow: hidden }
-	h2 {
-		transition: height .5s;
-		height: 1.3em;
-	}
-	#options label { display: inline }
-	textarea {
-		width: 100%;
-		height: 240px;
-		resize: vertical;
-		transition: height 1s;
-	}
-	#code { height: 320px }
-	#step4 h3 {
-		transition: height .3s .2s;
-		height: 1.3em;
-		margin-bottom: 4px;
-		overflow: hidden;
-	}
-	#types {
-		transition: height .5s .4s;
-		height: 9em;
-		padding-left: 32px;
-		overflow: auto;
-	}
-	#sublangs {
-		transition: max-height .5s .6s;
-		max-height: 400px;
-		overflow: auto;
-	}
-	#options {
-		transition: height .5s .8s;
-		height: 10em;
-		overflow: auto;
-	}
-	label { display: table }
+	fieldset.hide, aside.hide:not(:hover) { opacity: 0.15 }
+	fieldset.hide { pointer-events: none }
+	fieldset, aside, #preview { transition: opacity 0.5s }
+	#preview[hidden] { opacity: 0 }
 	.err {
 		position: absolute;
 		padding: 8px;
 		width: 300px;
 		background: #f00;
+		z-index: 1;
 	}
 	.err:empty { opacity: 0 }
+	#duplist:empty { padding: 0 }
 	#duplist:empty::after {
 		content: 'Loading possible duplicates…';
 		color: #666;
 		font-size: 0.8em;
 	}
+	.hide #duplist::after { content: '(Enter a title and language)' }
+	#tags:empty::after {
+		content: '(Enter a language)';
+		color: #666;
+		font-size: 0.8em;
+	}
+	#preview {
+		position: fixed;
+		overflow: hidden;
+		z-index: 1;
+	}
+	#preview h1 small { cursor: pointer }
+	.tint::after {
+		content: '';
+		display: block; position: fixed;
+		top: 0; right: 0; bottom: 0; left: 0;
+		background: rgba(0, 0, 0, 0.5);
+	}
+	.tint #nav, .tint #footer, .tint #content > :not(article) { -webkit-filter: blur(2px) }
+	#submit {
+	    font-size: 1.1em;
+	    color: #fff;
+	    background: #04f;
+	    padding: 6px 24px;
+	    border-radius: 4px;
+	    transition: background 0.4s;
+	    margin-top: 12px;
+	}
+	#submit:hover {
+	    background: #6cf;
+	    color: #000;
+	    transition: background 0.2s;
+	}
+	#submit:active, #submit.working { background: #2af }
 </style>
 <script>
-	var step = 0,
+	var form = document.getElementById('form'),
+		title = document.getElementById('title'),
+		lang = document.getElementById('lang'),
 		langsug = document.getElementById('langsug'),
+		description = document.getElementById('description'),
+		question = document.getElementById('question'),
+		code = document.getElementById('code'),
+		tags = document.getElementById('tags'),
+		err1 = document.getElementById('err1'),
+		err3 = document.getElementById('err3');
+	function smoothScroll(el, t, p, s) {
+		var dist = el.getBoundingClientRect().top,
+			now = new Date().getTime(),
+			p = t - p,
+			s = s || now,
+			elapsed = now - s;
+		if (dist > 6 &amp;&amp; document.body.scrollTop - document.body.scrollHeight + innerHeight) {
+			scrollBy(0, Math.min(dist - 5, Math.max(1, p * dist * elapsed * elapsed / 50000000)));
+			requestAnimationFrame(function(p) {
+				smoothScroll(el, p, t, s);
+			});
+		}
+	};
+	addEventListener('input', function() {
+		if (document.activeElement.parentNode.classList.contains('ta-cont')) {
+			document.activeElement.nextElementSibling.textContent = document.activeElement.value + '\n';
+			document.activeElement.parentNode.style.height = document.activeElement.nextElementSibling.offsetHeight + 'px';
+		}
+	});
+	var step = 0,
 		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
 		waiting = false;
-	document.getElementById('lang').addEventListener('keyup', function(e) {
+	lang.addEventListener('keyup', function(e) {
 		if (!(langsug.hidden = !this.value)) {
 			var firstChild;
 			while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
@@ -166,8 +214,9 @@
 						span.appendChild(document.createTextNode(langs[j]));
 						span.onmousedown = function(e) {
 							e.preventDefault();
-							document.getElementById('lang').value = this.textContent;
+							lang.value = this.textContent;
 							this.parentNode.hidden = true;
+							findTags();
 						};
 						langsug.appendChild(span);
 						langsug.appendChild(document.createTextNode(' '));
@@ -178,10 +227,10 @@
 			}
 		}
 	});
-	document.getElementById('lang').addEventListener('keydown', function(e) {
+	lang.addEventListener('keydown', function(e) {
 		if (this.value &amp;&amp; e.keyCode == 9) {
 			this.value = langsug.firstChild.textContent;
-			document.getElementById('form').onsubmit();
+			form.onsubmit();
 		}
 	});
 	function findDups() {
@@ -200,6 +249,7 @@
 					a = document.createElement('a');
 				a.appendChild(document.createTextNode(res[i].title));
 				a.href = res[i]._id;
+				a.target = '_blank';
 				h3.appendChild(a);
 				li.appendChild(h3);
 				var blockquote = document.createElement('blockquote');
@@ -209,118 +259,227 @@
 			}
 			if (!res.length) {
 				duplist.appendChild(document.createTextNode('No related questions found.'));
-				document.getElementById('form').onsubmit();
+				form.onsubmit();
 			}
-		}, 'lang=' + encodeURIComponent(document.getElementById('lang').value) + '&amp;search=' + encodeURIComponent(document.getElementById('title').value));
+		}, 'lang=' + encodeURIComponent(lang.value) + '&amp;search=' + encodeURIComponent(title.value));
 	}
 	document.getElementById('reload-dups').onclick = function(e) {
 		e.preventDefault();
 		findDups();
 	};
-	document.getElementById('lang').addEventListener('blur', function() {
+	lang.addEventListener('blur', function() {
 		langsug.hidden = true;
 	});
-	document.getElementById('lang').addEventListener('focus', function() {
+	lang.addEventListener('focus', function() {
 		langsug.hidden = !this.value;
 	});
-	document.getElementById('form').onsubmit = function(e) {
+	function findTags() {
+		var fc;
+		while (fc = tags.firstChild) tags.removeChild(fc);
+		if (!lang.value) return;
+		request('/api/qa/tags', function(res) {
+			var child;
+			while (child = tags.firstChild) tags.removeChild(child);
+			if (res.indexOf('Error:') == 0) return alert(res);
+			try {
+				res = JSON.parse(res);
+			} catch(e) {
+				return alert('JSON error. Response was: ' + res);
+			}
+			var labels = {};
+			for (var i = 0; i &lt; res.length; i++) {
+				var label = document.createElement('label'),
+					checkbox = document.createElement('input');
+				checkbox.type = 'checkbox';
+				label.for = checkbox.id = 'tag' + res[i]._id;
+				label.appendChild(checkbox);
+				label.appendChild(document.createTextNode(' ' + res[i].name));
+				labels[res[i]._id] = label;
+			}
+			var divs = {};
+			for (var i = 0; i &lt; res.length; i++) {
+				if (!res[i].parentID) tags.appendChild(labels[res[i]._id]);
+				else {
+					if (!divs[res[i].parentID]) {
+						divs[res[i].parentID] = document.createElement('div');
+						divs[res[i].parentID].classList.add('indt');
+						labels[res[i].parentID].addEventListener('click', function() {
+							if (!this.children[0].checked) {
+								var e = this.nextElementSibling.getElementsByTagName('input');
+								for (var i = 0; i &lt; e.length; i++) e[i].checked = false;
+							}
+						});
+					}
+					divs[res[i].parentID].appendChild(labels[res[i]._id]);
+					labels[res[i]._id].onclick = function() {
+						if (this.children[0].checked) {
+							var ref = this.parentNode.previousElementSibling;
+							ref.children[0].checked = true;
+							if (ref.onclick) ref.onclick();
+						}
+					};
+				}
+			}
+			for (var i in divs) {
+				var ref = document.getElementById('tag' + i).parentNode;
+				ref.parentNode.insertAfter(divs[i], ref);
+			}
+		}, 'lang=' + encodeURIComponent(lang.value));
+	};
+	lang.onblur = findTags;
+	form.onsubmit = function(e) {
 		if (e) {
 			e.preventDefault();
 			if (waiting) return;
 		}
 		if (step == 0) {
-			if (document.getElementById('title').value.length &lt; 12) {
-				document.getElementById('title').focus();
-				document.getElementById('err1').textContent = 'Title must be at least 12 characters long.';
+			if (title.value.length &lt; 12) {
+				title.focus();
+				err1.textContent = 'Title must be at least 12 characters long.';
 				return;
 			}
-			if (document.getElementById('title').value.length > 144) {
-				document.getElementById('title').focus();
-				document.getElementById('err1').textContent = 'Title must be at most 144 characters long.';
+			if (title.value.length > 144) {
+				title.focus();
+				err1.textContent = 'Title must be at most 144 characters long.';
 				return;
 			}
-			if (!document.getElementById('lang').value) {
-				document.getElementById('lang').focus();
-				document.getElementById('err1').textContent = 'Please choose a language.';
+			if (!lang.value) {
+				lang.focus();
+				err1.textContent = 'Please choose a language.';
 				return;
 			}
-			document.getElementById('err1').hidden = true;
+			err1.hidden = true;
 			step = 1;
 			document.getElementById('submit1').hidden = true;
 			document.getElementById('submit2').hidden = false;
 			if (document.activeElement) document.activeElement.blur();
-			document.getElementById('step1').classList.remove('hidden');
-			document.getElementById('step1').scrollIntoView(true);
+			document.getElementById('step1').classList.remove('hide');
+			smoothScroll(document.getElementById('step1'));
 			waiting = true;
 			setTimeout(function() {
 				waiting = document.getElementById('submit2').disabled = false;
-			}, 6000);
+			}, 8000);
 			findDups();
+			findTags();
+			document.getElementById('titlehelp').classList.add('hide');
 		} else if (step == 1) {
 			step = 2;
 			document.getElementById('submit2').hidden = true;
 			document.getElementById('submit3').hidden = false;
-			document.getElementById('step2').classList.remove('hidden');
-			document.getElementById('step2').scrollIntoView(true);
-			document.getElementById('description').required = document.getElementById('question').required = true;
-			document.getElementById('question').pattern = "[^\\?]{11,}\\?";
+			document.getElementById('step2').classList.remove('hide');
+			smoothScroll(document.getElementById('step2'));
+			description.required = question.required = true;
+			question.pattern = "[^\\?]{11,}\\?";
 			setTimeout(function() {
-				document.getElementById('description').focus();
+				description.focus();
 			}, 400);
-			document.getElementById('explainhelp').hidden = false;
+			document.getElementById('explainhelp').classList.remove('hide');
 		} else if (step == 2) {
-			if (document.getElementById('description').value.length &lt; 144) {
-				document.getElementById('description').focus();
-				document.getElementById('err3').textContent = 'Question description must be at least 144 characters long.';
+			if (description.value.length &lt; 144) {
+				description.focus();
+				err3.textContent = 'Question description must be at least 144 characters long.';
 				return;
 			}
-			if (document.getElementById('question').value.length &lt; 12) {
-				document.getElementById('question').focus();
-				document.getElementById('err3').textContent = 'Core question must be at least 12 characters long.';
+			if (question.value.length &lt; 12) {
+				question.focus();
+				err3.textContent = 'Core question must be at least 12 characters long.';
 				return;
 			}
-			if (document.getElementById('question').value.length > 144) {
-				document.getElementById('question').focus();
-				document.getElementById('err3').textContent = 'Core question must be at most 144 characters long.';
+			if (question.value.lastIndexOf('?') != question.value.length - 1) {
+				question.focus();
+				err3.textContent = 'A question must end in a question mark.';
 				return;
 			}
-			document.getElementById('err3').hidden = true;
+			if (question.value.length > 144) {
+				question.focus();
+				err3.textContent = 'Core question must be at most 144 characters long.';
+				return;
+			}
+			err3.hidden = true;
 			step = 3;
 			document.getElementById('submit3').hidden = true;
 			document.getElementById('submit4').hidden = false;
-			document.getElementById('step3').classList.remove('hidden');
-			document.getElementById('step3').scrollIntoView(true);
-			document.getElementById('code').required = true;
+			document.getElementById('step3').classList.remove('hide');
+			smoothScroll(document.getElementById('step3'));
+			code.required = true;
 			setTimeout(function() {
-				document.getElementById('code').focus();
+				code.focus();
 			}, 400);
-			document.getElementById('codehelp').hidden = false;
+			document.getElementById('codehelp').classList.remove('hide');
+			document.getElementById('explainhelp').classList.add('hide');
 		} else if (step == 3) {
 			step = 4;
 			document.getElementById('submit4').hidden = true;
-			document.getElementById('submit5').hidden = false;
-			document.getElementById('step4').classList.remove('hidden');
-			document.getElementById('step4').scrollIntoView(true);
-			setTimeout(function() {
-				document.getElementById('tags').focus();
-			}, 400);
-			document.getElementById('form').onsubmit = null;
-			document.getElementById('form').action = 'preview';
+			document.getElementById('step4').classList.remove('hide');
+			smoothScroll(document.getElementById('step4'));
+			document.getElementById('codehelp').classList.add('hide');
+		} else {
+			//request(); //TODO
 		}
 	};
-	var e = document.getElementById('sublangs').getElementsByTagName('div');
-	for (var i = 0; i &lt; e.length; i++) {
-		e[i].previousSibling.previousSibling.onclick = function() {
-			if (!this.children[0].checked) {
-				var e = this.nextSibling.nextSibling.children;
-				for (var i = 0; i &lt; e.length; i++) e[i].children[0].checked = false;
+	tags.onchange = function() {
+		setTimeout(function() {
+			var arr = [],
+				els = tags.querySelectorAll(':checked');
+			for (var i = 0; i &lt; els.length; i++) {
+				arr.push(els[i].id.substr(3));
 			}
+			document.getElementById('tags-input').value = arr.join();
+		}, 0);
+	};
+	document.getElementById('step4').onchange = function() {
+		document.getElementById('showpreview').disabled = !document.getElementById('types').querySelector(':checked') || !tags.querySelector(':checked');
+	};
+	document.getElementById('showpreview').onclick = function(e) {
+		e.preventDefault();
+		var preview = document.getElementById('preview'), sfc;
+		while (fc = preview.firstChild) preview.removeChild(fc);
+		var h1 = document.createElement('h1');
+		h1.appendChild(document.createTextNode(lang.value + ': ' + title.value + ' '));
+		var close = document.createElement('small');
+		close.appendChild(document.createTextNode('✕'));
+		close.onclick = function() {
+			preview.hidden = true;
 		};
-		var f = e[i].children;
-		for (var j = 0; j &lt; f.length; j++) {
-			f[j].onclick = function() {
-				if (this.children[0].checked) this.parentNode.previousSibling.previousSibling.children[0].checked = true;
-			};
-		}
-	}
+		h1.appendChild(close);
+		preview.appendChild(h1);
+		var body = document.createElement('div');
+		body.innerHTML = markdown(description.value)
+			+ (code.value ? '&lt;code class="blk">' + html(code.value) + '&lt;/code>' : '')
+			+ '&lt;p>&lt;strong>' + markdown(question.value) + '&lt;/strong>&lt;/p>';
+		preview.appendChild(body);
+		var submit = document.createElement('button');
+		submit.appendChild(document.createTextNode('Post Question'));
+		submit.id = 'submit';
+		submit.onclick = function() {
+			this.classList.add('working');
+			request('/api/qa/newquestion', function(res) {
+				if (res.substr(0, 7) == 'Error: ') alert(res);
+				else if (res.substr(0, 10) == 'Location: ') location.href = res.substr(10);
+				else alert('Unknown error. Response was: ' + res);
+			},
+				'title=' + encodeURIComponent(title.value) +
+				'&amp;lang=' + encodeURIComponent(lang.value) +
+				'&amp;description=' + encodeURIComponent(description.value) +
+				'&amp;question=' + encodeURIComponent(question.value) +
+				'&amp;code=' + encodeURIComponent(code.value) +
+				'&amp;type=' + encodeURIComponent(document.getElementById('types').querySelector(':checked').value) +
+				'&amp;tags=' + encodeURIComponent(document.getElementById('tags-input').value) +
+				'&amp;gr=' + encodeURIComponent(document.getElementById('gr').value) +
+				'&amp;self=' + encodeURIComponent(document.getElementById('self').value) +
+				'&amp;bounty=' + encodeURIComponent(document.getElementById('bounty').value)
+			);
+		};
+		preview.appendChild(submit);
+		preview.hidden = false;
+		document.body.classList.add('tint');
+		e.stopPropagation();
+	};
+	document.getElementById('preview').addEventListener('click', function(e) {
+		e.stopPropagation();
+	});
+	addEventListener('click', function(e) {
+		document.getElementById('preview').hidden = true;
+		document.body.classList.remove('tint');
+	});
 </script>
