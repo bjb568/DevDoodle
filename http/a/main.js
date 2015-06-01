@@ -37,10 +37,10 @@ function spanMarkdown(input) {
 		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
-		.replace(/!\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="$2" />')
-		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/g, '<img src="$1" />')
+		.replace(/!\[([^\]]+)]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="https://$2" />')
+		.replace(/^https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '<img src="https://$1" />')
 		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?))/g, '$1<img src="$2" />')
+		.replace(/([^;["\\])https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
 		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
 		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'));
 }
