@@ -9,37 +9,33 @@ textarea.style.opacity = 0.001;
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
-		if (textarea.value) {
-			key = textarea.value;
-			textarea.value = '';
-		}
 	}
 }
-addEventListener("keydown", function(e) {
+var keyCodes = {};
+addEventListener('keydown', function(e) {
 	keyCodes[e.keyCode] = true;
 	handleTA();
 });
-addEventListener("keyup", function(e) {
+addEventListener('keyup', function(e) {
 	delete keyCodes[e.keyCode];
+	delete keyCodes[229];
 	handleTA();
 });
-addEventListener("keypress", function(e) {
+addEventListener('keypress', function(e) {
 	handleTA();
-	
 });
-//var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl") || null; //3D, anyone?
+//var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || null; //3D, anyone?
 var none = 'transparent', trans = none,
 	mouseX = 0,
 	mouseY = 0,
 	mousePressed = 0,
-	key,
+	key = '',
 	width = 400,
 	height = 400,
 	scale = canvas.width/canvas.offsetWidth;
 addEventListener('resize',function() {
 	scale = canvas.width/canvas.offsetWidth;
 });
-var keyCodes = {};
 Object.getOwnPropertyNames(Math).forEach(function(element,index) {
 	window[element] = Math[element];
 });
@@ -139,6 +135,7 @@ function size(x, y) {
 }
 function resetLog() {
 	var node = document.getElementById('console'), child;
+	console.log(node.children.length);
 	while (child = node.firstChild) node.removeChild(child);
 }
 function print(input) {
@@ -164,13 +161,13 @@ function error(e) {
 var frameRate = 30;
 var draw = function() {};
 (function drawLoop() {
-	reset(1);
+	key = textarea.value;
 	try {
 		draw();
 	} catch(e) {
 		error(e);
 	}
-	key = undefined;
+	textarea.value = key = '';
 	setTimeout(drawLoop, 1000 / frameRate);
 })();
 reset();

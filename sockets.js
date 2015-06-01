@@ -13,9 +13,9 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
 };
 
-var cookie = require('cookie'),
-	essentials = require('./essentials.js'),
-	markdownEscape = essentials.markdownEscape,
+var fs = require('fs'),
+	cookie = require('cookie'),
+	https = require('https'),
 	ws = require('ws'),
 	mongo = require('mongodb'),
 	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
@@ -30,7 +30,7 @@ var cookie = require('cookie'),
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
 		if (err) throw err;
 		var i = usedDBCs.length;
 		while (i--) {
@@ -43,7 +43,24 @@ db.open(function(err, db) {
 	});
 });
 
-var wss = new ws.Server({port: 81});
+var wss = new ws.Server({
+	server: https.createServer({
+		key: fs.readFileSync('../Secret/devdoodle.net.key'),
+		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+		ssl: true
+	}, function(req, res) {
+		res.writeHead(200);
+		res.end('All glory to WebSockets!\n');
+	}).listen(81)
+});
+
+function markdownEscape(input) {
+	return input.replace(/([^\\]?)(\\*)([`*_–\-+[(:"])/g, function(m, p1, p2, p3, i) {
+		if (i && !p1) return m;
+		return p1 + (p2.length % 2 ? p2 : p2 + '\\') + p3;
+	});
+};
 
 wss.on('connection', function(tws) {
 	var i;
@@ -771,7 +788,8 @@ wss.on('connection', function(tws) {
 							}
 							if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
 								event: 'err',
-								body: 'You may not vote on your own comments.'
+								body: 'You may not vote on your own comments.',
+								commentUnvote: id
 							}));
 							dbcs.comments.update({_id: id}, {
 								$push: {

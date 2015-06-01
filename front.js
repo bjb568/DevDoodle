@@ -25,6 +25,7 @@ var site = {
 };
 
 var http = require('http'),
+	https = require('https'),
 	zlib = require('zlib'),
 	fs = require('fs'),
 	path = require('path'),
@@ -49,11 +50,11 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
+	usedDBCs = ['users', 'questions', 'answers', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
 		if (err) throw err;
 		db.createCollection('questions', function(err, collection) {
 			if (err) throw err;
@@ -353,141 +354,169 @@ var statics = {
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
 		title: 'line(x1, y1, x2, y2) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
 		title: 'rect(x, y, h, w) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
 		title: 'point(x,y) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
 		title: 'ellipse(cx, cy, rx, ry) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
 		path: './html/dev/docs/text/text-func.html',
 		title: 'text(x, y, t) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/textalign-func': {
 		path: './html/dev/docs/text/textalign-func.html',
 		title: 'textAlign(h, v) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/font-func': {
 		path: './html/dev/docs/text/font-func.html',
 		title: 'font(f) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
 		title: 'fill([shade] [r, g, b] [color]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
 		title: 'stroke([shade] [r, g, b] [color]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/bg-func': {
 		path: './html/dev/docs/fill/bg-func.html',
 		title: 'bg([shade] [r, g, b] [color]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/strokewidth-func': {
 		path: './html/dev/docs/fill/strokewidth-func.html',
 		title: 'strokeWidth(w) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/rgb-func': {
 		path: './html/dev/docs/fill/rgb-func.html',
 		title: 'rgb(r, g, b[, a]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/hsl-func': {
 		path: './html/dev/docs/fill/hsl-func.html',
 		title: 'hsl(r, g, b[, a]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/trans-none': {
 		path: './html/dev/docs/fill/trans-none.html',
 		title: 'trans and none | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/draw-loop': {
 		path: './html/dev/docs/draw/draw-loop.html',
 		title: 'draw() loop | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/framerate': {
 		path: './html/dev/docs/draw/framerate.html',
 		title: 'frameRate | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousex-y': {
 		path: './html/dev/docs/mouse/mousex-y.html',
 		title: 'mouseX and mouseY | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousepressed': {
 		path: './html/dev/docs/mouse/mousepressed.html',
 		title: 'mousePressed | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
 		path: './html/dev/docs/keyboard/keycodes.html',
 		title: 'keyCodes object | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/key': {
 		path: './html/dev/docs/keyboard/key.html',
 		title: 'key variable | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/global-math': {
 		path: './html/dev/docs/math/global-math.html',
 		title: 'Globally-scoped Math | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/rand-func': {
 		path: './html/dev/docs/math/rand-func.html',
 		title: 'rand([x[, y]]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/number-proto-bound': {
 		path: './html/dev/docs/math/number-proto-bound.html',
 		title: 'Number.prototype.bound(l[, h]) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
 		title: 'print(input) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
 		title: 'resetLog() | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/size-func': {
 		path: './html/dev/docs/size/size-func.html',
 		title: 'size(x, y) | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/width-height': {
 		path: './html/dev/docs/size/width-height.html',
 		title: 'width and height variables | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
 		path: './html/dev/docs/canvas/canvas-ctx.html',
 		title: 'canvas and ctx | Docs',
+		inhead: '<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/learn/web/': {
@@ -510,7 +539,11 @@ var statics = {
 
 var cache = {};
 
-http.createServer(function(req,	res) {
+https.createServer({
+	key: fs.readFileSync('../Secret/devdoodle.net.key'),
+	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')]
+}, function(req, res) {
 	var origURL = req.url,
 		i,
 		post;
@@ -520,7 +553,7 @@ http.createServer(function(req,	res) {
 	}
 	var cookies = cookie.parse(req.headers.cookie || '');
 	req.url = url.parse(req.url, true);
-	console.log('Req ' + req.url.pathname);
+	console.log(req.method, req.url.pathname);
 	dbcs.users.findOne({
 		cookie: {
 			$elemMatch: {
@@ -531,13 +564,17 @@ http.createServer(function(req,	res) {
 	}, function(err, user) {
 		if (err) throw err;
 		if (i = statics[req.url.pathname]) {
+			var options = {
+				clean: i.clean,
+				inhead: i.inhead
+			}
 			respondPage(i.title, user, req, res, function() {
 				fs.readFile(i.path || './html/' + req.url.pathname, function(err, data) {
 					if (err) throw err;
 					res.write(data.toString());
 					respondPageFooter(res);
 				});
-			}, i.clean ? {clean: true} : null);
+			}, options);
 		} else if (req.url.pathname.substr(0, 5) == '/api/') {
 			req.url.pathname = req.url.pathname.substr(4);
 			if (req.method != 'POST') {
@@ -927,27 +964,78 @@ http.createServer(function(req,	res) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
 					}
+					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3)) {
+						res.writeHead(400);
+						return res.end('Error: Missing required field.');
+					}
 					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
 						var id = last ? last._id + 1 : 1;
 						dbcs.questions.insert({
 							_id: id,
-							title: post.title,
-							lang: post.lang,
+							title: post.title.substr(0, 144),
+							lang: post.lang.substr(0, 48),
 							description: post.description,
-							question: post.question,
+							question: post.question.substr(0, 288),
 							code: post.code,
 							type: post.type,
 							cat: post.cat,
 							gr: post.gr,
-							self: post.self,
-							bounty: post.bounty,
+							self: post.self == 'on',
+							bounty: post.bounty == 'on',
 							user: user.name,
 							time: new Date().getTime(),
 							score: 0
 						});
 						res.writeHead(200);
 						res.end('Location: /qa/' + id);
+					});
+				} else if (req.url.pathname == '/qa/tags') {
+					res.writeHead(200);
+					res.write('[');
+					var n = 0;
+					dbcs.qtags.find(post.lang ? {lang: post.lang} : {}).each(function(err, tag) {
+						if (err) throw err;
+						if (tag) res.write((n ? ',' : '') + JSON.stringify(tag));
+						else res.end(']');
+						n++;
+					});
+				} else if (req.url.pathname == '/qa/tags/add') {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to create a new tag.');
+					}
+					if (!post.name || !post.lang) {
+						res.writeHead(400);
+						return res.end('Error: Name and language are required fields.');
+					}
+					dbcs.answers.find({
+						user: user.name,
+						score: {$gte: 6}
+					}).count(function(err, count) {
+						if (err) throw err;
+						if (count < 8 && user.level < 3) {
+							res.writeHead(403);
+							return res.end('Error: You must either be a level 3 moderator or have a bronze ' + post.lang + ' tag badge to create a new tag.');
+						}
+						dbcs.qtags.findOne({_id: parseInt(post.par)}, function(err, parent) {
+							if (err) throw err;
+							var newTag = {
+								name: post.name.substr(0, 48),
+								lang: post.lang.substr(0, 48),
+							};
+							if (parent) {
+								newTag.parentID = parent._id;
+								newTag.parentName = parent.name;
+							}
+							dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+								if (err) throw err;
+								newTag._id = last ? last._id + 1 : 1;
+								dbcs.qtags.insert(newTag);
+								res.writeHead(200);
+								res.end(JSON.stringify(newTag));
+							});
+						});
 					});
 				} else if (req.url.pathname == '/question/search') {
 					var samelang = [],
@@ -1218,14 +1306,10 @@ http.createServer(function(req,	res) {
 					respondPage(post.lang + ': ' + post.title, user, req, res, function() {
 						res.write('<h1>' + html(post.lang + ': ' + post.title) + '</h1>');
 						res.write(markdown(post.description));
-						res.write('<code class="blk">' + html(post.code) + '</code>');
-						res.write('<p>' + html(post.question) + '</p>');
+						if (post.code) res.write('<code class="blk">' + html(post.code) + '</code>');
+						res.write('<p><strong>' + html(post.question) + '</strong></p>');
 						res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
 						res.write('<hr />');
-						var cat = [];
-						for (var i in post) {
-							if (i.substr(0, 2) == 'ck') cat.push(i.substr(2));
-						}
 						res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else if (res.substr(0, 10) == \'Location: \') location.href = res.substr(10); else alert(\'Unknown error. Response was: \' + res) }, ' + html(JSON.stringify(
 							'title=' + encodeURIComponent(post.title) +
 							'&lang=' + encodeURIComponent(post.lang) +
@@ -1233,7 +1317,7 @@ http.createServer(function(req,	res) {
 							'&question=' + encodeURIComponent(post.question) +
 							'&code=' + encodeURIComponent(post.code) +
 							'&type=' + encodeURIComponent(post.type) +
-							'&cat=' + encodeURIComponent(cat) +
+							'&tags=' + encodeURIComponent(post.tags) +
 							'&gr=' + encodeURIComponent(post.gr || '') +
 							'&self=' + encodeURIComponent(post.self || '') +
 							'&bounty=' + encodeURIComponent(post.bounty || '')
@@ -1648,5 +1732,15 @@ http.createServer(function(req,	res) {
 			});
 		}
 	});
-}).listen(process.argv[2] || 80);
-console.log('front.js running on port ' + (process.argv[2] || 80));
+}).listen(process.argv[2] || 443);
+console.log('front.js running on port ' + (process.argv[2] || 443));
+
+if (!process.argv[2]) {
+	http.createServer(function(req, res) {
+		res.writeHead(301, {
+			Location: 'https://' + req.headers.host + req.url
+		});
+		res.end();
+	}).listen(80);
+	console.log('Notice: HTTP on port 80 will redirect to HTTPS on port 443');
+}

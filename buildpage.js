@@ -44,11 +44,11 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons'];
+	usedDBCs = ['users', 'questions', 'answers', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', 'KnT$6D6hF35^75tNyu6t', function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
 		if (err) throw err;
 		var i = usedDBCs.length;
 		while (i--) {
@@ -255,7 +255,7 @@ http.createServer(function(req,	res) {
 	var user = JSON.parse(req.headers.user) || {},
 		i;
 	req.url = url.parse(req.url, true);
-	console.log('Req ' + req.url.pathname);
+	console.log(req.method, req.url.pathname);
 	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
@@ -417,6 +417,83 @@ http.createServer(function(req,	res) {
 				if (err) throw err;
 				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '" title="Score: ' + doc.score + '">' + html(doc.title) + '</a></h2>\n');
 				else respondPageFooter(res);
+			});
+		});
+	} else if (req.url.pathname == '/qa/tags') {
+		respondPage('Tags', user, req, res, function() {
+			fs.readFile('./html/qa/tags.html', function(err, data) {
+				if (err) throw err;
+				res.write(data);
+				var tlang = [],
+					clang = '';
+				dbcs.qtags.find().sort({lang: 1}).each(function(err, tag) {
+					if (err) throw err;
+					if (tag) {
+						if (tag.lang == clang) tlang.push(tag);
+						else {
+							if (clang) {
+								res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">\n');
+								res.write('<h2>' + html(clang) + '</h2>\n');
+								res.write('<ul>\n');
+								var writeTagRecursive = function(tag) {
+									res.write('<li id="' + tag._id + '">');
+									res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
+									tlang.splice(tlang.indexOf(tag), 1);
+									res.write('<ul>');
+									var i = -1;
+									while (++i < tlang.length) {
+										if (tlang[i].parentID == tag._id) {
+											writeTagRecursive(tlang[i]);
+											i = -1;
+										}
+									}
+									res.write('</ul>');
+									res.write('</li>');
+								};
+								var i = -1;
+								while (++i < tlang.length) {
+									if (!tlang[i].parentID) {
+										writeTagRecursive(tlang[i]);
+										i = -1;
+									}
+								}
+								res.write('</ul>\n');
+								res.write('</section>\n');
+							}
+							clang = tag.lang;
+							tlang = [tag];
+						}
+					} else {
+						res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">\n');
+						res.write('<h2>' + html(clang) + '</h2>\n');
+						res.write('<ul>\n');
+						var writeTagRecursive = function(tag) {
+							res.write('<li id="' + tag._id + '">');
+							res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
+							tlang.splice(tlang.indexOf(tag), 1);
+							res.write('<ul>');
+							var i = -1;
+							while (++i < tlang.length) {
+								if (tlang[i].parentID == tag._id) {
+									writeTagRecursive(tlang[i]);
+									i = -1;
+								}
+							}
+							res.write('</ul>');
+							res.write('</li>');
+						};
+						var i = -1;
+						while (++i < tlang.length) {
+							if (!tlang[i].parentID) {
+								writeTagRecursive(tlang[i]);
+								i = -1;
+							}
+						}
+						res.write('</ul>\n');
+						res.write('</section>\n');
+						respondPageFooter(res);
+					}
+				});
 			});
 		});
 	} else if (req.url.pathname == '/qa/ask') {
@@ -672,13 +749,13 @@ http.createServer(function(req,	res) {
 					data.toString()
 					.replace(/<section id="meta">[^]+<\/section>/, '')
 					.replaceAll(
-						['$id', '$title', '$code'],
-						['', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+						['$mine', '$id', '$title', '$code'],
+						['false', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 					)
 				);
 				respondPageFooter(res);
 			});
-		});
+		}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
 	} else if (req.url.pathname == '/dev/new/html') {
 		respondPage('HTML Playground', user, req, res, function() {
 			fs.readFile('./html/dev/html.html', function(err, data) {
@@ -806,7 +883,7 @@ http.createServer(function(req,	res) {
 						});
 					});
 				});
-			});
+			}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
 		});
 	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, user, req, res, function() {
