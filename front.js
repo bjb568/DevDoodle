@@ -267,7 +267,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 	var type = Math.floor(Math.random() * 3);
 	respondPage('Login', user, req, res, function() {
 		res.write('<h1>Log in</h1>\n');
-		res.write(errorsHTML(errs));
+		res.write(errorsHTML(errs) || (post.r == 'ask' ? '<div class="notice">You must be logged in to ask a question.</div>' : ''));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
@@ -1525,19 +1525,11 @@ https.createServer({
 							crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 								if (err) throw err;
 								if (key.toString('base64') != fuser.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-								var idToken = crypto.randomBytes(128).toString('base64');
-								respondPage('Login Success', user, req, res, function() {
-									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
-									var referer = url.parse(post.referer);
-									if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
-									respondPageFooter(res);
-								}, {
-									'Set-Cookie': cookie.serialize('id', idToken, {
+								var idToken = crypto.randomBytes(128).toString('base64'),
+									idCookie = cookie.serialize('id', idToken, {
 										path: '/',
 										expires: new Date(new Date().setDate(new Date().getDate() + 30))
-									}),
-									user: fuser
-								});
+									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
 										cookie: {
@@ -1546,11 +1538,33 @@ https.createServer({
 										}
 									}
 								});
+								if ((url.parse(req.headers.referer, true).query || {}).r == 'ask') {
+									res.writeHead(303, {
+										Location: '/qa/ask',
+										'Set-Cookie': idCookie
+									});
+									return res.end();
+								}
+								var referer = url.parse(post.referer);
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') {
+									res.writeHead(303, {
+										Location: referer.pathname,
+										'Set-Cookie': idCookie
+									});
+									return res.end();
+								}
+								respondPage('Login Success', user, req, res, function() {
+									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
+									respondPageFooter(res);
+								}, {
+									'Set-Cookie': idCookie,
+									user: fuser
+								});
 							});
 						});
 					}
 				});
-			} else respondLoginPage([], user, req, res, {referer: req.headers.referer});
+			} else respondLoginPage([], user, req, res, {referer: req.headers.referer, r: (req.url.query || {}).r});
 		} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
 			if (req.method == 'POST') {
 				post = '';

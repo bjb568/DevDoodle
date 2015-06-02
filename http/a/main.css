@@ -49,7 +49,7 @@ body {
 .bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
-.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
+.pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
@@ -213,6 +213,7 @@ ul, ol, p { margin: 6px 0 2px 0 }
 	background: #f00;
 	color: #fff;
 }
+.notice { background: #ff0 }
 #err a { color: #fff }
 #err > * {
 	display: block;
