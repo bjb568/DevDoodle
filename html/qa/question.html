@@ -225,7 +225,10 @@ This text will be replaced
 		} else if (data.event == 'scorechange') {
 			var c = document.getElementById('c' + data.id);
 			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-		} else if (data.event == 'err') alert('Error: ' + data.body);
+		} else if (data.event == 'err') {
+			alert('Error: ' + data.body);
+			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
+		}
 	};
 	function upvoteComment() {
 		this.classList.toggle('clkd');

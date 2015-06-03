@@ -958,7 +958,8 @@ wss.on('connection', function(tws) {
 							}
 							if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
 								event: 'err',
-								body: 'You may not vote on your own comments.'
+								body: 'You may not vote on your own comments.',
+								commentUnvote: id
 							}));
 							dbcs.comments.update({_id: id}, {
 								$push: {
