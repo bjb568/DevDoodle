@@ -964,9 +964,16 @@ https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
 					}
-					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3)) {
+					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3) || !post.tags) {
 						res.writeHead(400);
 						return res.end('Error: Missing required field.');
+					}
+					var tags = post.tags.split();
+					for (var i = 0; i < tags.length; i++) {
+						if (!(tags[i] = parseInt(tags[i]))) {
+							res.writeHead(400);
+							return res.end('Error: Invalid tag list.');
+						}
 					}
 					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
@@ -979,7 +986,7 @@ https.createServer({
 							question: post.question.substr(0, 288),
 							code: post.code,
 							type: post.type,
-							cat: post.cat,
+							tags: tags,
 							gr: post.gr,
 							self: post.self == 'on',
 							bounty: post.bounty == 'on',
