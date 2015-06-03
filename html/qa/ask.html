@@ -214,7 +214,7 @@
 	var step = 0,
 		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
 		waiting = false;
-	lang.addEventListener('keyup', function(e) {
+	lang.addEventListener('keyup', function() {
 		if (!(langsug.hidden = !this.value)) {
 			var firstChild;
 			while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
@@ -427,8 +427,6 @@
 			document.getElementById('step4').classList.remove('hide');
 			smoothScroll(document.getElementById('step4'));
 			document.getElementById('codehelp').classList.add('hide');
-		} else {
-			//request(); //TODO
 		}
 	};
 	tags.onchange = function() {
@@ -446,7 +444,7 @@
 	};
 	document.getElementById('showpreview').onclick = function(e) {
 		e.preventDefault();
-		var preview = document.getElementById('preview'), sfc;
+		var preview = document.getElementById('preview'), fc;
 		while (fc = preview.firstChild) preview.removeChild(fc);
 		var h1 = document.createElement('h1');
 		h1.appendChild(document.createTextNode(lang.value + ': ' + title.value + ' '));
@@ -492,7 +490,7 @@
 	document.getElementById('preview').addEventListener('click', function(e) {
 		e.stopPropagation();
 	});
-	addEventListener('click', function(e) {
+	addEventListener('click', function() {
 		document.getElementById('preview').hidden = true;
 		document.body.classList.remove('tint');
 	});
