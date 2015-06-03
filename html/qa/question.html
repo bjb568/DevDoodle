@@ -12,7 +12,7 @@
 		<p><strong>$question</strong></p>
 	</div>
 	<div class="clearfix">
-		<div id="tags" class="lft">$cat</div>
+		<div id="tags" class="lft">$tags</div>
 		<div class="rit user user-$op-name">
 			<img src="$op-pic" width="40" height="40" />
 			<div>
@@ -27,7 +27,7 @@
 	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
 	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
 	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
-	$ecat
+	<div id="edit-tags">$edit-tags</div>
 	<div>
 		<button type="submit">Submit Edit</button>
 		<button type="reset" id="cancel-edit">Cancel</button>
@@ -109,6 +109,19 @@ This text will be replaced
 		transition: fill 0.1s;
 		fill: #c00;
 	}
+	.tag {
+		display: inline-block;
+		text-decoration: none;
+		padding: 2px 6px;
+		margin-bottom: 4px;
+		background: #afa;
+		box-shadow: 1px 1px 2px #666;
+		transition: background-color 0.1s;
+	}
+	.tag:hover {
+		color: #000;
+		background: #cfc;
+	}
 	.comment .up, .comment .dn { width: 18px }
 	#comment:target + #addcomment { display: none }
 	#answer, #answerta { z-index: 1 }
@@ -141,7 +154,7 @@ This text will be replaced
 			document.getElementById('title').hidden = 1;
 			document.getElementById('title-edit').hidden = 0;
 			document.getElementById('q-content').hidden = 1;
-			document.getElementById('q-body-edit').focus();
+			document.getElementById('q-desc-edit').focus();
 		}
 	}
 	addEventListener('load', handleLocationUpdate);
@@ -212,7 +225,10 @@ This text will be replaced
 		} else if (data.event == 'scorechange') {
 			var c = document.getElementById('c' + data.id);
 			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-		} else if (data.event == 'err') alert('Error: ' + data.body);
+		} else if (data.event == 'err') {
+			alert('Error: ' + data.body);
+			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
+		}
 	};
 	function upvoteComment() {
 		this.classList.toggle('clkd');
@@ -224,5 +240,21 @@ This text will be replaced
 	var comments = document.getElementsByClassName('comment');
 	for (var i = 0; i &lt; comments.length; i++) {
 		comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+	}
+	var e = document.getElementById('edit-tags').getElementsByTagName('label');
+	for (var i = 0; i &lt; e.length; i++) {
+		e[i].addEventListener('click', function() {
+			if (!this.children[0].checked) {
+				var e = this.nextElementSibling.getElementsByTagName('input');
+				for (var i = 0; i &lt; e.length; i++) e[i].checked = false;
+			}
+		});
+		e[i].onclick = function() {
+			if (this.children[0].checked) {
+				var ref = this.parentNode.previousElementSibling;
+				ref.children[0].checked = true;
+				if (ref.onclick) ref.onclick();
+			}
+		};
 	}
 </script>

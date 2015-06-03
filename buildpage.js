@@ -412,7 +412,7 @@ http.createServer(function(req,	res) {
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Questions <small><a href="ask">New Question</a></small></h1>\n');
+			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a></small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '" title="Score: ' + doc.score + '">' + html(doc.title) + '</a></h2>\n');
@@ -497,6 +497,10 @@ http.createServer(function(req,	res) {
 			});
 		});
 	} else if (req.url.pathname == '/qa/ask') {
+		if (!user.name) {
+			res.writeHead('303', {Location: '/login/?r=ask'});
+			return res.end();
+		}
 		respondPage('New Question', user, req, res, function() {
 			fs.readFile('./html/qa/ask.html', function(err, data) {
 				if (err) throw err;
@@ -534,19 +538,54 @@ http.createServer(function(req,	res) {
 						} else {
 							fs.readFile('./html/qa/question.html', function(err, data) {
 								if (err) throw err;
-								res.write(data.toString()
-									.replaceAll(
-										['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-										[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-									).replaceAll(
-										['$qcommentstr', '$rep'],
-										[commentstr, (user.rep || 0).toString()]
-									).replace('$cat', question.cat || '<span title="Plain, without any frameworks or libraries">(vanilla)</span>').replaceAll(
-										['$op-name', '$op-rep', '$op-pic'],
-										[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-									)
-								);
-								respondPageFooter(res);
+								var tagstr = '';
+								dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+									if (err) throw err;
+									if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
+									else {
+										var tlang = [],
+											tageditstr = '';
+										dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+											if (err) throw err;
+											if (tag) tlang.push(tag);
+											else {
+												var writeTagRecursive = function(tag) {
+													tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+													tlang.splice(tlang.indexOf(tag), 1);
+													tageditstr += '<div class="indt">';
+													var i = -1;
+													while (++i < tlang.length) {
+														if (tlang[i].parentID == tag._id) {
+															writeTagRecursive(tlang[i]);
+															i = -1;
+														}
+													}
+													tageditstr += '</div>';
+												};
+												var i = -1;
+												while (++i < tlang.length) {
+													if (!tlang[i].parentID) {
+														writeTagRecursive(tlang[i]);
+														i = -1;
+													}
+												}
+												res.write(data.toString()
+													.replaceAll(
+														['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+														[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+													).replace('$edit-tags', tageditstr).replaceAll(
+														['$qcommentstr', '$tags', '$rep'],
+														[commentstr, tagstr, (user.rep || 0).toString()]
+													).replaceAll(
+														['$op-name', '$op-rep', '$op-pic'],
+														[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+													)
+												);
+												respondPageFooter(res);
+											}
+										});
+									}
+								});
 							});
 						}
 					});

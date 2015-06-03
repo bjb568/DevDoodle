@@ -267,7 +267,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 	var type = Math.floor(Math.random() * 3);
 	respondPage('Login', user, req, res, function() {
 		res.write('<h1>Log in</h1>\n');
-		res.write(errorsHTML(errs));
+		res.write(errorsHTML(errs) || (post.r == 'ask' ? '<div class="notice">You must be logged in to ask a question.</div>' : ''));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
@@ -988,9 +988,16 @@ https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
 					}
-					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3)) {
+					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3) || !post.tags) {
 						res.writeHead(400);
 						return res.end('Error: Missing required field.');
+					}
+					var tags = post.tags.split();
+					for (var i = 0; i < tags.length; i++) {
+						if (!(tags[i] = parseInt(tags[i]))) {
+							res.writeHead(400);
+							return res.end('Error: Invalid tag list.');
+						}
 					}
 					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
 						if (err) throw err;
@@ -1003,7 +1010,7 @@ https.createServer({
 							question: post.question.substr(0, 288),
 							code: post.code,
 							type: post.type,
-							cat: post.cat,
+							tags: tags,
 							gr: post.gr,
 							self: post.self == 'on',
 							bounty: post.bounty == 'on',
@@ -1313,43 +1320,6 @@ https.createServer({
 					res.end('The API feature requested has not been implemented.');
 				}
 			});
-		} else if (req.url.pathname == '/qa/preview') {
-			if (req.method == 'POST') {
-				post = '';
-				req.on('data', function(data) {
-					if (req.abort) return;
-					post += data;
-					if (post.length > 1000000) {
-						errorPage[413](req, res, user);
-						req.abort = true;
-					}
-				});
-				req.on('end', function() {
-					if (req.abort) return;
-					post = querystring.parse(post);
-					respondPage(post.lang + ': ' + post.title, user, req, res, function() {
-						res.write('<h1>' + html(post.lang + ': ' + post.title) + '</h1>');
-						res.write(markdown(post.description));
-						if (post.code) res.write('<code class="blk">' + html(post.code) + '</code>');
-						res.write('<p><strong>' + html(post.question) + '</strong></p>');
-						res.write('<small>(type: ' + questionTypes[post.type] + ')</small>');
-						res.write('<hr />');
-						res.write('<button onclick="request(\'/api/qa/newquestion\', function(res) { if (res.substr(0, 7) == \'Error: \') alert(res); else if (res.substr(0, 10) == \'Location: \') location.href = res.substr(10); else alert(\'Unknown error. Response was: \' + res) }, ' + html(JSON.stringify(
-							'title=' + encodeURIComponent(post.title) +
-							'&lang=' + encodeURIComponent(post.lang) +
-							'&description=' + encodeURIComponent(post.description) +
-							'&question=' + encodeURIComponent(post.question) +
-							'&code=' + encodeURIComponent(post.code) +
-							'&type=' + encodeURIComponent(post.type) +
-							'&tags=' + encodeURIComponent(post.tags) +
-							'&gr=' + encodeURIComponent(post.gr || '') +
-							'&self=' + encodeURIComponent(post.self || '') +
-							'&bounty=' + encodeURIComponent(post.bounty || '')
-						)) + ')">Submit</button>');
-						respondPageFooter(res);
-					});
-				});
-			} else errorPage[405](req, res, user);
 		} else if (req.url.pathname == '/learn/new') {
 			if (req.method == 'GET') {
 				respondPage('New Lesson', user, req, res, function() {
@@ -1586,19 +1556,11 @@ https.createServer({
 							crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 								if (err) throw err;
 								if (key.toString('base64') != fuser.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-								var idToken = crypto.randomBytes(128).toString('base64');
-								respondPage('Login Success', user, req, res, function() {
-									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
-									var referer = url.parse(post.referer);
-									if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') res.write('<p>Continue to <a href="' + html(referer.pathname) + '">' + html(referer.pathname) + '</a>.</p>');
-									respondPageFooter(res);
-								}, {
-									'Set-Cookie': cookie.serialize('id', idToken, {
+								var idToken = crypto.randomBytes(128).toString('base64'),
+									idCookie = cookie.serialize('id', idToken, {
 										path: '/',
 										expires: new Date(new Date().setDate(new Date().getDate() + 30))
-									}),
-									user: fuser
-								});
+									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
 										cookie: {
@@ -1607,11 +1569,33 @@ https.createServer({
 										}
 									}
 								});
+								if ((url.parse(req.headers.referer, true).query || {}).r == 'ask') {
+									res.writeHead(303, {
+										Location: '/qa/ask',
+										'Set-Cookie': idCookie
+									});
+									return res.end();
+								}
+								var referer = url.parse(post.referer);
+								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') {
+									res.writeHead(303, {
+										Location: referer.pathname,
+										'Set-Cookie': idCookie
+									});
+									return res.end();
+								}
+								respondPage('Login Success', user, req, res, function() {
+									res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
+									respondPageFooter(res);
+								}, {
+									'Set-Cookie': idCookie,
+									user: fuser
+								});
 							});
 						});
 					}
 				});
-			} else respondLoginPage([], user, req, res, {referer: req.headers.referer});
+			} else respondLoginPage([], user, req, res, {referer: req.headers.referer, r: (req.url.query || {}).r});
 		} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
 			if (req.method == 'POST') {
 				post = '';
