@@ -1,8 +1,15 @@
 <h1>New Question</h1>
 <form id="form" method="post" action="/api/qa/newquestion">
+	<fieldset id="step0">
+		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
+		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
+		<div id="langsug" hidden="" class="abs"></div>
+		<button type="submit" id="submit1">Next</button>
+		<div id="err1" class="err"></div>
+	</fieldset>
 	<aside id="titlehelp" class="rit">
 		<h2>Writing a good title</h2>
-		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title should try to efficiently capture the essence of the question. Try to avoid titles like:</p>
+		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title effectively capture the essence of the question. Try to avoid titles like:</p>
 		<ul>
 			<li><strong>"Is it possible to…"</strong> (you want to know <em>how</em> to do something)</li>
 			<li><strong>X in [some language]</strong> (what about <em>X</em>?)</li>
@@ -15,13 +22,6 @@
 		</ul>
 		<p>Remember to keep it as short and concise as possible while still accurately describing the problem.</p>
 	</aside>
-	<fieldset id="step0">
-		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
-		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
-		<div id="langsug" hidden="" class="abs"></div>
-		<button type="submit" id="submit1">Next</button>
-		<div id="err1" class="err"></div>
-	</fieldset>
 	<fieldset id="step1" class="hide">
 		<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
 		<div class="hglt pad bmar">
@@ -29,10 +29,6 @@
 		</div>
 		<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
 	</fieldset>
-	<aside id="explainhelp" class="hide rit">
-		<h2>Explaining your problem</h2>
-		<p>In the description box, you want to describe your problem in detail. <em>Include any information needed to setup the environment, replicate the bug, or observe the problematic behavior.</em> Be <strong>clear</strong> about what exactly you did, struggled with, and would like us to help with. The core question box is for your specific request <em>in one well-written sentence</em>, for example "How can I flow foo thru bar?".</p>
-	</aside>
 	<fieldset id="step2" class="hide">
 		<h2>Question Body</h2>
 		<div class="ta-cont">
@@ -43,9 +39,9 @@
 		<button type="submit" id="submit3" hidden="">Next</button>
 		<div id="err3" class="err"></div>
 	</fieldset>
-	<aside id="codehelp" class="hide rit">
-		<h2>Adding relevant code</h2>
-		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (whatever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>After isolating the problem, you should have a small code snippit that reproduces the issue, generally under 48 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
+	<aside id="explainhelp" class="hide rit">
+		<h2>Explaining your problem</h2>
+		<p>In the description box, you want to describe your problem in detail. <em>Include any information needed to setup the environment, replicate the bug, or observe the problematic behavior.</em> Be <strong>clear</strong> about what exactly you did, struggled with, and would like us to help with. The core question box is for your specific request <em>in one well-written sentence</em>, for example "How can I flow foo thru bar?".</p>
 	</aside>
 	<fieldset id="step3" class="hide">
 		<h2>Code</h2>
@@ -55,6 +51,10 @@
 		</div>
 		<button type="submit" id="submit4" hidden="">Almost done!</button>
 	</fieldset>
+	<aside id="codehelp" class="hide rit">
+		<h2>Adding relevant code</h2>
+		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (whatever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>After isolating the problem, you should have a small code snippit that reproduces the issue, generally under 48 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
+	</aside>
 	<fieldset id="step4" class="hide">
 		<h2>Categorization</h2>
 		<h3>My question is about…</h3>
@@ -81,10 +81,26 @@
 </form>
 <article id="preview" class="popup" hidden=""></article>
 <style>
-	form { padding: 0 4px }
+	form {
+		padding: 0 4px;
+		width: 100%;
+	}
 	aside { clear: right }
 	label { display: table }
 	#options label { display: inline }
+	@media (min-width: 701px) {
+		fieldset {
+			width: calc(90% - 306px);
+			float: left;
+			clear: left;
+		}
+	}
+	@media (max-width: 909px) {
+		#duplist, aside { font-size: 0.95em }
+	}
+	@media (max-width: 759px) {
+		#duplist, aside { font-size: 0.9em }
+	}
 	.ta-cont {
 		position: relative;
 		width: 100%;
@@ -95,17 +111,15 @@
 		visibility: hidden;
 	}
 	.ta-cont pre, textarea {
-		position: absolute;
-		top: 0; left: 0;
-		width: 100%;
 		font-size: .9em;
 		font-family: inherit;
 		line-height: 1.2;
 		white-space: pre-wrap;
 	}
 	textarea {
+		position: absolute;
+		top: 0; right: 0; bottom: 0; left: 0;
 		resize: none;
-		height: 100%;
 	}
 	#step4 h3 { margin-bottom: 4px }
 	#types, #tags, #options { padding-left: 32px }
@@ -126,6 +140,7 @@
 		z-index: 1;
 	}
 	.err:empty { opacity: 0 }
+	#duplist { padding-left: 1.5em }
 	#duplist:empty { padding: 0 }
 	#duplist:empty::after {
 		content: 'Loading possible duplicates…';
@@ -194,7 +209,6 @@
 	addEventListener('input', function() {
 		if (document.activeElement.parentNode.classList.contains('ta-cont')) {
 			document.activeElement.nextElementSibling.textContent = document.activeElement.value + '\n';
-			document.activeElement.parentNode.style.height = document.activeElement.nextElementSibling.offsetHeight + 'px';
 		}
 	});
 	var step = 0,
@@ -247,13 +261,13 @@
 				var li = document.createElement('li'),
 					h3 = document.createElement('h3'),
 					a = document.createElement('a');
-				a.appendChild(document.createTextNode(res[i].title));
+				a.appendChild(document.createTextNode(res[i].title.replace(/(\S{30})\S*/g, '$1')));
 				a.href = res[i]._id;
 				a.target = '_blank';
 				h3.appendChild(a);
 				li.appendChild(h3);
 				var blockquote = document.createElement('blockquote');
-				blockquote.innerHTML = markdown(res[i].body);
+				blockquote.innerHTML = markdown(res[i].body.replace(/(\S{30})\S*/g, '$1'));
 				li.appendChild(blockquote);
 				duplist.appendChild(li);
 			}
