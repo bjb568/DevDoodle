@@ -577,9 +577,9 @@ http.createServer(function(req,	res) {
 														['$qcommentstr', '$tags', '$rep'],
 														[commentstr, tagstr, (user.rep || 0).toString()]
 													).replaceAll(
-													)
 														['$askdate', '$op-name', '$op-rep', '$op-pic'],
 														[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+													).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
 												);
 												respondPageFooter(res);
 											}
