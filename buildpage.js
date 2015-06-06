@@ -415,7 +415,7 @@ http.createServer(function(req,	res) {
 			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a></small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
-				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '" title="Score: ' + doc.score + '">' + html(doc.title) + '</a></h2>\n');
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
 				else respondPageFooter(res);
 			});
 		});
