@@ -15,11 +15,14 @@
 	</div>
 	<div class="clearfix">
 		<div id="tags" class="lft">$tags</div>
-		<div class="rit user user-$op-name">
-			<img src="$op-pic" width="40" height="40" />
-			<div>
-				<a href="/user/$op-name">$op-name</a>
-				<small class="rep">$op-rep</small>
+		<div class="rit">
+			<div>Asked <time datetime="$askdate"></time> by</div>
+			<div class="user user-$op-name">
+				<img src="$op-pic" width="40" height="40" />
+				<div>
+					<a href="/user/$op-name">$op-name</a>
+					<small class="rep">$op-rep</small>
+				</div>
 			</div>
 		</div>
 		<small class="blk sumar lft" style="clear: left"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
