@@ -943,31 +943,24 @@ http.createServer(function(req,	res) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
 			if (err) throw err;
 			if (!post) return errorPage[404](req, res, user);
-			if (user.name != post.user) {
-				res.writeHead(303, {
-					Location: '1'
+			respondPage(post.title, user, req, res, function() {
+				fs.readFile('./html/learn/course.html', function(err, data) {
+					if (err) throw err;
+					res.write(
+						data.toString()
+						.replaceAll('$title', html(post.title))
+						.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
+							return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
+						}).join('') + '</ul>' + (
+							post.user == user.name
+							? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
+							: ''
+						))
+						.replace('$mine', post.user == user.name ? 'true' : 'false')
+					);
+					respondPageFooter(res);
 				});
-				res.end();
-			} else {
-				respondPage(post.title, user, req, res, function() {
-					fs.readFile('./html/learn/course.html', function(err, data) {
-						if (err) throw err;
-						res.write(
-							data.toString()
-							.replaceAll('$title', html(post.title))
-							.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
-								return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
-							}).join('') + '</ul>' + (
-								post.user == user.name
-								? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
-								: ''
-							))
-							.replace('$mine', post.user == user.name ? 'true' : 'false')
-						);
-						respondPageFooter(res);
-					});
-				});
-			}
+			});
 		});
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, lesson) {
