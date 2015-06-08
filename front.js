@@ -300,7 +300,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
 		res.write('\t<option value="N">Private</option>\n');
-		if (user.level == 5) res.write('\t<option value="M">♦ only</option>\n');
+		if (user.level > 4) res.write('\t<option value="M">♦ only</option>\n');
 		res.write('</select>\n');
 		res.write('</div>\n');
 		res.write('<button type="submit">Submit</button>\n');

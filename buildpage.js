@@ -600,13 +600,18 @@ http.createServer(function(req,	res) {
 			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
-					if (doc.type == 'M' && user.level != 5) return;
+					if (doc.type == 'M' && (!user || user.level < 5)) return;
+					if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
 					roomnames[doc._id] = doc.name;
 					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
-					if (user.rep >= 200) res.write('<hr />\n<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
+					res.write('<hr />\n');
+					res.write('<small>');
+					res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
+					if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
+					res.write('</small>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
