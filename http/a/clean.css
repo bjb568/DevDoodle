@@ -318,6 +318,12 @@ textarea {
 .score[data-score="29"] { color: #f30 }
 .score[data-score="30"] { color: #f20 }
 .score[data-score="31"] { color: #f10 }
+.starcount {
+	font-weight: bold;
+	color: #d60;
+	line-height: 1.2;
+}
+.starcount[data-count="0"] { display: none }
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
