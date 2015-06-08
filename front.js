@@ -1071,11 +1071,11 @@ https.createServer({
 				} else if (req.url.pathname == '/question/search') {
 					var samelang = [],
 						otherlang = [];
+					res.writeHead(200);
 					dbcs.questions.find({
 						$text: {$search: post.search}
-					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(6).each(function(err, question) {
+					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(8).each(function(err, question) {
 						if (err) throw err;
-						res.writeHead(200);
 						if (question) {
 							var q = {
 								_id: question._id,
@@ -1084,7 +1084,7 @@ https.createServer({
 							};
 							if (question.lang == post.lang) samelang.push(q);
 							else otherlang.push(q);
-						} else res.end(JSON.stringify(samelang.concat(otherlang).splice(0, 12)));
+						} else res.end(JSON.stringify(samelang.concat(otherlang)));
 					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);
