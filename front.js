@@ -59,6 +59,7 @@ db.open(function(err, db) {
 		db.createCollection('questions', function(err, collection) {
 			if (err) throw err;
 			db.createIndex('questions', {description: 'text'}, {}, function() {});
+			db.createIndex('chat', {body: 'text'}, {}, function() {});
 			dbcs.questions = collection;
 		});
 		var i = usedDBCs.length;
@@ -300,7 +301,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
 		res.write('\t<option value="N">Private</option>\n');
-		if (user.level == 5) res.write('\t<option value="M">♦ only</option>\n');
+		if (user.level > 4) res.write('\t<option value="M">♦ only</option>\n');
 		res.write('</select>\n');
 		res.write('</div>\n');
 		res.write('<button type="submit">Submit</button>\n');
@@ -676,6 +677,40 @@ https.createServer({
 								stars: doc.stars,
 								room: doc.room
 							}));
+						}
+					});
+				} else if (req.url.pathname == '/chat/search') {
+					var rooms = {},
+						results = [];
+					dbcs.chatrooms.find().each(function(err, room) {
+						if (room) rooms[room._id] = room;
+						else {
+							res.writeHead(200);
+							var criteria = {$text: {$search: post.search}};
+							if (!user || user.level < 4) criteria.deleted = {$exists: false};
+							if (post.user) criteria.user = post.user;
+							if (post.room) criteria.room = parseInt(post.room);
+							var sort = {
+								text: {score: {$meta: 'textScore'}},
+								recent: {_id: -1},
+								old: {_id: 1},
+								stars: {stars: -1, _id: -1}
+							};
+							dbcs.chat.find(criteria, {score: {$meta: 'textScore'}}).sort(sort[post.sort] || post.text).each(function(err, msg) {
+								if (err) throw err;
+								if (msg) {
+									if (rooms[msg.room].type != 'N' && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
+										id: msg._id,
+										body: msg.body,
+										user: msg.user,
+										time: msg.time,
+										room: msg.room,
+										roomName: rooms[msg.room].name,
+										deleted: msg.deleted,
+										stars: msg.stars
+									});
+								} else res.end(JSON.stringify({user: user.name, results: results}));
+							});
 						}
 					});
 				} else if (req.url.pathname == '/chat/changeroomtype') {
@@ -1071,11 +1106,11 @@ https.createServer({
 				} else if (req.url.pathname == '/question/search') {
 					var samelang = [],
 						otherlang = [];
+					res.writeHead(200);
 					dbcs.questions.find({
 						$text: {$search: post.search}
-					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(6).each(function(err, question) {
+					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(8).each(function(err, question) {
 						if (err) throw err;
-						res.writeHead(200);
 						if (question) {
 							var q = {
 								_id: question._id,
@@ -1084,7 +1119,7 @@ https.createServer({
 							};
 							if (question.lang == post.lang) samelang.push(q);
 							else otherlang.push(q);
-						} else res.end(JSON.stringify(samelang.concat(otherlang).splice(0, 12)));
+						} else res.end(JSON.stringify(samelang.concat(otherlang)));
 					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);

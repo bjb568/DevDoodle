@@ -600,13 +600,18 @@ http.createServer(function(req,	res) {
 			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
-					if (doc.type == 'M' && user.level != 5) return;
+					if (doc.type == 'M' && (!user || user.level < 5)) return;
+					if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
 					roomnames[doc._id] = doc.name;
 					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
-					if (user.rep >= 200) res.write('<hr />\n<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
+					res.write('<hr />\n');
+					res.write('<small>');
+					res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
+					if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
+					res.write('</small>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
@@ -622,6 +627,29 @@ http.createServer(function(req,	res) {
 						else respondPageFooter(res, true);
 					});
 				}
+			});
+		});
+	} else if (req.url.pathname == '/chat/search') {
+		respondPage('Search', user, req, res, function() {
+			fs.readFile('./html/chat/search.html', function(err, data) {
+				if (err) throw err;
+				var rooms = [];
+				dbcs.chatrooms.find().each(function(err, doc) {
+					if (err) throw err;
+					if (doc) {
+						if (doc.type == 'M' && (!user || user.level < 5)) return;
+						if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
+						if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') rooms.push({id: doc._id, name: doc.name});
+					} else {
+						res.write(
+							data.toString()
+							.replace('$user', user.name)
+							.replace('$rooms', JSON.stringify(rooms))
+							.replace('$qroom', req.url.query ? req.url.query.room : '')
+						);
+						respondPageFooter(res);
+					}
+				});
 			});
 		});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
@@ -653,7 +681,7 @@ http.createServer(function(req,	res) {
 				});
 			} else {
 				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
-				if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
+				if (doc.type == 'M' && (!user || user.level < 5)) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
 				respondPage(doc.name, user, req, res, function() {
 					fs.readFile('./html/chat/room.html', function(err, data) {
 						if (err) throw err;
@@ -677,7 +705,7 @@ http.createServer(function(req,	res) {
 											)
 									) :
 									'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
-							.replace(' $options',  typeIcons[doc.type] + (user.rep > 200 && isInvited ? ' <small><a id="edit">Edit</a></small>' : ''))
+							.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
 							.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
 						);
 						respondPageFooter(res);

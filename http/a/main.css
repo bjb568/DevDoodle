@@ -312,6 +312,12 @@ textarea {
 .score[data-score="29"] { color: #f30 }
 .score[data-score="30"] { color: #f20 }
 .score[data-score="31"] { color: #f10 }
+.starcount {
+	font-weight: bold;
+	color: #d60;
+	line-height: 1.2;
+}
+.starcount[data-count="0"] { display: none }
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
@@ -340,6 +346,11 @@ textarea {
 	width: 160px;
 	max-width: 100%;
 	color: #000;
+	font-size: 16px;
+}
+#nav input::-webkit-search-results-decoration { display: none }
+@media screen and(-webkit-min-device-pixel-ratio: 0) { /* Safari only */
+	#nav input::-webkit-search-results-decoration { display: block }
 }
 #logo img {
 	max-height: 100%;
@@ -523,10 +534,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		color: #999;
 	}
 	#logo { height: 2rem }
-	#nav input {
-		width: 100%;
-		font-size: 1.3em;
-	}
+	#nav input { width: 100% }
 	#nav > .active::before {
 		content: '';
 		position: absolute;
