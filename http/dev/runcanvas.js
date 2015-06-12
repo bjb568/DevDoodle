@@ -14,7 +14,8 @@ addEventListener('DOMContentLoaded', function() {
 		endChars[93] = ']';
 		endChars[125] = '}';
 		if (e.keyCode == 13) {
-			var cut = (this.value.substr(0, oldSelectionStart).match(/\s+$/) || '').length;
+			var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
+			console.log(this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/));
 			this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 			oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
 			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
@@ -30,7 +31,7 @@ addEventListener('DOMContentLoaded', function() {
 						: 1
 					)
 				);
-			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + ('{([:,'.indexOf(this.value[oldSelectionStart - 1]) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
+			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + (['{}', '()', '[]'].indexOf(this.value.substr(oldSelectionStart - 1, 2)) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
 			e.preventDefault();
 		} else if (e.keyCode == 34) {
