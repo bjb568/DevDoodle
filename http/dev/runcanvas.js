@@ -107,6 +107,7 @@ addEventListener('DOMContentLoaded', function() {
 		});
 		if (location.hash == '#fullscreen') {
 			output.classList.add('fullscreen');
+			document.getElementById('close-fullscreen').hidden = false;
 			output.focus();
 		}
 	}
