@@ -7,6 +7,7 @@ document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
 textarea.style.top = '0';
 textarea.style.zIndex = '-1';
+textarea.style.opacity = '0';
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
