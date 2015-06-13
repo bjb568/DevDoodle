@@ -763,7 +763,7 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>\n');
-			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1, updated: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
@@ -782,10 +782,10 @@ http.createServer(function(req,	res) {
 			var liststr = '',
 				sort = (req.url.query || {}).sort || 'hot',
 				sortDict = {
-					default: {hotness: -1},
-					votes: {score: -1},
-					upvotes: {upvotes: -1},
-					recent: {time: -1},
+					default: {hotness: -1, recent: -1},
+					votes: {score: -1, recent: -1},
+					upvotes: {upvotes: -1, score: -1, hotness: -1, recent: -1},
+					recent: {created: -1},
 					update: {updated: -1}
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
