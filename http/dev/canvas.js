@@ -7,6 +7,7 @@ document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
 textarea.style.top = '0';
 textarea.style.zIndex = '-1';
+textarea.style.opacity = '0';
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
@@ -54,8 +55,9 @@ Number.prototype.bound = function(l, h) {
 };
 function requestFullLayoutMode() {
 	enabledFullScreen = requestEnableFullScreen = true;
-	size();
 	document.getElementById('console').style.height = 'auto';
+	document.getElementById('console').style.maxHeight = '240px';
+	size();
 	reset(true);
 }
 function rand(x, y) {
@@ -146,7 +148,10 @@ function bg() {
 	stroke(oldStroke);
 }
 function size(x, y) {
-	if (enabledFullScreen) (x = innerWidth) && (y = innerHeight - 4);
+	if (enabledFullScreen) {
+		x = innerWidth;
+		y = innerHeight - document.getElementById('console').offsetHeight - 32;
+	}
 	canvas.width = width = x;
 	canvas.height = height = y;
 }
@@ -154,10 +159,15 @@ function resetLog() {
 	var node = document.getElementById('console'), child;
 	while (child = node.firstChild) node.removeChild(child);
 }
+function removeLog() {
+	resetLog();
+	document.getElementById('console').hidden = true;
+}
 function print(input) {
 	var pre = document.createElement('pre');
 	pre.innerHTML = input;
 	document.getElementById('console').appendChild(pre);
+	document.getElementById('console').hidden = false;
 }
 var refresh = function() {};
 function reset(a) {
