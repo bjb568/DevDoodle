@@ -1,10 +1,11 @@
 <section id="main">
-	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
+	<h1><span id="title">$title</span> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
 		<textarea id="code" autofocus="">$code</textarea>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
+<div id="close-fullscreen" class="large" hidden=""><a href="#">✕</a></div>
 <section id="meta">
 	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
@@ -46,10 +47,11 @@
 		background: rgba(255, 255, 255, .8);
 		color: #000;
 	}
-	#code, #output {
-		width: 95%;
-		outline: none;
+	#fullscreen-button {
+		display: inline-block;
+		margin-left: 8px;
 	}
+	#code, #output { width: 95% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
 	#code {
@@ -73,10 +75,14 @@
 			width: 39%;
 			float: right;
 		}
+		.fullscreen #code:not(:focus) { width: 39% }
+		.fullscreen #code:not(:focus) + #output { width: 60% }
 	}
 	@media (min-width: 600px) and (max-width: 800px) {
 		#code { width: 55% }
 		#output { width: 44% }
+		.fullscreen #code:not(:focus) { width: 44% }
+		.fullscreen #code:not(:focus) + #output { width: 55% }
 	}
 	@media (min-width: 1500px) {
 		#code { margin-bottom: 0 }
@@ -84,7 +90,37 @@
 	@media (min-width: 1600px) {
 		#code { width: 65% }
 		#output { width: 34% }
+		.fullscreen #code:not(:focus) { width: 34% }
+		.fullscreen #code:not(:focus) + #output { width: 65% }
 	}
+	.fullscreen #main #output.fullscreen {
+		position: fixed;
+		top: 0; right: 0;
+		width: calc(100% - 32px);
+		height: 100%;
+		z-index: 1;
+	}
+	.large {
+		position: fixed;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		width: 32px; height: 32px;
+		line-height: 32px;
+		background: #aaa;
+		text-align: center;
+	}
+	@media (max-width: 1499px) {
+		.large {
+			height: 100%;
+		}
+	}
+	.large a {
+		display: inline-block;
+		width: 100%;
+		text-decoration: none;
+	}
+	.large a:hover { background: #fff }
 	#save.progress {
 		cursor: progress;
 		color: #4ff;
@@ -150,6 +186,21 @@
 	.fl:active {
 		transition: fill 0.1s;
 		fill: #c00;
+	}
+	@media (min-width: 1500px) {
+		.fullscreen #nav {
+			top: 32px;
+			right: calc(100% - 40px);
+			left: auto;
+			transition: right 0.5s, opacity 0.3s, z-index 1s;
+		}
+		.fullscreen #nav:hover {
+			right: calc(96% - 144px);
+			z-index: 2;
+			transition: right 0.5s, opacity 0.3s;
+		}
+		.fullscreen #nav:not(:hover) { opacity: 0.3 }
+		.fullscreen #content { margin: 6px 0 6px 46px }
 	}
 </style>
 <script>

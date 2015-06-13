@@ -1,5 +1,6 @@
 addEventListener('DOMContentLoaded', function() {
 	var code = document.getElementById('code'),
+		output = document.getElementById('output'),
 		save = document.getElementById('save'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
@@ -49,7 +50,7 @@ addEventListener('DOMContentLoaded', function() {
 		} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
 			this.selectionStart = ++this.selectionEnd;
 			e.preventDefault();
-		} else if (e.keyCode == 61 && this.value.substr(this.selectionStart - 5, this.selectionStart) == 'draw ') {
+		} else if (e.keyCode == 61 && this.value.substr(0, this.selectionStart).match('(draw|refresh) ')) {
 			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
 			this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
@@ -76,12 +77,52 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		}
 	});
+	var fullScreen = false,
+		fsBtn = document.getElementById('fullscreen-button'),
+		regLayout = document.getElementById('regular-layout');
+	function enableFullScreen() {
+		document.body.classList.add('fullscreen');
+		fsBtn.hidden = false;
+		regLayout.hidden = false;
+	}
+	if (regLayout) regLayout.onclick = function() {
+		document.body.classList.remove('fullscreen');
+		this.hidden = true;
+	};
+	if (fsBtn) {
+		fsBtn.onclick = function() {
+			document.getElementById('close-fullscreen').hidden = false;
+			enableFullScreen();
+		};
+		addEventListener('hashchange', function(e) {
+			if (location.hash == '#fullscreen') {
+				output.classList.add('fullscreen');
+				document.getElementById('close-fullscreen').hidden = false;
+				output.focus();
+			} else {
+				output.classList.remove('fullscreen');
+				document.getElementById('close-fullscreen').hidden = true;
+				code.focus();
+			}
+		});
+		if (location.hash == '#fullscreen') {
+			output.classList.add('fullscreen');
+			output.focus();
+		}
+	}
 	var oldValue;
-	function handleCode() {
+	function handleCode(init) {
 		if (code.value != oldValue) {
 			oldValue = code.value;
+			var lines = code.value.split('\n');
+			for (var i = 0; i < lines.length; i++) {
+				if (lines[i].indexOf('requestEnableFullScreen;') == 0) {
+					lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
+					if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
+				}
+			}
 			if (save && !save.classList.contains('progress')) save.textContent = 'Save';
-			document.getElementById('output').srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(code.value) + ')}catch(e){error(e)}</script></body></html>';
+			output.srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(lines.join('\n')) + ')}catch(e){error(e)}</script></body></html>';
 		}
 	}
 	var timeout = setTimeout(handleCode, 100);
@@ -92,7 +133,7 @@ addEventListener('DOMContentLoaded', function() {
 			return 'You have unsaved code.';
 		};
 	});
-	handleCode();
+	handleCode(true);
 	if (save) save.onclick = function() {
 		if (save.classList.contains('progress')) return;
 		save.classList.add('progress');

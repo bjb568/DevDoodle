@@ -5,7 +5,8 @@ var canvas = document.getElementById('canvas'),
 	textarea = document.createElement('textarea');
 document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
-textarea.style.opacity = 0.001;
+textarea.style.top = '0';
+textarea.style.zIndex = '-1';
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
@@ -26,7 +27,9 @@ addEventListener('keypress', function(e) {
 });
 //var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || null; //3D, anyone?
 var none = 'transparent', trans = none,
+	enabledFullScreen = false,
 	suppressKeyboard = false,
+	requestEnableFullScreen = new Error('No fullscreen capability'),
 	mouseX = 0,
 	mouseY = 0,
 	mousePressed = 0,
@@ -36,6 +39,12 @@ var none = 'transparent', trans = none,
 	scale = canvas.width / canvas.offsetWidth;
 addEventListener('resize', function() {
 	scale = canvas.width / canvas.offsetWidth;
+	if (enabledFullScreen) {
+		size();
+		reset(true);
+		refresh();
+		draw();
+	}
 });
 Object.getOwnPropertyNames(Math).forEach(function(element, index) {
 	window[element] = Math[element];
@@ -43,6 +52,12 @@ Object.getOwnPropertyNames(Math).forEach(function(element, index) {
 Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
+function requestFullLayoutMode() {
+	enabledFullScreen = requestEnableFullScreen = true;
+	size();
+	document.getElementById('console').style.height = 'auto';
+	reset(true);
+}
 function rand(x, y) {
 	if (!x && x != 0) {
 		x = 0;
@@ -131,6 +146,7 @@ function bg() {
 	stroke(oldStroke);
 }
 function size(x, y) {
+	if (enabledFullScreen) (x = innerWidth) && (y = innerHeight - 4);
 	canvas.width = width = x;
 	canvas.height = height = y;
 }
@@ -143,6 +159,7 @@ function print(input) {
 	pre.innerHTML = input;
 	document.getElementById('console').appendChild(pre);
 }
+var refresh = function() {};
 function reset(a) {
 	if (!a) {
 		size(400, 400);
@@ -150,6 +167,7 @@ function reset(a) {
 		resetLog();
 		frameRate = 30;
 		draw = function() {};
+		refresh = function() {};
 	}
 	fill(255);
 	stroke(255, 0, 0);
