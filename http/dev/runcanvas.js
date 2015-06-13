@@ -89,27 +89,26 @@ addEventListener('DOMContentLoaded', function() {
 		document.body.classList.remove('fullscreen');
 		this.hidden = true;
 	};
+	function hashChangeFullScreenHandler() {
+		if (location.hash == '#fullscreen') {
+			output.classList.add('fullscreen');
+			document.body.classList.add('noscrl');
+			document.getElementById('close-fullscreen').hidden = false;
+			output.focus();
+		} else {
+			output.classList.remove('fullscreen');
+			document.body.classList.remove('noscrl');
+			document.getElementById('close-fullscreen').hidden = true;
+			code.focus();
+		}
+	}
 	if (fsBtn) {
 		fsBtn.onclick = function() {
 			document.getElementById('close-fullscreen').hidden = false;
 			enableFullScreen();
 		};
-		addEventListener('hashchange', function(e) {
-			if (location.hash == '#fullscreen') {
-				output.classList.add('fullscreen');
-				document.getElementById('close-fullscreen').hidden = false;
-				output.focus();
-			} else {
-				output.classList.remove('fullscreen');
-				document.getElementById('close-fullscreen').hidden = true;
-				code.focus();
-			}
-		});
-		if (location.hash == '#fullscreen') {
-			output.classList.add('fullscreen');
-			document.getElementById('close-fullscreen').hidden = false;
-			output.focus();
-		}
+		addEventListener('hashchange', hashChangeFullScreenHandler);
+		hashChangeFullScreenHandler();
 	}
 	var oldValue;
 	function handleCode(init) {

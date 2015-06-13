@@ -54,6 +54,7 @@ body {
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
+.noscrl { overflow: hidden }
 .br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, section, article { background: rgba(255, 255, 255, .4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, .8) }
