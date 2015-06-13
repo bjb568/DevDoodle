@@ -5,7 +5,8 @@ var canvas = document.getElementById('canvas'),
 	textarea = document.createElement('textarea');
 document.body.appendChild(textarea);
 textarea.style.position = 'fixed';
-textarea.style.opacity = 0.001;
+textarea.style.top = '0';
+textarea.style.zIndex = '-1';
 function handleTA() {
 	if (document.activeElement == textarea || document.activeElement == document.body) {
 		textarea.focus();
@@ -26,23 +27,38 @@ addEventListener('keypress', function(e) {
 });
 //var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || null; //3D, anyone?
 var none = 'transparent', trans = none,
+	enabledFullScreen = false,
+	suppressKeyboard = false,
+	requestEnableFullScreen = new Error('No fullscreen capability'),
 	mouseX = 0,
 	mouseY = 0,
 	mousePressed = 0,
 	key = '',
 	width = 400,
 	height = 400,
-	scale = canvas.width/canvas.offsetWidth;
-addEventListener('resize',function() {
-	scale = canvas.width/canvas.offsetWidth;
+	scale = canvas.width / canvas.offsetWidth;
+addEventListener('resize', function() {
+	scale = canvas.width / canvas.offsetWidth;
+	if (enabledFullScreen) {
+		size();
+		reset(true);
+		refresh();
+		draw();
+	}
 });
-Object.getOwnPropertyNames(Math).forEach(function(element,index) {
+Object.getOwnPropertyNames(Math).forEach(function(element, index) {
 	window[element] = Math[element];
 });
-Number.prototype.bound = function(l,h) {
-	return h!==undefined?Math.max(Math.min(this,h),l):Math.min(this,l);
+Number.prototype.bound = function(l, h) {
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
-function rand(x,y) {
+function requestFullLayoutMode() {
+	enabledFullScreen = requestEnableFullScreen = true;
+	size();
+	document.getElementById('console').style.height = 'auto';
+	reset(true);
+}
+function rand(x, y) {
 	if (!x && x != 0) {
 		x = 0;
 		y = 1;
@@ -50,26 +66,26 @@ function rand(x,y) {
 		y = x;
 		x = 0;
 	}
-	return random()*(y-x)+x;
+	return random() * (y - x) + x;
 }
 var TAU = 2 * PI;
-Object.getOwnPropertyNames(Math).forEach(function(element,index) {
+Object.getOwnPropertyNames(Math).forEach(function(element, index) {
 	window[element] = Math[element];
 });
-function rgb(r,g,b,a) {
+function rgb(r, g, b, a) {
 	return 'rgba(' + round(r) + ',' + round(g) + ',' + round(b) + ',' + (a === undefined ? 1 : a) + ')';
 }
-function hsl(h,s,l,a) {
+function hsl(h, s, l, a) {
 	return 'hsla(' + round(h) + ',' + round(s) + '%,' + round(l) + '%,' + (a === undefined ? 1 : a) + ')';
 }
-function fill(color,g,b) {
+function fill(color, g, b) {
 	ctx.fillStyle = trans;
 	if (color >= 0) {
 		if (b >= 0) ctx.fillStyle = rgb(color, g, b);
 		else ctx.fillStyle = rgb(color, color, color);
 	} else ctx.fillStyle = color;
 }
-function stroke(color,g,b) {
+function stroke(color, g, b) {
 	ctx.strokeStyle = trans;
 	if (color >= 0) {
 		if (b >= 0) ctx.strokeStyle = rgb(color, g, b);
@@ -79,16 +95,16 @@ function stroke(color,g,b) {
 function strokeWidth(w) {
 	ctx.lineWidth = Math.max(0.0001, w);
 }
-function line(x1,y1,x2,y2) {
+function line(x1, y1, x2, y2) {
 	ctx.lineCap = 'round';
 	ctx.beginPath();
 	ctx.moveTo(x1, y1);
 	ctx.lineTo(x2, y2);
 	ctx.stroke();
 }
-function rect(x,y,w,h) {
-	ctx.fillRect(x,y,w,h);
-	ctx.strokeRect(x,y,w,h);
+function rect(x, y, w, h) {
+	ctx.fillRect(x, y, w, h);
+	ctx.strokeRect(x, y, w, h);
 }
 function point(x, y) {
 	line(x, y, x + 0.01, y + 0.01);
@@ -117,8 +133,8 @@ function font(f) {
 }
 function text(x, y, t) {
 	strokeWidth(ctx.lineWidth * 2);
-	ctx.strokeText(t,x,y);
-	ctx.fillText(t,x,y);
+	ctx.strokeText(t, x, y);
+	ctx.fillText(t, x, y);
 	strokeWidth(ctx.lineWidth / 2);
 }
 function bg() {
@@ -130,12 +146,12 @@ function bg() {
 	stroke(oldStroke);
 }
 function size(x, y) {
+	if (enabledFullScreen) (x = innerWidth) && (y = innerHeight - 4);
 	canvas.width = width = x;
 	canvas.height = height = y;
 }
 function resetLog() {
 	var node = document.getElementById('console'), child;
-	console.log(node.children.length);
 	while (child = node.firstChild) node.removeChild(child);
 }
 function print(input) {
@@ -143,17 +159,19 @@ function print(input) {
 	pre.innerHTML = input;
 	document.getElementById('console').appendChild(pre);
 }
+var refresh = function() {};
 function reset(a) {
-	fill(255);
-	stroke(255, 0, 0);
-	strokeWidth(2);
 	if (!a) {
 		size(400, 400);
 		bg(0);
 		resetLog();
 		frameRate = 30;
 		draw = function() {};
+		refresh = function() {};
 	}
+	fill(255);
+	stroke(255, 0, 0);
+	strokeWidth(2);
 }
 function error(e) {
 	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + ((navigator.userAgent.indexOf('Safari') != -1 && e.line == 1 && e instanceof SyntaxError ? '' : (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ')) + e) + '</pre>');
@@ -172,12 +190,12 @@ var draw = function() {};
 })();
 reset();
 if (navigator.userAgent.indexOf('Mobile') == -1) {
-	addEventListener('mousemove',function(e) {
+	addEventListener('mousemove', function(e) {
 		var cRect = canvas.getBoundingClientRect();
 		mouseX = (e.clientX - Math.round(cRect.left)) / cRect.width * width;
 		mouseY = (e.clientY - Math.round(cRect.top)) / cRect.height * height;
-		mouseX = mouseX.bound(0,width);
-		mouseY = mouseY.bound(0,height);
+		mouseX = mouseX.bound(0, width);
+		mouseY = mouseY.bound(0, height);
 	});
 	canvas.addEventListener('mousedown', function() {
 		mousePressed = true;
@@ -214,8 +232,8 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 					}
 					return false;
 				}
-				mouseX = mouseX.bound(0,width);
-				mouseY = mouseY.bound(0,height);
+				mouseX = mouseX.bound(0, width);
+				mouseY = mouseY.bound(0, height);
 			} catch(e) {}
 		} else mousePressed = false;
 	});
@@ -229,9 +247,11 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 			}
 		} catch(e) {}
 	});
-	var b = document.createElement('a');
-	b.textContent = '[Keyboard]';
-	b.style.display = 'block';
-	b.onclick = handleTA;
-	document.body.appendChild(b);
+	if (!suppressKeyboard) {
+		var b = document.createElement('a');
+		b.textContent = '[Keyboard]';
+		b.style.display = 'block';
+		b.onclick = handleTA;
+		document.body.appendChild(b);
+	}
 }
