@@ -16,7 +16,6 @@ addEventListener('DOMContentLoaded', function() {
 		endChars[125] = '}';
 		if (e.keyCode == 13) {
 			var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
-			console.log(this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/));
 			this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 			oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
 			if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
@@ -24,7 +23,7 @@ addEventListener('DOMContentLoaded', function() {
 				.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
 				.split('\t').length
 				- (
-					('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+					('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1)
 					? 0
 					: (
 						this.value[oldSelectionStart - 1] == ';' && this.eIndent
@@ -50,13 +49,17 @@ addEventListener('DOMContentLoaded', function() {
 		} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
 			this.selectionStart = ++this.selectionEnd;
 			e.preventDefault();
-		} else if (e.keyCode == 61 && this.value.substr(0, this.selectionStart).match('(draw|refresh) ')) {
+		} else if (e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
 			var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
-			this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
+			this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '};' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
 			e.preventDefault();
 		} else if (e.keyCode == 44) {
 			this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
+			this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
+			e.preventDefault();
+		} else if (e.keyCode == 58) {
+			this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 			e.preventDefault();
 		}
