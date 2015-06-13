@@ -155,10 +155,15 @@ function resetLog() {
 	var node = document.getElementById('console'), child;
 	while (child = node.firstChild) node.removeChild(child);
 }
+function removeLog() {
+	resetLog();
+	document.getElementById('console').hidden = true;
+}
 function print(input) {
 	var pre = document.createElement('pre');
 	pre.innerHTML = input;
 	document.getElementById('console').appendChild(pre);
+	document.getElementById('console').hidden = false;
 }
 var refresh = function() {};
 function reset(a) {
