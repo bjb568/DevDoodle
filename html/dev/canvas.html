@@ -1,7 +1,10 @@
 <section id="main">
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
-		<textarea id="code" autofocus="">$code</textarea>
+		<div class="ta-cont">
+			<textarea id="code" autofocus="">$code</textarea>
+			<code id="code-display" data-language="javascript"></code>
+		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
@@ -34,11 +37,11 @@
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	html, #content, #footer, #main { background: #000 }
+	html, #content, #output, #footer, #main { background: #000 }
 	#content { padding-bottom: 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
-	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+	#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 	#main { clear: both }
 	#meta {
 		clear: both;
@@ -51,47 +54,59 @@
 		display: inline-block;
 		margin-left: 8px;
 	}
-	#code, #output { width: 95% }
+	.ta-cont, #output { width: 95% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
-	#code {
+	.ta-cont {
+		margin-bottom: 8px;
+		position: relative;
+	}
+	.ta-cont > * {
+		position: absolute;
+		top: 0; left: 0;
+		width: 100%; height: 100%;
+		margin: 0;
+		padding: 2px;
 		color: #fff;
-		background: #000;
+		background: transparent;
 		font-family: monospace;
+		white-space: pre-wrap;
+		overflow: auto;
 		font-size: 1rem;
+		line-height: 1.2;
 		border: 1px solid #fff;
 		resize: none;
-		margin-bottom: 8px;
 	}
-	#code, #output { height: calc(50% - 4px) }
+	.ta-cont code { pointer-events: none }
+	.ta-cont, #output { height: calc(50% - 4px) }
 	@media (min-width: 600px) {
 		h1 {
 			height: 1.65rem;
 			margin-bottom: .35em;
 		}
-		#code, #output { height: 100% }
-		#code { width: 60% }
+		.ta-cont, #output { height: 100% }
+		.ta-cont { width: 60% }
 		#output {
 			width: 39%;
 			float: right;
 		}
-		.fullscreen #code:not(:focus) { width: 39% }
-		.fullscreen #code:not(:focus) + #output { width: 60% }
+		.fullscreen .ta-cont:not(:focus) { width: 39% }
+		.fullscreen .ta-cont:not(:focus) + #output { width: 60% }
 	}
 	@media (min-width: 600px) and (max-width: 800px) {
-		#code { width: 55% }
+		.ta-cont { width: 55% }
 		#output { width: 44% }
-		.fullscreen #code:not(:focus) { width: 44% }
-		.fullscreen #code:not(:focus) + #output { width: 55% }
+		.fullscreen .ta-cont:not(:focus) { width: 44% }
+		.fullscreen .ta-cont:not(:focus) + #output { width: 55% }
 	}
 	@media (min-width: 1500px) {
-		#code { margin-bottom: 0 }
+		.ta-cont { margin-bottom: 0 }
 	}
 	@media (min-width: 1600px) {
-		#code { width: 65% }
+		.ta-cont { width: 65% }
 		#output { width: 34% }
-		.fullscreen #code:not(:focus) { width: 34% }
-		.fullscreen #code:not(:focus) + #output { width: 65% }
+		.fullscreen .ta-cont:not(:focus) { width: 34% }
+		.fullscreen .ta-cont:not(:focus) + #output { width: 65% }
 	}
 	.fullscreen #main #output.fullscreen {
 		position: fixed;
@@ -188,6 +203,7 @@
 		fill: #c00;
 	}
 	@media (min-width: 1500px) {
+		#nav { right: calc(96% - 144px) }
 		.fullscreen #nav {
 			top: 32px;
 			right: calc(100% - 40px);
@@ -202,6 +218,55 @@
 		.fullscreen #nav:not(:hover) { opacity: 0.3 }
 		.fullscreen #content { margin: 6px 0 6px 46px }
 	}
+	code .line::before {
+		content: attr(data-linenum);
+		color: #aaa;
+		display: inline-block;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+		padding: 0 2px 0 4px;
+		position: absolute;
+		left: 0;
+	}
+	code .line::before {
+		content: attr(data-linenum);
+		color: #aaa;
+		display: inline-block;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+		padding: 0 2px 0 4px;
+		position: absolute;
+		left: 0;
+	}
+	.line-dig0 { padding-left: 1.4em }
+	.line-dig1 { padding-left: 2em }
+	.line-dig2 { padding-left: 2.6em }
+	.line-dig3 { padding-left: 3.2em }
+	.line-dig4 { padding-left: 3.8em }
+	.line-dig5 { padding-left: 4.4em }
+	.line-dig6 { padding-left: 5em }
+	.line-dig7 { padding-left: 5.6em }
+
+	code .comment { color: #777 }
+	code .keyword { color: #fd3 }
+	code .constant, code .string .escape { color: #df0 }
+	code .string { color: #6C3 }
+	code .regex { color: #ffa }
+	code .operator.assigns { color: #8ff; }
+	code .regex.open, code .regex.close, code .regex.modifier, code .operator { color: #ff0 }
+	code .regex .escape { color: #afa }
+	code .regex.modifier { font-weight: bold }
+	code .arguments, code .number { color: #3df }
+	code .newvar { font-weight: bold }
+	code .function { color: #f60 }
+	code .function.call { color: #f90 }
+	code .prototype { color: #f00 }
+	code .punctuation, code .grouper { color: #ccc }
+	code .browser { color: #9ac }
+	code .browser.method { color: #9bf }
+	code .browser.property { color: #acf }
 </style>
 <script>
 	var mine = $mine,

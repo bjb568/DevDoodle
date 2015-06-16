@@ -3,7 +3,29 @@ addEventListener('DOMContentLoaded', function() {
 		output = document.getElementById('output'),
 		save = document.getElementById('save'),
 		up = document.getElementById('up'),
-		dn = document.getElementById('dn');
+		dn = document.getElementById('dn'),
+		codeDisplay = document.getElementById('code-display');
+	codeDisplay.textContent = code.value;
+	code.lastValue = code.value;
+	code.classList.add('line-dig' + Math.floor(Math.log10(code.value.split('\n').length)))
+	codeDisplay.className = '';
+	Rainbow.color(codeDisplay);
+	function handleTAInput() {
+		setTimeout(function() {
+			if (code.value == code.lastValue) return;
+			code.className = '';
+			code.classList.add('line-dig' + Math.floor(Math.log10(code.value.split('\n').length)))
+			codeDisplay.textContent = code.lastValue = code.value;
+			codeDisplay.className = '';
+			Rainbow.color(codeDisplay);
+		}, 0);
+	}
+	code.addEventListener('keypress', handleTAInput);
+	code.addEventListener('keyup', handleTAInput);
+	code.addEventListener('keydown', handleTAInput);
+	code.addEventListener('scroll', function() {
+		codeDisplay.scrollTop = code.scrollTop;
+	});
 	code.addEventListener('keypress', function(e) {
 		var oldSelectionStart = this.selectionStart;
 		var pairChars = {};
