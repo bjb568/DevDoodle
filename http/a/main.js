@@ -327,7 +327,7 @@ function ago(od) {
 	else {
 		d = new Date(od);
 		var y = d.getUTCFullYear();
-		return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + (y == new Date().getUTCFullYear() ? '' : ' \'' + y.toString().substr(2));
+		return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()] + ' ' + d.getUTCDate() + (y == new Date().getUTCFullYear() ? '' : ' \'' + y.toString().substr(2));
 	}
 }
 function agot(d) {
