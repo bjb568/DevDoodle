@@ -4,7 +4,6 @@
 		<div id="ta-cont">
 			<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
 			<code id="code-display"></code>
-			<span class="cursor"></span>
 		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
@@ -66,7 +65,7 @@
 	}
 	#code, #code-display {
 		display: block;
-		width: calc(100% - 1.2em); min-height: 100%;
+		min-height: 100%;
 		padding: 0;
 		margin: 2px;
 		color: #fff;
@@ -80,20 +79,25 @@
 		resize: none;
 		outline: none;
 		border: none;
-		border-left: 1px solid #444;
 		padding-left: 4px;
 	}
 	#code {
 		position: absolute;
-		top: 0;
+		top: 0; right: 0;
 		z-index: 1;
 		color: transparent;
 	}
-	#cursor {
-		display: inline-block;
-		background: #fff;
-		position: absolute;
+	#code-display {
+		width: calc(100% - 4px);
+		border-left: 1px solid #444;
 	}
+	#caret {
+		display: inline-block;
+		position: absolute;
+		background: #fff;
+		width: 1px;
+	}
+	#caret[hidden] { display: none }
 	#ta-cont, #output { height: calc(50% - 4px) }
 	@media (min-width: 600px) {
 		h1 {
@@ -253,6 +257,14 @@
 	#ta-cont.line-dig5 { padding-left: 3.8em }
 	#ta-cont.line-dig6 { padding-left: 4.4em }
 	#ta-cont.line-dig7 { padding-left: 5em }
+	#ta-cont.line-dig0 #code { width: calc(100% - 0.8em - 7px) }
+	#ta-cont.line-dig1 #code { width: calc(100% - 1.4em - 7px) }
+	#ta-cont.line-dig2 #code { width: calc(100% - 2em - 7px) }
+	#ta-cont.line-dig3 #code { width: calc(100% - 2.6em - 7px) }
+	#ta-cont.line-dig4 #code { width: calc(100% - 3.2em - 7px) }
+	#ta-cont.line-dig5 #code { width: calc(100% - 3.8em - 7px) }
+	#ta-cont.line-dig6 #code { width: calc(100% - 4.4em - 7px) }
+	#ta-cont.line-dig7 #code { width: calc(100% - 5em - 7px) }
 	code .inline-comment { color: #888 }
 	code .keyword { color: #fd3 }
 	code .constant, code .string .escape { color: #df0 }
