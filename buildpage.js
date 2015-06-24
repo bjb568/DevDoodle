@@ -645,7 +645,7 @@ http.createServer(function(req,	res) {
 							data.toString()
 							.replace('$user', user.name)
 							.replace('$rooms', JSON.stringify(rooms))
-							.replace('$qroom', req.url.query ? req.url.query.room : '')
+							.replace('$qroom', req.url.query && req.url.query.room ? req.url.query.room : '')
 						);
 						respondPageFooter(res);
 					}
