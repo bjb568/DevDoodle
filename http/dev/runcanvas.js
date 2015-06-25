@@ -708,12 +708,13 @@ function highlight(codeBlock, input) {
 			keyword.className = 'keyword';
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
-			if (input.substr(i, 3) == 'var') inVarDec.unshift({
+			if (input.substr(i, l) == 'var') inVarDec.unshift({
 				parens: 0,
 				brackets: 0,
 				braces: 0,
 				equals: false
 			});
+			if (input.substr(i, l) == 'in') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
 				(['top'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
@@ -972,10 +973,14 @@ function highlight(codeBlock, input) {
 			linenum.dataset.linenum = ++line;
 			codeBlock.appendChild(linenum);
 		} else if (c.match(/\S/) && inVarDec[0] && !inVarDec[0].equals && Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
+			var newvar;
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
-			var newvar = document.createElement('span');
-			newvar.className = 'newvar';
+			if (codeBlock.lastChild.className == 'newvar') newvar = codeBlock.lastChild;
+			else {
+				newvar = document.createElement('span');
+				newvar.className = 'newvar';
+			}
 			newvar.appendChild(document.createTextNode(c));
 			codeBlock.appendChild(newvar);
 		} else chunk += c;
