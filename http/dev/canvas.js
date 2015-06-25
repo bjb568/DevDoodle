@@ -163,9 +163,14 @@ function removeLog() {
 	resetLog();
 	document.getElementById('console').hidden = true;
 }
-function print(input) {
+function print() {
 	var pre = document.createElement('pre');
-	pre.innerHTML = input;
+	for (var i = 0; i < arguments.length; i++) {
+		pre.appendChild(document.createTextNode(' '));
+		var span = document.createElement('span');
+		span.innerHTML = arguments[i];
+		pre.appendChild(span);
+	}
 	document.getElementById('console').appendChild(pre);
 	document.getElementById('console').hidden = false;
 }
