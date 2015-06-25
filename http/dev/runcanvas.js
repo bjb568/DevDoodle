@@ -13,6 +13,13 @@ function insertNodeAtPosition(node, refNode, pos) {
 	}
 }
 var blinkTimeout;
+function upvoteComment() {
+	this.classList.toggle('clkd');
+	socket.send(JSON.stringify({
+		event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+		id: parseInt(this.parentNode.parentNode.id.substr(1))
+	}));
+}
 addEventListener('DOMContentLoaded', function() {
 	var code = document.getElementById('code'),
 		codeDisplay = document.getElementById('code-display'),
@@ -57,7 +64,6 @@ addEventListener('DOMContentLoaded', function() {
 			caret.id = 'caret';
 			caret.appendChild(document.createTextNode('\xA0'));
 			insertNodeAtPosition(caret, codeDisplay, cursorPos);
-			console.log(blinkTimeout);
 			clearTimeout(blinkTimeout);
 			blinkTimeout = setTimeout(blink, 500);
 		}
@@ -293,7 +299,7 @@ addEventListener('DOMContentLoaded', function() {
 			request('/api/program/vote', function(res) {
 				if (res.indexOf('Error') == 0) alert(res);
 				else if (res == 'Success') {
-					document.getElementsByClassName('user-$op-name')[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
+					document.getElementsByClassName('user-' + opName)[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
 					up.classList.toggle('clkd');
 					dn.classList.remove('clkd');
 				} else alert('Unknown error. Response was: ' + res);
@@ -303,7 +309,7 @@ addEventListener('DOMContentLoaded', function() {
 			request('/api/program/vote', function(res) {
 				if (res.indexOf('Error') == 0) alert(res);
 				else if (res == 'Success') {
-					document.getElementsByClassName('user-$op-name')[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+					document.getElementsByClassName('user-' + opName)[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
 					dn.classList.toggle('clkd');
 					up.classList.remove('clkd');
 				} else alert('Unknown error. Response was: ' + res);
@@ -341,7 +347,7 @@ addEventListener('DOMContentLoaded', function() {
 				var div = document.createElement('div');
 				div.classList.add('comment');
 				div.innerHTML = ' ' + markdown(data.body);
-				if ($rep >= 50) {
+				if (myRep >= 50) {
 					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
 					var score = document.createElement('span');
@@ -354,7 +360,7 @@ addEventListener('DOMContentLoaded', function() {
 				sig.appendChild(document.createTextNode('-'));
 				var a = document.createElement('a');
 				a.href = '/user/' + data.user;
-				a.appendChild(document.createTextNode(data.user))
+				a.appendChild(document.createTextNode(data.user));
 				sig.appendChild(a);
 				sig.appendChild(document.createTextNode(', '));
 				var permalink = document.createElement('a');
@@ -386,13 +392,6 @@ addEventListener('DOMContentLoaded', function() {
 					});
 				}
 			};
-		}
-		function upvoteComment() {
-			this.classList.toggle('clkd');
-			socket.send(JSON.stringify({
-				event: this.classList.contains('clkd') ? 'vote' : 'unvote',
-				id: parseInt(this.parentNode.parentNode.id.substr(1))
-			}));
 		}
 		var comments = document.getElementsByClassName('comment');
 		for (var i = 0; i < comments.length; i++) {
