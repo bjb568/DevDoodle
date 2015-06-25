@@ -427,11 +427,13 @@ function highlight(codeBlock, input) {
 					break;
 				} else if (d == '\\') {
 					string.appendChild(document.createTextNode(chunk));
-					chunk = d + (d = input[++i]);
+					chunk = d;
+					if (d = input[++i]) chunk += d;
+					else warnings.push([i - 1, 'Incomplete escape sequence.']);
 					var escape = document.createElement('span');
 					escape.className = 'escape';
 					if (d == 'u') {
-						chunk += d = input[++i];
+						if (d = input[++i]) chunk += d;
 						if (d == '{') {
 							while ((d = input[++i]) && d != '}') {
 								if (d == '\n' || d == string) {
@@ -441,7 +443,8 @@ function highlight(codeBlock, input) {
 								chunk += d;
 							}
 							if (d == '}') chunk += '}';
-						} else chunk += input[++i] + input[++i] + input[++i];
+						} else if (input[i + 3]) chunk += input[++i] + input[++i] + input[++i];
+						else warnings.push([i, 'Incomplete escape sequence.']);
 					} else if (c == 'x') chunk += input[++i] + input[++i];
 					escape.appendChild(document.createTextNode(chunk));
 					string.appendChild(escape);
@@ -950,17 +953,32 @@ function highlight(codeBlock, input) {
 			charspan.appendChild(document.createTextNode(c));
 			codeBlock.appendChild(charspan);
 			if (inVarDec[0]) {
-				if (c == ')') inVarDec[0].parens--;
-				if (inVarDec[0].parens < 0) warnings.push([i, 'Unexpected close paren, make sure you use a semicolon after a variable declaration.']);
-				if (c == '[') inVarDec[0].brackets++;
-				if (c == ']') inVarDec[0].brackets--;
-				if (inVarDec[0].brackets < 0) warnings.push([i, 'Unexpected close bracket, make sure you use a semicolon after a variable declaration.']);
-				if (c == '{') inVarDec[0].braces++;
-				if (c == '}') inVarDec[0].braces--;
-				if (inVarDec[0].braces < 0) warnings.push([i, 'Unexpected close brace, make sure you use a semicolon after a variable declaration.']);
 				if (Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
 					if (c == '=') inVarDec[0].equals = true;
 					if (c == ',') inVarDec[0].equals = false;
+				}
+				if (c == ')') {
+					inVarDec[0].parens--;
+					if (inVarDec[0].parens < 0) {
+						warnings.push([i, 'Unexpected close paren, make sure you use a semicolon after a variable declaration.']);
+						inVarDec.shift();
+					}
+				}
+				if (c == '[') inVarDec[0].brackets++;
+				if (c == ']') {
+					inVarDec[0].brackets--;
+					if (inVarDec[0].brackets < 0) {
+						warnings.push([i, 'Unexpected close bracket, make sure you use a semicolon after a variable declaration.']);
+						inVarDec.shift();
+					}
+				}
+				if (c == '{') inVarDec[0].braces++;
+				if (c == '}') {
+					inVarDec[0].braces--;
+					if (inVarDec[0].braces < 0) {
+						warnings.push([i, 'Unexpected close brace, make sure you use a semicolon after a variable declaration.']);
+						inVarDec.shift();
+					}
 				}
 				if (c == ';') inVarDec.shift();
 			}
@@ -986,5 +1004,12 @@ function highlight(codeBlock, input) {
 	}
 	codeBlock.appendChild(document.createTextNode(chunk));
 	codeBlock.className = 'line-dig' + Math.floor(Math.log10(line));
-	return warnings;
+	var lines = input.split('\n');
+	for (var i = 0; i < warnings.length; i++) {
+		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
+			lineEl = codeBlock.getElementsByClassName('line')[line];
+		lineEl.classList.add('warning');
+		if (lineEl.title) lineEl.title += '\n';
+		lineEl.title += 'Column ' + (warnings[i][0] - lines.slice(0, line).join('\n').length) + ': ' + warnings[i][1];
+	}
 }
