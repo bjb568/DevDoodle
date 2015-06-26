@@ -1018,7 +1018,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (req.url.pathname == '/qa/newquestion') {
+				} else if (req.url.pathname == '/question/add') {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
@@ -1121,11 +1121,13 @@ https.createServer({
 							else otherlang.push(q);
 						} else res.end(JSON.stringify(samelang.concat(otherlang)));
 					});
+				} else if (reg.url.pathname == '/answer/add') {
+					
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);
 					if (type !== 1 && type !== 2) {
 						res.writeHead(400);
-						return res.end('Error: Invalid program type.'); 
+						return res.end('Error: Invalid program type.');
 					}
 					if (!user) {
 						res.writeHead(403);

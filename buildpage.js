@@ -515,6 +515,20 @@ http.createServer(function(req,	res) {
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
+					var answerstr = '';
+					var cursor = dbcs.answers.find({question: question._id}).sort({score: -1});
+					cursor.count(function(err, count) {
+						if (err) throw err;
+						answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
+						cursor.each(function(err, answer) {
+							if (err) throw err;
+							if (answer) {
+								answerstr += (
+									'<div class="answer">' +
+									'</div>');
+							}
+						});
+					});
 					var commentstr = '';
 					dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
 						if (err) throw err;
@@ -574,8 +588,8 @@ http.createServer(function(req,	res) {
 														['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
 														[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
 													).replace('$edit-tags', tageditstr).replaceAll(
-														['$qcommentstr', '$tags', '$rep'],
-														[commentstr, tagstr, (user.rep || 0).toString()]
+														['$qcommentstr', '$answers', '$tags', '$rep'],
+														[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
 													).replaceAll(
 														['$op-name', '$op-rep', '$op-pic'],
 														[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
@@ -662,7 +676,7 @@ http.createServer(function(req,	res) {
 					var userstr = '';
 					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
 						if (err) throw err;
-						if (invUser) userstr += 
+						if (invUser) userstr +=
 							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
 							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div><span>✕</span>' +
 							'\n\t</div>\n';
