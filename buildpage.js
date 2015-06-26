@@ -415,7 +415,7 @@ http.createServer(function(req,	res) {
 			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a></small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
-				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '" title="Score: ' + doc.score + '">' + html(doc.title) + '</a></h2>\n');
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
 				else respondPageFooter(res);
 			});
 		});
@@ -591,9 +591,9 @@ http.createServer(function(req,	res) {
 														['$qcommentstr', '$answers', '$tags', '$rep'],
 														[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
 													).replaceAll(
-														['$op-name', '$op-rep', '$op-pic'],
-														[op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-													)
+														['$askdate', '$op-name', '$op-rep', '$op-pic'],
+														[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+													).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
 												);
 												respondPageFooter(res);
 											}

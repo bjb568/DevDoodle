@@ -1,9 +1,11 @@
 <h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" hidden="" /></h1>
 <span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
-<div class="pad vote lft">
-	<svg id="mup" class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg>
-	<svg id="mdn" class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg>
-	<svg id="mfl" class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg>
+<div class="ctrl pad lft">
+	<a id="mup" title="This question is clear, answerable, and useful to the community."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
+	<a id="mdn" title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
+	<a id="mfl" title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+	<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
+	<a id="mdl" class="ctrlicon delbtn" title="Delete">✕</a>
 </div>
 <div id="q-content">
 	<div id="q-body" class="hglt pad br">
@@ -13,14 +15,17 @@
 	</div>
 	<div class="clearfix">
 		<div id="tags" class="lft">$tags</div>
-		<div class="rit user user-$op-name">
-			<img src="$op-pic" width="40" height="40" />
-			<div>
-				<a href="/user/$op-name">$op-name</a>
-				<small class="rep">$op-rep</small>
+		<div class="rit">
+			<div>Asked <time datetime="$askdate"></time> by</div>
+			<div class="user user-$op-name">
+				<img src="$op-pic" width="40" height="40" />
+				<div>
+					<a href="/user/$op-name">$op-name</a>
+					<small class="rep">$op-rep</small>
+				</div>
 			</div>
 		</div>
-		<small class="blk sumar lft" style="clear: left"><a href="#edit" class="grey">Edit</a> <line /> <a class="grey">Delete</a></small>
+		<small class="blk sumar lft" style="clear: left"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
 	</div>
 </div>
 <form id="q-edit" style="margin-left: 32px" hidden="">
@@ -95,6 +100,7 @@ $answers
 		transition: none;
 	}
 	.up.clkd, .dn.clkd { fill: #f90 }
+	.ctrl .fl { margin-bottom: 12px }
 	.fl {
 		width: 20px;
 		height: 24px;
@@ -109,6 +115,34 @@ $answers
 		transition: fill 0.1s;
 		fill: #c00;
 	}
+	.ctrlicon:not([hidden]) { display: block }
+	.ctrlicon {
+		margin: 4px -2px;
+		height: 24px; width: 24px;
+		font-size: 20px; font-weight: bold;
+		text-decoration: none;
+		border-radius: 50%;
+		border: 1.5px solid #000;
+		background: #eee;
+	}
+	.editbtn {
+		color: #0b0;
+		padding-left: 2.5px;
+	}
+	.editbtn:visited {
+		color: #0a0;
+		background: #ddd;
+	}
+	.editbtn:hover { color: #0b0 }
+	.editbtn:hover { background: #fff }
+	.editbtn:active { background: #0b0 }
+	.delbtn {
+		color: #f00;
+		padding-left: 3px;
+	}
+	.delbtn:hover { color: #f00 }
+	.delbtn:active { background: #f00 }
+	.ctrlicon:active { color: #fff }
 	.tag {
 		display: inline-block;
 		text-decoration: none;
@@ -155,7 +189,8 @@ $answers
 			document.getElementById('title-edit').hidden = 0;
 			document.getElementById('q-content').hidden = 1;
 			document.getElementById('q-desc-edit').focus();
-		}
+			document.getElementById('med').href = '#';
+		} else document.getElementById('cancel-edit').onclick();
 	}
 	addEventListener('load', handleLocationUpdate);
 	addEventListener('hashchange', handleLocationUpdate);
@@ -166,6 +201,7 @@ $answers
 		document.getElementById('title').hidden = 0;
 		document.getElementById('title-edit').hidden = 1;
 		document.getElementById('q-content').hidden = 0;
+		document.getElementById('med').href = '#edit';
 	}
 	document.getElementById('addcomment').onclick = function() {
 		setTimeout(function() {
