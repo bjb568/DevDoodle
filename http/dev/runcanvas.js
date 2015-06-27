@@ -116,18 +116,18 @@ addEventListener('DOMContentLoaded', function() {
 					? 0
 					: (
 						this.value[oldSelectionStart - 1] == ';' && this.eIndent
-						? (this.eIndent = false || 2) 
+						? (this.eIndent = false || 2)
 						: 1
 					)
 				);
 			this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + (['{}', '()', '[]'].indexOf(this.value.substr(oldSelectionStart - 1, 2)) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
 			e.preventDefault();
-		} else if (e.keyCode == 34) {
+		} else if (e.charCode == 34) {
 			if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 			e.preventDefault();
-		} else if (e.keyCode == 39) {
+		} else if (e.charCode == 39) {
 			if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 			e.preventDefault();
