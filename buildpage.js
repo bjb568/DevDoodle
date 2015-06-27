@@ -322,6 +322,7 @@ http.createServer(function(req,	res) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res, user);
+			var questions = 0;
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
 				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
@@ -338,14 +339,18 @@ http.createServer(function(req,	res) {
 				res.write('<ul>');
 				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
-					if (question) res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
-					else {
+					if (question) {
+						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+						questions++;
+					} else {
 						res.write('</ul>');
+						if (!questions) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any questions.</p>');
 						res.write('</div>');
 						res.write('<div class="half">');
 						res.write('<h2>Answers</h2>');
 						res.write('<ul>');
-						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16);
+						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
+							answers = 0;
 						var answerHandler = function(err, answer) {
 							if (err) throw err;
 							if (answer) {
@@ -354,8 +359,10 @@ http.createServer(function(req,	res) {
 									res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
 									cursor.nextObject(answerHandler);
 								});
+								answers++;
 							} else {
-								res.write('</ul>')
+								res.write('</ul>');
+								if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
 								res.write('</div>');
 								res.write('</div>');
 								res.write('<section class="lim-programs pad">\n');
