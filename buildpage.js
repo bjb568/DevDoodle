@@ -332,54 +332,85 @@ http.createServer(function(req,	res) {
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
-				res.write('<section class="lim-programs pad">\n');
-				res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
-				var programs = 0;
-				dbcs.programs.find({
-					user: dispUser.name,
-					deleted: {$exists: false}
-				}).sort({
-					score: -1,
-					updated: -1
-				}).limit(6).each(function(err, data) {
+				res.write('<div class="clearfix">');
+				res.write('<div class="half">');
+				res.write('<h2>Questions</h2>');
+				res.write('<ul>');
+				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
-					if (data) {
-						res.write('<div class="program">\n');
-						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
-						if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
-						res.write('</div>\n');
-						programs++;
-					} else {
-						if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
-						res.write('</section>\n');
-						if (me) {
-							res.write('<h2 class="underline">Private</h2>\n');
-							res.write(mailform.replaceAll('$mail', html(user.mail)));
-							if (user.notifs) {
-								var notifs = [];
-								for (var i = 0; i < user.notifs.length; i++) {
-									if (user.notifs[i].unread) notifs.push(user.notifs[i]);
-									user.notifs[i].unread = false;
-								}
-								if (notifs.length) {
-									res.write('<h2>Notifications</h2>\n');
-									res.write('<ul id="notifs">\n');
-									for (var i = 0; i < notifs.length; i++) res.write(
-										'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
-										'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
-									);
-									res.write('</ul>');
-									dbcs.users.update({name: user.name}, {
-										$set: {
-											unread: 0,
-											notifs: user.notifs
+					if (question) res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+					else {
+						res.write('</ul>');
+						res.write('</div>');
+						res.write('<div class="half">');
+						res.write('<h2>Answers</h2>');
+						res.write('<ul>');
+						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16);
+						var answerHandler = function(err, answer) {
+							if (err) throw err;
+							if (answer) {
+								dbcs.questions.findOne({_id: answer.question}, function(err, question) {
+									if (err) throw err;
+									res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+									cursor.nextObject(answerHandler);
+								});
+							} else {
+								res.write('</ul>')
+								res.write('</div>');
+								res.write('</div>');
+								res.write('<section class="lim-programs pad">\n');
+								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
+								var programs = 0;
+								dbcs.programs.find({
+									user: dispUser.name,
+									deleted: {$exists: false}
+								}).sort({
+									score: -1,
+									updated: -1
+								}).limit(6).each(function(err, data) {
+									if (err) throw err;
+									if (data) {
+										res.write('<div class="program">\n');
+										res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
+										if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
+										else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+										res.write('</div>\n');
+										programs++;
+									} else {
+										if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
+										res.write('</section>\n');
+										if (me) {
+											res.write('<h2 class="underline">Private</h2>\n');
+											res.write(mailform.replaceAll('$mail', html(user.mail)));
+											if (user.notifs) {
+												var notifs = [];
+												for (var i = 0; i < user.notifs.length; i++) {
+													if (user.notifs[i].unread) notifs.push(user.notifs[i]);
+													user.notifs[i].unread = false;
+												}
+												if (notifs.length) {
+													res.write('<h2>Notifications</h2>\n');
+													res.write('<ul id="notifs">\n');
+													for (var i = 0; i < notifs.length; i++) res.write(
+														'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
+														'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
+													);
+													res.write('</ul>');
+													dbcs.users.update({name: user.name}, {
+														$set: {
+															unread: 0,
+															notifs: user.notifs
+														}
+													});
+												} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+											}
 										}
-									});
-								} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+										respondPageFooter(res);
+									}
+								});
 							}
-						}
-						respondPageFooter(res);
+						};
+						cursor.nextObject(answerHandler);
 					}
 				});
 			}, {nonotif: true});
