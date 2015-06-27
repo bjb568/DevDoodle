@@ -1,7 +1,10 @@
 <section id="main">
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
-		<textarea id="code" autofocus="">$code</textarea>
+		<div id="ta-cont">
+			<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
+			<code id="code-display"></code>
+		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
@@ -34,11 +37,11 @@
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	html, #content, #footer, #main { background: #000 }
+	html, #content, #output, #footer, #main { background: #000 }
 	#content { padding-bottom: 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
-	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+	#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 	#main { clear: both }
 	#meta {
 		clear: both;
@@ -51,47 +54,79 @@
 		display: inline-block;
 		margin-left: 8px;
 	}
-	#code, #output { width: 95% }
+	#ta-cont, #output { width: 95% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		border: 1px solid #fff;
-		resize: none;
+	#ta-cont {
 		margin-bottom: 8px;
+		position: relative;
+		overflow: auto;
+		border: 1px solid #fff;
 	}
-	#code, #output { height: calc(50% - 4px) }
+	#code, #code-display {
+		display: block;
+		min-height: 100%;
+		padding: 0;
+		margin: 2px;
+		color: #fff;
+		background: transparent;
+		font-family: monospace;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		font-size: 1rem;
+		line-height: 1.2;
+		resize: none;
+		outline: none;
+		border: none;
+		padding-left: 4px;
+	}
+	#code {
+		position: absolute;
+		top: 0; right: 0;
+		z-index: 1;
+		color: transparent;
+	}
+	#code-display {
+		width: calc(100% - 4px);
+		border-left: 1px solid #444;
+	}
+	#caret {
+		display: inline-block;
+		position: absolute;
+		background: #fff;
+		width: 1px;
+	}
+	#caret[hidden] { display: none }
+	#ta-cont, #output { height: calc(50% - 4px) }
 	@media (min-width: 600px) {
 		h1 {
 			height: 1.65rem;
 			margin-bottom: .35em;
 		}
-		#code, #output { height: 100% }
-		#code { width: 60% }
+		#ta-cont, #output { height: 100% }
+		#ta-cont { width: 60% }
 		#output {
 			width: 39%;
 			float: right;
 		}
-		.fullscreen #code:not(:focus) { width: 39% }
-		.fullscreen #code:not(:focus) + #output { width: 60% }
+		.fullscreen #ta-cont:not(:focus) { width: 39% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 60% }
 	}
 	@media (min-width: 600px) and (max-width: 800px) {
-		#code { width: 55% }
+		#ta-cont { width: 55% }
 		#output { width: 44% }
-		.fullscreen #code:not(:focus) { width: 44% }
-		.fullscreen #code:not(:focus) + #output { width: 55% }
+		.fullscreen #ta-cont:not(:focus) { width: 44% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 55% }
 	}
 	@media (min-width: 1500px) {
-		#code { margin-bottom: 0 }
+		#ta-cont { margin-bottom: 0 }
 	}
 	@media (min-width: 1600px) {
-		#code { width: 65% }
+		#ta-cont { width: 65% }
 		#output { width: 34% }
-		.fullscreen #code:not(:focus) { width: 34% }
-		.fullscreen #code:not(:focus) + #output { width: 65% }
+		.fullscreen #ta-cont:not(:focus) { width: 34% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 65% }
 	}
 	.fullscreen #main #output.fullscreen {
 		position: fixed;
@@ -188,6 +223,7 @@
 		fill: #c00;
 	}
 	@media (min-width: 1500px) {
+		#nav { right: calc(96% - 144px) }
 		.fullscreen #nav {
 			top: 32px;
 			right: calc(100% - 40px);
@@ -202,10 +238,70 @@
 		.fullscreen #nav:not(:hover) { opacity: 0.3 }
 		.fullscreen #content { margin: 6px 0 6px 46px }
 	}
+	code .line::before {
+		left: 0;
+		content: attr(data-linenum);
+		color: #aaa;
+		display: inline-block;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;
+		padding: 0 2px 0 4px;
+		position: absolute;
+	}
+	code .line.warning::before {
+		color: #ff6;
+		font-weight: bold;
+	}
+	#ta-cont.line-dig0 { padding-left: 0.8em }
+	#ta-cont.line-dig1 { padding-left: 1.4em }
+	#ta-cont.line-dig2 { padding-left: 2em }
+	#ta-cont.line-dig3 { padding-left: 2.6em }
+	#ta-cont.line-dig4 { padding-left: 3.2em }
+	#ta-cont.line-dig5 { padding-left: 3.8em }
+	#ta-cont.line-dig6 { padding-left: 4.4em }
+	#ta-cont.line-dig7 { padding-left: 5em }
+	#ta-cont.line-dig0 #code { width: calc(100% - 0.8em - 7px) }
+	#ta-cont.line-dig1 #code { width: calc(100% - 1.4em - 7px) }
+	#ta-cont.line-dig2 #code { width: calc(100% - 2em - 7px) }
+	#ta-cont.line-dig3 #code { width: calc(100% - 2.6em - 7px) }
+	#ta-cont.line-dig4 #code { width: calc(100% - 3.2em - 7px) }
+	#ta-cont.line-dig5 #code { width: calc(100% - 3.8em - 7px) }
+	#ta-cont.line-dig6 #code { width: calc(100% - 4.4em - 7px) }
+	#ta-cont.line-dig7 #code { width: calc(100% - 5em - 7px) }
+	code .inline-comment { color: #888 }
+	code .keyword { color: #fd3 }
+	code .constant, code .string .escape { color: #df0 }
+	code .string { color: #6C3 }
+	code .regex { color: #ffa }
+	code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
+	code .regex .escape { color: #afa }
+	code .regex .backreference { color: #0f0 }
+	code .regex .special { color: #faa }
+	code .regex .grouper { color: #fff }
+	code .regex .charclass { color: #ffd }
+	code .regex .charclass { background: #730 }
+	code .regex .charclass .range { color: #fed }
+	code .regex .charclass .punctuation { color: #f90 }
+	code .regex .quantifier { color: #2af }
+	code .regex .quantifier .punctuation { color: #8cf }
+	code .regex .modifier { font-weight: bold }
+	code .operator { color: #ff8 }
+	code .operator.assigns, code .equals { color: #8ff }
+	code .argument, code .number { color: #3df }
+	code .newvar { font-weight: bold }
+	code .function-name { color: #f60 }
+	code .function-call { color: #f90 }
+	code .prototype { color: #f00 }
+	code .punctuation, code .dot { color: #ddd }
+	code .capvar { color: #9ac }
+	code .browser { color: #9bd }
 </style>
 <script>
 	var mine = $mine,
 		id = $id,
+		opName = '$op-name',
+		myRep = $rep,
 		footerOff = true,
 		noPageOverflow = 400,
 		pageOverflowMobile = true,
