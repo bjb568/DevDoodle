@@ -1,5 +1,5 @@
 <h1>New Question</h1>
-<form id="form" method="post" action="/api/qa/newquestion">
+<form id="form" method="post" action="/api/question/add">
 	<fieldset id="step0">
 		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
 		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
@@ -469,7 +469,7 @@
 		submit.id = 'submit';
 		submit.onclick = function() {
 			this.classList.add('working');
-			request('/api/qa/newquestion', function(res) {
+			request('/api/question/add', function(res) {
 				if (res.substr(0, 7) == 'Error: ') alert(res);
 				else if (res.substr(0, 10) == 'Location: ') location.href = res.substr(10);
 				else alert('Unknown error. Response was: ' + res);
