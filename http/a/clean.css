@@ -18,12 +18,12 @@ body {
 	font-size: .85em;
 	line-height: 1.5em;
 }
-@keyframes target { 
+@keyframes target {
 	0%, 30% {
 		background: #fc0;
 	}
 }
-@-webkit-keyframes target { 
+@-webkit-keyframes target {
 	0%, 30% {
 		background: #fc0;
 	}
@@ -68,10 +68,19 @@ iframe:not([seamless]) { background: #fff }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
-small, a.small, footer, .c-sig, .ctrls a { font-size: .85em } 
+small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
+.spoiler { transition: color 0.2s }
+.spoiler:not(:hover) { color: transparent }
+.spoiler:not(:hover) *, .spoiler:hover::before { opacity: 0 }
+.spoiler::before {
+	content: 'hover to see spoiler';
+	position: absolute;
+	color: #aaa;
+	transition: opacity 0.2s;
+}
 code {
 	padding: 2px;
 	color: #fff;
@@ -130,12 +139,12 @@ code.blk {
 	animation: fadein 0.5s;
 	-webkit-animation: fadein 0.5s;
 }
-@keyframes fadein { 
+@keyframes fadein {
 	from {
 		opacity: 0;
 	}
 }
-@-webkit-keyframes fadein { 
+@-webkit-keyframes fadein {
 	from {
 		opacity: 0;
 	}
@@ -365,7 +374,7 @@ textarea {
 }
 #nav .unread:not(.active):hover { background: #f00 }
 #nav .unread:not(.active):active { background: #c00 }
-@media (min-width: 380px) and (max-width: 799px) { 
+@media (min-width: 380px) and (max-width: 799px) {
 	#nav > :not(.active) + nav + a:nth-child(5):not(.active) { border-right: 1px solid #aaa }
 }
 @media (max-width: 799px) {
@@ -404,7 +413,7 @@ textarea {
 		content: '\a';
 	}
 }
-@media (max-width: 610px), (min-width: 750px) { 
+@media (max-width: 610px), (min-width: 750px) {
 	#nav input { width: 184px }
 }
 @media (max-width: 700px) {
@@ -428,7 +437,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		margin-left: 6px;
 	}
 }
-@media (min-width: 380px) { 
+@media (min-width: 380px) {
 	#nav {
 		padding: 0;
 		text-align: right;
@@ -486,7 +495,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 	#logo img { padding-bottom: 4px }
 }
-@media (min-width: 800px) { 
+@media (min-width: 800px) {
 	#cont { margin: 0 auto }
 	#logo { height: 2rem }
 	#nav > :nth-child(-n+5) { float: left }
