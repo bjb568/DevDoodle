@@ -520,88 +520,125 @@ http.createServer(function(req,	res) {
 					cursor.count(function(err, count) {
 						if (err) throw err;
 						answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
-						cursor.each(function(err, answer) {
+						var answerHandler = function(err, answer) {
 							if (err) throw err;
 							if (answer) {
-								answerstr += (
-									'<div class="answer">' +
-									'</div>');
-							}
-						});
-					});
-					var commentstr = '';
-					dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
-						if (err) throw err;
-						if (comment) {
-							var votes = comment.votes || [],
-								voted;
-							for (var i in votes) if (votes[i].user == user.name) voted = true;
-							commentstr +=
-								'<div id="c' + comment._id + '" class="comment">' +
-								'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-								(
-									user.rep >= 50 ?
-									(
-										'<span class="sctrls">' +
-										'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-										'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-										'</span>'
-									) :
-									''
-								) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-						} else {
-							fs.readFile('./html/qa/question.html', function(err, data) {
-								if (err) throw err;
-								var tagstr = '';
-								dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+								dbcs.users.findOne({name: answer.user}, function(err, answerPoster) {
 									if (err) throw err;
-									if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
-									else {
-										var tlang = [],
-											tageditstr = '';
-										dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+									answerstr += (
+										'<div id="a' + answer._id + '" class="answer">' +
+											'<div class="ctrl pad lft">' +
+												'<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>' +
+												'<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>' +
+												'<a class="fl" title="This answer has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>' +
+												'<a class="ctrlicon editbtn" href="#edit-' + answer._id + '" title="Edit">✎</a>' +
+												'<a class="ctrlicon delbtn" title="Delete">✕</a>' +
+											'</div>' +
+											'<div class="a-content">' +
+												'<div class="a-body hglt pad br">' + markdown(answer.body) + '</div>' +
+												'<div class="clearfix">' +
+													'<div class="rit">' +
+														'<div>Answered <time datetime="' + new Date(answer.time).toISOString() + '"></time> by</div>' +
+														'<div class="user user-' + answer.user + '">' +
+															'<img src="//gravatar.com/avatar/' + answerPoster.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+															'<div>' +
+																'<a href="/user/' + answer.user + '">' + answer.user + '</a>' +
+																'<small class="rep">' + answerPoster.rep + '</small>' +
+															'</div>' +
+														'</div>' +
+													'</div>' +
+													'<small class="blk sumar lft"><a href="#a' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>' +
+												'</div>' +
+											'</div>' +
+											'<form class="a-edit indt" hidden="">' +
+												'<textarea rows="24">' + html(answer.body) + '</textarea>' +
+												'<div>' +
+													'<button type="submit">Submit Edit</button>' +
+													'<button type="reset" class="cancel-edit">Cancel</button>' +
+												'</div>' +
+											'</form>' +
+										'</div>'
+									);
+									cursor.nextObject(answerHandler);
+								});
+							} else {
+								var commentstr = '';
+								dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
+									if (err) throw err;
+									if (comment) {
+										var votes = comment.votes || [],
+											voted;
+										for (var i in votes) if (votes[i].user == user.name) voted = true;
+										commentstr +=
+											'<div id="c' + comment._id + '" class="comment">' +
+											'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
+											(
+												user.rep >= 50 ?
+												(
+													'<span class="sctrls">' +
+													'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+													'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+													'</span>'
+												) :
+												''
+											) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+									} else {
+										fs.readFile('./html/qa/question.html', function(err, data) {
 											if (err) throw err;
-											if (tag) tlang.push(tag);
-											else {
-												var writeTagRecursive = function(tag) {
-													tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
-													tlang.splice(tlang.indexOf(tag), 1);
-													tageditstr += '<div class="indt">';
-													var i = -1;
-													while (++i < tlang.length) {
-														if (tlang[i].parentID == tag._id) {
-															writeTagRecursive(tlang[i]);
-															i = -1;
+											var tagstr = '';
+											dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+												if (err) throw err;
+												if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
+												else {
+													var tlang = [],
+														tageditstr = '';
+													dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+														if (err) throw err;
+														if (tag) tlang.push(tag);
+														else {
+															var writeTagRecursive = function(tag) {
+																tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+																tlang.splice(tlang.indexOf(tag), 1);
+																tageditstr += '<div class="indt">';
+																var i = -1;
+																while (++i < tlang.length) {
+																	if (tlang[i].parentID == tag._id) {
+																		writeTagRecursive(tlang[i]);
+																		i = -1;
+																	}
+																}
+																tageditstr += '</div>';
+															};
+															var i = -1;
+															while (++i < tlang.length) {
+																if (!tlang[i].parentID) {
+																	writeTagRecursive(tlang[i]);
+																	i = -1;
+																}
+															}
+															res.write(data.toString()
+																.replaceAll(
+																	['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+																	[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																).replace('$edit-tags', tageditstr).replaceAll(
+																	['$qcommentstr', '$answers', '$tags', '$rep'],
+																	[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+																).replaceAll(
+																	['$askdate', '$op-name', '$op-rep', '$op-pic'],
+																	[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+															);
+															respondPageFooter(res);
 														}
-													}
-													tageditstr += '</div>';
-												};
-												var i = -1;
-												while (++i < tlang.length) {
-													if (!tlang[i].parentID) {
-														writeTagRecursive(tlang[i]);
-														i = -1;
-													}
+													});
 												}
-												res.write(data.toString()
-													.replaceAll(
-														['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-														[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-													).replace('$edit-tags', tageditstr).replaceAll(
-														['$qcommentstr', '$answers', '$tags', '$rep'],
-														[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
-													).replaceAll(
-														['$askdate', '$op-name', '$op-rep', '$op-pic'],
-														[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-													).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-												);
-												respondPageFooter(res);
-											}
+											});
 										});
 									}
 								});
-							});
-						}
+							}
+						};
+						cursor.nextObject(answerHandler);
 					});
 				});
 			});

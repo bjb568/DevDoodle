@@ -1,11 +1,11 @@
 <h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" hidden="" /></h1>
 <span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
 <div class="ctrl pad lft">
-	<a id="mup" title="This question is clear, answerable, and useful to the community."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
-	<a id="mdn" title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
-	<a id="mfl" title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+	<a title="This question is clear, answerable, and useful to the community."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
+	<a title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
+	<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
 	<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
-	<a id="mdl" class="ctrlicon delbtn" title="Delete">✕</a>
+	<a class="ctrlicon delbtn" title="Delete">✕</a>
 </div>
 <div id="q-content">
 	<div id="q-body" class="hglt pad br">
@@ -25,10 +25,10 @@
 				</div>
 			</div>
 		</div>
-		<small class="blk sumar lft" style="clear: left"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
+		<small class="blk sumar lft clr"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
 	</div>
 </div>
-<form id="q-edit" style="margin-left: 32px" hidden="">
+<form id="q-edit" class="indt" hidden="">
 	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
 	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
 	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
@@ -46,13 +46,13 @@
 		<button type="submit">Post</button>
 		<button type="reset" id="reset">Cancel</button>
 	</form>
-	<a id="addcomment" href="#comment" style="font-weight: normal;" class="small">Add comment</a>
+	<a id="addcomment" href="#comment" class="small">Add comment</a>
 </div>
 <hr class="nomar bumar" />
 $answers
 <h2 class="bumar">Answer this question</h2>
-<form id="answer" class="umar rel" action="/api/answer/add">
-	<textarea id="answerta" name="answer"></textarea>
+<form id="answerform" class="umar rel" action="/api/answer/add">
+	<textarea id="answerta" name="body"></textarea>
 	<div id="answertips" class="pad abs">
 		<h3>Thanks for answering!</h3>
 		<p>While answering, make sure to:</p>
@@ -68,12 +68,37 @@ $answers
 			<li><strong>Post a comment as an answer</strong>: answers should directly address the question – if you have the same problem or just want to express your thanks, vote up the question.</li>
 		</ul>
 	</div>
+	<div id="answer-error" class="err"></div>
 	<button>Submit</button>
 </form>
 <style>
+	.clr { clear: left }
+	.err {
+		position: absolute;
+		padding: 8px;
+		width: 300px;
+		background: #f00;
+		z-index: 1;
+	}
+	.err:empty { display: none }
+	#answer-error { margin-left: 4em }
 	.q-editing h1 { border-bottom: none }
-	#q-content { margin-left: 32px }
-	#q-body { margin-bottom: 8px }
+	.answer { margin-top: 12px }
+	.answer + .answer {
+		border-top: 1px solid #aaa;
+		padding-top: 8px;
+	}
+	.answer > .lft {
+		padding-right: 12px;
+		border-right: 1px solid #aaa;
+	}
+	#q-content, .a-content {
+		margin-left: 32px;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+	}
+	.a-content { margin-left: 42px }
+	#q-body, .a-body { margin-bottom: 8px }
 	#q-edit textarea, .a-edit textarea, #answerta {
 		width: 100%;
 		max-height: 70vmin;
@@ -118,16 +143,16 @@ $answers
 	.ctrlicon:not([hidden]) { display: block }
 	.ctrlicon {
 		margin: 4px -2px;
-		height: 24px; width: 24px;
+		height: 23px; width: 23px;
 		font-size: 20px; font-weight: bold;
 		text-decoration: none;
 		border-radius: 50%;
-		border: 1.5px solid #000;
+		border: 1px solid #888;
 		background: #eee;
 	}
 	.editbtn {
 		color: #0b0;
-		padding-left: 2.5px;
+		padding-left: 2px;
 	}
 	.editbtn:visited {
 		color: #0a0;
@@ -159,11 +184,12 @@ $answers
 	.comment .up, .comment .dn { width: 18px }
 	#comment:target + #addcomment { display: none }
 	#answer, #answerta { z-index: 1 }
-	#answerta:focus + #answertips, #answertips:hover {
+	#answerta:focus + #answertips #answertips:hover {
+		z-index: 1;
 		opacity: 1;
 		bottom: calc(100% + 12px);
 		left: 0;
-		transition: opacity .7s, bottom .7s;
+		transition: opacity 0.7s, bottom 0.7s;
 	}
 	#answertips {
 		z-index: -1;
@@ -173,7 +199,7 @@ $answers
 		box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 		border: 1px solid #888;
 		opacity: 0;
-		transition: opacity .3s ease-out, bottom .6s, left 0 .6s;
+		transition: opacity 0.3s ease-out, bottom 0.6s, left 0 0.6s;
 	}
 </style>
 <script>
@@ -181,6 +207,7 @@ $answers
 		var e = document.getElementById(location.hash.substr(1)),
 			f;
 		if (e) f = e.getElementsByTagName('textarea')[0];
+		console.log(location.hash);
 		if (f) e.focus();
 		else if (location.hash == '#edit') {
 			document.body.classList.add('q-editing');
@@ -190,7 +217,9 @@ $answers
 			document.getElementById('q-content').hidden = 1;
 			document.getElementById('q-desc-edit').focus();
 			document.getElementById('med').href = '#';
-		} else document.getElementById('cancel-edit').onclick();
+		} else {
+			if (!document.getElementById('q-edit').hidden) document.getElementById('cancel-edit').onclick();
+		}
 	}
 	addEventListener('load', handleLocationUpdate);
 	addEventListener('hashchange', handleLocationUpdate);
@@ -208,6 +237,20 @@ $answers
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
+	document.getElementById('answerform').addEventListener('submit', function(e) {
+		e.preventDefault();
+		var answerBody = document.getElementById('answerta').value,
+			err = document.getElementById('answer-error');
+		if (err.firstChild) err.removeChild(err.firstChild);
+		if (answerBody.length &lt; 144) return err.appendChild(document.createTextNode('Answer body must be 144 characters long.'));
+		request('/api/answer/add', function(res) {
+			if (res.indexOf('Location:') == 0) {
+				location.href = '#a' + res.substr(12);
+				location.reload();
+			} else if (res.indexOf('Error:') == 0) alert(res);
+			else alert('Unknown error. Response was: ' + res);
+		}, 'body=' + encodeURIComponent(answerBody));
+	});
 	var socket = new WebSocket('wss://' + location.hostname + ':81/q/$id');
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({

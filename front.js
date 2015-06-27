@@ -1121,8 +1121,38 @@ https.createServer({
 							else otherlang.push(q);
 						} else res.end(JSON.stringify(samelang.concat(otherlang)));
 					});
-				} else if (reg.url.pathname == '/answer/add') {
-					
+				} else if (req.url.pathname == '/answer/add') {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to answer a question.');
+					}
+					if (!post.body) {
+						res.writeHead(400);
+						return res.end('Error: Missing body.');
+					}
+					if (post.body.length < 144) {
+						res.writeHead(400);
+						return res.end('Error: Body must be 144 characters long.');
+					}
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
+					if (!i) {
+						res.writeHead(400);
+						return res.end('Error: Bad referer.');
+					}
+					dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+						if (err) throw err;
+						var id = last ? last._id + 1 : 1;
+						dbcs.answers.insert({
+							_id: id,
+							question: parseInt(i[1]),
+							body: post.body,
+							user: user.name,
+							time: new Date().getTime(),
+							score: 0
+						});
+						res.writeHead(200);
+						res.end('Location: #a' + id);
+					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);
 					if (type !== 1 && type !== 2) {
