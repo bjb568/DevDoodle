@@ -515,7 +515,7 @@ function highlight(codeBlock, input) {
 				linenum.dataset.linenum = ++line;
 				codeBlock.appendChild(linenum);
 			}
-		} else if (c == '/') {
+		} else if (c == '/' && !input[i - 1].match(/[\d\w]/)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var regex = document.createElement('span');
@@ -896,7 +896,7 @@ function highlight(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 3;
-		} else if ('?:'.indexOf(c) != -1) {
+		} else if ('?:+-*/%&|^'.indexOf(c) != -1) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
