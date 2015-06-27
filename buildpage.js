@@ -330,7 +330,7 @@ http.createServer(function(req,	res) {
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				res.write('\t<div class="grey">Moderator level ' + user.level + '</div>');
+				res.write('\t<div class="grey">Moderator level ' + dispUser.level + '</div>');
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
