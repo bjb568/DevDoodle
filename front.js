@@ -1608,7 +1608,7 @@ https.createServer({
 									html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 								});
 								respondPage('Account Created', user, req, res, function() {
-									res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+									res.write('An account for you has been created. To activate it, click the link in the email sent to you. It may take a few minutes for the email to reach you, but please check your spam folder.');
 									respondPageFooter(res);
 								});
 							});
