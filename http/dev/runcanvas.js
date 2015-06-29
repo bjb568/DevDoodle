@@ -515,7 +515,7 @@ function highlight(codeBlock, input) {
 				linenum.dataset.linenum = ++line;
 				codeBlock.appendChild(linenum);
 			}
-		} else if (c == '/' && !input[i - 1].match(/[\d\w]/)) {
+		} else if (c == '/' && ['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1 && input.substr(0, i).match(/(^|=|\+|-|\*|\/|<|>|%|\?|:|&|\||\(|\)|\{|\}|\[|\]|!)\s*$/)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var regex = document.createElement('span');
@@ -731,9 +731,8 @@ function highlight(codeBlock, input) {
 				(['document'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
 				(['statusbar', 'navigator', 'indexedDB'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
 				(['scrollbars', 'styleMedia'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10)) ||
-				(['locationbar', 'personalbar'].indexOf(input.substr(i, 11)) != -1 && !(input[i + 11] || '').match(/\w/) && (l = 11)) ||
+				(['locationbar', 'personalbar', 'performance'].indexOf(input.substr(i, 11)) != -1 && !(input[i + 11] || '').match(/\w/) && (l = 11)) ||
 				(['frameElement', 'localStorage'].indexOf(input.substr(i, 12)) != -1 && !(input[i + 12] || '').match(/\w/) && (l = 12)) ||
-				(['performance'].indexOf(input.substr(i, 13)) != -1 && !(input[i + 13] || '').match(/\w/) && (l = 13)) ||
 				(['sessionStorage'].indexOf(input.substr(i, 14)) != -1 && !(input[i + 14] || '').match(/\w/) && (l = 14)) ||
 				(['speechSynthesis'].indexOf(input.substr(i, 15)) != -1 && !(input[i + 15] || '').match(/\w/) && (l = 15)) ||
 				(['devicePixelRatio', 'applicationCache'].indexOf(input.substr(i, 16)) != -1 && !(input[i + 16] || '').match(/\w/) && (l = 16))
