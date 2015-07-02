@@ -83,21 +83,16 @@ $answers
 	.err:empty { display: none }
 	#answer-error { margin-left: 4em }
 	.q-editing h1 { border-bottom: none }
-	.answer { margin-top: 12px }
+	.answer { padding: 8px 0 4px }
 	.answer + .answer {
 		border-top: 1px solid #aaa;
-		padding-top: 8px;
-	}
-	.answer > .lft {
-		padding-right: 12px;
-		border-right: 1px solid #aaa;
+		margin-top: 8px;
 	}
 	#q-content, .a-content {
 		margin-left: 32px;
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 	}
-	.a-content { margin-left: 42px }
 	#q-body, .a-body { margin-bottom: 8px }
 	#q-edit textarea, .a-edit textarea, #answerta {
 		width: 100%;
@@ -207,7 +202,6 @@ $answers
 		var e = document.getElementById(location.hash.substr(1)),
 			f;
 		if (e) f = e.getElementsByTagName('textarea')[0];
-		console.log(location.hash);
 		if (f) e.focus();
 		else if (location.hash == '#edit') {
 			document.body.classList.add('q-editing');
@@ -245,7 +239,7 @@ $answers
 		if (answerBody.length &lt; 144) return err.appendChild(document.createTextNode('Answer body must be 144 characters long.'));
 		request('/api/answer/add', function(res) {
 			if (res.indexOf('Location:') == 0) {
-				location.href = '#a' + res.substr(12);
+				location.href = '#' + res.substr(12);
 				location.reload();
 			} else if (res.indexOf('Error:') == 0) alert(res);
 			else alert('Unknown error. Response was: ' + res);

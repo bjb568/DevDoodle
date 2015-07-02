@@ -565,7 +565,7 @@ http.createServer(function(req,	res) {
 								dbcs.users.findOne({name: answer.user}, function(err, answerPoster) {
 									if (err) throw err;
 									answerstr += (
-										'<div id="a' + answer._id + '" class="answer">' +
+										'<div id="' + answer._id + '" class="answer">' +
 											'<div class="ctrl pad lft">' +
 												'<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>' +
 												'<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>' +
@@ -586,7 +586,7 @@ http.createServer(function(req,	res) {
 															'</div>' +
 														'</div>' +
 													'</div>' +
-													'<small class="blk sumar lft"><a href="#a' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>' +
+													'<small class="blk sumar lft"><a href="#' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history=' + answer._id + '" class="grey">History</a></small>' +
 												'</div>' +
 											'</div>' +
 											'<form class="a-edit indt" hidden="">' +
@@ -636,7 +636,7 @@ http.createServer(function(req,	res) {
 														if (tag) tlang.push(tag);
 														else {
 															var writeTagRecursive = function(tag) {
-																tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+																tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
 																tlang.splice(tlang.indexOf(tag), 1);
 																tageditstr += '<div class="indt">';
 																var i = -1;
