@@ -243,7 +243,7 @@
 					? 0
 					: (
 						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
-						? (this.eIndent = false || 2) 
+						? (this.eIndent = false || 2)
 						: 1
 					)
 				);
@@ -388,7 +388,6 @@
 		document.getElementById('reset').onclick = function() {
 			location.hash = '';
 			history.replaceState('', document.title, window.location.pathname);
-			document.body.scrollTop = innerHeight;
 		};
 		socket.onmessage = function(e) {
 			console.log(e.data);
@@ -403,7 +402,7 @@
 				div.classList.add('comment');
 				div.innerHTML = ' ' + markdown(data.body);
 				if ($rep >= 50) {
-					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.insertBefore(document.getElementById('meta').nextElementSibling.cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
 					var score = document.createElement('span');
 					score.classList.add('score');
@@ -425,6 +424,7 @@
 				sig.appendChild(permalink);
 				div.appendChild(sig);
 				document.getElementById('comments').appendChild(div);
+				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {
 				var c = document.getElementById('c' + data.id);
 				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;

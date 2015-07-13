@@ -337,7 +337,6 @@ addEventListener('DOMContentLoaded', function() {
 		document.getElementById('reset').onclick = function() {
 			location.hash = '';
 			history.replaceState('', document.title, window.location.pathname);
-			document.body.scrollTop = innerHeight;
 		};
 		socket.onmessage = function(e) {
 			console.log(e.data);
@@ -352,7 +351,7 @@ addEventListener('DOMContentLoaded', function() {
 				div.classList.add('comment');
 				div.innerHTML = ' ' + markdown(data.body);
 				if (myRep >= 50) {
-					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.insertBefore(document.getElementById('meta').nextElementSibling.cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
 					var score = document.createElement('span');
 					score.classList.add('score');
@@ -374,6 +373,7 @@ addEventListener('DOMContentLoaded', function() {
 				sig.appendChild(permalink);
 				div.appendChild(sig);
 				document.getElementById('comments').appendChild(div);
+				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {
 				var c = document.getElementById('c' + data.id);
 				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
