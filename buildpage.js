@@ -906,8 +906,8 @@ http.createServer(function(req,	res) {
 					data.toString()
 					.replace(/<section id="meta">[^]+<\/section>/, '')
 					.replaceAll(
-						['$mine', '$id', '$title', '$code'],
-						['false', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+						['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
+						['false', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 					)
 				);
 				respondPageFooter(res);
