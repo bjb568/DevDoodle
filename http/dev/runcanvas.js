@@ -515,7 +515,18 @@ function highlight(codeBlock, input) {
 				linenum.dataset.linenum = ++line;
 				codeBlock.appendChild(linenum);
 			}
-		} else if (c == '/' && ['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1 && input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;])\s*$/)) {
+		} else if (
+				c == '/'
+				&& (
+					(
+						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
+						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;])\s*$/)
+					) || (
+						codeBlock.lastElementChild
+						&& codeBlock.lastElementChild.firstChild.nodeValue == 'return'
+					)
+				)
+			) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var regex = document.createElement('span');
