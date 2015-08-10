@@ -1040,7 +1040,7 @@ http.createServer(function(req,	res) {
 						});
 					});
 				});
-			}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
+			}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
 		});
 	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, user, req, res, function() {
