@@ -35,3 +35,17 @@ Apparently node processes don't need to run as root if you do this first (on Lin
 	setcap 'cap_net_bind_service=+ep' /usr/bin/nodejs
 
 To make Safari/OS X like the cert (and allow connecting with sockets), add the certs to Keychain Access and set it to Always Trust.
+
+For reference, to update Node:
+
+    sudo npm cache clean -f
+    sudo npm install -g n
+    sudo n stable
+
+npm:
+
+    sudo npm update -g npm
+
+Dependancies:
+
+    npm update
