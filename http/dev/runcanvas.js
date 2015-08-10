@@ -289,7 +289,7 @@ addEventListener('DOMContentLoaded', function() {
 					} else if (res == 'Success') {
 						edit.hidden = true;
 						var title = document.getElementById('title');
-						title.textContent = edit.value.substr(0, 92) || 'Untitled';
+						document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
 						if (!edit.value) edit.value = 'Untitled';
 						title.hidden = false;
 					} else alert('Unknown error. Response was: ' + res);
