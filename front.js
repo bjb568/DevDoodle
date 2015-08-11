@@ -583,7 +583,7 @@ https.createServer({
 	dbcs.users.findOne({
 		cookie: {
 			$elemMatch: {
-				token: cookies.id.toString(),
+				token: cookies.id || 'nomatch',
 				created: {$gt: new Date().getTime() - 2592000000}
 			}
 		}
