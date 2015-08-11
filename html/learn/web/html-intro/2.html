@@ -1,12 +1,12 @@
-Setting up a page - Using a Doctype
+Using a Doctype - Intro to HTML
 <div class="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
-			<h2>Setting up a page - Using a Doctype</h2>
-			<p>The first thing you do when you write an HTML page is define the doctype.</p>
+			<h2>First off, Use a Doctype</h2>
+			<p>The first thing that you must do to write an HTML document is to define the doctype.</p>
 			<code class="blk">&lt;!DOCTYPE html></code>
-			<p>This tells the browser that the page is in HTML5. There are other doctypes, but right now you only need to know the doctype of HTML5. Type it in the code area to continue.</p>
+			<p>This tells the browser that the page is in HTML5 (the latest version of HTML). There are other doctypes, but we will just be using this one for this tutorial.</p>
 			<button id="check" class="blk" onclick="submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
@@ -24,7 +24,7 @@ Setting up a page - Using a Doctype
 <script>
 	var footerOff = true, noPageOverflow = 520;
 	function run() {
-		document.getElementById('output').srcdoc = document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
 	}
 	run();
 	document.getElementById('html').addEventListener('keyup', run);

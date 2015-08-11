@@ -4,8 +4,8 @@ Intro to HTML
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
 			<h2>What is HTML?</h2>
-			<p>HTML (Hyper Text Markup Language) is the language of web pages. It augments text, by adding formatting (header, bold, italic), hyperlinks (clickable text), and a foundation for other web technologies (CSS, JavaScript).</p>
-			<p>On the right/bottom is a basic HTML file and output. You don't need to understand it for now - click next for more info.</p>
+			<p>HTML (<b>H</b>yper <b>T</b>ext <b>M</b>arkup <b>L</b>anguage) is the language of web pages. It augments text by adding semantic meaning, organizing bits of text into headers, paragraphs, hyperlinks (text that links to another document), and other elements, and serves as a foundation for other web technologies such as CSS, which provides style, and JavaScript, which enables interactivity.</p>
+			<p>Shown on the right or bottom is a basic HTML file and its output. You don't need to understand it for now - click next to learn more.</p>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a><a href="../2/" class="rit">Next</a></div>
 	</div>
@@ -23,7 +23,7 @@ Intro to HTML
 <script>
 	var footerOff = true, noPageOverflow = 520;
 	function run() {
-		document.getElementById('output').srcdoc = document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
 	}
 	run();
 	document.getElementById('html').addEventListener('keyup', run);

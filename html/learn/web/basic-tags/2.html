@@ -1,41 +1,34 @@
-Basic Tags
+Headings - Basic Tags
 <div class="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Basic Tags</h1>
-			<h2>Headers</h2>
-			<p>If you look at a newspaper, you'll most likely notice the big black letters that spell out the headline. In HTML, these are called headers; they're quite useful.</p>
-			<h3>"H" is for Header</h3>
-			<p>In an article in the paper there are multiple levels of headings. There's the article title, sub-headings for the article, sub-sub-headings for the sub-headings... let's try not to get too creative here. So how would we write those in HTML? Well, we use an "h" for header then a number from 1-6, where 1 is the most important and highest in the hierarchy (rendered as the largest in your browser), and 6 means the least important and lowest on the hierarchy (rendered as the smallest in your browser). In general, there should be 1 level-1 header (&lt;h1>) per page and only a heading of <em>one level lower</em> rank following another heading.</p>
-			<code class="blk">&lt;h1>I'm going to be big and important! :D&lt;/h1>
-&lt;h6>I'm going to be tiny and detailed. :(&lt;/h6></code>
-			<p>To move on, write all the possible header tags from largest to smallest, and in each one, put "Smaller".</p>
+			<h3>"H" is for Heading</h3>
+			<p>Heading elements outline the structure of a document. HTML provides 6 levels of headings: <code>&lt;h1></code> for the page title, <code>&lt;h2></code> for the section title, <code>&lt;h3></code> for the subsection title, and so on down to <code>&lt;h6></code> for the subsubsubsubsection title. ideally, these headings could be used to create a table of contents.</p>
+			<p>To move on, write all the possible header tags from most to least important and give each of them some text content.</p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
 			</div>
-			<div id="failed1" class="failed clearfix">
+			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the tags correctly? Remember, there are 6 sizes, and they look like this:</p>
+				<p>Did you write the tags correctly? Remember, there are 6 levels which look like this:</p>
 				<code class="blk">&lt;h1>&lt;/h1>
 &lt;h2>&lt;/h2>
 &lt;h3>&lt;/h3>
 &lt;h4>&lt;/h4>
 &lt;h5>&lt;/h5>
 &lt;h6>&lt;/h6></code>
-			</div>
-			<div id="failed2" class="failed clearfix">
-				<h2>Almost!</h2>
-				<p>Make sure to write "smaller" in between the header tags, like this: <code>&lt;h1>&lt;/h1></code></p>
+				<p>Give each heading some text content too.</p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../1/" class="lft">Back</a><a href="../3/" class="rit">Next</a></div>
 	</div>
 	<textarea id="html">&lt;!DOCTYPE html>
-&lt;html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
 	&lt;head>&lt;/head>
 	&lt;body>
-		&lt;!-- Hi! I'm a comment, you're going to learn about me in the next lesson, so go ahead and delete me, and replace me with the header tags.-->
+&#9;&#9;
 	&lt;/body>
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
@@ -43,7 +36,7 @@ Basic Tags
 <script>
 	var footerOff = true, noPageOverflow = 520;
 	function run() {
-		document.getElementById('output').srcdoc = document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
 	}
 	run();
 	document.getElementById('html').addEventListener('keyup', run);
@@ -52,17 +45,20 @@ Basic Tags
 		setTimeout(run, 0);
 	});
 	function submit() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;h1>smaller&lt;\/h1>\s*&lt;h2>smaller&lt;\/h2>\s*&lt;h3>smaller&lt;\/h3>\s*&lt;h4>smaller&lt;\/h4>\s*&lt;h5>smaller&lt;\/h5>\s*&lt;h6>smaller&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xhtml+xml');
+		if (
+			doc.body &amp;&amp;
+			(doc.body.getElementsByTagName('h1')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
+			(doc.body.getElementsByTagName('h2')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
+			(doc.body.getElementsByTagName('h3')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
+			(doc.body.getElementsByTagName('h4')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
+			(doc.body.getElementsByTagName('h5')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
+			(doc.body.getElementsByTagName('h6')[0] || {firstChild: {}}).firstChild.nodeValue
+		) {
 			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed1').classList.remove('show');
-			document.getElementById('failed2').classList.remove('show');
-		} else if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;h1>[\s\S]*&lt;\/h1>\s*&lt;h2>[\s\S]*&lt;\/h2>\s*&lt;h3>[\s\S]*&lt;\/h3>\s*&lt;h4>[\s\S]*&lt;\/h4>\s*&lt;h5>[\s\S]*&lt;\/h5>\s*&lt;h6>[\s\S]*&lt;\/h6>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
-			document.getElementById('failed2').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-			document.getElementById('failed1').classList.remove('show');
+			document.getElementById('failed').classList.remove('show');
 		} else {
-			document.getElementById('failed1').classList.add('show');
-			document.getElementById('failed2').classList.remove('show');
+			document.getElementById('failed').classList.add('show');
 			document.getElementById('passed').classList.remove('show');
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
