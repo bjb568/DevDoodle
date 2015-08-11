@@ -97,6 +97,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
+	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
