@@ -109,7 +109,9 @@ function respondPage(title, user, req, res, callback, header, status) {
 			dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
 			header['Set-Cookie'] = cookie.serialize('id', idToken, {
 				path: '/',
-				expires: new Date(new Date().setDate(new Date().getDate() + 30))
+				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+				httpOnly: true,
+				secure: true
 			});
 		}
 	}
@@ -275,7 +277,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
 		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>\n');
 		res.write('<div id="ccreate">\n');
-		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span></div>\n');
+		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
 		res.write('<div><input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>\n');
@@ -1635,7 +1637,9 @@ https.createServer({
 								var idToken = crypto.randomBytes(128).toString('base64'),
 									idCookie = cookie.serialize('id', idToken, {
 										path: '/',
-										expires: new Date(new Date().setDate(new Date().getDate() + 30))
+										expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+										httpOnly: true,
+										secure: true
 									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
