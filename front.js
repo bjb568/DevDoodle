@@ -109,7 +109,9 @@ function respondPage(title, user, req, res, callback, header, status) {
 			dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
 			header['Set-Cookie'] = cookie.serialize('id', idToken, {
 				path: '/',
-				expires: new Date(new Date().setDate(new Date().getDate() + 30))
+				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+				httpOnly: true,
+				secure: true
 			});
 		}
 	}
@@ -1635,7 +1637,9 @@ https.createServer({
 								var idToken = crypto.randomBytes(128).toString('base64'),
 									idCookie = cookie.serialize('id', idToken, {
 										path: '/',
-										expires: new Date(new Date().setDate(new Date().getDate() + 30))
+										expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+										httpOnly: true,
+										secure: true
 									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
