@@ -78,7 +78,8 @@ var mime = {
 	'.js': 'text/javascript',
 	'.png': 'image/png',
 	'.svg': 'image/svg+xml',
-	'.mp3': 'audio/mpeg'
+	'.mp3': 'audio/mpeg',
+	'.ico': 'image/x-icon'
 };
 
 function respondPage(title, user, req, res, callback, header, status) {
