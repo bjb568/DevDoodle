@@ -543,6 +543,9 @@ var statics = {
 
 var cache = {};
 
+var constants = require('constants'),
+	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+
 https.createServer({
 	key: fs.readFileSync('../Secret/devdoodle.net.key'),
 	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
@@ -578,7 +581,8 @@ https.createServer({
 		'!MD5',
 		'!PSK'
 	].join(':'),
-	honorCipherOrder: true
+	honorCipherOrder: true,
+	secureOptions: SSL_ONLY_TLS_1_2
 }, function(req, res) {
 	var origURL = req.url,
 		i,
