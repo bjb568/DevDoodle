@@ -4,11 +4,11 @@
   "description": "A programmers' network where you can do tutorials, ask questions, and create and share your own programs.",
   "main": "server.js",
   "dependencies": {
-    "cookie": ">=0.1.2",
-    "nodemailer": ">=1.3.2",
+    "cookie": ">=0.1.3",
+    "nodemailer": ">=1.4.0",
     "nodemailer-sendmail-transport": ">=1.0.0",
-    "ws": ">=0.7.1",
-    "mongodb": ">=2.0.25",
+    "ws": ">=0.7.2",
+    "mongodb": ">=2.0.39",
     "etag": ">=1.7.0"
   },
   "devDependencies": {},
