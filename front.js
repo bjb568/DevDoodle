@@ -28,6 +28,7 @@ var http = require('http'),
 	https = require('https'),
 	zlib = require('zlib'),
 	uglifyJS = require('uglify-js'),
+	cleanCSS = require('clean-css'),
 	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
@@ -1787,6 +1788,7 @@ https.createServer({
 						fs.readFile('./http' + req.url.pathname, function(err, data) {
 							if (err) return errorPage[404](req, res, user);
 							if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+							if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
 							zlib.gzip(data, function(err, buffer) {
 								if (err) throw err;
 								cache[req.url.pathname] = {

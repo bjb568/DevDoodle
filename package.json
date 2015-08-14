@@ -11,6 +11,7 @@
     "mongodb": ">=2.0.39",
     "etag": ">=1.7.0",
     "uglify-js": ">=2.4.24",
+    "clean-css": "3.3.9"
   },
   "devDependencies": {},
   "repository": {
