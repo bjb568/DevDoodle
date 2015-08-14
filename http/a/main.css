@@ -362,8 +362,8 @@ textarea {
 @media screen and(-webkit-min-device-pixel-ratio: 0) { /* Safari only */
 	#nav input::-webkit-search-results-decoration { display: block }
 }
-#logo img {
-	max-height: 100%;
+#logo svg {
+	max-width: 100%; max-height: 100%;
 	padding: 4px 6px;
 }
 #content { padding-bottom: 24px }
@@ -444,7 +444,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 	#logo {
 		float: left;
-		width: 144px;
+		width: 152px;
 		margin: 0;
 	}
 	#nav nav { display: inline-block }
@@ -493,7 +493,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		transition: background .1s;
 		content: '';
 	}
-	#logo img { padding-bottom: 4px }
+	#logo svg { padding-bottom: 4px }
 }
 @media (min-width: 800px) and (max-width: 1499px) {
 	#cont { margin: 0 auto }
@@ -507,9 +507,10 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		top: 2rem;
 		border-top: 1px solid #888;
 	}
-	#nav nav:nth-child(4) { left: calc(14.125rem + 11px) }
-	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
+	#nav nav:nth-child(4) { left: calc(12rem + 43px) }
+	#nav nav:nth-child(6) { left: calc(14.5rem + 72px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
+	#logo svg { width: 9.4rem }
 }
 @media (min-width: 1500px) {
 	html { background-size: cover }

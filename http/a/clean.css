@@ -362,8 +362,8 @@ textarea {
 	max-width: 100%;
 	color: #000;
 }
-#logo img {
-	max-height: 100%;
+#logo svg {
+	max-width: 100%; max-height: 100%;
 	padding: 4px 6px;
 }
 #content { padding-bottom: 4px }
@@ -444,7 +444,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 	#logo {
 		float: left;
-		width: 144px;
+		width: 152px;
 		margin: 0;
 	}
 	#nav nav { display: inline-block }
@@ -458,6 +458,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 }
 @media (min-width: 800px) {
+	#cont { margin: 0 auto }
 	#nav {
 		padding: 0;
 		background: #111;
@@ -482,7 +483,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 	#logo {
 		display: inline-block; position: relative;
-		width: auto; height: 100%;
+		width: auto; height: 2rem;
 		margin: 0;
 	}
 	#logo:hover div { background: rgba(255, 255, 255, .3) }
@@ -493,11 +494,10 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		transition: background .1s;
 		content: '';
 	}
-	#logo img { padding-bottom: 4px }
-}
-@media (min-width: 800px) {
-	#cont { margin: 0 auto }
-	#logo { height: 2rem }
+	#logo svg {
+		padding-bottom: 4px;
+		width: 9.4rem;
+	}
 	#nav > :nth-child(-n+5) { float: left }
 	#nav > :nth-child(7) { border-left: 1px solid #444 }
 	#nav > a:not(#logo) { border-right: 1px solid #444 }
@@ -507,8 +507,8 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		top: 2rem;
 		border-top: 1px solid #888;
 	}
-	#nav nav:nth-child(4) { left: calc(14.125rem + 11px) }
-	#nav nav:nth-child(6) { left: calc(17rem + 32px) }
+	#nav nav:nth-child(4) { left: calc(12rem + 43px) }
+	#nav nav:nth-child(6) { left: calc(14.5rem + 72px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
 }
 @media (min-width: 1500px) {
