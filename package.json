@@ -9,7 +9,8 @@
     "nodemailer-sendmail-transport": ">=1.0.0",
     "ws": ">=0.7.2",
     "mongodb": ">=2.0.39",
-    "etag": ">=1.7.0"
+    "etag": ">=1.7.0",
+    "uglify-js": ">=2.4.24",
   },
   "devDependencies": {},
   "repository": {

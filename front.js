@@ -27,6 +27,7 @@ var site = {
 var http = require('http'),
 	https = require('https'),
 	zlib = require('zlib'),
+	uglifyJS = require('uglify-js'),
 	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
@@ -1763,7 +1764,7 @@ https.createServer({
 					if (cache[req.url.pathname]) {
 						res.writeHead(200, {
 							'Content-Encoding': raw ? 'identity' : 'gzip',
-							'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+							'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=UTF-8',
 							'Cache-Control': 'max-age=6012800, public',
 							'ETag': etag(cache[req.url.pathname].raw),
 							'Vary': 'Accept-Encoding'
@@ -1785,6 +1786,7 @@ https.createServer({
 					} else {
 						fs.readFile('./http' + req.url.pathname, function(err, data) {
 							if (err) return errorPage[404](req, res, user);
+							if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 							zlib.gzip(data, function(err, buffer) {
 								if (err) throw err;
 								cache[req.url.pathname] = {
@@ -1794,7 +1796,7 @@ https.createServer({
 								};
 								res.writeHead(200, {
 									'Content-Encoding': raw ? 'identity' : 'gzip',
-									'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+									'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=UTF-8',
 									'Cache-Control': 'max-age=6012800, public',
 									'ETag': etag(data),
 									'Vary': 'Accept-Encoding'
