@@ -27,6 +27,7 @@ var site = {
 var http = require('http'),
 	https = require('https'),
 	zlib = require('zlib'),
+	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
 	url = require('url'),
@@ -1764,6 +1765,7 @@ https.createServer({
 							'Content-Encoding': raw ? 'identity' : 'gzip',
 							'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 							'Cache-Control': 'max-age=6012800, public',
+							'ETag': etag(cache[req.url.pathname].raw),
 							'Vary': 'Accept-Encoding'
 						});
 						res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
@@ -1794,6 +1796,7 @@ https.createServer({
 									'Content-Encoding': raw ? 'identity' : 'gzip',
 									'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 									'Cache-Control': 'max-age=6012800, public',
+									'ETag': etag(data),
 									'Vary': 'Accept-Encoding'
 								});
 								res.end(raw ? data : buffer);
