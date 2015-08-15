@@ -26,6 +26,7 @@ var site = {
 
 var http = require('http'),
 	https = require('https'),
+	zlib = require('zlib'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
 	etag = require('etag'),
@@ -1737,6 +1738,7 @@ https.createServer({
 				});
 			} else respondCreateRoomPage([], user, req, res, post);
 		} else {
+			var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
 				if (err || !stats.isFile()) {
 					req.headers.user = JSON.stringify(user) || '';
@@ -1762,21 +1764,24 @@ https.createServer({
 				} else {
 					if (cache[req.url.pathname]) {
 						res.writeHead(200, {
-							'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+							'Content-Encoding': raw ? 'identity' : 'gzip',
+							'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=UTF-8',
 							'Cache-Control': 'max-age=6012800, public',
-							'ETag': etag(cache[req.url.pathname].data),
+							'ETag': etag(cache[req.url.pathname].raw),
 							'Vary': 'Accept-Encoding'
 						});
-						res.end(cache[req.url.pathname].data);
+						res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 						if (cache[req.url.pathname].updated < stats.mtime) {
 							fs.readFile('./http' + req.url.pathname, function(err, data) {
 								if (err) return;
-								if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
-								if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
-								cache[req.url.pathname] = {
-									data: data,
-									updated: stats.mtime
-								};
+								zlib.gzip(data, function(err, buffer) {
+									if (err) throw err;
+									cache[req.url.pathname] = {
+										raw: data,
+										gzip: buffer,
+										updated: stats.mtime
+									};
+								});
 							});
 						}
 					} else {
@@ -1784,17 +1789,22 @@ https.createServer({
 							if (err) return errorPage[404](req, res, user);
 							if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 							if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
-							cache[req.url.pathname] = {
-								data: data,
-								updated: stats.mtime
-							};
-							res.writeHead(200, {
-								'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
-								'Cache-Control': 'max-age=6012800, public',
-								'ETag': etag(data),
-								'Vary': 'Accept-Encoding'
+							zlib.gzip(data, function(err, buffer) {
+								if (err) throw err;
+								cache[req.url.pathname] = {
+									raw: data,
+									gzip: buffer,
+									updated: stats.mtime
+								};
+								res.writeHead(200, {
+									'Content-Encoding': raw ? 'identity' : 'gzip',
+									'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=UTF-8',
+									'Cache-Control': 'max-age=6012800, public',
+									'ETag': etag(data),
+									'Vary': 'Accept-Encoding'
+								});
+								res.end(raw ? data : buffer);
 							});
-							res.end(data);
 						});
 					}
 				}
