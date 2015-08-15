@@ -26,7 +26,6 @@ var site = {
 
 var http = require('http'),
 	https = require('https'),
-	zlib = require('zlib'),
 	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
@@ -1736,7 +1735,6 @@ https.createServer({
 				});
 			} else respondCreateRoomPage([], user, req, res, post);
 		} else {
-			var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
 				if (err || !stats.isFile()) {
 					req.headers.user = JSON.stringify(user) || '';
@@ -1762,45 +1760,35 @@ https.createServer({
 				} else {
 					if (cache[req.url.pathname]) {
 						res.writeHead(200, {
-							'Content-Encoding': raw ? 'identity' : 'gzip',
 							'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 							'Cache-Control': 'max-age=6012800, public',
-							'ETag': etag(cache[req.url.pathname].raw),
+							'ETag': etag(cache[req.url.pathname].data),
 							'Vary': 'Accept-Encoding'
 						});
-						res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
+						res.end(cache[req.url.pathname].data);
 						if (cache[req.url.pathname].updated < stats.mtime) {
 							fs.readFile('./http' + req.url.pathname, function(err, data) {
 								if (err) return;
-								zlib.gzip(data, function(err, buffer) {
-									if (err) throw err;
-									cache[req.url.pathname] = {
-										raw: data,
-										gzip: buffer,
-										updated: stats.mtime
-									};
-								});
+								cache[req.url.pathname] = {
+									data: data,
+									updated: stats.mtime
+								};
 							});
 						}
 					} else {
 						fs.readFile('./http' + req.url.pathname, function(err, data) {
 							if (err) return errorPage[404](req, res, user);
-							zlib.gzip(data, function(err, buffer) {
-								if (err) throw err;
-								cache[req.url.pathname] = {
-									raw: data,
-									gzip: buffer,
-									updated: stats.mtime
-								};
-								res.writeHead(200, {
-									'Content-Encoding': raw ? 'identity' : 'gzip',
-									'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
-									'Cache-Control': 'max-age=6012800, public',
-									'ETag': etag(data),
-									'Vary': 'Accept-Encoding'
-								});
-								res.end(raw ? data : buffer);
+							cache[req.url.pathname] = {
+								data: data,
+								updated: stats.mtime
+							};
+							res.writeHead(200, {
+								'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+								'Cache-Control': 'max-age=6012800, public',
+								'ETag': etag(data),
+								'Vary': 'Accept-Encoding'
 							});
+							res.end(data);
 						});
 					}
 				}
