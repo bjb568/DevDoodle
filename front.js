@@ -26,6 +26,7 @@ var site = {
 
 var http = require('http'),
 	https = require('https'),
+	ocsp = require('ocsp'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
 	etag = require('etag'),
@@ -550,7 +551,7 @@ var cache = {};
 var constants = require('constants'),
 	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
 
-https.createServer({
+var server = https.createServer({
 	key: fs.readFileSync('../Secret/devdoodle.net.key'),
 	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
 	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
@@ -1801,7 +1802,28 @@ https.createServer({
 			});
 		}
 	});
-}).listen(process.argv[2] || 443);
+});
+server.listen(process.argv[2] || 443);
+var ocspCache = new ocsp.Cache();
+server.on('OCSPRequest', function(cert, issuer, callback) {
+	ocsp.getOCSPURI(cert, function(err, uri) {
+		if (err) return callback(error);
+		var req = ocsp.request.generate(cert, issuer);
+		var options = {
+			url: uri,
+			ocsp: req.data
+		};
+		ocspCache.request(req.id, options, callback);
+	});
+});
+var sslSessionCache = {};
+server.on('newSession', function(sessionId, sessionData, callback) {
+	sslSessionCache[sessionId] = sessionData;
+	callback();
+});
+server.on('resumeSession', function (sessionId, callback) {
+	callback(null, sslSessionCache[sessionId]);
+})
 console.log('front.js running on port ' + (process.argv[2] || 443));
 
 if (!process.argv[2]) {
