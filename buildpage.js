@@ -933,9 +933,9 @@ http.createServer(function(req,	res) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errorPage[404](req, res, user);
-			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', user, req, res, function() {
-				if (program.deleted) {
-					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
+			if (program.deleted) {
+				respondPage('[Deleted]', user, req, res, function() {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nYou deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a class="red" id="undelete">[undelete]</a>');
 					else if (user.level >= 4) {
 						var deletersstr = '',
 							i = program.deleted.by.length;
@@ -944,7 +944,7 @@ http.createServer(function(req,	res) {
 							if (i == 1) deletersstr += ', and ';
 							else if (i != 0) deletersstr += ', ';
 						}
-						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
+						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nThis program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a class="red" id="undelete">[undelete]</a>');
 					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
 					res.write('\n<script>\n');
 					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
@@ -957,91 +957,94 @@ http.createServer(function(req,	res) {
 					res.write('\t\t\t});\n');
 					res.write('\t}\n');
 					res.write('</script>');
-					return respondPageFooter(res);
-				}
-				dbcs.votes.findOne({
-					user: user.name,
-					program: program._id
-				}, function(err, vote) {
-					if (err) throw err;
-					if (!vote) vote = {val: 0};
-					dbcs.users.findOne({name: program.user}, function(err, op) {
+					respondPageFooter(res);
+				}, {}, 404);
+			} else {
+				respondPage(program.title || 'Untitled', user, req, res, function() {
+					dbcs.votes.findOne({
+						user: user.name,
+						program: program._id
+					}, function(err, vote) {
 						if (err) throw err;
-						var commentstr = '';
-						dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+						if (!vote) vote = {val: 0};
+						dbcs.users.findOne({name: program.user}, function(err, op) {
 							if (err) throw err;
-							if (comment) {
-								var votes = comment.votes || [],
-									voted;
-								for (var i in votes) if (votes[i].user == user.name) voted = true;
-								commentstr +=
-									'<div id="c' + comment._id + '" class="comment">' +
-									'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-									(
-										user.rep >= 50 ?
+							var commentstr = '';
+							dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+								if (err) throw err;
+								if (comment) {
+									var votes = comment.votes || [],
+										voted;
+									for (var i in votes) if (votes[i].user == user.name) voted = true;
+									commentstr +=
+										'<div id="c' + comment._id + '" class="comment">' +
+										'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
 										(
-											'<span class="sctrls">' +
-											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-											'</span>'
-										) :
-										''
-									) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-							} else {
-								dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
-									if (err) throw err;
-									var forks = [];
-									dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											user.rep >= 50 ?
+											(
+												'<span class="sctrls">' +
+												'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+												'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+												'</span>'
+											) :
+											''
+										) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+								} else {
+									dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
 										if (err) throw err;
-										if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
-										else {
-											if (program.type == 1) {
-												fs.readFile('./html/dev/canvas.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$code', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else if (program.type == 2) {
-												fs.readFile('./html/dev/html.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else throw 'Invalid program type for id: ' + program._id;
-										}
+										var forks = [];
+										dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											if (err) throw err;
+											if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
+											else {
+												if (program.type == 1) {
+													fs.readFile('./html/dev/canvas.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$code', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else if (program.type == 2) {
+													fs.readFile('./html/dev/html.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else throw 'Invalid program type for id: ' + program._id;
+											}
+										});
 									});
-								});
-							}
+								}
+							});
 						});
 					});
-				});
-			}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
+				}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
+			}
 		});
 	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, user, req, res, function() {

@@ -269,6 +269,8 @@ a, .ctrl {
 a:visited { color: #444 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
+a.red:hover { color: #f65 }
+a.red:active { color: #c00 }
 a.blk {
 	color: #000;
 	font-weight: bold;
