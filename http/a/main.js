@@ -305,6 +305,9 @@ function minHeight() {
 }
 addEventListener('load', minHeight);
 addEventListener('resize', minHeight);
+addEventListener('resize', function() {
+	requestAnimationFrame(minHeight);
+});
 
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
