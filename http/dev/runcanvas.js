@@ -383,7 +383,24 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		};
 		socket.onclose = function() {
-			if (confirm('Connection error. Reload?')) location.reload();
+			var ta = document.getElementById('commentta');
+			if (ta.disabled) return;
+			ta.blur();
+			ta.disabled = true;
+			var warning = document.createElement('div');
+			warning.className = 'connection-error';
+			warning.appendChild(document.createTextNode('Connection error. '));
+			var link = document.createElement('a');
+			link.appendChild(document.createTextNode('Reload?'));
+			link.href = '';
+			warning.appendChild(link);
+			var addcomment = document.getElementById('addcomment');
+			addcomment.parentNode.insertAfter(warning, addcomment);
+			addcomment.hidden = true;
+			setInterval(function() {
+				if (socket.readyState == 1) return location.reload(true);
+				socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
+			}, 5000);
 		};
 		var deletebutton = document.getElementById('delete');
 		if (deletebutton) {

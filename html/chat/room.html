@@ -443,7 +443,22 @@ $textarea
 		}
 	};
 	socket.onclose = function() {
-		if (confirm('Connection error. Reload?')) location.reload();
+		if (ta.disabled) return;
+		ta.blur();
+		btn.blur();
+		ta.disabled = btn.disabled = true;
+		var warning = document.createElement('div');
+		warning.className = 'connection-error';
+		warning.appendChild(document.createTextNode('Connection error. '));
+		var link = document.createElement('a');
+		link.appendChild(document.createTextNode('Reload?'));
+		link.href = '';
+		warning.appendChild(link);
+		ta.parentNode.insertBefore(warning, ta);
+		setInterval(function() {
+			if (socket.readyState == 1) return location.reload(true);
+			socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
+		}, 5000);
 	};
 	if (ta) {
 		ta.addEventListener('input', function() {
@@ -702,4 +717,5 @@ $textarea
 		margin: 0 2px;
 	}
 	.comment > :first-child { margin: 0 }
+	.connection-error { position: absolute }
 </style>
