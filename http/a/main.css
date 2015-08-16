@@ -80,6 +80,19 @@ abbr { border-bottom: 1px dashed #222 }
 	color: #aaa;
 	transition: opacity 0.2s;
 }
+.connection-error {
+	margin-top: 4px;
+	background: red;
+	color: #fff;
+	font-size: 1.5em;
+	padding: 2px 8px;
+	box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+	animation: fadein .5s;
+	-webkit-animation: fadein .5s;
+}
+.connection-error a, .connection-error a:visited { color: #ffb }
+.connection-error a:hover { color: #ffd }
+.connection-error a:active { color: #fda }
 .ctrls {
 	top: 100%; right: -1px;
 	z-index: 1;
