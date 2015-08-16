@@ -443,7 +443,22 @@ $textarea
 		}
 	};
 	socket.onclose = function() {
-		if (confirm('Connection error. Reload?')) location.reload();
+		if (ta.disabled) return;
+		ta.blur();
+		btn.blur();
+		ta.disabled = btn.disabled = true;
+		var warning = document.createElement('div');
+		warning.className = 'connection-error';
+		warning.appendChild(document.createTextNode('Connection error. '));
+		var link = document.createElement('a');
+		link.appendChild(document.createTextNode('Reload?'));
+		link.href = '';
+		warning.appendChild(link);
+		ta.parentNode.insertBefore(warning, ta);
+		setInterval(function() {
+			if (socket.readyState == 1) return location.reload(true);
+			socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
+		}, 5000);
 	};
 	if (ta) {
 		ta.addEventListener('input', function() {
@@ -702,4 +717,19 @@ $textarea
 		margin: 0 2px;
 	}
 	.comment > :first-child { margin: 0 }
+	.connection-error {
+		position: absolute;
+		z-index: 1;
+		margin-top: 4px;
+		background: red;
+		color: #fff;
+		font-size: 1.5em;
+		padding: 2px 8px;
+		box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+		animation: fadein .5s;
+		-webkit-animation: fadein .5s;
+	}
+	.connection-error a { color: #ffb }
+	.connection-error a:hover { color: #ffd }
+	.connection-error a:active { color: #fda }
 </style>
