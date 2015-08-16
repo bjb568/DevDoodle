@@ -304,16 +304,26 @@ http.createServer(function(req,	res) {
 				};
 			var order = {};
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
+			var num = 0;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr +=
-					'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-					'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
-					'\n\t</div>\n';
-				else {
+				if (cUser) {
+					num++;
+					dstr +=
+						'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+						'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
+						'\n\t</div>\n';
+				} else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
-						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
+						res.write(
+							data.toString()
+							.replace('$num', num ? (num == 1 ? '1 user found' : num + ' users found') : '<span class="red">0 users found</span>')
+							.replace('$users', dstr)
+							.replace('"' + orderBy + '"', '"' + orderBy + '" selected=""')
+							.replace('"' + orderDir + '"', '"' + orderDir + '" selected=""')
+							.replace('"' + where + '"', '"' + where + '" selected=""')
+						);
 						respondPageFooter(res);
 					});
 				}
