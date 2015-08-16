@@ -1807,7 +1807,7 @@ server.listen(process.argv[2] || 443);
 var ocspCache = new ocsp.Cache();
 server.on('OCSPRequest', function(cert, issuer, callback) {
 	ocsp.getOCSPURI(cert, function(err, uri) {
-		if (err) return callback(error);
+		if (err) return callback(err);
 		var req = ocsp.request.generate(cert, issuer);
 		var options = {
 			url: uri,
