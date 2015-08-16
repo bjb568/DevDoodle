@@ -168,7 +168,7 @@ $textarea
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
 			div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
-			if (lock &amp;&amp; data.event == 'init' &amp;&amp; document.getElementById('ts').hidden) {
+			if ((lock &amp;&amp; data.event == 'init' &amp;&amp; document.getElementById('ts').hidden) || (onBottom &amp;&amp; data.event == 'add')) {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
 				while (i--) imgs[i].onload = function() {
