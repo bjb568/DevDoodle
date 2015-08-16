@@ -1805,17 +1805,19 @@ var server = https.createServer({
 });
 server.listen(process.argv[2] || 443);
 var ocspCache = new ocsp.Cache();
-server.on('OCSPRequest', function(cert, issuer, callback) {
-	ocsp.getOCSPURI(cert, function(err, uri) {
-		if (err) return callback(err);
-		var req = ocsp.request.generate(cert, issuer);
-		var options = {
-			url: uri,
-			ocsp: req.data
-		};
-		ocspCache.request(req.id, options, callback);
+if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
+	server.on('OCSPRequest', function(cert, issuer, callback) {
+		ocsp.getOCSPURI(cert, function(err, uri) {
+			if (err) return callback(err);
+			var req = ocsp.request.generate(cert, issuer);
+			var options = {
+				url: uri,
+				ocsp: req.data
+			};
+			ocspCache.request(req.id, options, callback);
+		});
 	});
-});
+} else console.log('Notice: OCSP stapling is turned OFF.');
 var sslSessionCache = {};
 server.on('newSession', function(sessionId, sessionData, callback) {
 	sslSessionCache[sessionId] = sessionData;
