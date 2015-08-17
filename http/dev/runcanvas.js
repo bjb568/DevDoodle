@@ -537,7 +537,7 @@ function highlight(codeBlock, input) {
 				&& (
 					(
 						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
-						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;])\s*$/)
+						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:])\s*$/)
 					) || (
 						codeBlock.lastElementChild
 						&& codeBlock.lastElementChild.firstChild.nodeValue == 'return'
@@ -681,13 +681,13 @@ function highlight(codeBlock, input) {
 				regexClose.appendChild(document.createTextNode('/'));
 				regex.appendChild(regexClose);
 			} else warnings.push([i, 'Unterminated regex literal.']);
-			var modifiers = input.substr(i + 1).match(/^[igm]+/);
+			var modifiers = input.substr(i + 1).match(/^[igm]*/);
 			if (modifiers) {
 				var regexModifier = document.createElement('span');
 				regexModifier.className = 'modifier';
-				regexModifier.appendChild(document.createTextNode(modifiers));
+				regexModifier.appendChild(document.createTextNode(modifiers[0]));
 				regex.appendChild(regexModifier);
-				i += modifiers.length;
+				i += modifiers[0].length;
 			}
 			codeBlock.appendChild(regex);
 		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && c != c.toLowerCase()) {
