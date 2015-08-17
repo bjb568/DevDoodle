@@ -56,9 +56,9 @@ addEventListener('DOMContentLoaded', function() {
 			code.whichSelection = true;
 		}
 		var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
-		if (cursorPos != code.lastCursorPos) {
+		var oldCaret = document.getElementById('caret');
+		if (cursorPos != code.lastCursorPos || !oldCaret) {
 			code.lastCursorPos = cursorPos;
-			var oldCaret = document.getElementById('caret');
 			if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 			var caret = document.createElement('span');
 			caret.id = 'caret';
@@ -150,6 +150,10 @@ addEventListener('DOMContentLoaded', function() {
 		} else if (e.keyCode == 58) {
 			this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
+			e.preventDefault();
+		} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
+			this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = this.selectionStart = oldSelectionStart;
 			e.preventDefault();
 		}
 	});
