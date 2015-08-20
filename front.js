@@ -546,7 +546,8 @@ var statics = {
 	}
 };
 
-var cache = {};
+var cache = {},
+	lastBuildpageError;
 
 var constants = require('constants'),
 	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
@@ -1753,11 +1754,30 @@ var server = https.createServer({
 						});
 						bres.on('end', function() {
 							res.end();
+							lastBuildpageError = null;
 						});
 						bres.on('error', function(e) {
+							if (lastBuildpageError != e.message) {
+								lastBuildpageError = e.message;
+								transport.sendMail({
+									from: 'DevDoodle <support@devdoodle.net>',
+									to: 'support@devdoodle.net',
+									subject: 'front.js cannot connect to buildpage.js: ' + e.message,
+									text: 'Error recieved:\n\n' + JSON.stringify(e)
+								});
+							}
 							errorPage[500](req, res, user, e.message);
 						});
 					}).on('error', function(e) {
+						if (lastBuildpageError != e.message) {
+							lastBuildpageError = e.message;
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: 'support@devdoodle.net',
+								subject: 'front.js cannot connect to buildpage.js: ' + e.message,
+								text: 'Error recieved:\n\n' + JSON.stringify(e)
+							});
+						}
 						errorPage[500](req, res, user, e.message);
 					});
 				} else {
