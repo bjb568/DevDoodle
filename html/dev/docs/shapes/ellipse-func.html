@@ -1,6 +1,7 @@
 <h1>ellipse(cx, cy, rx, ry)</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The ellipse() function draws ovals (and circles) on the canvas with a center and horizontal and vertical radii according to the arguments are passed in.
  * 
  * Usage:
@@ -23,35 +24,11 @@ ellipse(300, 300, 70, 60); // This is an ellipse with a center at (300, 300), a 
  * stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/stroke-func
  * rect(x, y, w, h): http://devdoodle.net/dev/docs/shapes/rect-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

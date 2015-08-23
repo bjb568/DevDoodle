@@ -15,7 +15,7 @@ body {
 }
 ::-webkit-input-placeholder {
 	color: #555;
-	font-size: .85em;
+	font-size: 0.85em;
 	line-height: 1.5em;
 }
 @keyframes target {
@@ -68,7 +68,8 @@ iframe:not([seamless]) { background: #fff }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
-small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
+small, a.small, footer, .ctrls a { font-size: 0.85em }
+.c-sig { font: 0.8rem helvetica, sans-serif }
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
@@ -81,6 +82,64 @@ small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 	color: #aaa;
 	transition: opacity 0.2s;
 }
+code .line::before {
+	left: 0;
+	content: attr(data-linenum);
+	color: #aaa;
+	display: inline-block;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	padding: 0 2px 0 4px;
+	position: absolute;
+}
+code .line.warning::before {
+	color: #ff6;
+	font-weight: bold;
+}
+#ta-cont.line-dig0 { padding-left: 0.8em }
+#ta-cont.line-dig1 { padding-left: 1.4em }
+#ta-cont.line-dig2 { padding-left: 2em }
+#ta-cont.line-dig3 { padding-left: 2.6em }
+#ta-cont.line-dig4 { padding-left: 3.2em }
+#ta-cont.line-dig5 { padding-left: 3.8em }
+#ta-cont.line-dig6 { padding-left: 4.4em }
+#ta-cont.line-dig7 { padding-left: 5em }
+#ta-cont.line-dig0 #code { width: calc(100% - 0.8rem - 5px) }
+#ta-cont.line-dig1 #code { width: calc(100% - 1.4rem - 5px) }
+#ta-cont.line-dig2 #code { width: calc(100% - 2rem - 5px) }
+#ta-cont.line-dig3 #code { width: calc(100% - 2.6rem - 5px) }
+#ta-cont.line-dig4 #code { width: calc(100% - 3.2rem - 5px) }
+#ta-cont.line-dig5 #code { width: calc(100% - 3.8rem - 5px) }
+#ta-cont.line-dig6 #code { width: calc(100% - 4.4rem - 5px) }
+#ta-cont.line-dig7 #code { width: calc(100% - 5rem - 5px) }
+code .inline-comment { color: #888 }
+code .keyword { color: #fd3 }
+code .constant, code .string .escape { color: #df0 }
+code .string { color: #6C3 }
+code .regex { color: #ffa }
+code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
+code .regex .escape { color: #afa }
+code .regex .backreference { color: #0f0 }
+code .regex .special { color: #faa }
+code .regex .grouper { color: #fff }
+code .regex .charclass { color: #ffd }
+code .regex .charclass { background: #730 }
+code .regex .charclass .range { color: #fed }
+code .regex .charclass .punctuation { color: #f90 }
+code .regex .quantifier { color: #2af }
+code .regex .quantifier .punctuation { color: #8cf }
+code .regex .modifier { font-weight: bold }
+code .operator { color: #ff8 }
+code .operator.assigns, code .equals { color: #8ff }
+code .argument, code .number { color: #3df }
+code .newvar { font-weight: bold }
+code .function-name { color: #f60 }
+code .function-call { color: #f90 }
+code .prototype { color: #f00 }
+code .punctuation, code .dot { color: #ddd }
+code .capvar { color: #9ac }
+code .browser { color: #9bd }
 .connection-error {
 	margin-top: 4px;
 	background: red;
@@ -88,8 +147,8 @@ small, a.small, footer, .c-sig, .ctrls a { font-size: .85em }
 	font-size: 1.5em;
 	padding: 2px 8px;
 	box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-	animation: fadein .5s;
-	-webkit-animation: fadein .5s;
+	animation: fadein 0.5s;
+	-webkit-animation: fadein 0.5s;
 }
 .connection-error a, .connection-error a:visited { color: #ffb }
 .connection-error a:hover { color: #ffd }
@@ -115,7 +174,7 @@ code {
 	padding: 2px 2px 0 0;
 	height: 16px;
 }
-.comment:not(:hover) .sctrls svg:not(.clkd) { opacity: .4 }
+.comment:not(:hover) .sctrls svg:not(.clkd) { opacity: 0.4 }
 .comment img { max-height: 200px }
 .c-sig { padding-left: 4px }
 .c-sig, .c-sig > * { color: #ccc }
@@ -162,9 +221,9 @@ code.blk {
 		opacity: 0;
 	}
 }
-h1 small, h2 small { font-size: .85rem }
-h1 small { margin: .5em }
-h2 small { margin: .2em .2em 0 0 }
+h1 small, h2 small { font-size: 0.85rem }
+h1 small { margin: 0.5em }
+h2 small { margin: 0.2em 0.2em 0 0 }
 fieldset {
 	padding: 0;
 	border: none;
@@ -237,7 +296,7 @@ fieldset {
 	color: #666;
 	font-size: 0.9em;
 }
-ul, ol, p { margin: 6px 0 2px 0 }
+ul, ol, p { margin: 0.3em 0 0.2em }
 #err, .error {
 	background: #f00;
 	color: #fff;
@@ -258,7 +317,7 @@ ul, ol, p { margin: 6px 0 2px 0 }
 }
 h1, h2, h3, h4, h5, h6 {
 	color: #fff;
-	margin-top: .2em; margin-bottom: .2em;
+	margin-top: 0.2em; margin-bottom: 0.2em;
 	font-family: Tahoma, Helvetica;
 }
 h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
@@ -276,12 +335,12 @@ h1 {
 .comment h1, hr { border-bottom: none }
 h2, h1.title, article h1 { font-size: 1.3em }
 h3, h2.title, article h2, article article h1 {
-	margin-top: .5em;
+	margin-top: 0.5em;
 	font-size: 1.1em;
 }
 a, .ctrl {
 	color: #fff;
-	transition: color .1s;
+	transition: color 0.1s;
 	cursor: pointer;
 }
 a:visited { color: #ccc; }
@@ -295,10 +354,10 @@ a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
 input[type=text], input[type=search], input[type=password], textarea {
 	font-family: helvetica;
-	font-size: .8em;
+	font-size: 0.8em;
 }
 textarea {
-	font-size: .9em;
+	font-size: 0.9em;
 	display: block;
 }
 .score {
@@ -355,7 +414,7 @@ textarea {
 	padding: 0 4px;
 	color: #ddd;
 	font-weight: normal;
-	font-size: .9rem;
+	font-size: 0.9rem;
 	line-height: 1.5;
 }
 #logo {
@@ -476,7 +535,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		padding: 0;
 		background: #111;
 	}
-	#nav > a { transition: background .15s }
+	#nav > a { transition: background 0.15s }
 	#nav a:not(.active):hover {
 		background: #262626;
 		color: #fff;
@@ -499,12 +558,12 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		width: auto; height: 2rem;
 		margin: 0;
 	}
-	#logo:hover div { background: rgba(255, 255, 255, .3) }
-	#logo:active div { background: rgba(0, 0, 0, .2) }
+	#logo:hover div { background: rgba(255, 255, 255, 0.3) }
+	#logo:active div { background: rgba(0, 0, 0, 0.2) }
 	#logo div {
 		position: absolute;
 		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background .1s;
+		transition: background 0.1s;
 		content: '';
 	}
 	#logo svg {

@@ -1,6 +1,7 @@
 <h1>key variable</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * `key` contains the characters entered in the last draw() loop.
 */
 
@@ -14,7 +15,6 @@ draw = function() {
 	bg(0);
 	fill(255);
 	stroke(none);
-	
 	//This draws the string onto the canvas using the lines array (look below).
 	var linesOnScreen = 0;
 	for (var i = 0; i &lt; lines.length; i++) {
@@ -51,7 +51,6 @@ draw = function() {
 			linesOnScreen += stringsDrawn;
 		}
 	}
-	
 	//If key is not just '', this adds key to a string (and sets the line array accordingly).
 	if (key) {
 		string += key;
@@ -70,35 +69,11 @@ draw = function() {
  * draw() loop: http://devdoodle.net/dev/docs/draw/draw-loop
  * canvas and ctx http://devdoodle.net/dev/docs/canvas/canvas-ctx
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

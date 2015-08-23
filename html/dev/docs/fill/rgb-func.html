@@ -1,6 +1,7 @@
 <h1>rgb(r, g, b[, a])</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The rgb() function (red, green, blue) returns a string containing the CSS color that can then be passed to functions like `fill` and `stroke`.
  * You can learn about the RGB colorspace in these wikipedia articles: http://en.wikipedia.org/wiki/RGB_color_model and https://en.wikipedia.org/wiki/RGB_color_space
  * This function accepts an optional fourth parameter for opacity.
@@ -23,35 +24,11 @@ rect(100, 25, 50, 50);
  * fill([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/fill-func
  * stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/stroke-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

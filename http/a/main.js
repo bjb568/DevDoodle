@@ -130,7 +130,6 @@ function inlineMarkdown(input) {
 	return output;
 }
 function markdown(input) {
-	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 3) != '>! ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}|cite\[\d+\]:) /) && !input.match(/^[-–—]{12,}$/)) return inlineMarkdown(input);
 	var blockquote = '',
 		ul = '',
 		ol = '',
@@ -174,7 +173,7 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				var arg = ul + '<li>' + markdown(val) + '</li>';
+				var arg = ul + '<li>' + inlineMarkdown(val) + '</li>';
 				ul = '';
 				return arg + '</ul>';
 			}
@@ -298,7 +297,7 @@ function minHeight() {
 		if (navigator.userAgent.indexOf('Mobile') == -1) mainContentEl.style.minHeight = Math.max(0, innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad) + 'px';
 		else mainContentEl.style.minHeight = '';
 		if (sidebar) {
-			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.style.minHeight;
+			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.offsetHeight + 'px';
 			else sidebar.style.height = '';
 		}
 	}

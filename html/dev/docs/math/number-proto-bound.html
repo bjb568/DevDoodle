@@ -1,6 +1,7 @@
 <h1>Number.prototype.bound(l[, h])</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * In the DevDoodle Canvas Library, all numbers have a .bound() method that constrains that number to an upper and lower bound.
  * 
  * Usages:
@@ -26,7 +27,7 @@ draw = function() {
 	fill(255);
 	stroke(none);
 	rect(x - 50, y - 50, 100, 100);
-	
+
 	switch (mode%4) {
 		case 0:
 			x += rand(2, 5);
@@ -41,7 +42,6 @@ draw = function() {
 			y -= rand(2, 5);
 			break;
 	}
-	
 	//Remember that calling the .bound() method of a variable number does not change the value of the variable. .bound() only returns another number.
 	if (mode % 2 &amp;&amp; y !== y.bound(100, 300)) {
 		y = y.bound(100, 300);
@@ -58,35 +58,11 @@ draw = function() {
  * print(input): http://devdoodle.net/dev/docs/console/print-func
  * draw() loop: http://devdoodle.net/dev/docs/draw/draw-loop
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,
