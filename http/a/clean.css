@@ -34,6 +34,8 @@ body {
 }
 .blk { display: block }
 .ib { display: inline-block }
+.flex { display: -webkit-flex; display: flex }
+.flex > * { webkit-flex: 1; flex: 1 }
 [hidden], .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
@@ -47,7 +49,7 @@ body {
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row) > section:not(:first-child), article:not(:first-child), section:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
+.umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
 .bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
@@ -58,7 +60,7 @@ body {
 .scrlx { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
 .br, .desc, aside.rit { border-radius: 4px }
-.hglt, .desc, .comment, section, article { background: #333 }
+.hglt, .desc, .comment, article { background: #333 }
 .shglt { background: #444 }
 iframe:not([seamless]) { background: #fff }
 .mono, .ctrls { font-family: monospace }
@@ -73,6 +75,14 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 .red { color: #f00 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
+.column-small { column-width: 10em }
+.column-medium { column-width: 16em }
+.column-large { column-width: 24em }
+li {
+	-webkit-column-break-inside: avoid;
+	page-break-inside: avoid;
+	break-inside: avoid-column;
+}
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
 .spoiler:not(:hover) *, .spoiler:hover::before { opacity: 0 }
@@ -500,6 +510,17 @@ textarea {
 	body { font-size: 0.9em }
 }
 aside.rit { background: rgba(255, 255, 100, 0.5) }
+@media (min-width: 480px) {
+	.resp-flex { display: -webkit-flex; display: flex }
+	.resp-flex > * { webkit-flex: 1; flex: 1 }
+}
+@media (min-width: 550px) {
+	section {
+		padding: 4px;
+		background: rgba(255, 255, 255, 0.4);
+	}
+	.resp-flex > section:not(:first-child) { margin-left: 6px }
+}
 @media (min-width: 701px) {
 	.half { float: left }
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }

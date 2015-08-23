@@ -345,22 +345,22 @@ http.createServer(function(req,	res) {
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
-				res.write('<div class="clearfix">');
-				res.write('<div class="half">');
+				res.write('<div class="resp-flex">');
+				res.write('<section>');
 				res.write('<h2>Questions</h2>');
-				res.write('<ul>');
+				res.write('<div class="column-medium"><ul>');
 				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
 					if (question) {
 						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
 						questions++;
 					} else {
-						res.write('</ul>');
+						res.write('</ul></div>');
 						if (!questions) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any questions.</p>');
-						res.write('</div>');
-						res.write('<div class="half">');
+						res.write('</section>');
+						res.write('<section>');
 						res.write('<h2>Answers</h2>');
-						res.write('<ul>');
+						res.write('<div class="column-medium"><ul>');
 						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
 							answers = 0;
 						var answerHandler = function(err, answer) {
@@ -373,11 +373,11 @@ http.createServer(function(req,	res) {
 								});
 								answers++;
 							} else {
-								res.write('</ul>');
+								res.write('</ul></div>');
 								if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
+								res.write('</section>');
 								res.write('</div>');
-								res.write('</div>');
-								res.write('<section class="lim-programs pad">\n');
+								res.write('<section class="lim-programs resp-block">\n');
 								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
 								var programs = 0;
 								dbcs.programs.find({
