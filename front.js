@@ -657,7 +657,7 @@ var server = https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)$/)) {
 					dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 						if (err) throw err;
 						if (!doc) {
@@ -708,7 +708,7 @@ var server = https.createServer({
 										deleted: msg.deleted,
 										stars: msg.stars
 									});
-								} else res.end(JSON.stringify({user: user.name, results: results}));
+								} else res.end(JSON.stringify(results));
 							});
 						}
 					});
@@ -789,7 +789,7 @@ var server = https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/delv/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/delv$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to cast deletion votes.');
@@ -849,7 +849,7 @@ var server = https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/nanv/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/nanv$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to dispute flags.');
@@ -909,7 +909,7 @@ var server = https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rcomment/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/rcomment$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to add review comments.');
@@ -960,7 +960,7 @@ var server = https.createServer({
 						res.write('<a href="/user/' + user.name + '">' + user.name + '</a>, <time datetime="' + new Date().toISOString() + '"></time>:');
 						res.end('<blockquote>' + markdown(post.body) + '</blockquote>');
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/edit/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/edit$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to edit chat messages in review.');
@@ -997,7 +997,7 @@ var server = https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rskip/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/rskip$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to skip in review.');

@@ -558,7 +558,7 @@ http.createServer(function(req,	res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
@@ -753,7 +753,7 @@ http.createServer(function(req,	res) {
 				});
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
@@ -814,7 +814,7 @@ http.createServer(function(req,	res) {
 				});
 			}
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)$/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
