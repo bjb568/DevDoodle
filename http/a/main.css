@@ -29,7 +29,7 @@ body {
 	animation: target 1s;
 	-webkit-animation: target 1s;
 }
-.blk { display: block }
+.blk, textarea { display: block }
 .ib { display: inline-block }
 .flex { display: -webkit-flex; display: flex }
 .flex > * { webkit-flex: 1; flex: 1 }
@@ -360,11 +360,7 @@ a.blk:hover, a.blk:active { background: rgba(255, 255, 255, 0.2) }
 a.blk:active { color: #00f }
 input[type=text], input[type=search], input[type=password], textarea {
 	font-family: helvetica;
-	font-size: 0.8em;
-}
-textarea {
-	font-size: 0.9em;
-	display: block;
+	font-size: 1rem;
 }
 .score {
 	float: left;
