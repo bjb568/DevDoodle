@@ -234,6 +234,14 @@ $textarea
 			msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 			msg.appendChild(msgCsig);
 			msg.appendChild(msgCtrls);
+			if (onBottom) {
+				cont.scrollTop = cont.scrollHeight;
+				var imgs = msg.getElementsByTagName('img'),
+					i = imgs.length;
+				while (i--) imgs[i].onload = function() {
+					cont.scrollTop = cont.scrollHeight;
+				};
+			}
 		} else if (data.event == 'delete') {
 			var msg = document.getElementById(data.id);
 			if (!msg) return;
