@@ -619,6 +619,11 @@ http.createServer(function(req,	res) {
 										var votes = comment.votes || [],
 											voted;
 										for (var i in votes) if (votes[i].user == user.name) voted = true;
+										var commentBody = markdown(comment.body),
+											endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+										commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+											+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+											+ commentBody.substring(commentBody.length - endTagsLength);
 										commentstr +=
 											'<div id="c' + comment._id + '" class="comment">' +
 											'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
@@ -631,7 +636,7 @@ http.createServer(function(req,	res) {
 													'</span>'
 												) :
 												''
-											) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+											) + commentBody + '</div>';
 									} else {
 										fs.readFile('./html/qa/question.html', function(err, data) {
 											if (err) throw err;
@@ -719,13 +724,16 @@ http.createServer(function(req,	res) {
 					dbcs.chat.find({
 						deleted: {$exists: false},
 						room: {$in: publicRooms}
-					}).sort({_id: -1}).limit(12).each(function(err, doc) {
+					}).sort({_id: -1}).limit(12).each(function(err, comment) {
 						if (err) throw err;
-						if (doc) res.write(
-							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
-							'-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n'
-						);
-						else respondPageFooter(res, true);
+						if (comment) {
+							var commentBody = markdown(comment.body),
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+							commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+								+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a></span>'
+								+ commentBody.substring(commentBody.length - endTagsLength);
+							res.write(commentBody);
+						} else respondPageFooter(res, true);
 					});
 				}
 			});
@@ -986,6 +994,11 @@ http.createServer(function(req,	res) {
 									var votes = comment.votes || [],
 										voted;
 									for (var i in votes) if (votes[i].user == user.name) voted = true;
+									var commentBody = markdown(comment.body),
+										endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+									commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+										+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+										+ commentBody.substring(commentBody.length - endTagsLength);
 									commentstr +=
 										'<div id="c' + comment._id + '" class="comment">' +
 										'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
@@ -998,7 +1011,7 @@ http.createServer(function(req,	res) {
 												'</span>'
 											) :
 											''
-										) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+										) + commentBody + '</div>';
 								} else {
 									dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
 										if (err) throw err;

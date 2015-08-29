@@ -44,7 +44,7 @@ body {
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
 .nofloat { float: none }
-:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small) > :first-child:not(span) { margin-top: 0 }
+:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span), .comment > :last-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
@@ -59,6 +59,7 @@ body {
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly, #sidebar { overflow-y: auto }
+.noscrl, .comment > :last-child, blockquote { overflow: hidden }
 .br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, article { background: #333 }
 .shglt { background: #444 }

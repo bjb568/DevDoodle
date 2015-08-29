@@ -375,7 +375,11 @@ addEventListener('DOMContentLoaded', function() {
 				permalink.appendChild(agot(data.time));
 				permalink.href = '#' + (div.id = 'c' + data.id);
 				sig.appendChild(permalink);
-				div.appendChild(sig);
+				var currentNode = div;
+				while (!sig.parentNode) {
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					else currentNode = currentNode.lastChild;
+				}
 				document.getElementById('comments').appendChild(div);
 				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {

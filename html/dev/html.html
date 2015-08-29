@@ -41,6 +41,8 @@
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	html, #content, #footer, #main { background: #000 }
+	#main { padding: 0 }
+	#content { padding: 0 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -426,7 +428,11 @@
 				permalink.appendChild(agot(data.time));
 				permalink.href = '#' + (div.id = 'c' + data.id);
 				sig.appendChild(permalink);
-				div.appendChild(sig);
+				var currentNode = div;
+				while (!sig.parentNode) {
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					else currentNode = currentNode.lastChild;
+				}
 				document.getElementById('comments').appendChild(div);
 				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {

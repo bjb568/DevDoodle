@@ -195,7 +195,7 @@ $textarea
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (currentNode.lastChild.children.length &lt; 2) currentNode.lastChild.appendChild(sig);
+				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
 				else currentNode = currentNode.lastChild;
 			}
 			var tCtrls = ctrls.cloneNode(true);
