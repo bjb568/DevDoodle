@@ -732,7 +732,7 @@ http.createServer(function(req,	res) {
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
 								+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a></span>'
 								+ commentBody.substring(commentBody.length - endTagsLength);
-							res.write(commentBody);
+							res.write('<div class="comment">' + commentBody + '</div>');
 						} else respondPageFooter(res, true);
 					});
 				}
