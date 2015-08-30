@@ -216,7 +216,7 @@
 		}
 	});
 	var step = 0,
-		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
+		langs = $langs,
 		waiting = false;
 	lang.addEventListener('keyup', function() {
 		if (!(langsug.hidden = !this.value)) {
@@ -299,6 +299,7 @@
 			var child;
 			while (child = tags.firstChild) tags.removeChild(child);
 			if (res.indexOf('Error:') == 0) return alert(res);
+			if (res == '[]' &amp;&amp; !err1.textContent) err1.textContent = 'No tags found for language.';
 			try {
 				res = JSON.parse(res);
 			} catch(e) {
@@ -351,6 +352,11 @@
 			if (waiting) return;
 		}
 		if (step == 0) {
+			if (!tags.children.length) {
+				lang.focus();
+				err1.textContent = 'No tags found for language.';
+				return;
+			}
 			if (title.value.length &lt; 12) {
 				title.focus();
 				err1.textContent = 'Title must be at least 12 characters long.';

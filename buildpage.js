@@ -554,8 +554,11 @@ http.createServer(function(req,	res) {
 		respondPage('New Question', user, req, res, function() {
 			fs.readFile('./html/qa/ask.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
+				dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+					if (err) throw err;
+					res.write(data.toString().replace('$langs', JSON.stringify(langs)));
+					respondPageFooter(res);
+				});
 			});
 		});
 	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
