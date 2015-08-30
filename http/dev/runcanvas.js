@@ -958,7 +958,7 @@ function highlight(codeBlock, input) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var start = i;
-			if (c == '0' && (c = input[++i])) {
+			if (c == '0' && input[i + 1] != '.' && (c = input[++i])) {
 				if (c.toLowerCase() == 'b') {
 					while ('01'.indexOf(input[++i]) != -1);
 				} else if (c.toLowerCase() == 'o') {
