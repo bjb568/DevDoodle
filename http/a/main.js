@@ -10,7 +10,7 @@ String.prototype.repeat = function(num) {
 	return new Array(++num).join(this);
 };
 Number.prototype.bound = function(l, h) {
-	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
 HTMLCollection.prototype.indexOf = NodeList.prototype.indexOf = Array.prototype.indexOf;
 HTMLCollection.prototype.forEach = NodeList.prototype.forEach = Array.prototype.forEach;
@@ -38,11 +38,10 @@ function spanMarkdown(input) {
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
 		.replace(/!\[([^\]]+)]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/^https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '<img src="https://$1" />')
+		.replace(/!\[([^\]]+)\]\[([^\]]+)\]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" style="width: $2" src="https://$3" />')
 		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-		.replace(/([^;["\\])https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
-		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
-		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'));
+		.replace(/([^;["\\]|^)https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
+		.replace(/([^;["\\]|^)(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
 }
 function inlineMarkdown(input) {
 	var output = '',
@@ -132,7 +131,6 @@ function inlineMarkdown(input) {
 	return output;
 }
 function markdown(input) {
-	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 3) != '>! ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}|cite\[\d+\]:) /) && !input.match(/^[-–—]{12,}$/)) return inlineMarkdown(input);
 	var blockquote = '',
 		ul = '',
 		ol = '',
@@ -176,7 +174,7 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				var arg = ul + '<li>' + markdown(val) + '</li>';
+				var arg = ul + '<li>' + inlineMarkdown(val) + '</li>';
 				ul = '';
 				return arg + '</ul>';
 			}
@@ -300,13 +298,16 @@ function minHeight() {
 		if (navigator.userAgent.indexOf('Mobile') == -1) mainContentEl.style.minHeight = Math.max(0, innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - (innerWidth < 1500 ? 6 : 12) - mainBottomPad) + 'px';
 		else mainContentEl.style.minHeight = '';
 		if (sidebar) {
-			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.style.minHeight;
+			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.offsetHeight + 'px';
 			else sidebar.style.height = '';
 		}
 	}
 }
 addEventListener('load', minHeight);
 addEventListener('resize', minHeight);
+addEventListener('resize', function() {
+	requestAnimationFrame(minHeight);
+});
 
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
@@ -327,7 +328,7 @@ function ago(od) {
 	else {
 		d = new Date(od);
 		var y = d.getUTCFullYear();
-		return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec' ][d.getUTCMonth()] + ' ' + d.getUTCDate() + (y == new Date().getUTCFullYear() ? '' : ' \'' + y.toString().substr(2));
+		return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()] + ' ' + d.getUTCDate() + (y == new Date().getUTCFullYear() ? '' : ' \'' + y.toString().substr(2));
 	}
 }
 function agot(d) {

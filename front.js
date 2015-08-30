@@ -26,7 +26,10 @@ var site = {
 
 var http = require('http'),
 	https = require('https'),
-	zlib = require('zlib'),
+	ocsp = require('ocsp'),
+	uglifyJS = require('uglify-js'),
+	cleanCSS = require('clean-css'),
+	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
 	url = require('url'),
@@ -59,6 +62,7 @@ db.open(function(err, db) {
 		db.createCollection('questions', function(err, collection) {
 			if (err) throw err;
 			db.createIndex('questions', {description: 'text'}, {}, function() {});
+			db.createIndex('chat', {body: 'text'}, {}, function() {});
 			dbcs.questions = collection;
 		});
 		var i = usedDBCs.length;
@@ -77,7 +81,8 @@ var mime = {
 	'.js': 'text/javascript',
 	'.png': 'image/png',
 	'.svg': 'image/svg+xml',
-	'.mp3': 'audio/mpeg'
+	'.mp3': 'audio/mpeg',
+	'.ico': 'image/x-icon'
 };
 
 function respondPage(title, user, req, res, callback, header, status) {
@@ -96,6 +101,8 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
+	if (!header['X-Frame-Options']) header['X-Frame-Options'] = 'DENY';
+	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
@@ -107,7 +114,9 @@ function respondPage(title, user, req, res, callback, header, status) {
 			dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
 			header['Set-Cookie'] = cookie.serialize('id', idToken, {
 				path: '/',
-				expires: new Date(new Date().setDate(new Date().getDate() + 30))
+				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+				httpOnly: true,
+				secure: true
 			});
 		}
 	}
@@ -273,7 +282,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
 		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>\n');
 		res.write('<div id="ccreate">\n');
-		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span></div>\n');
+		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
 		res.write('<div><input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>\n');
@@ -300,7 +309,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('\t<option value="P">Public</option>\n');
 		res.write('\t<option value="R">Read-only</option>\n');
 		res.write('\t<option value="N">Private</option>\n');
-		if (user.level == 5) res.write('\t<option value="M">♦ only</option>\n');
+		if (user.level > 4) res.write('\t<option value="M">♦ only</option>\n');
 		res.write('</select>\n');
 		res.write('</div>\n');
 		res.write('<button type="submit">Submit</button>\n');
@@ -354,169 +363,169 @@ var statics = {
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
 		title: 'line(x1, y1, x2, y2) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
 		title: 'rect(x, y, h, w) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
 		title: 'point(x,y) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
 		title: 'ellipse(cx, cy, rx, ry) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
 		path: './html/dev/docs/text/text-func.html',
 		title: 'text(x, y, t) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/textalign-func': {
 		path: './html/dev/docs/text/textalign-func.html',
 		title: 'textAlign(h, v) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/font-func': {
 		path: './html/dev/docs/text/font-func.html',
 		title: 'font(f) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
 		title: 'fill([shade] [r, g, b] [color]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
 		title: 'stroke([shade] [r, g, b] [color]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/bg-func': {
 		path: './html/dev/docs/fill/bg-func.html',
 		title: 'bg([shade] [r, g, b] [color]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/strokewidth-func': {
 		path: './html/dev/docs/fill/strokewidth-func.html',
 		title: 'strokeWidth(w) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/rgb-func': {
 		path: './html/dev/docs/fill/rgb-func.html',
 		title: 'rgb(r, g, b[, a]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/hsl-func': {
 		path: './html/dev/docs/fill/hsl-func.html',
 		title: 'hsl(r, g, b[, a]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/trans-none': {
 		path: './html/dev/docs/fill/trans-none.html',
 		title: 'trans and none | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/draw-loop': {
 		path: './html/dev/docs/draw/draw-loop.html',
 		title: 'draw() loop | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/framerate': {
 		path: './html/dev/docs/draw/framerate.html',
 		title: 'frameRate | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousex-y': {
 		path: './html/dev/docs/mouse/mousex-y.html',
 		title: 'mouseX and mouseY | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousepressed': {
 		path: './html/dev/docs/mouse/mousepressed.html',
 		title: 'mousePressed | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
 		path: './html/dev/docs/keyboard/keycodes.html',
 		title: 'keyCodes object | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/key': {
 		path: './html/dev/docs/keyboard/key.html',
 		title: 'key variable | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/global-math': {
 		path: './html/dev/docs/math/global-math.html',
 		title: 'Globally-scoped Math | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/rand-func': {
 		path: './html/dev/docs/math/rand-func.html',
 		title: 'rand([x[, y]]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/number-proto-bound': {
 		path: './html/dev/docs/math/number-proto-bound.html',
 		title: 'Number.prototype.bound(l[, h]) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
 		title: 'print(input) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
 		title: 'resetLog() | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/size-func': {
 		path: './html/dev/docs/size/size-func.html',
 		title: 'size(x, y) | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/width-height': {
 		path: './html/dev/docs/size/width-height.html',
 		title: 'width and height variables | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
 		path: './html/dev/docs/canvas/canvas-ctx.html',
 		title: 'canvas and ctx | Docs',
-		inhead: '<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/learn/web/': {
@@ -537,12 +546,27 @@ var statics = {
 	}
 };
 
-var cache = {};
+var cache = {},
+	lastBuildpageError;
 
-https.createServer({
+var constants = require('constants'),
+	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+
+var server = https.createServer({
 	key: fs.readFileSync('../Secret/devdoodle.net.key'),
 	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')]
+	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+	ecdhCurve: 'secp384r1',
+	ciphers: [
+		'ECDHE-ECDSA-AES256-GCM-SHA384',
+		'ECDHE-RSA-AES256-GCM-SHA384',
+		'ECDHE-ECDSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-ECDSA-AES256-SHA',
+		'ECDHE-RSA-AES256-SHA'
+	].join(':'),
+	honorCipherOrder: true,
+	secureOptions: SSL_ONLY_TLS_1_2
 }, function(req, res) {
 	var origURL = req.url,
 		i,
@@ -557,7 +581,7 @@ https.createServer({
 	dbcs.users.findOne({
 		cookie: {
 			$elemMatch: {
-				token: cookies.id,
+				token: cookies.id || 'nomatch',
 				created: {$gt: new Date().getTime() - 2592000000}
 			}
 		}
@@ -633,7 +657,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)$/)) {
 					dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 						if (err) throw err;
 						if (!doc) {
@@ -652,6 +676,40 @@ https.createServer({
 								stars: doc.stars,
 								room: doc.room
 							}));
+						}
+					});
+				} else if (req.url.pathname == '/chat/search') {
+					var rooms = {},
+						results = [];
+					dbcs.chatrooms.find().each(function(err, room) {
+						if (room) rooms[room._id] = room;
+						else {
+							res.writeHead(200);
+							var criteria = {$text: {$search: post.search}};
+							if (!user || user.level < 4) criteria.deleted = {$exists: false};
+							if (post.user) criteria.user = post.user;
+							if (post.room) criteria.room = parseInt(post.room);
+							var sort = {
+								text: {score: {$meta: 'textScore'}},
+								recent: {_id: -1},
+								old: {_id: 1},
+								stars: {stars: -1, _id: -1}
+							};
+							dbcs.chat.find(criteria, {score: {$meta: 'textScore'}}).sort(sort[post.sort] || post.text).each(function(err, msg) {
+								if (err) throw err;
+								if (msg) {
+									if (rooms[msg.room].type != 'N' && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
+										id: msg._id,
+										body: msg.body,
+										user: msg.user,
+										time: msg.time,
+										room: msg.room,
+										roomName: rooms[msg.room].name,
+										deleted: msg.deleted,
+										stars: msg.stars
+									});
+								} else res.end(JSON.stringify(results));
+							});
 						}
 					});
 				} else if (req.url.pathname == '/chat/changeroomtype') {
@@ -731,7 +789,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/delv/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/delv$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to cast deletion votes.');
@@ -791,7 +849,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/nanv/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/nanv$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to dispute flags.');
@@ -851,7 +909,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rcomment/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/rcomment$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to add review comments.');
@@ -902,7 +960,7 @@ https.createServer({
 						res.write('<a href="/user/' + user.name + '">' + user.name + '</a>, <time datetime="' + new Date().toISOString() + '"></time>:');
 						res.end('<blockquote>' + markdown(post.body) + '</blockquote>');
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/edit/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/edit$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to edit chat messages in review.');
@@ -939,7 +997,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (i = req.url.pathname.match(/\/chat\/msg\/(\d+)\/rskip/)) {
+				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/rskip$/)) {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to skip in review.');
@@ -959,7 +1017,7 @@ https.createServer({
 						res.writeHead(204);
 						res.end();
 					});
-				} else if (req.url.pathname == '/qa/newquestion') {
+				} else if (req.url.pathname == '/question/add') {
 					if (!user) {
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
@@ -1047,11 +1105,11 @@ https.createServer({
 				} else if (req.url.pathname == '/question/search') {
 					var samelang = [],
 						otherlang = [];
+					res.writeHead(200);
 					dbcs.questions.find({
 						$text: {$search: post.search}
-					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(6).each(function(err, question) {
+					}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(8).each(function(err, question) {
 						if (err) throw err;
-						res.writeHead(200);
 						if (question) {
 							var q = {
 								_id: question._id,
@@ -1060,13 +1118,45 @@ https.createServer({
 							};
 							if (question.lang == post.lang) samelang.push(q);
 							else otherlang.push(q);
-						} else res.end(JSON.stringify(samelang.concat(otherlang).splice(0, 12)));
+						} else res.end(JSON.stringify(samelang.concat(otherlang)));
+					});
+				} else if (req.url.pathname == '/answer/add') {
+					if (!user) {
+						res.writeHead(403);
+						return res.end('Error: You must be logged in to answer a question.');
+					}
+					if (!post.body) {
+						res.writeHead(400);
+						return res.end('Error: Missing body.');
+					}
+					if (post.body.length < 144) {
+						res.writeHead(400);
+						return res.end('Error: Body must be 144 characters long.');
+					}
+					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
+					if (!i) {
+						res.writeHead(400);
+						return res.end('Error: Bad referer.');
+					}
+					dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+						if (err) throw err;
+						var id = last ? last._id + 1 : 1;
+						dbcs.answers.insert({
+							_id: id,
+							question: parseInt(i[1]),
+							body: post.body,
+							user: user.name,
+							time: new Date().getTime(),
+							score: 0
+						});
+						res.writeHead(200);
+						res.end('Location: #a' + id);
 					});
 				} else if (req.url.pathname == '/program/save') {
 					var type = parseInt(req.url.query.type);
 					if (type !== 1 && type !== 2) {
 						res.writeHead(400);
-						return res.end('Error: Invalid program type.'); 
+						return res.end('Error: Invalid program type.');
 					}
 					if (!user) {
 						res.writeHead(403);
@@ -1517,7 +1607,7 @@ https.createServer({
 									html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 								});
 								respondPage('Account Created', user, req, res, function() {
-									res.write('An account for you has been created. To activate it, click the link in the email sent to you.');
+									res.write('An account for you has been created. To activate it, click the link in the email sent to you. It may take a few minutes for the email to reach you, but please check your spam folder.');
 									respondPageFooter(res);
 								});
 							});
@@ -1535,7 +1625,9 @@ https.createServer({
 								var idToken = crypto.randomBytes(128).toString('base64'),
 									idCookie = cookie.serialize('id', idToken, {
 										path: '/',
-										expires: new Date(new Date().setDate(new Date().getDate() + 30))
+										expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+										httpOnly: true,
+										secure: true
 									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
@@ -1647,7 +1739,6 @@ https.createServer({
 				});
 			} else respondCreateRoomPage([], user, req, res, post);
 		} else {
-			var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
 				if (err || !stats.isFile()) {
 					req.headers.user = JSON.stringify(user) || '';
@@ -1663,60 +1754,98 @@ https.createServer({
 						});
 						bres.on('end', function() {
 							res.end();
+							lastBuildpageError = null;
 						});
 						bres.on('error', function(e) {
+							if (lastBuildpageError != e.message) {
+								lastBuildpageError = e.message;
+								transport.sendMail({
+									from: 'DevDoodle <support@devdoodle.net>',
+									to: 'support@devdoodle.net',
+									subject: 'front.js cannot connect to buildpage.js: ' + e.message,
+									text: 'Error recieved:\n\n' + JSON.stringify(e)
+								});
+							}
 							errorPage[500](req, res, user, e.message);
 						});
 					}).on('error', function(e) {
+						if (lastBuildpageError != e.message) {
+							lastBuildpageError = e.message;
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: 'support@devdoodle.net',
+								subject: 'front.js cannot connect to buildpage.js: ' + e.message,
+								text: 'Error recieved:\n\n' + JSON.stringify(e)
+							});
+						}
 						errorPage[500](req, res, user, e.message);
 					});
 				} else {
 					if (cache[req.url.pathname]) {
 						res.writeHead(200, {
-							'Content-Encoding': raw ? 'identity' : 'gzip',
 							'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
 							'Cache-Control': 'max-age=6012800, public',
+							'ETag': etag(cache[req.url.pathname].data),
 							'Vary': 'Accept-Encoding'
 						});
-						res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
+						res.end(cache[req.url.pathname].data);
 						if (cache[req.url.pathname].updated < stats.mtime) {
 							fs.readFile('./http' + req.url.pathname, function(err, data) {
 								if (err) return;
-								zlib.gzip(data, function(err, buffer) {
-									if (err) throw err;
-									cache[req.url.pathname] = {
-										raw: data,
-										gzip: buffer,
-										updated: stats.mtime
-									};
-								});
+								if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+								if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
+								cache[req.url.pathname] = {
+									data: data,
+									updated: stats.mtime
+								};
 							});
 						}
 					} else {
 						fs.readFile('./http' + req.url.pathname, function(err, data) {
 							if (err) return errorPage[404](req, res, user);
-							zlib.gzip(data, function(err, buffer) {
-								if (err) throw err;
-								cache[req.url.pathname] = {
-									raw: data,
-									gzip: buffer,
-									updated: stats.mtime
-								};
-								res.writeHead(200, {
-									'Content-Encoding': raw ? 'identity' : 'gzip',
-									'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
-									'Cache-Control': 'max-age=6012800, public',
-									'Vary': 'Accept-Encoding'
-								});
-								res.end(raw ? data : buffer);
+							if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+							if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
+							cache[req.url.pathname] = {
+								data: data,
+								updated: stats.mtime
+							};
+							res.writeHead(200, {
+								'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+								'Cache-Control': 'max-age=6012800, public',
+								'ETag': etag(data),
+								'Vary': 'Accept-Encoding'
 							});
+							res.end(data);
 						});
 					}
 				}
 			});
 		}
 	});
-}).listen(process.argv[2] || 443);
+});
+server.listen(process.argv[2] || 443);
+var ocspCache = new ocsp.Cache();
+if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
+	server.on('OCSPRequest', function(cert, issuer, callback) {
+		ocsp.getOCSPURI(cert, function(err, uri) {
+			if (err) return callback(err);
+			var req = ocsp.request.generate(cert, issuer);
+			var options = {
+				url: uri,
+				ocsp: req.data
+			};
+			ocspCache.request(req.id, options, callback);
+		});
+	});
+} else console.log('Notice: OCSP stapling is turned OFF.');
+var sslSessionCache = {};
+server.on('newSession', function(sessionId, sessionData, callback) {
+	sslSessionCache[sessionId] = sessionData;
+	callback();
+});
+server.on('resumeSession', function (sessionId, callback) {
+	callback(null, sslSessionCache[sessionId]);
+})
 console.log('front.js running on port ' + (process.argv[2] || 443));
 
 if (!process.argv[2]) {

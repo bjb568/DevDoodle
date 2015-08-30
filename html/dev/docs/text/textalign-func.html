@@ -1,6 +1,7 @@
 <h1>textAlign(h, v)</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The textAlign() function aligns the text, specifying where (relative to the point passed into `text()`) the text will be drawn. It accepts a horizontal and vertical argument.
  * 
  * Usage:
@@ -14,7 +15,7 @@ font('30px times')
 var horizontalAligns = ['start', 'end', 'left', 'center', 'right'];
 var verticalAligns = ['top', 'bottom', 'middle', 'alphabetic', 'hanging'];
 
-// Alter i and j so they are either 0, 1, 2, 3, or 4 and press Restart to see the effect of the different arguments passed into textAlign. 
+// Alter i and j so they are either 0, 1, 2, 3, or 4 and press Restart to see the effect of the different arguments passed into textAlign.
 
 var i = 0, j = 0;
 
@@ -30,35 +31,11 @@ text(200, 200, horizontalAligns[i] + ', ' + verticalAligns[j]);
  * text(x, y, t): http://devdoodle.net/dev/docs/text/text-func
  * font(f): http://devdoodle.net/dev/docs/text/font-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

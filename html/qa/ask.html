@@ -1,5 +1,5 @@
 <h1>New Question</h1>
-<form id="form" method="post" action="/api/qa/newquestion">
+<form id="form" method="post" action="/api/question/add">
 	<fieldset id="step0">
 		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
 		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
@@ -126,6 +126,7 @@
 	#step4 h3 { margin-bottom: 4px }
 	#types, #tags, #options { padding-left: 32px }
 	#langsug span {
+		cursor: pointer;
 		background: #afa;
 		padding: 2px 6px;
 		box-shadow: 1px 1px 2px #666;
@@ -169,18 +170,18 @@
 	}
 	.tint #nav, .tint #footer, .tint #content > :not(article) { -webkit-filter: blur(2px) }
 	#submit {
-	    font-size: 1.1em;
-	    color: #fff;
-	    background: #04f;
-	    padding: 6px 24px;
-	    border-radius: 4px;
-	    transition: background 0.4s;
-	    margin-top: 12px;
+		font-size: 1.1em;
+		color: #fff;
+		background: #04f;
+		padding: 6px 24px;
+		border-radius: 4px;
+		transition: background 0.4s;
+		margin-top: 12px;
 	}
 	#submit:hover {
-	    background: #6cf;
-	    color: #000;
-	    transition: background 0.2s;
+		background: #6cf;
+		color: #000;
+		transition: background 0.2s;
 	}
 	#submit:active, #submit.working { background: #2af }
 </style>
@@ -468,7 +469,7 @@
 		submit.id = 'submit';
 		submit.onclick = function() {
 			this.classList.add('working');
-			request('/api/qa/newquestion', function(res) {
+			request('/api/question/add', function(res) {
 				if (res.substr(0, 7) == 'Error: ') alert(res);
 				else if (res.substr(0, 10) == 'Location: ') location.href = res.substr(10);
 				else alert('Unknown error. Response was: ' + res);

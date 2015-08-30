@@ -1,10 +1,14 @@
 <section id="main">
-	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
+	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
-		<textarea id="code" autofocus="">$code</textarea>
+		<div id="ta-cont">
+			<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
+			<code id="code-display"></code>
+		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
+<div id="close-fullscreen" class="large" hidden=""><a href="#">✕</a></div>
 <section id="meta">
 	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
@@ -33,11 +37,12 @@
 <style>
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
-	html, #content, #footer, #main { background: #000 }
-	#content { padding-bottom: 4px }
+	html, #content, #output, #footer, #main { background: #000 }
+	#main { padding: 0 }
+	#content { padding: 0 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
-	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+	#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 	#main { clear: both }
 	#meta {
 		clear: both;
@@ -46,45 +51,116 @@
 		background: rgba(255, 255, 255, .8);
 		color: #000;
 	}
-	#code, #output {
-		width: 95%;
-		outline: none;
+	#fullscreen-button {
+		display: inline-block;
+		margin-left: 8px;
 	}
+	#ta-cont, #output { width: 95% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		border: 1px solid #fff;
-		resize: none;
-		margin-bottom: 8px;
+	#edit-title {
+		width: 400px;
+		max-width: 100%;
 	}
-	#code, #output { height: calc(50% - 4px) }
+	#ta-cont {
+		margin-bottom: 8px;
+		position: relative;
+		overflow: auto;
+		border: 1px solid #fff;
+	}
+	#code, #code-display {
+		display: block;
+		min-height: 100%;
+		padding: 0;
+		margin: 2px;
+		color: #fff;
+		background: transparent;
+		font-family: monospace;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		font-size: 1rem;
+		line-height: 1.2;
+		resize: none;
+		outline: none;
+		border: none;
+		padding-left: 4px;
+	}
+	#code {
+		position: absolute;
+		top: 0; right: 0;
+		z-index: 1;
+		color: transparent;
+	}
+	#code-display {
+		width: calc(100% - 4px);
+		border-left: 1px solid #444;
+	}
+	#caret {
+		display: inline-block;
+		position: absolute;
+		background: #fff;
+		width: 1px;
+	}
+	#caret[hidden] { display: none }
+	#ta-cont, #output { height: calc(50% - 4px) }
 	@media (min-width: 600px) {
 		h1 {
 			height: 1.65rem;
 			margin-bottom: .35em;
 		}
-		#code, #output { height: 100% }
-		#code { width: 60% }
+		#ta-cont, #output { height: 100% }
+		#ta-cont { width: 60% }
 		#output {
 			width: 39%;
 			float: right;
 		}
+		.fullscreen #ta-cont:not(:focus) { width: 39% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 60% }
 	}
 	@media (min-width: 600px) and (max-width: 800px) {
-		#code { width: 55% }
+		#ta-cont { width: 55% }
 		#output { width: 44% }
+		.fullscreen #ta-cont:not(:focus) { width: 44% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 55% }
 	}
 	@media (min-width: 1500px) {
-		#code { margin-bottom: 0 }
+		#ta-cont { margin-bottom: 0 }
 	}
 	@media (min-width: 1600px) {
-		#code { width: 65% }
+		#ta-cont { width: 65% }
 		#output { width: 34% }
+		.fullscreen #ta-cont:not(:focus) { width: 34% }
+		.fullscreen #ta-cont:not(:focus) + #output { width: 65% }
 	}
+	.fullscreen #main #output.fullscreen {
+		position: fixed;
+		top: 0; right: 0;
+		width: calc(100% - 32px);
+		height: 100%;
+		z-index: 1;
+	}
+	.large {
+		position: fixed;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		width: 32px; height: 32px;
+		line-height: 32px;
+		background: #aaa;
+		text-align: center;
+	}
+	@media (max-width: 1499px) {
+		.large {
+			height: 100%;
+		}
+	}
+	.large a {
+		display: inline-block;
+		width: 100%;
+		text-decoration: none;
+	}
+	.large a:hover { background: #fff }
 	#save.progress {
 		cursor: progress;
 		color: #4ff;
@@ -151,10 +227,28 @@
 		transition: fill 0.1s;
 		fill: #c00;
 	}
+	@media (min-width: 1500px) {
+		#nav { right: calc(96% - 144px) }
+		.fullscreen #nav {
+			top: 32px;
+			right: calc(100% - 40px);
+			left: auto;
+			transition: right 0.5s, opacity 0.3s, z-index 1s;
+		}
+		.fullscreen #nav:hover {
+			right: calc(96% - 144px);
+			z-index: 2;
+			transition: right 0.5s, opacity 0.3s;
+		}
+		.fullscreen #nav:not(:hover) { opacity: 0.3 }
+		.fullscreen #content { margin: 6px 0 6px 46px }
+	}
 </style>
 <script>
 	var mine = $mine,
 		id = $id,
+		opName = '$op-name',
+		myRep = $rep,
 		footerOff = true,
 		noPageOverflow = 400,
 		pageOverflowMobile = true,

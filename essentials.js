@@ -15,11 +15,10 @@ function spanMarkdown(input) {
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
 		.replace(/!\[([^\]]+)]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/^https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '<img src="https://$1" />')
+		.replace(/!\[([^\]]+)\]\[([^\]]+)\]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" style="width: $2" src="https://$3" />')
 		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-		.replace(/([^;["\\])https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
-		.replace(/([^;["\\])(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
-		.replace(/^(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$2'.link('$1'));
+		.replace(/([^;["\\]|^)https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
+		.replace(/([^;["\\]|^)(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
 }
 function inlineMarkdown(input) {
 	var output = '',
@@ -109,7 +108,6 @@ function inlineMarkdown(input) {
 	return output;
 }
 function markdown(input) {
-	if (input.indexOf('\n') == -1 && input.substr(0, 2) != '> ' && input.substr(0, 3) != '>! ' && input.substr(0, 2) != '- ' && input.substr(0, 2) != '* ' && input.substr(0, 4) != '    ' && input[0] != '\t' && !input.match(/^((\d+|[A-z])[.)]|#{1,6}|cite\[\d+\]:) /) && !input.match(/^[-–—]{12,}$/)) return inlineMarkdown(input);
 	var blockquote = '',
 		ul = '',
 		ol = '',
@@ -153,7 +151,7 @@ function markdown(input) {
 				li += val + '\n';
 				return '';
 			} else {
-				var arg = ul + '<li>' + markdown(val) + '</li>';
+				var arg = ul + '<li>' + inlineMarkdown(val) + '</li>';
 				ul = '';
 				return arg + '</ul>';
 			}

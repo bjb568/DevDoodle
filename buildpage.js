@@ -76,6 +76,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
+	if (!header['X-Frame-Options']) header['X-Frame-Options'] = 'DENY';
 	if (user.name) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
@@ -303,16 +304,26 @@ http.createServer(function(req,	res) {
 				};
 			var order = {};
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
+			var num = 0;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr +=
-					'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-					'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
-					'\n\t</div>\n';
-				else {
+				if (cUser) {
+					num++;
+					dstr +=
+						'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+						'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
+						'\n\t</div>\n';
+				} else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
-						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
+						res.write(
+							data.toString()
+							.replace('$num', num ? (num == 1 ? '1 user found' : num + ' users found') : '<span class="red">0 users found</span>')
+							.replace('$users', dstr)
+							.replace('"' + orderBy + '"', '"' + orderBy + '" selected=""')
+							.replace('"' + orderDir + '"', '"' + orderDir + '" selected=""')
+							.replace('"' + where + '"', '"' + where + '" selected=""')
+						);
 						respondPageFooter(res);
 					});
 				}
@@ -322,64 +333,103 @@ http.createServer(function(req,	res) {
 		dbcs.users.findOne({name: i[1]}, function(err, dispUser) {
 			if (err) throw err;
 			if (!dispUser) return errorPage[404](req, res, user);
+			var questions = 0;
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
-				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
 				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
+				res.write('\t<div class="grey">Moderator level ' + dispUser.level + '</div>');
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
-				res.write('<section class="lim-programs pad">\n');
-				res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
-				var programs = 0;
-				dbcs.programs.find({
-					user: dispUser.name,
-					deleted: {$exists: false}
-				}).sort({
-					score: -1,
-					updated: -1
-				}).limit(6).each(function(err, data) {
+				res.write('<div class="resp-flex">');
+				res.write('<section>');
+				res.write('<h2>Questions</h2>');
+				res.write('<div class="column-medium"><ul>');
+				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
-					if (data) {
-						res.write('<div class="program">\n');
-						res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
-						if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
-						res.write('</div>\n');
-						programs++;
+					if (question) {
+						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+						questions++;
 					} else {
-						if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
-						res.write('</section>\n');
-						if (me) {
-							res.write('<h2 class="underline">Private</h2>\n');
-							res.write(mailform.replaceAll('$mail', html(user.mail)));
-							if (user.notifs) {
-								var notifs = [];
-								for (var i = 0; i < user.notifs.length; i++) {
-									if (user.notifs[i].unread) notifs.push(user.notifs[i]);
-									user.notifs[i].unread = false;
-								}
-								if (notifs.length) {
-									res.write('<h2>Notifications</h2>\n');
-									res.write('<ul id="notifs">\n');
-									for (var i = 0; i < notifs.length; i++) res.write(
-										'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
-										'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
-									);
-									res.write('</ul>');
-									dbcs.users.update({name: user.name}, {
-										$set: {
-											unread: 0,
-											notifs: user.notifs
+						res.write('</ul></div>');
+						if (!questions) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any questions.</p>');
+						res.write('</section>');
+						res.write('<section>');
+						res.write('<h2>Answers</h2>');
+						res.write('<div class="column-medium"><ul>');
+						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
+							answers = 0;
+						var answerHandler = function(err, answer) {
+							if (err) throw err;
+							if (answer) {
+								dbcs.questions.findOne({_id: answer.question}, function(err, question) {
+									if (err) throw err;
+									res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+									cursor.nextObject(answerHandler);
+								});
+								answers++;
+							} else {
+								res.write('</ul></div>');
+								if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
+								res.write('</section>');
+								res.write('</div>');
+								res.write('<section class="lim-programs resp-block">\n');
+								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
+								var programs = 0;
+								dbcs.programs.find({
+									user: dispUser.name,
+									deleted: {$exists: false}
+								}).sort({
+									score: -1,
+									updated: -1
+								}).limit(6).each(function(err, data) {
+									if (err) throw err;
+									if (data) {
+										res.write('<div class="program">\n');
+										res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
+										if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
+										else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+										res.write('</div>\n');
+										programs++;
+									} else {
+										if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
+										res.write('</section>\n');
+										if (me) {
+											res.write('<h2 class="underline">Private</h2>\n');
+											res.write(mailform.replaceAll('$mail', html(user.mail)));
+											if (user.notifs) {
+												var notifs = [];
+												for (var i = 0; i < user.notifs.length; i++) {
+													if (user.notifs[i].unread) notifs.push(user.notifs[i]);
+													user.notifs[i].unread = false;
+												}
+												if (notifs.length) {
+													res.write('<h2>Notifications</h2>\n');
+													res.write('<ul id="notifs">\n');
+													for (var i = 0; i < notifs.length; i++) res.write(
+														'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
+														'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
+													);
+													res.write('</ul>');
+													dbcs.users.update({name: user.name}, {
+														$set: {
+															unread: 0,
+															notifs: user.notifs
+														}
+													});
+												} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+											}
 										}
-									});
-								} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
+										respondPageFooter(res);
+									}
+								});
 							}
-						}
-						respondPageFooter(res);
+						};
+						cursor.nextObject(answerHandler);
 					}
 				});
 			}, {nonotif: true});
@@ -508,86 +558,142 @@ http.createServer(function(req,	res) {
 				respondPageFooter(res);
 			});
 		});
-	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
 			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
-					var commentstr = '';
-					dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
+					var answerstr = '';
+					var cursor = dbcs.answers.find({question: question._id}).sort({score: -1});
+					cursor.count(function(err, count) {
 						if (err) throw err;
-						if (comment) {
-							var votes = comment.votes || [],
-								voted;
-							for (var i in votes) if (votes[i].user == user.name) voted = true;
-							commentstr +=
-								'<div id="c' + comment._id + '" class="comment">' +
-								'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-								(
-									user.rep >= 50 ?
-									(
-										'<span class="sctrls">' +
-										'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-										'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-										'</span>'
-									) :
-									''
-								) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-						} else {
-							fs.readFile('./html/qa/question.html', function(err, data) {
-								if (err) throw err;
-								var tagstr = '';
-								dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+						answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
+						var answerHandler = function(err, answer) {
+							if (err) throw err;
+							if (answer) {
+								dbcs.users.findOne({name: answer.user}, function(err, answerPoster) {
 									if (err) throw err;
-									if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
-									else {
-										var tlang = [],
-											tageditstr = '';
-										dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+									answerstr += (
+										'<div id="a' + answer._id + '" class="answer">' +
+											'<div class="ctrl pad lft">' +
+												'<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>' +
+												'<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>' +
+												'<a class="fl" title="This answer has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>' +
+												'<a class="ctrlicon editbtn" href="#edit-' + answer._id + '" title="Edit">✎</a>' +
+												'<a class="ctrlicon delbtn" title="Delete">✕</a>' +
+											'</div>' +
+											'<div class="a-content">' +
+												'<div class="a-body hglt pad br">' + markdown(answer.body) + '</div>' +
+												'<div class="clearfix">' +
+													'<div class="rit">' +
+														'<div>Answered <time datetime="' + new Date(answer.time).toISOString() + '"></time> by</div>' +
+														'<div class="user user-' + answer.user + '">' +
+															'<img src="//gravatar.com/avatar/' + answerPoster.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+															'<div>' +
+																'<a href="/user/' + answer.user + '">' + answer.user + '</a>' +
+																'<small class="rep">' + answerPoster.rep + '</small>' +
+															'</div>' +
+														'</div>' +
+													'</div>' +
+													'<small class="blk sumar lft"><a href="#a' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>' +
+												'</div>' +
+											'</div>' +
+											'<form class="a-edit indt" hidden="">' +
+												'<textarea rows="24">' + html(answer.body) + '</textarea>' +
+												'<div>' +
+													'<button type="submit">Submit Edit</button>' +
+													'<button type="reset" class="cancel-edit">Cancel</button>' +
+												'</div>' +
+											'</form>' +
+										'</div>'
+									);
+									cursor.nextObject(answerHandler);
+								});
+							} else {
+								var commentstr = '';
+								dbcs.comments.find({question: question._id}).sort({_id: 1}).each(function(err, comment) {
+									if (err) throw err;
+									if (comment) {
+										var votes = comment.votes || [],
+											voted;
+										for (var i in votes) if (votes[i].user == user.name) voted = true;
+										var commentBody = markdown(comment.body),
+											endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+										commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+											+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+											+ commentBody.substring(commentBody.length - endTagsLength);
+										commentstr +=
+											'<div id="c' + comment._id + '" class="comment">' +
+											'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
+											(
+												user.rep >= 50 ?
+												(
+													'<span class="sctrls">' +
+													'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+													'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+													'</span>'
+												) :
+												''
+											) + commentBody + '</div>';
+									} else {
+										fs.readFile('./html/qa/question.html', function(err, data) {
 											if (err) throw err;
-											if (tag) tlang.push(tag);
-											else {
-												var writeTagRecursive = function(tag) {
-													tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
-													tlang.splice(tlang.indexOf(tag), 1);
-													tageditstr += '<div class="indt">';
-													var i = -1;
-													while (++i < tlang.length) {
-														if (tlang[i].parentID == tag._id) {
-															writeTagRecursive(tlang[i]);
-															i = -1;
+											var tagstr = '';
+											dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+												if (err) throw err;
+												if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
+												else {
+													var tlang = [],
+														tageditstr = '';
+													dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+														if (err) throw err;
+														if (tag) tlang.push(tag);
+														else {
+															var writeTagRecursive = function(tag) {
+																tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+																tlang.splice(tlang.indexOf(tag), 1);
+																tageditstr += '<div class="indt">';
+																var i = -1;
+																while (++i < tlang.length) {
+																	if (tlang[i].parentID == tag._id) {
+																		writeTagRecursive(tlang[i]);
+																		i = -1;
+																	}
+																}
+																tageditstr += '</div>';
+															};
+															var i = -1;
+															while (++i < tlang.length) {
+																if (!tlang[i].parentID) {
+																	writeTagRecursive(tlang[i]);
+																	i = -1;
+																}
+															}
+															res.write(data.toString()
+																.replaceAll(
+																	['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+																	[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																).replace('$edit-tags', tageditstr).replaceAll(
+																	['$qcommentstr', '$answers', '$tags', '$rep'],
+																	[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+																).replaceAll(
+																	['$askdate', '$op-name', '$op-rep', '$op-pic'],
+																	[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+															);
+															respondPageFooter(res);
 														}
-													}
-													tageditstr += '</div>';
-												};
-												var i = -1;
-												while (++i < tlang.length) {
-													if (!tlang[i].parentID) {
-														writeTagRecursive(tlang[i]);
-														i = -1;
-													}
+													});
 												}
-												res.write(data.toString()
-													.replaceAll(
-														['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-														[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-													).replace('$edit-tags', tageditstr).replaceAll(
-														['$qcommentstr', '$tags', '$rep'],
-														[commentstr, tagstr, (user.rep || 0).toString()]
-													).replaceAll(
-														['$askdate', '$op-name', '$op-rep', '$op-pic'],
-														[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-													).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-												);
-												respondPageFooter(res);
-											}
+											});
 										});
 									}
 								});
-							});
-						}
+							}
+						};
+						cursor.nextObject(answerHandler);
 					});
 				});
 			});
@@ -600,31 +706,62 @@ http.createServer(function(req,	res) {
 			dbcs.chatrooms.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) {
-					if (doc.type == 'M' && user.level != 5) return;
+					if (doc.type == 'M' && (!user || user.level < 5)) return;
+					if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
 					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
 					res.write(markdown(doc.desc) + '\n');
 					roomnames[doc._id] = doc.name;
 					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
-					if (user.rep >= 200) res.write('<hr />\n<a href="newroom" title="Requires 200 reputation" class="small">Create Room</a>\n');
+					res.write('<hr />\n');
+					res.write('<small>');
+					res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
+					if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
+					res.write('</small>\n');
 					res.write('</div>\n');
 					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
 					res.write('<h2>Recent Posts</h2>\n');
 					dbcs.chat.find({
 						deleted: {$exists: false},
 						room: {$in: publicRooms}
-					}).sort({_id: -1}).limit(12).each(function(err, doc) {
+					}).sort({_id: -1}).limit(12).each(function(err, comment) {
 						if (err) throw err;
-						if (doc) res.write(
-							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
-							'-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n'
-						);
-						else respondPageFooter(res, true);
+						if (comment) {
+							var commentBody = markdown(comment.body),
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+							commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+								+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a></span>'
+								+ commentBody.substring(commentBody.length - endTagsLength);
+							res.write('<div class="comment">' + commentBody + '</div>');
+						} else respondPageFooter(res, true);
 					});
 				}
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
+	} else if (req.url.pathname == '/chat/search') {
+		respondPage('Search', user, req, res, function() {
+			fs.readFile('./html/chat/search.html', function(err, data) {
+				if (err) throw err;
+				var rooms = [];
+				dbcs.chatrooms.find().each(function(err, doc) {
+					if (err) throw err;
+					if (doc) {
+						if (doc.type == 'M' && (!user || user.level < 5)) return;
+						if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
+						if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') rooms.push({id: doc._id, name: doc.name});
+					} else {
+						res.write(
+							data.toString()
+							.replace('$user', user.name)
+							.replace('$rooms', JSON.stringify(rooms))
+							.replace('$qroom', req.url.query && req.url.query.room ? req.url.query.room : '')
+						);
+						respondPageFooter(res);
+					}
+				});
+			});
+		});
+	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
@@ -634,7 +771,7 @@ http.createServer(function(req,	res) {
 					var userstr = '';
 					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
 						if (err) throw err;
-						if (invUser) userstr += 
+						if (invUser) userstr +=
 							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
 							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div><span>✕</span>' +
 							'\n\t</div>\n';
@@ -653,7 +790,7 @@ http.createServer(function(req,	res) {
 				});
 			} else {
 				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorPage[403](req, res, user, 'You have not been invited to this private room.');
-				if (doc.type == 'M' && user.level != 5) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
+				if (doc.type == 'M' && (!user || user.level < 5)) return errorPage[403](req, res, user, 'You must be a moderator to join this room.');
 				respondPage(doc.name, user, req, res, function() {
 					fs.readFile('./html/chat/room.html', function(err, data) {
 						if (err) throw err;
@@ -677,7 +814,7 @@ http.createServer(function(req,	res) {
 											)
 									) :
 									'<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
-							.replace(' $options',  typeIcons[doc.type] + (user.rep > 200 && isInvited ? ' <small><a id="edit">Edit</a></small>' : ''))
+							.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
 							.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
 						);
 						respondPageFooter(res);
@@ -685,7 +822,7 @@ http.createServer(function(req,	res) {
 				});
 			}
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)$/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
@@ -735,7 +872,7 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>\n');
-			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1}).limit(15).each(function(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1, updated: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
@@ -754,10 +891,10 @@ http.createServer(function(req,	res) {
 			var liststr = '',
 				sort = (req.url.query || {}).sort || 'hot',
 				sortDict = {
-					default: {hotness: -1},
-					votes: {score: -1},
-					upvotes: {upvotes: -1},
-					recent: {time: -1},
+					default: {hotness: -1, recent: -1},
+					votes: {score: -1, recent: -1},
+					upvotes: {upvotes: -1, score: -1, hotness: -1, recent: -1},
+					recent: {created: -1},
 					update: {updated: -1}
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
@@ -788,8 +925,8 @@ http.createServer(function(req,	res) {
 					data.toString()
 					.replace(/<section id="meta">[^]+<\/section>/, '')
 					.replaceAll(
-						['$mine', '$id', '$title', '$code'],
-						['false', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+						['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
+						['false', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 					)
 				);
 				respondPageFooter(res);
@@ -814,9 +951,9 @@ http.createServer(function(req,	res) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errorPage[404](req, res, user);
-			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', user, req, res, function() {
-				if (program.deleted) {
-					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
+			if (program.deleted) {
+				respondPage('[Deleted]', user, req, res, function() {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nYou deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a class="red" id="undelete">[undelete]</a>');
 					else if (user.level >= 4) {
 						var deletersstr = '',
 							i = program.deleted.by.length;
@@ -825,7 +962,7 @@ http.createServer(function(req,	res) {
 							if (i == 1) deletersstr += ', and ';
 							else if (i != 0) deletersstr += ', ';
 						}
-						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
+						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nThis program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a class="red" id="undelete">[undelete]</a>');
 					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
 					res.write('\n<script>\n');
 					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
@@ -838,91 +975,99 @@ http.createServer(function(req,	res) {
 					res.write('\t\t\t});\n');
 					res.write('\t}\n');
 					res.write('</script>');
-					return respondPageFooter(res);
-				}
-				dbcs.votes.findOne({
-					user: user.name,
-					program: program._id
-				}, function(err, vote) {
-					if (err) throw err;
-					if (!vote) vote = {val: 0};
-					dbcs.users.findOne({name: program.user}, function(err, op) {
+					respondPageFooter(res);
+				}, {}, 404);
+			} else {
+				respondPage(program.title || 'Untitled', user, req, res, function() {
+					dbcs.votes.findOne({
+						user: user.name,
+						program: program._id
+					}, function(err, vote) {
 						if (err) throw err;
-						var commentstr = '';
-						dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+						if (!vote) vote = {val: 0};
+						dbcs.users.findOne({name: program.user}, function(err, op) {
 							if (err) throw err;
-							if (comment) {
-								var votes = comment.votes || [],
-									voted;
-								for (var i in votes) if (votes[i].user == user.name) voted = true;
-								commentstr +=
-									'<div id="c' + comment._id + '" class="comment">' +
-									'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-									(
-										user.rep >= 50 ?
+							var commentstr = '';
+							dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+								if (err) throw err;
+								if (comment) {
+									var votes = comment.votes || [],
+										voted;
+									for (var i in votes) if (votes[i].user == user.name) voted = true;
+									var commentBody = markdown(comment.body),
+										endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+									commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+										+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+										+ commentBody.substring(commentBody.length - endTagsLength);
+									commentstr +=
+										'<div id="c' + comment._id + '" class="comment">' +
+										'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
 										(
-											'<span class="sctrls">' +
-											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-											'</span>'
-										) :
-										''
-									) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-							} else {
-								dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
-									if (err) throw err;
-									var forks = [];
-									dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											user.rep >= 50 ?
+											(
+												'<span class="sctrls">' +
+												'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+												'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+												'</span>'
+											) :
+											''
+										) + commentBody + '</div>';
+								} else {
+									dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
 										if (err) throw err;
-										if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
-										else {
-											if (program.type == 1) {
-												fs.readFile('./html/dev/canvas.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$code', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else if (program.type == 2) {
-												fs.readFile('./html/dev/html.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else throw 'Invalid program type for id: ' + program._id;
-										}
+										var forks = [];
+										dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											if (err) throw err;
+											if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
+											else {
+												if (program.type == 1) {
+													fs.readFile('./html/dev/canvas.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$code', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else if (program.type == 2) {
+													fs.readFile('./html/dev/html.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else throw 'Invalid program type for id: ' + program._id;
+											}
+										});
 									});
-								});
-							}
+								}
+							});
 						});
 					});
-				});
-			}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
+				}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
+			}
 		});
 	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, user, req, res, function() {
@@ -943,31 +1088,24 @@ http.createServer(function(req,	res) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
 			if (err) throw err;
 			if (!post) return errorPage[404](req, res, user);
-			if (user.name != post.user) {
-				res.writeHead(303, {
-					Location: '1'
+			respondPage(post.title, user, req, res, function() {
+				fs.readFile('./html/learn/course.html', function(err, data) {
+					if (err) throw err;
+					res.write(
+						data.toString()
+						.replaceAll('$title', html(post.title))
+						.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
+							return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
+						}).join('') + '</ul>' + (
+							post.user == user.name
+							? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
+							: ''
+						))
+						.replace('$mine', post.user == user.name ? 'true' : 'false')
+					);
+					respondPageFooter(res);
 				});
-				res.end();
-			} else {
-				respondPage(post.title, user, req, res, function() {
-					fs.readFile('./html/learn/course.html', function(err, data) {
-						if (err) throw err;
-						res.write(
-							data.toString()
-							.replaceAll('$title', html(post.title))
-							.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
-								return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
-							}).join('') + '</ul>' + (
-								post.user == user.name
-								? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
-								: ''
-							))
-							.replace('$mine', post.user == user.name ? 'true' : 'false')
-						);
-						respondPageFooter(res);
-					});
-				});
-			}
+			});
 		});
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, lesson) {

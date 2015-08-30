@@ -1,6 +1,7 @@
 <h1>font(f)</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The font() function sets the font of text drawn on the canvas. The string passed to font is in the same format as the `font` CSS property.
  * 
  * Usage:
@@ -29,35 +30,11 @@ text(200, 350, 'Neither am I…');
  * text(x, y, t): http://devdoodle.net/dev/docs/text/text-func
  * textAlign(h, v): http://devdoodle.net/dev/docs/text/textalign-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

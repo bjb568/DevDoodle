@@ -48,7 +48,31 @@ var wss = new ws.Server({
 		key: fs.readFileSync('../Secret/devdoodle.net.key'),
 		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
 		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
-		ssl: true
+		ssl: true,
+		ciphers: [
+			'ECDHE-RSA-AES128-GCM-SHA256',
+			'ECDHE-ECDSA-AES128-GCM-SHA256',
+			'ECDHE-RSA-AES256-GCM-SHA384',
+			'ECDHE-ECDSA-AES256-GCM-SHA384',
+			'DHE-RSA-AES128-GCM-SHA256',
+			'ECDHE-RSA-AES128-SHA256',
+			'DHE-RSA-AES128-SHA256',
+			'ECDHE-RSA-AES256-SHA384',
+			'DHE-RSA-AES256-SHA384',
+			'ECDHE-RSA-AES256-SHA256',
+			'DHE-RSA-AES256-SHA256',
+			'HIGH',
+			'!aNULL',
+			'!eNULL',
+			'!EXPORT',
+			'!DES',
+			'!RC4',
+			'!MD5',
+			'!PSK',
+			'!SRP',
+			'!CAMELLIA'
+		].join(':'),
+		honorCipherOrder: true
 	}, function(req, res) {
 		res.writeHead(200);
 		res.end('All glory to WebSockets!\n');
@@ -196,7 +220,7 @@ wss.on('connection', function(tws) {
 							state: doc.state
 						}));
 						else if (user.name) {
-							if (rem) {
+							if (rem.result.n) {
 								tws.trysend(JSON.stringify({
 									event: 'adduser',
 									name: user.name,

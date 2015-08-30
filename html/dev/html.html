@@ -41,6 +41,8 @@
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	html, #content, #footer, #main { background: #000 }
+	#main { padding: 0 }
+	#content { padding: 0 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -60,6 +62,10 @@
 		margin: 4px 0;
 	}
 	#main textarea:first-child { margin-top: 0 }
+	#edit-title {
+		width: 400px;
+		max-width: 100%;
+	}
 	.half { max-width: 90vw }
 	#main textarea, #output {
 		max-width: 100%;
@@ -243,7 +249,7 @@
 					? 0
 					: (
 						this.value[oldSelectionStart - 1] == ';' &amp;&amp; this.eIndent
-						? (this.eIndent = false || 2) 
+						? (this.eIndent = false || 2)
 						: 1
 					)
 				);
@@ -340,7 +346,7 @@
 					} else if (res == 'Success') {
 						edit.hidden = true;
 						var title = document.getElementById('title');
-						title.textContent = edit.value.substr(0, 92) || 'Untitled';
+						document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
 						if (!edit.value) edit.value = 'Untitled';
 						title.hidden = false;
 					} else alert('Unknown error. Response was: ' + res);
@@ -388,7 +394,6 @@
 		document.getElementById('reset').onclick = function() {
 			location.hash = '';
 			history.replaceState('', document.title, window.location.pathname);
-			document.body.scrollTop = innerHeight;
 		};
 		socket.onmessage = function(e) {
 			console.log(e.data);
@@ -403,7 +408,7 @@
 				div.classList.add('comment');
 				div.innerHTML = ' ' + markdown(data.body);
 				if ($rep >= 50) {
-					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.insertBefore(document.getElementById('meta').nextElementSibling.cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
 					var score = document.createElement('span');
 					score.classList.add('score');
@@ -423,12 +428,37 @@
 				permalink.appendChild(agot(data.time));
 				permalink.href = '#' + (div.id = 'c' + data.id);
 				sig.appendChild(permalink);
-				div.appendChild(sig);
+				var currentNode = div;
+				while (!sig.parentNode) {
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					else currentNode = currentNode.lastChild;
+				}
 				document.getElementById('comments').appendChild(div);
+				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {
 				var c = document.getElementById('c' + data.id);
 				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 			} else if (data.event == 'err') alert('Error: ' + data.body);
+		};
+		socket.onclose = function() {
+			var ta = document.getElementById('commentta');
+			if (ta.disabled) return;
+			ta.blur();
+			ta.disabled = true;
+			var warning = document.createElement('div');
+			warning.className = 'connection-error';
+			warning.appendChild(document.createTextNode('Connection error. '));
+			var link = document.createElement('a');
+			link.appendChild(document.createTextNode('Reload?'));
+			link.href = '';
+			warning.appendChild(link);
+			var addcomment = document.getElementById('addcomment');
+			addcomment.parentNode.insertAfter(warning, addcomment);
+			addcomment.hidden = true;
+			setInterval(function() {
+				if (socket.readyState == 1) return location.reload(true);
+				socket = new WebSocket('wss://' + location.hostname + ':81/dev/$id');
+			}, 5000);
 		};
 		var deletebutton = document.getElementById('delete');
 		if (deletebutton) {
