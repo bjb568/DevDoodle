@@ -5,7 +5,7 @@
 		<a title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
 		<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
 		<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
-		<a class="ctrlicon delbtn" title="Delete">✕</a>
+		<a class="ctrlicon delbtn" title="Delete…">✕</a>
 	</div>
 	<div id="q-content">
 		<div id="q-body">
@@ -14,7 +14,10 @@
 			<p><strong>$question</strong></p>
 		</div>
 		<div class="clearfix">
-			<div id="tags" class="lft">$tags</div>
+			<div class="lft">
+				<div id="tags">$tags</div>
+				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
+			</div>
 			<div class="rit">
 				<div>Asked <time datetime="$askdate"></time> by</div>
 				<div class="user user-$op-name">
@@ -25,7 +28,6 @@
 					</div>
 				</div>
 			</div>
-			<small class="blk sumar lft clr"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
 		</div>
 	</div>
 </div>
@@ -145,15 +147,11 @@ $answers
 		border-radius: 50%;
 		background: #fff;
 	}
-	.editbtn { color: #0b0 }
-	.editbtn:visited { color: #0a0 }
-	.editbtn:hover { color: #0b0 }
-	.editbtn:hover { background: #fff }
-	.editbtn:active { background: #0b0 }
-	.delbtn { color: #f00 }
-	.delbtn:hover { color: #f00 }
-	.delbtn:active { background: #f00 }
-	.ctrlicon:active { color: #fff }
+	.ctrlicon:hover, .ctrlicon:active { box-shadow: 0.5px 0.5px 2px #000 }
+	.ctrlicon:active { background: #ddd }
+	.editbtn, .editbtn:hover { color: #0b0 }
+	.editbtn:visited { color: #090 }
+	.delbtn, .delbtn:hover { color: #f00 }
 	.tag {
 		display: inline-block;
 		text-decoration: none;
