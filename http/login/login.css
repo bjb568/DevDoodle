@@ -1,0 +1,6 @@
+form div { margin: 0.2em 0 }
+#create:not(:checked) ~ #ccreate { display: none }
+#submit { display: block }
+#sec { font-size: 0 }
+#sec::before, #sec input { font-size: 1rem }
+#sec input { width: 10em }
