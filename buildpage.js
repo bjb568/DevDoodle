@@ -547,8 +547,11 @@ http.createServer(function(req,	res) {
 		respondPage('New Question', user, req, res, function() {
 			fs.readFile('./html/qa/ask.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
+				dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+					if (err) throw err;
+					res.write(data.toString().replace('$langs', JSON.stringify(langs)));
+					respondPageFooter(res);
+				});
 			});
 		});
 	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
@@ -569,7 +572,7 @@ http.createServer(function(req,	res) {
 								dbcs.users.findOne({name: answer.user}, function(err, answerPoster) {
 									if (err) throw err;
 									answerstr += (
-										'<div id="a' + answer._id + '" class="answer">' +
+										'<div id="a' + answer._id + '" class="answer hglt pad br">' +
 											'<div class="ctrl pad lft">' +
 												'<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>' +
 												'<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>' +
@@ -578,7 +581,7 @@ http.createServer(function(req,	res) {
 												'<a class="ctrlicon delbtn" title="Delete">✕</a>' +
 											'</div>' +
 											'<div class="a-content">' +
-												'<div class="a-body hglt pad br">' + markdown(answer.body) + '</div>' +
+												'<div class="a-body">' + markdown(answer.body) + '</div>' +
 												'<div class="clearfix">' +
 													'<div class="rit">' +
 														'<div>Answered <time datetime="' + new Date(answer.time).toISOString() + '"></time> by</div>' +

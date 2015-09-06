@@ -88,6 +88,7 @@ li {
 .spoiler::before {
 	content: 'hover to see spoiler';
 	position: absolute;
+	padding: 0.3em;
 	color: #aaa;
 	transition: opacity 0.2s;
 }

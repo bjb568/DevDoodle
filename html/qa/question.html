@@ -1,31 +1,34 @@
 <h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" hidden="" /></h1>
-<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
-<div class="ctrl pad lft">
-	<a title="This question is clear, answerable, and useful to the community."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
-	<a title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
-	<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
-	<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
-	<a class="ctrlicon delbtn" title="Delete">✕</a>
-</div>
-<div id="q-content">
-	<div id="q-body" class="hglt pad br">
-		$description
-		<code class="blk">$code</code>
-		<p><strong>$question</strong></p>
+<div id="question" class="hglt pad br">
+	<div class="ctrl pad lft">
+		<a title="This question is clear, answerable, and useful to the community."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
+		<a title="This question needs improvement or is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
+		<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+		<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
+		<a class="ctrlicon delbtn" title="Delete…">✕</a>
 	</div>
-	<div class="clearfix">
-		<div id="tags" class="lft">$tags</div>
-		<div class="rit">
-			<div>Asked <time datetime="$askdate"></time> by</div>
-			<div class="user user-$op-name">
-				<img src="$op-pic" width="40" height="40" />
-				<div>
-					<a href="/user/$op-name">$op-name</a>
-					<small class="rep">$op-rep</small>
+	<div id="q-content">
+		<div id="q-body">
+			$description
+			<code class="blk">$code</code>
+			<p><strong>$question</strong></p>
+		</div>
+		<div class="clearfix">
+			<div class="lft">
+				<div id="tags">$tags</div>
+				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
+			</div>
+			<div class="rit">
+				<div>Asked <time datetime="$askdate"></time> by</div>
+				<div class="user user-$op-name">
+					<img src="$op-pic" width="40" height="40" />
+					<div>
+						<a href="/user/$op-name">$op-name</a>
+						<small class="rep">$op-rep</small>
+					</div>
 				</div>
 			</div>
 		</div>
-		<small class="blk sumar lft clr"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>
 	</div>
 </div>
 <form id="q-edit" class="indt" hidden="">
@@ -38,8 +41,8 @@
 		<button type="reset" id="cancel-edit">Cancel</button>
 	</div>
 </form>
+<span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
 <div class="indt umar">
-	<hr class="nomar" />
 	<div id="comments">$qcommentstr</div>
 	<form id="comment" class="target umar">
 		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
@@ -83,22 +86,16 @@ $answers
 	.err:empty { display: none }
 	#answer-error { margin-left: 4em }
 	.q-editing h1 { border-bottom: none }
-	.answer { margin-top: 12px }
-	.answer + .answer {
-		border-top: 1px solid #aaa;
-		padding-top: 8px;
-	}
-	.answer > .lft {
-		padding-right: 12px;
-		border-right: 1px solid #aaa;
-	}
+	.answer { margin-top: 8px }
 	#q-content, .a-content {
 		margin-left: 32px;
+		border-left: 1px solid #aaa;
+		padding-left: 6px;
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 	}
-	.a-content { margin-left: 42px }
-	#q-body, .a-body { margin-bottom: 8px }
+	#q-body { margin-bottom: 8px }
+	.a-content .rit { margin-top: 8px }
 	#q-edit textarea, .a-edit textarea, #answerta {
 		width: 100%;
 		max-height: 70vmin;
@@ -142,32 +139,19 @@ $answers
 	}
 	.ctrlicon:not([hidden]) { display: block }
 	.ctrlicon {
-		margin: 4px -2px;
-		height: 23px; width: 23px;
+		margin: 4px -3px;
+		padding-top: 1px; padding-left: 5px;
+		height: 25px; width: 25px;
 		font-size: 20px; font-weight: bold;
 		text-decoration: none;
 		border-radius: 50%;
-		border: 1px solid #888;
-		background: #eee;
+		background: #fff;
 	}
-	.editbtn {
-		color: #0b0;
-		padding-left: 2px;
-	}
-	.editbtn:visited {
-		color: #0a0;
-		background: #ddd;
-	}
-	.editbtn:hover { color: #0b0 }
-	.editbtn:hover { background: #fff }
-	.editbtn:active { background: #0b0 }
-	.delbtn {
-		color: #f00;
-		padding-left: 3px;
-	}
-	.delbtn:hover { color: #f00 }
-	.delbtn:active { background: #f00 }
-	.ctrlicon:active { color: #fff }
+	.ctrlicon:hover, .ctrlicon:active { box-shadow: 0.5px 0.5px 2px #000 }
+	.ctrlicon:active { background: #ddd }
+	.editbtn, .editbtn:hover { color: #0b0 }
+	.editbtn:visited { color: #090 }
+	.delbtn, .delbtn:hover { color: #f00 }
 	.tag {
 		display: inline-block;
 		text-decoration: none;
