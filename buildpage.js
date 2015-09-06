@@ -451,14 +451,7 @@ http.createServer(function(req,	res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		dbcs.users.update({
-			cookie: {
-				$elemMatch: {
-					token: cookie.parse(req.headers.cookie || '').id,
-					created: {$gt: new Date().getTime() - 2592000000}
-				}
-			}
-		}, {$set: {cookie: []}});
+		dbcs.users.update({name: user.name}, {$set: {cookie: []}});
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {

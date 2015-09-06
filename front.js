@@ -105,7 +105,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
-		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
+		if (!header['Set-Cookie'] && new Date() -  user.seen > 3600000) {
 			var tokens = user.cookie,
 				idToken = crypto.randomBytes(128).toString('base64');
 			for (var i in tokens) {
@@ -276,24 +276,29 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 	var type = Math.floor(Math.random() * 3);
 	respondPage('Login', user, req, res, function() {
 		res.write('<h1>Log in</h1>\n');
-		res.write(errorsHTML(errs) || (post.r == 'ask' ? '<div class="notice">You must be logged in to ask a question.</div>' : ''));
+		var notice = ({
+			ask: 'You must be logged in to ask a question.',
+			recovered: 'Your password has been reset. You may now login.',
+			updated: 'Your password has been updated. You may now login with your new password.'
+		})[post.r];
+		res.write(errorsHTML(errs) || (notice ? '<div class="notice">' + notice + '</div>' : ''));
 		res.write('<form method="post">');
 		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
 		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
 		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>\n');
 		res.write('<div id="ccreate">\n');
 		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
-		res.write('<div><input type="text" name="mail" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
+		res.write('<div><input type="text" name="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>\n');
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
 		res.write('<button type="submit" id="submit" class="umar">Submit</button>\n');
 		res.write('</form>\n');
+		res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>\n');
 		res.write('<script src="login.js"></script>');
 		respondPageFooter(res);
 	}, {
-		inhead: '<style>#create:not(:checked) ~ #ccreate { display: none }\n#submit { display: block }\n'
-			+ '#sec { font-size: 0 } #sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' } #sec::before, #sec input { font-size: 1rem }</style>'
+		inhead: '<link rel="stylesheet" href="/login/login.css" />\n<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'
 	});
 }
 
@@ -324,11 +329,12 @@ function respondChangePassPage(errs, user, req, res, post) {
 		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">\n');
-		res.write('<div>Old password: <input type="password" name="old" required="" autofocus="" /></div>\n');
-		res.write('<div>New password: <input type="password" name="new" required="" /></div>\n');
-		res.write('<div>Confirm new password: <input type="password" name="conf" required="" /></div>\n');
-		res.write('<button type="submit">Submit</button>\n');
+		res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>\n');
+		res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-strength"></span></div>\n');
+		res.write('<div><input type="password" id="conf" name="conf" placeholder="Confirm new password" required="" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
+		res.write('<button type="submit" id="submit" disabled="">Submit</button>\n');
 		res.write('</form>\n');
+		res.write('<script src="/login/changepass.js"></script>');
 		respondPageFooter(res);
 	});
 }
@@ -582,7 +588,7 @@ var server = https.createServer({
 		cookie: {
 			$elemMatch: {
 				token: cookies.id || 'nomatch',
-				created: {$gt: new Date().getTime() - 2592000000}
+				created: {$gt: new Date() -  2592000000}
 			}
 		}
 	}, function(err, user) {
@@ -639,7 +645,7 @@ var server = https.createServer({
 						cookie: {
 							$elemMatch: {
 								token: cookie.parse(req.headers.cookie || '').id,
-								created: {$gt: new Date().getTime() - 2592000000}
+								created: {$gt: new Date() -  2592000000}
 							}
 						}
 					}, function(err, user) {
@@ -656,6 +662,105 @@ var server = https.createServer({
 						});
 						res.writeHead(204);
 						res.end();
+					});
+				} else if (req.url.pathname == '/login/recover') {
+					if (post.code) {
+						dbcs.users.findOne({
+							confirm: post.code,
+							confirmSentTime: {$gt: new Date() - 300000}
+						}, function(err, user) {
+							if (err) throw err;
+							if (!user) {
+								res.writeHead(403);
+								return res.end('Error: Authentication failed.');
+							}
+							if (!post.pass) {
+								res.writeHead(400);
+								return res.end('Error: No password sent.');
+							}
+							var salt = crypto.randomBytes(64).toString('base64');
+							crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+								if (err) throw err;
+								dbcs.users.update({name: user.name}, {
+									$set: {
+										pass: new Buffer(key).toString('base64'),
+										salt: salt,
+										cookie: []
+									},
+									$unset: {
+										confirm: true,
+										confirmSentTime: true
+									}
+								});
+							});
+							res.writeHead(303, {Location: '/login/?r=recovered'});
+							res.end();
+						});
+					} else {
+						if (!post.user || !post.mail) {
+							res.writeHead(400);
+							return res.end('Error: Both user and mail are required.');
+						}
+						dbcs.users.findOne({
+							name: post.user,
+							mail: post.mail
+						}, function(err, user) {
+							if (err) throw err;
+							var token = crypto.randomBytes(12).toString('base64');
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: post.mail,
+								subject: 'Password Reset',
+								html: '<p>Your ' + user.name + ' account\'s <em>case sensitive</em> recovery code is <strong>' + token + '</strong></p><p>Enter the code into the existing account recovery page to reset your password.</p><p>If you have not requested a password reset for the account ' + user.name + ' on DevDoodle, you may safely ignore this email.</p>'
+							});
+							dbcs.users.update({name: user.name}, {
+								$set: {
+									cookie: [],
+									confirm: token,
+									confirmSentTime: new Date().getTime()
+								}
+							});
+							res.writeHead(204);
+							res.end();
+						});
+					}
+				} else if (req.url.pathname == '/login/resend') {
+					if (!post.name || !post.pass || !post.mail) {
+						res.writeHead(400);
+						return res.end('Error: user, pass, and mail are required fields.');
+					}
+					if (post.mail.length > 256) {
+						res.writeHead(400);
+						return res.end('Error: Email address must be no longer than 256 characters.');
+					}
+					dbcs.users.findOne({name: post.name}, function(err, fuser) {
+						if (err) throw err;
+						if (!fuser) {
+							res.writeHead(403);
+							return res.end('Error: Invalid credentials.');
+						}
+						crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
+							if (err) throw err;
+							if (key.toString('base64') != fuser.pass) {
+								res.writeHead(403);
+								return res.end('Error: Invalid credentials.');
+							}
+							var confirmToken = crypto.randomBytes(128).toString('base64');
+							dbcs.users.update({name: fuser.name}, {
+								$set: {
+									mail: post.mail,
+									confirm: confirmToken
+								}
+							});
+							transport.sendMail({
+								from: 'DevDoodle <support@devdoodle.net>',
+								to: post.mail,
+								subject: 'Confirm your account',
+								html: '<h1>Welcome to DevDoodle!</h1>\n<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
+							});
+							res.writeHead(200);
+							res.end('Confirmation email sent.');
+						});
 					});
 				} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)$/)) {
 					dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
@@ -1305,7 +1410,7 @@ var server = https.createServer({
 						});
 						dbcs.votes.find({
 							program: id,
-							time: {$lt: new Date().getTime() - 86400000}
+							time: {$lt: new Date() -  86400000}
 						}).count(function(err, count) {
 							if (err) throw err;
 							dbcs.programs.update({_id: id}, {$inc: {hotness: -count}});
@@ -1604,7 +1709,7 @@ var server = https.createServer({
 									from: 'DevDoodle <support@devdoodle.net>',
 									to: post.mail,
 									subject: 'Confirm your account',
-									html: '<h1>Welcome to DevDoodle!</h1><p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
+									html: '<h1>Welcome to DevDoodle!</h1>\n<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 								});
 								respondPage('Account Created', user, req, res, function() {
 									res.write('An account for you has been created. To activate it, click the link in the email sent to you. It may take a few minutes for the email to reach you, but please check your spam folder.');
@@ -1617,7 +1722,16 @@ var server = https.createServer({
 						dbcs.users.findOne({name: post.name}, function(err, fuser) {
 							if (err) throw err;
 							if (!fuser) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-							if (fuser.confirm) return respondLoginPage(['You must confirm your account by clicking the link in the email sent to you before logging in.'], user, req, res, post);
+							if (fuser.confirm) {
+								if (fuser.seen) return respondLoginPage(['This account has been disabled by a user-initiated password reset. It can be <a href="recover">recovered with email verification</a>.'], user, req, res, post);
+								return respondPage('Confirm Account', user, req, res, function() {
+									fs.readFile('./html/login-confirm.html', function(err, data) {
+										if (err) throw err;
+										res.write(data.toString().replaceAll(['$user', '$pass', '$mail'], [fuser.name, html(post.pass), html(fuser.mail)]));
+										respondPageFooter(res);
+									});
+								});
+							}
 							if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
 							crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 								if (err) throw err;
@@ -1637,7 +1751,8 @@ var server = https.createServer({
 										}
 									}
 								});
-								if ((url.parse(req.headers.referer, true).query || {}).r == 'ask') {
+								var r = (url.parse(req.headers.referer, true).query || {}).r;
+								if (r == 'ask') {
 									res.writeHead(303, {
 										Location: '/qa/ask',
 										'Set-Cookie': idCookie
@@ -1645,7 +1760,7 @@ var server = https.createServer({
 									return res.end();
 								}
 								var referer = url.parse(post.referer);
-								if (referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') {
+								if (!r && referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') {
 									res.writeHead(303, {
 										Location: referer.pathname,
 										'Set-Cookie': idCookie
@@ -1664,6 +1779,14 @@ var server = https.createServer({
 					}
 				});
 			} else respondLoginPage([], user, req, res, {referer: req.headers.referer, r: (req.url.query || {}).r});
+		} else if (req.url.pathname == '/login/recover') {
+			respondPage('Recover Account', user, req, res, function() {
+				fs.readFile('./html/login-recovery.html', function(err, data) {
+					if (err) throw err;
+					res.write(data);
+					respondPageFooter(res);
+				});
+			});
 		} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
 			if (req.method == 'POST') {
 				post = '';
@@ -1692,12 +1815,19 @@ var server = https.createServer({
 									pass: new Buffer(key).toString('base64'),
 									salt: salt,
 									cookie: []
-								},
+								}
 							});
-							respondPage('Password Updated', user, req, res, function() {
-								res.write('The password for user ' + user.name + ' has been updated. You have been logged out.');
-								respondPageFooter(res);
-							}, {'Set-Cookie': 'id='});
+							var idCookie = cookie.serialize('id', '', {
+								path: '/',
+								expires: new Date(),
+								httpOnly: true,
+								secure: true
+							});
+							res.writeHead(303, {
+								Location: '/login/?r=updated',
+								'Set-Cookie': idCookie
+							});
+							res.end();
 						});
 					});
 				});
