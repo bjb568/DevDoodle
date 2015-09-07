@@ -30,17 +30,17 @@
 			</div>
 		</div>
 	</div>
+	<form id="q-edit" class="indt" hidden="">
+		<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
+		<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" />
+		<div id="edit-tags">$edit-tags</div>
+		<div>
+			<button type="submit">Submit Edit</button>
+			<button type="reset" id="cancel-edit">Cancel</button>
+		</div>
+	</form>
 </div>
-<form id="q-edit" class="indt" hidden="">
-	<textarea id="q-desc-edit" rows="24">$rawdesc</textarea>
-	<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
-	<input id="q-question-edit" value="$rawq" class="fullwidth bmar" />
-	<div id="edit-tags">$edit-tags</div>
-	<div>
-		<button type="submit">Submit Edit</button>
-		<button type="reset" id="cancel-edit">Cancel</button>
-	</div>
-</form>
 <span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
 <div class="indt umar">
 	<div id="comments">$qcommentstr</div>
@@ -88,14 +88,15 @@ $answers
 	.q-editing h1 { border-bottom: none }
 	.answer { margin-top: 8px }
 	#q-content, .a-content {
-		margin-left: 32px;
 		border-left: 1px solid #aaa;
 		padding-left: 6px;
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 	}
+	.ctrl + * { margin-left: 32px }
 	#q-body { margin-bottom: 8px }
 	.a-content .rit { margin-top: 8px }
+	#q-edit, .a-edit { padding-left: 2px}
 	#q-edit textarea, .a-edit textarea, #answerta {
 		width: 100%;
 		max-height: 70vmin;
@@ -104,6 +105,8 @@ $answers
 	#title-edit {
 		font-size: 0.8em;
 		width: 100%;
+		padding-left: 4px;
+		margin-bottom: -0.18em;
 	}
 	#comments { margin: 8px 0 }
 	code.blk:empty { display: none }
