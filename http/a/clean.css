@@ -39,7 +39,7 @@ body {
 [hidden], .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
-.fullwidth { width: 100% }
+.fullwidth, input[type=text].fullwidth, input[type=password].fullwidth { width: 100% }
 .maxwidth, img, input { max-width: 100% }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
@@ -365,7 +365,7 @@ a.blk { font-weight: bold }
 a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
 input[type=text], input[type=password] { width: 18em }
-input[type=text], input[type=search], input[type=password], textarea {
+input[type=text], input[type=number], input[type=search], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: 1rem;
 }
