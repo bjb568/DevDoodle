@@ -260,7 +260,7 @@ http.createServer(function(req,	res) {
 	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
-			if (user.name) {
+			if (user) {
 				dbcs.users.update({name: user.name}, {
 					$set: {
 						level: 1,
