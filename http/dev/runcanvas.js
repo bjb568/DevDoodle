@@ -26,6 +26,7 @@ addEventListener('DOMContentLoaded', function() {
 		taCont = document.getElementById('ta-cont'),
 		output = document.getElementById('output'),
 		save = document.getElementById('save'),
+		fork = document.getElementById('fork'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
 	code.lastSelectionStart = 0;
@@ -104,6 +105,7 @@ addEventListener('DOMContentLoaded', function() {
 		endChars[93] = ']';
 		endChars[125] = '}';
 		if (e.keyCode == 13) {
+			if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 			var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
 			this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 			oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
@@ -171,6 +173,16 @@ addEventListener('DOMContentLoaded', function() {
 				this.selectionEnd = --oldSelectionStart;
 				e.preventDefault();
 			}
+		}
+	});
+	addEventListener('keypress', function(e) {
+		if (e.keyCode == 13 && e.metaKey) {
+			e.preventDefault();
+			document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+		} else if (e.keyCode == 115 && e.metaKey) {
+			e.preventDefault();
+			var target = e.shiftKey ? fork : save;
+			if (target) target.dispatchEvent(new MouseEvent('click'));
 		}
 	});
 	var fullScreen = false,
