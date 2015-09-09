@@ -140,27 +140,41 @@
 		height: 100%;
 		z-index: 1;
 	}
-	.large {
+	#close-fullscreen {
 		position: fixed;
 		z-index: 1;
 		top: 0;
 		left: 0;
 		width: 32px; height: 32px;
 		line-height: 32px;
-		background: #aaa;
+		background: #000;
 		text-align: center;
 	}
-	@media (max-width: 1499px) {
-		.large {
-			height: 100%;
-		}
-	}
-	.large a {
+	#close-fullscreen { height: 100% }
+	#close-fullscreen a {
 		display: inline-block;
 		width: 100%;
 		text-decoration: none;
+		background: #aaa;
 	}
-	.large a:hover { background: #fff }
+	#close-fullscreen a:hover { background: #fff }
+	@media (min-width: 1500px) {
+		#nav { right: calc(96% - 144px) }
+		.fullscreen #nav {
+			top: 0;
+			right: calc(100% - 40px);
+			left: auto;
+			transition: right 0.5s, top 0.2s, opacity 0.3s, z-index 1s;
+		}
+		.fullscreen #nav:hover {
+			right: calc(96% - 144px);
+			z-index: 2;
+			transition: right 0.5s, opacity 0.3s;
+		}
+		.fullscreen #nav:not(:hover) { opacity: 0.3 }
+		.fullscreen #content { margin: 6px 0 6px 46px }
+		.fullscreen.noscrl #nav { display: none }
+	}
 	#save.progress {
 		cursor: progress;
 		color: #4ff;
@@ -226,22 +240,6 @@
 	.fl:active {
 		transition: fill 0.1s;
 		fill: #c00;
-	}
-	@media (min-width: 1500px) {
-		#nav { right: calc(96% - 144px) }
-		.fullscreen #nav {
-			top: 32px;
-			right: calc(100% - 40px);
-			left: auto;
-			transition: right 0.5s, opacity 0.3s, z-index 1s;
-		}
-		.fullscreen #nav:hover {
-			right: calc(96% - 144px);
-			z-index: 2;
-			transition: right 0.5s, opacity 0.3s;
-		}
-		.fullscreen #nav:not(:hover) { opacity: 0.3 }
-		.fullscreen #content { margin: 6px 0 6px 46px }
 	}
 </style>
 <script>
