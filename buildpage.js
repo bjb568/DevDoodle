@@ -667,19 +667,26 @@ http.createServer(function(req,	res) {
 																	i = -1;
 																}
 															}
-															res.write(data.toString()
-																.replaceAll(
-																	['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-																	[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-																).replace('$edit-tags', tageditstr).replaceAll(
-																	['$qcommentstr', '$answers', '$tags', '$rep'],
-																	[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
-																).replaceAll(
-																	['$askdate', '$op-name', '$op-rep', '$op-pic'],
-																	[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-																).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-															);
-															respondPageFooter(res);
+															dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+																if (err) throw err;
+																res.write(data.toString()
+																	.replace('$langs', JSON.stringify(langs))
+																	.replaceAll(
+																		['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+																		[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																	).replaceAll(
+																		['$edit-tags', '$raw-edit-tags'],
+																		[tageditstr, question.tags.join()]
+																	).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
+																		['$qcommentstr', '$answers', '$tags', '$rep'],
+																		[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+																	).replaceAll(
+																		['$askdate', '$op-name', '$op-rep', '$op-pic'],
+																		[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																	).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+																);
+																respondPageFooter(res);
+															});
 														}
 													});
 												}
