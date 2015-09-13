@@ -890,7 +890,7 @@ wss.on('connection', function(tws) {
 							body: 'JSON error.'
 						}));
 					}
-					if (message.event == 'post') {
+					if (message.event == 'comment') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in and have 20 reputation to comment.'
@@ -955,7 +955,7 @@ wss.on('connection', function(tws) {
 								}
 							});
 						});
-					} else if (message.event == 'vote') {
+					} else if (message.event == 'c-vote') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in and have 20 reputation to vote on comments.'
@@ -1003,7 +1003,7 @@ wss.on('connection', function(tws) {
 								score: post.votes ? post.votes.length + 1 : 1
 							}));
 						});
-					} else if (message.event == 'unvote') {
+					} else if (message.event == 'c-unvote') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in to vote on comments.'
