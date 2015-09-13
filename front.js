@@ -1156,7 +1156,7 @@ var server = https.createServer({
 								code: post.code,
 								type: post.type,
 								tags: tags,
-								gr: post.gr,
+								gr: post.gr == 'on',
 								self: post.self == 'on',
 								bounty: post.bounty == 'on',
 								user: user.name,
