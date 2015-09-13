@@ -26,6 +26,7 @@ addEventListener('DOMContentLoaded', function() {
 		taCont = document.getElementById('ta-cont'),
 		output = document.getElementById('output'),
 		save = document.getElementById('save'),
+		fork = document.getElementById('fork'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
 	code.lastSelectionStart = 0;
@@ -56,9 +57,9 @@ addEventListener('DOMContentLoaded', function() {
 			code.whichSelection = true;
 		}
 		var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
-		if (cursorPos != code.lastCursorPos) {
+		var oldCaret = document.getElementById('caret');
+		if (cursorPos != code.lastCursorPos || !oldCaret) {
 			code.lastCursorPos = cursorPos;
-			var oldCaret = document.getElementById('caret');
 			if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 			var caret = document.createElement('span');
 			caret.id = 'caret';
@@ -104,6 +105,7 @@ addEventListener('DOMContentLoaded', function() {
 		endChars[93] = ']';
 		endChars[125] = '}';
 		if (e.keyCode == 13) {
+			if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 			var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
 			this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 			oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
@@ -151,6 +153,10 @@ addEventListener('DOMContentLoaded', function() {
 			this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
 			this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 			e.preventDefault();
+		} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
+			this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionStart);
+			this.selectionEnd = this.selectionStart = oldSelectionStart;
+			e.preventDefault();
 		}
 	});
 	code.addEventListener('keydown', function(e) {
@@ -167,6 +173,16 @@ addEventListener('DOMContentLoaded', function() {
 				this.selectionEnd = --oldSelectionStart;
 				e.preventDefault();
 			}
+		}
+	});
+	addEventListener('keypress', function(e) {
+		if (e.keyCode == 13 && e.metaKey) {
+			e.preventDefault();
+			document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+		} else if (e.keyCode == 115 && e.metaKey) {
+			e.preventDefault();
+			var target = e.shiftKey ? fork : save;
+			if (target) target.dispatchEvent(new MouseEvent('click'));
 		}
 	});
 	var fullScreen = false,
@@ -289,7 +305,7 @@ addEventListener('DOMContentLoaded', function() {
 					} else if (res == 'Success') {
 						edit.hidden = true;
 						var title = document.getElementById('title');
-						title.textContent = edit.value.substr(0, 92) || 'Untitled';
+						document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
 						if (!edit.value) edit.value = 'Untitled';
 						title.hidden = false;
 					} else alert('Unknown error. Response was: ' + res);
@@ -337,7 +353,6 @@ addEventListener('DOMContentLoaded', function() {
 		document.getElementById('reset').onclick = function() {
 			location.hash = '';
 			history.replaceState('', document.title, window.location.pathname);
-			document.body.scrollTop = innerHeight;
 		};
 		socket.onmessage = function(e) {
 			console.log(e.data);
@@ -352,7 +367,7 @@ addEventListener('DOMContentLoaded', function() {
 				div.classList.add('comment');
 				div.innerHTML = ' ' + markdown(data.body);
 				if (myRep >= 50) {
-					div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
+					div.insertBefore(document.getElementById('meta').nextElementSibling.cloneNode(true), div.firstChild);
 					div.firstChild.firstChild.onclick = upvoteComment;
 					var score = document.createElement('span');
 					score.classList.add('score');
@@ -372,8 +387,13 @@ addEventListener('DOMContentLoaded', function() {
 				permalink.appendChild(agot(data.time));
 				permalink.href = '#' + (div.id = 'c' + data.id);
 				sig.appendChild(permalink);
-				div.appendChild(sig);
+				var currentNode = div;
+				while (!sig.parentNode) {
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					else currentNode = currentNode.lastChild;
+				}
 				document.getElementById('comments').appendChild(div);
+				div.scrollIntoView(true);
 			} else if (data.event == 'scorechange') {
 				var c = document.getElementById('c' + data.id);
 				if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
@@ -383,7 +403,24 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		};
 		socket.onclose = function() {
-			if (confirm('Connection error. Reload?')) location.reload();
+			var ta = document.getElementById('commentta');
+			if (ta.disabled) return;
+			ta.blur();
+			ta.disabled = true;
+			var warning = document.createElement('div');
+			warning.className = 'connection-error';
+			warning.appendChild(document.createTextNode('Connection error. '));
+			var link = document.createElement('a');
+			link.appendChild(document.createTextNode('Reload?'));
+			link.href = '';
+			warning.appendChild(link);
+			var addcomment = document.getElementById('addcomment');
+			addcomment.parentNode.insertAfter(warning, addcomment);
+			addcomment.hidden = true;
+			setInterval(function() {
+				if (socket.readyState == 1) return location.reload(true);
+				socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
+			}, 5000);
 		};
 		var deletebutton = document.getElementById('delete');
 		if (deletebutton) {
@@ -515,7 +552,18 @@ function highlight(codeBlock, input) {
 				linenum.dataset.linenum = ++line;
 				codeBlock.appendChild(linenum);
 			}
-		} else if (c == '/' && ['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1 && input.substr(0, i).match(/(^|=|\+|-|\*|\/|<|>|%|\?|:|&|\||\(|\)|\{|\}|\[|\]|!)\s*$/)) {
+		} else if (
+				c == '/'
+				&& (
+					(
+						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
+						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:])\s*$/)
+					) || (
+						codeBlock.lastElementChild
+						&& codeBlock.lastElementChild.firstChild.nodeValue == 'return'
+					)
+				)
+			) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var regex = document.createElement('span');
@@ -653,13 +701,13 @@ function highlight(codeBlock, input) {
 				regexClose.appendChild(document.createTextNode('/'));
 				regex.appendChild(regexClose);
 			} else warnings.push([i, 'Unterminated regex literal.']);
-			var modifiers = input.substr(i + 1).match(/^[igm]+/);
+			var modifiers = input.substr(i + 1).match(/^[igm]*/);
 			if (modifiers) {
 				var regexModifier = document.createElement('span');
 				regexModifier.className = 'modifier';
-				regexModifier.appendChild(document.createTextNode(modifiers));
+				regexModifier.appendChild(document.createTextNode(modifiers[0]));
 				regex.appendChild(regexModifier);
-				i += modifiers.length;
+				i += modifiers[0].length;
 			}
 			codeBlock.appendChild(regex);
 		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && c != c.toLowerCase()) {
@@ -922,7 +970,7 @@ function highlight(codeBlock, input) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var start = i;
-			if (c == '0' && (c = input[++i])) {
+			if (c == '0' && input[i + 1] != '.' && (c = input[++i])) {
 				if (c.toLowerCase() == 'b') {
 					while ('01'.indexOf(input[++i]) != -1);
 				} else if (c.toLowerCase() == 'o') {

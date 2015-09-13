@@ -38,7 +38,8 @@
 	*::-webkit-input-placeholder { color: #888 }
 	*::-moz-placeholder { color: #999 }
 	html, #content, #output, #footer, #main { background: #000 }
-	#content { padding-bottom: 4px }
+	#main { padding: 0 }
+	#content { padding: 0 4px }
 	#main a:hover { color: #4ff }
 	#main a:active { color: #06f }
 	#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -57,6 +58,10 @@
 	#ta-cont, #output { width: 95% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
+	#edit-title {
+		width: 400px;
+		max-width: 100%;
+	}
 	#ta-cont {
 		margin-bottom: 8px;
 		position: relative;
@@ -135,27 +140,41 @@
 		height: 100%;
 		z-index: 1;
 	}
-	.large {
+	#close-fullscreen {
 		position: fixed;
 		z-index: 1;
 		top: 0;
 		left: 0;
 		width: 32px; height: 32px;
 		line-height: 32px;
-		background: #aaa;
+		background: #000;
 		text-align: center;
 	}
-	@media (max-width: 1499px) {
-		.large {
-			height: 100%;
-		}
-	}
-	.large a {
+	#close-fullscreen { height: 100% }
+	#close-fullscreen a {
 		display: inline-block;
 		width: 100%;
 		text-decoration: none;
+		background: #aaa;
 	}
-	.large a:hover { background: #fff }
+	#close-fullscreen a:hover { background: #fff }
+	@media (min-width: 1500px) {
+		#nav { right: calc(96% - 144px) }
+		.fullscreen #nav {
+			top: 0;
+			right: calc(100% - 40px);
+			left: auto;
+			transition: right 0.5s, top 0.2s, opacity 0.3s, z-index 1s;
+		}
+		.fullscreen #nav:hover {
+			right: calc(96% - 144px);
+			z-index: 2;
+			transition: right 0.5s, opacity 0.3s;
+		}
+		.fullscreen #nav:not(:hover) { opacity: 0.3 }
+		.fullscreen #content { margin: 6px 0 6px 46px }
+		.fullscreen.noscrl #nav { display: none }
+	}
 	#save.progress {
 		cursor: progress;
 		color: #4ff;
@@ -222,80 +241,6 @@
 		transition: fill 0.1s;
 		fill: #c00;
 	}
-	@media (min-width: 1500px) {
-		#nav { right: calc(96% - 144px) }
-		.fullscreen #nav {
-			top: 32px;
-			right: calc(100% - 40px);
-			left: auto;
-			transition: right 0.5s, opacity 0.3s, z-index 1s;
-		}
-		.fullscreen #nav:hover {
-			right: calc(96% - 144px);
-			z-index: 2;
-			transition: right 0.5s, opacity 0.3s;
-		}
-		.fullscreen #nav:not(:hover) { opacity: 0.3 }
-		.fullscreen #content { margin: 6px 0 6px 46px }
-	}
-	code .line::before {
-		left: 0;
-		content: attr(data-linenum);
-		color: #aaa;
-		display: inline-block;
-		-webkit-user-select: none;
-		-moz-user-select: none;
-		user-select: none;
-		padding: 0 2px 0 4px;
-		position: absolute;
-	}
-	code .line.warning::before {
-		color: #ff6;
-		font-weight: bold;
-	}
-	#ta-cont.line-dig0 { padding-left: 0.8em }
-	#ta-cont.line-dig1 { padding-left: 1.4em }
-	#ta-cont.line-dig2 { padding-left: 2em }
-	#ta-cont.line-dig3 { padding-left: 2.6em }
-	#ta-cont.line-dig4 { padding-left: 3.2em }
-	#ta-cont.line-dig5 { padding-left: 3.8em }
-	#ta-cont.line-dig6 { padding-left: 4.4em }
-	#ta-cont.line-dig7 { padding-left: 5em }
-	#ta-cont.line-dig0 #code { width: calc(100% - 0.8em - 7px) }
-	#ta-cont.line-dig1 #code { width: calc(100% - 1.4em - 7px) }
-	#ta-cont.line-dig2 #code { width: calc(100% - 2em - 7px) }
-	#ta-cont.line-dig3 #code { width: calc(100% - 2.6em - 7px) }
-	#ta-cont.line-dig4 #code { width: calc(100% - 3.2em - 7px) }
-	#ta-cont.line-dig5 #code { width: calc(100% - 3.8em - 7px) }
-	#ta-cont.line-dig6 #code { width: calc(100% - 4.4em - 7px) }
-	#ta-cont.line-dig7 #code { width: calc(100% - 5em - 7px) }
-	code .inline-comment { color: #888 }
-	code .keyword { color: #fd3 }
-	code .constant, code .string .escape { color: #df0 }
-	code .string { color: #6C3 }
-	code .regex { color: #ffa }
-	code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
-	code .regex .escape { color: #afa }
-	code .regex .backreference { color: #0f0 }
-	code .regex .special { color: #faa }
-	code .regex .grouper { color: #fff }
-	code .regex .charclass { color: #ffd }
-	code .regex .charclass { background: #730 }
-	code .regex .charclass .range { color: #fed }
-	code .regex .charclass .punctuation { color: #f90 }
-	code .regex .quantifier { color: #2af }
-	code .regex .quantifier .punctuation { color: #8cf }
-	code .regex .modifier { font-weight: bold }
-	code .operator { color: #ff8 }
-	code .operator.assigns, code .equals { color: #8ff }
-	code .argument, code .number { color: #3df }
-	code .newvar { font-weight: bold }
-	code .function-name { color: #f60 }
-	code .function-call { color: #f90 }
-	code .prototype { color: #f00 }
-	code .punctuation, code .dot { color: #ddd }
-	code .capvar { color: #9ac }
-	code .browser { color: #9bd }
 </style>
 <script>
 	var mine = $mine,

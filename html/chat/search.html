@@ -119,8 +119,8 @@
 			} catch(e) {
 				return alert('JSON Error. Response was: ' + res);
 			}
-			for (var i = 0; i &lt; res.results.length; i++) {
-				var data = res.results[i],
+			for (var i = 0; i &lt; res.length; i++) {
+				var data = res[i],
 					div = document.createElement('div');
 				div.classList.add('comment');
 				if (data.deleted) div.classList.add('deleted');

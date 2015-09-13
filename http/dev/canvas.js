@@ -39,6 +39,7 @@ var none = 'transparent', trans = none,
 	height = 400,
 	scale = canvas.width / canvas.offsetWidth;
 addEventListener('resize', function() {
+	if (enabledFullScreen) canvas.style.zoom = 100 / devicePixelRatio + '%';
 	scale = canvas.width / canvas.offsetWidth;
 	if (enabledFullScreen) {
 		size();
@@ -55,6 +56,7 @@ Number.prototype.bound = function(l, h) {
 };
 function requestFullLayoutMode() {
 	enabledFullScreen = requestEnableFullScreen = true;
+	canvas.style.zoom = 100 / devicePixelRatio + '%';
 	document.getElementById('console').style.height = 'auto';
 	document.getElementById('console').style.maxHeight = '240px';
 	size();
@@ -149,8 +151,8 @@ function bg() {
 }
 function size(x, y) {
 	if (enabledFullScreen) {
-		x = innerWidth;
-		y = innerHeight - document.getElementById('console').offsetHeight - 32;
+		x = innerWidth * devicePixelRatio;
+		y = (innerHeight - document.getElementById('console').offsetHeight - 32) * devicePixelRatio;
 	}
 	canvas.width = width = x;
 	canvas.height = height = y;
@@ -209,6 +211,10 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		var cRect = canvas.getBoundingClientRect();
 		mouseX = (e.clientX - Math.round(cRect.left)) / cRect.width * width;
 		mouseY = (e.clientY - Math.round(cRect.top)) / cRect.height * height;
+		if (enabledFullScreen) {
+			mouseX *= devicePixelRatio;
+			mouseY *= devicePixelRatio;
+		}
 		mouseX = mouseX.bound(0, width);
 		mouseY = mouseY.bound(0, height);
 	});

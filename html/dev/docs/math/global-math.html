@@ -1,6 +1,7 @@
 <h1>Globally-scoped Math</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * In the DevDoodle Canvas Library, all properties and methods of Math are applied to the global scope for the user's convenience.
  * This Mozilla Developer Network page lists properties and methods of Math: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math
 */
@@ -22,35 +23,11 @@ for (var i = -200; i &lt; 200; i++) {
  * Number.prototype.bound(l[, h]): http://devdoodle.net/dev/docs/math/number-proto-bound
  * print(input): http://devdoodle.net/dev/docs/console/print-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

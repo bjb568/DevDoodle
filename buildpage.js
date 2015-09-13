@@ -76,6 +76,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (clean) inhead += '<script>var footerOff = true;</script>';
 	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml';
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
+	if (!header['X-Frame-Options']) header['X-Frame-Options'] = 'DENY';
 	if (user.name) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
@@ -259,7 +260,7 @@ http.createServer(function(req,	res) {
 	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
-			if (user.name) {
+			if (user) {
 				dbcs.users.update({name: user.name}, {
 					$set: {
 						level: 1,
@@ -303,16 +304,26 @@ http.createServer(function(req,	res) {
 				};
 			var order = {};
 			order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
+			var num = 0;
 			dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(function(err, cUser) {
 				if (err) throw err;
-				if (cUser) dstr +=
-					'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-					'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
-					'\n\t</div>\n';
-				else {
+				if (cUser) {
+					num++;
+					dstr +=
+						'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
+						'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
+						'\n\t</div>\n';
+				} else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
-						res.write(data.toString().replace('$users', dstr).replace('"' + orderBy + '"', '"' + orderBy + '" selected=""').replace('"' + orderDir + '"', '"' + orderDir + '" selected=""').replace('"' + where + '"', '"' + where + '" selected=""'));
+						res.write(
+							data.toString()
+							.replace('$num', num ? (num == 1 ? '1 user found' : num + ' users found') : '<span class="red">0 users found</span>')
+							.replace('$users', dstr)
+							.replace('"' + orderBy + '"', '"' + orderBy + '" selected=""')
+							.replace('"' + orderDir + '"', '"' + orderDir + '" selected=""')
+							.replace('"' + where + '"', '"' + where + '" selected=""')
+						);
 						respondPageFooter(res);
 					});
 				}
@@ -325,7 +336,7 @@ http.createServer(function(req,	res) {
 			var questions = 0;
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
-				res.write('<h1><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
+				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
 				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
 				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
@@ -334,22 +345,22 @@ http.createServer(function(req,	res) {
 				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
 				res.write('</div>\n');
 				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
-				res.write('<div class="clearfix">');
-				res.write('<div class="half">');
+				res.write('<div class="resp-flex">');
+				res.write('<section>');
 				res.write('<h2>Questions</h2>');
-				res.write('<ul>');
+				res.write('<div class="column-medium"><ul>');
 				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
 					if (question) {
 						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
 						questions++;
 					} else {
-						res.write('</ul>');
+						res.write('</ul></div>');
 						if (!questions) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any questions.</p>');
-						res.write('</div>');
-						res.write('<div class="half">');
+						res.write('</section>');
+						res.write('<section>');
 						res.write('<h2>Answers</h2>');
-						res.write('<ul>');
+						res.write('<div class="column-medium"><ul>');
 						var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
 							answers = 0;
 						var answerHandler = function(err, answer) {
@@ -362,11 +373,11 @@ http.createServer(function(req,	res) {
 								});
 								answers++;
 							} else {
-								res.write('</ul>');
+								res.write('</ul></div>');
 								if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
+								res.write('</section>');
 								res.write('</div>');
-								res.write('</div>');
-								res.write('<section class="lim-programs pad">\n');
+								res.write('<section class="lim-programs resp-block">\n');
 								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
 								var programs = 0;
 								dbcs.programs.find({
@@ -440,18 +451,11 @@ http.createServer(function(req,	res) {
 			location: '/',
 			'Set-Cookie': 'id='
 		});
-		dbcs.users.update({
-			cookie: {
-				$elemMatch: {
-					token: cookie.parse(req.headers.cookie || '').id,
-					created: {$gt: new Date().getTime() - 2592000000}
-				}
-			}
-		}, {$set: {cookie: []}});
+		dbcs.users.update({name: user.name}, {$set: {cookie: []}});
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a></small></h1>\n');
+			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
@@ -543,11 +547,14 @@ http.createServer(function(req,	res) {
 		respondPage('New Question', user, req, res, function() {
 			fs.readFile('./html/qa/ask.html', function(err, data) {
 				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
+				dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+					if (err) throw err;
+					res.write(data.toString().replace('$langs', JSON.stringify(langs)));
+					respondPageFooter(res);
+				});
 			});
 		});
-	} else if (i = req.url.pathname.match(/\/qa\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
@@ -565,7 +572,7 @@ http.createServer(function(req,	res) {
 								dbcs.users.findOne({name: answer.user}, function(err, answerPoster) {
 									if (err) throw err;
 									answerstr += (
-										'<div id="' + answer._id + '" class="answer">' +
+										'<div id="a' + answer._id + '" class="answer hglt pad br">' +
 											'<div class="ctrl pad lft">' +
 												'<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>' +
 												'<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>' +
@@ -574,7 +581,7 @@ http.createServer(function(req,	res) {
 												'<a class="ctrlicon delbtn" title="Delete">✕</a>' +
 											'</div>' +
 											'<div class="a-content">' +
-												'<div class="a-body hglt pad br">' + markdown(answer.body) + '</div>' +
+												'<div class="a-body">' + markdown(answer.body) + '</div>' +
 												'<div class="clearfix">' +
 													'<div class="rit">' +
 														'<div>Answered <time datetime="' + new Date(answer.time).toISOString() + '"></time> by</div>' +
@@ -608,6 +615,11 @@ http.createServer(function(req,	res) {
 										var votes = comment.votes || [],
 											voted;
 										for (var i in votes) if (votes[i].user == user.name) voted = true;
+										var commentBody = markdown(comment.body),
+											endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+										commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+											+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+											+ commentBody.substring(commentBody.length - endTagsLength);
 										commentstr +=
 											'<div id="c' + comment._id + '" class="comment">' +
 											'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
@@ -620,7 +632,7 @@ http.createServer(function(req,	res) {
 													'</span>'
 												) :
 												''
-											) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
+											) + commentBody + '</div>';
 									} else {
 										fs.readFile('./html/qa/question.html', function(err, data) {
 											if (err) throw err;
@@ -655,19 +667,26 @@ http.createServer(function(req,	res) {
 																	i = -1;
 																}
 															}
-															res.write(data.toString()
-																.replaceAll(
-																	['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-																	[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-																).replace('$edit-tags', tageditstr).replaceAll(
-																	['$qcommentstr', '$answers', '$tags', '$rep'],
-																	[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
-																).replaceAll(
-																	['$askdate', '$op-name', '$op-rep', '$op-pic'],
-																	[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-																).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-															);
-															respondPageFooter(res);
+															dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+																if (err) throw err;
+																res.write(data.toString()
+																	.replace('$langs', JSON.stringify(langs))
+																	.replaceAll(
+																		['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+																		[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																	).replaceAll(
+																		['$edit-tags', '$raw-edit-tags'],
+																		[tageditstr, question.tags.join()]
+																	).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
+																		['$qcommentstr', '$answers', '$tags', '$rep'],
+																		[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+																	).replaceAll(
+																		['$askdate', '$op-name', '$op-rep', '$op-pic'],
+																		[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																	).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+																);
+																respondPageFooter(res);
+															});
 														}
 													});
 												}
@@ -708,13 +727,16 @@ http.createServer(function(req,	res) {
 					dbcs.chat.find({
 						deleted: {$exists: false},
 						room: {$in: publicRooms}
-					}).sort({_id: -1}).limit(12).each(function(err, doc) {
+					}).sort({_id: -1}).limit(12).each(function(err, comment) {
 						if (err) throw err;
-						if (doc) res.write(
-							'<div class="comment">' + markdown(doc.body) + '<span class="c-sig">' +
-							'-<a href="/user/' + doc.user + '">' + doc.user + '</a>, <a href="' + doc.room + '#' + doc._id + '" title="Permalink"><time datetime="' + new Date(doc.time).toISOString() + '"></time> in ' + roomnames[doc.room] + '</a></span></div>\n'
-						);
-						else respondPageFooter(res, true);
+						if (comment) {
+							var commentBody = markdown(comment.body),
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+							commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+								+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a></span>'
+								+ commentBody.substring(commentBody.length - endTagsLength);
+							res.write('<div class="comment">' + commentBody + '</div>');
+						} else respondPageFooter(res, true);
 					});
 				}
 			});
@@ -742,7 +764,7 @@ http.createServer(function(req,	res) {
 				});
 			});
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
@@ -803,7 +825,7 @@ http.createServer(function(req,	res) {
 				});
 			}
 		});
-	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)/)) {
+	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)$/)) {
 		dbcs.chat.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
 			if (!doc) return errorPage[404](req, res, user);
@@ -906,8 +928,8 @@ http.createServer(function(req,	res) {
 					data.toString()
 					.replace(/<section id="meta">[^]+<\/section>/, '')
 					.replaceAll(
-						['$mine', '$id', '$title', '$code'],
-						['false', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+						['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
+						['false', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 					)
 				);
 				respondPageFooter(res);
@@ -932,9 +954,9 @@ http.createServer(function(req,	res) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
 			if (!program) return errorPage[404](req, res, user);
-			respondPage(program.deleted ? '[Deleted]' : program.title || 'Untitled', user, req, res, function() {
-				if (program.deleted) {
-					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a id="undelete">[undelete]</a>');
+			if (program.deleted) {
+				respondPage('[Deleted]', user, req, res, function() {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nYou deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a class="red" id="undelete">[undelete]</a>');
 					else if (user.level >= 4) {
 						var deletersstr = '',
 							i = program.deleted.by.length;
@@ -943,7 +965,7 @@ http.createServer(function(req,	res) {
 							if (i == 1) deletersstr += ', and ';
 							else if (i != 0) deletersstr += ', ';
 						}
-						res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a id="undelete">[undelete]</a>');
+						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nThis program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a class="red" id="undelete">[undelete]</a>');
 					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
 					res.write('\n<script>\n');
 					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
@@ -956,91 +978,99 @@ http.createServer(function(req,	res) {
 					res.write('\t\t\t});\n');
 					res.write('\t}\n');
 					res.write('</script>');
-					return respondPageFooter(res);
-				}
-				dbcs.votes.findOne({
-					user: user.name,
-					program: program._id
-				}, function(err, vote) {
-					if (err) throw err;
-					if (!vote) vote = {val: 0};
-					dbcs.users.findOne({name: program.user}, function(err, op) {
+					respondPageFooter(res);
+				}, {}, 404);
+			} else {
+				respondPage(program.title || 'Untitled', user, req, res, function() {
+					dbcs.votes.findOne({
+						user: user.name,
+						program: program._id
+					}, function(err, vote) {
 						if (err) throw err;
-						var commentstr = '';
-						dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+						if (!vote) vote = {val: 0};
+						dbcs.users.findOne({name: program.user}, function(err, op) {
 							if (err) throw err;
-							if (comment) {
-								var votes = comment.votes || [],
-									voted;
-								for (var i in votes) if (votes[i].user == user.name) voted = true;
-								commentstr +=
-									'<div id="c' + comment._id + '" class="comment">' +
-									'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-									(
-										user.rep >= 50 ?
+							var commentstr = '';
+							dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
+								if (err) throw err;
+								if (comment) {
+									var votes = comment.votes || [],
+										voted;
+									for (var i in votes) if (votes[i].user == user.name) voted = true;
+									var commentBody = markdown(comment.body),
+										endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
+									commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
+										+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
+										+ commentBody.substring(commentBody.length - endTagsLength);
+									commentstr +=
+										'<div id="c' + comment._id + '" class="comment">' +
+										'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
 										(
-											'<span class="sctrls">' +
-											'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-											'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-											'</span>'
-										) :
-										''
-									) + markdown(comment.body) + '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span></div>';
-							} else {
-								dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
-									if (err) throw err;
-									var forks = [];
-									dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											user.rep >= 50 ?
+											(
+												'<span class="sctrls">' +
+												'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+												'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+												'</span>'
+											) :
+											''
+										) + commentBody + '</div>';
+								} else {
+									dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
 										if (err) throw err;
-										if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
-										else {
-											if (program.type == 1) {
-												fs.readFile('./html/dev/canvas.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$code', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else if (program.type == 2) {
-												fs.readFile('./html/dev/html.html', function(err, data) {
-													if (err) throw err;
-													res.write(
-														data.toString()
-														.replaceAll(
-															['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
-															[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
-														).replaceAll(
-															['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-															[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-														).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-														.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-														.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-														.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-														.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-													);
-													respondPageFooter(res);
-												});
-											} else throw 'Invalid program type for id: ' + program._id;
-										}
+										var forks = [];
+										dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
+											if (err) throw err;
+											if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
+											else {
+												if (program.type == 1) {
+													fs.readFile('./html/dev/canvas.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$code', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else if (program.type == 2) {
+													fs.readFile('./html/dev/html.html', function(err, data) {
+														if (err) throw err;
+														res.write(
+															data.toString()
+															.replaceAll(
+																['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+															).replaceAll(
+																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
+															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+														);
+														respondPageFooter(res);
+													});
+												} else throw 'Invalid program type for id: ' + program._id;
+											}
+										});
 									});
-								});
-							}
+								}
+							});
 						});
 					});
-				});
-			}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
+				}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
+			}
 		});
 	} else if (req.url.pathname == '/learn/') {
 		respondPage(null, user, req, res, function() {

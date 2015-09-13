@@ -1,6 +1,7 @@
 <h1>canvas and ctx</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The DevDoodle Canvas Library provides much of the functionality needed for small demonstrations or animations, but advanced canvas functionality can be accesed thru `canvas`, which represents the canvas element, and `ctx`, which represents the 2D canvas context.
  * Details on how to use these variables can be found on Mozilla Developer Network: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial
 */
@@ -13,7 +14,7 @@ print(ctx.measureText('Hi!').width);
 font('20px arial');
 print(ctx.measureText('Hi!').width);
 
-//You can also attach DOM event listeners.
+//You can also attach event listeners.
 var i = 0;
 canvas.addEventListener('mousedown', function() {
 	bg(0);
@@ -22,35 +23,10 @@ canvas.addEventListener('mousedown', function() {
 	i++;
 	text(0, 20, 'You\'ve pressed the mouse ' + i + ' times!');
 }, false);</textarea>
+		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

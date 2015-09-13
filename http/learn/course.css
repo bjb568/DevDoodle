@@ -16,7 +16,7 @@ h2 {
 	margin-top: 8px;
 }
 #text {
-	background: rgba(255, 255, 255, .8);
+	background: rgba(255, 255, 255, .85);
 	color: #000;
 	padding: 4px 6px;
 	position: relative;
@@ -27,6 +27,7 @@ h2 {
 	color: #fff;
 	line-height: 125%;
 	resize: none;
+	font: 14px monospace;
 }
 @media (min-width: 801px) {
 	#text { margin-right: 8px }
@@ -36,12 +37,12 @@ h2 {
 @media (min-width: 1200px) {
 	.row, #text, #html, #output { height: 100% }
 	#text {
-		width: 400px;
+		width: 40%;
 		margin-right: 0;
 	}
 	#html, #output {
-		width: calc(50% - 216px);
-		margin-top: 0; margin-left: 16px;
+		width: calc(30% - 4px);
+		margin-top: 0; margin-left: 4px;
 	}
 	#text-inner {
 		overflow: auto;
@@ -96,3 +97,10 @@ h2 {
 }
 .passed { background: rgba(100, 220, 100, .6) }
 .failed { background: rgba(220, 100, 100, .6) }
+aside {
+	max-width: 60em;
+	margin: 0.8em 0;
+	font-size: 0.9em;
+	color: #444;
+}
+.passed h2, .failed h2 { border: none }

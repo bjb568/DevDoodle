@@ -125,11 +125,17 @@
 	}
 	#step4 h3 { margin-bottom: 4px }
 	#types, #tags, #options { padding-left: 32px }
+	#langsug {
+		padding: 8px 3px 4px;
+		background: #eee;
+		margin-top: -5px;
+		box-shadow: 1px 3px 3px #444;
+	}
 	#langsug span {
 		cursor: pointer;
 		background: #afa;
 		padding: 2px 6px;
-		box-shadow: 1px 1px 2px #666;
+		box-shadow: 1px 1px 1px #444;
 	}
 	fieldset.hide, aside.hide:not(:hover) { opacity: 0.15 }
 	fieldset.hide { pointer-events: none }
@@ -160,6 +166,7 @@
 		position: fixed;
 		overflow: hidden;
 		z-index: 1;
+		background: #ddd;
 	}
 	#preview h1 small { cursor: pointer }
 	.tint::after {
@@ -175,15 +182,18 @@
 		background: #04f;
 		padding: 6px 24px;
 		border-radius: 4px;
-		transition: background 0.4s;
+		transition: background 0.2s;
 		margin-top: 12px;
+		border: 1px solid #000;
+		cursor: pointer;
 	}
 	#submit:hover {
 		background: #6cf;
 		color: #000;
-		transition: background 0.2s;
+		transition: background 0.1s;
 	}
 	#submit:active, #submit.working { background: #2af }
+	#err1.tag-warning { background: #ff0}
 </style>
 <script>
 	var form = document.getElementById('form'),
@@ -216,7 +226,7 @@
 		}
 	});
 	var step = 0,
-		langs = ['JavaScript', 'HTML', 'CSS', 'C++'],
+		langs = $langs,
 		waiting = false;
 	lang.addEventListener('keyup', function() {
 		if (!(langsug.hidden = !this.value)) {
@@ -299,6 +309,10 @@
 			var child;
 			while (child = tags.firstChild) tags.removeChild(child);
 			if (res.indexOf('Error:') == 0) return alert(res);
+			if (res == '[]' &amp;&amp; !err1.textContent){
+				err1.classList.add('tag-warning');
+				return err1.textContent = 'No tags found for language.';
+			}
 			try {
 				res = JSON.parse(res);
 			} catch(e) {
@@ -342,6 +356,9 @@
 				var ref = document.getElementById('tag' + i).parentNode;
 				ref.parentNode.insertAfter(divs[i], ref);
 			}
+			if (!err1.classList.contains('tag-warning')) return;
+			err1.classList.remove('tag-warning');
+			form.onsubmit();
 		}, 'lang=' + encodeURIComponent(lang.value));
 	};
 	lang.onblur = findTags;
@@ -351,6 +368,13 @@
 			if (waiting) return;
 		}
 		if (step == 0) {
+			if (!tags.children.length) {
+				lang.focus();
+				err1.classList.add('tag-warning');
+				err1.textContent = 'No tags found for language.';
+				return;
+			}
+			err1.classList.remove('tag-warning');
 			if (title.value.length &lt; 12) {
 				title.focus();
 				err1.textContent = 'Title must be at least 12 characters long.';

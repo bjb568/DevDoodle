@@ -1,6 +1,7 @@
 <h1>line(x1, y1, x2, y2)</h1>
 <div id="row" class="row">
-	<textarea id="code" autofocus="">/**
+	<div id="ta-cont">
+		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The line() function draws a line on the canvas based on the 2 coordinates passed to it.
  * 
  * Usage:
@@ -13,7 +14,7 @@ stroke(50, 70, 50);
 strokeWidth(2);
 
 line(100, 100, 200, 200); // As you can see, the line goes from (100, 100) to (200, 200) on the canvas.
-	
+
 // If you set the stroke width high enough, the line becomes rounded on the ends.
 
 strokeWidth(10);
@@ -24,35 +25,11 @@ line(25, 300, 250, 300);
  * stroke([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/stroke-func
  * strokeWidth(w): http://devdoodle.net/dev/docs/fill/strokewidth-func
 */</textarea>
+ 		<code id="code-display"></code>
+	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-<style>
-	#code {
-		color: #fff;
-		background: #000;
-		font-family: monospace;
-		font-size: 1rem;
-		resize: none;
-		margin-bottom: 8px;
-	}
-	#code, #output { height: 100% }
-	#output { float: right }
-	#code { width: calc(100% - 456px) }
-	#output { width: 450px }
-	@media (max-width: 1400px) {
-		#code, #output { zoom: 0.95 }
-	}
-	@media (max-width: 1200px) {
-		#code, #output { zoom: 0.9 }
-	}
-	@media (max-width: 1000px) {
-		#code, #output { zoom: 0.85 }
-	}
-	@media (max-width: 800px) {
-		#output { width: 44% }
-		#code { width: 55% }
-	}
-</style>
+
 <script>
 	var footerOff = true,
 		noPageOverflow = 400,

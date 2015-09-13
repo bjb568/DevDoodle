@@ -1,0 +1,43 @@
+Intro to HTML Recap
+<div class="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Intro to HTML</h1>
+			<h2>Recap</h2>
+			<p>Congratulations! You now know the basics of HTML. Let's review:</p>
+			<ul>
+				<li>HTML stands for Hyper Text Markup Language — it's used to give <em>semantic meaning</em> to plain text on the web.</li>
+				<li>HTML centers around <em>elements</em> which you write using <em>tags</em>.</li>
+				<li>Text is wrapped between a start tag and an end tag, where only the end tag has a slash</li>
+				<li>The basic HTML document consists of a doctype, a root html element, and head and body sections. Metadata like the page title goes in the head element, while visible content like paragraphs go in the body element</li>
+			</ul>
+			<p>Next, we'll learn more about tags, and how to format text.</p>
+			<form action="../../basic-tags/">
+				<button id="check" type="submit">Move on</button>
+			</form>
+		</div>
+		<div id="cntrls"><a href="../4/" class="lft">Back</a> <a href="../../basic-tags/" class="rit">Next ❯</a></div>
+	</div>
+	<textarea id="html">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>You did it!&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>Congrats! You did it!&lt;/p>
+	&lt;/body>
+&lt;/html></textarea>
+	<iframe id="output"></iframe>
+</div>
+<script>
+	var footerOff = true, noPageOverflow = 520;
+	function run() {
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+	}
+	run();
+	document.getElementById('html').addEventListener('keyup', run);
+	document.getElementById('html').addEventListener('keydown', run);
+	document.getElementById('html').addEventListener('keypress', function() {
+		setTimeout(run, 0);
+	});
+</script>

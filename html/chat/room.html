@@ -74,7 +74,7 @@ $textarea
 		editing = true;
 		var msg = this.parentNode.parentNode;
 		msg.classList.add('editing');
-		cont.scrollTop = cont.scrollHeight - cont.offsetHeight + document.getElementById(msg.id).getBoundingClientRect().top - cont.getBoundingClientRect().top;
+		msg.scrollIntoView(true);
 		ta.focus();
 		ta.value = source[msg.id];
 		ta.selectionStart = ta.selectionEnd = ta.value.length;
@@ -158,7 +158,7 @@ $textarea
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
-		if (tsMode &amp;&amp; ['star', 'unstar'].indexOf(data.event) == -1) return; 
+		if (tsMode &amp;&amp; ['star', 'unstar'].indexOf(data.event) == -1) return;
 		if (data.event == 'init' || data.event == 'add') {
 			source[data.id] = data.body;
 			if (document.getElementById(data.id)) return;
@@ -168,7 +168,7 @@ $textarea
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
 			div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
-			if (data.event == 'init' &amp;&amp; document.getElementById('ts').hidden) {
+			if ((lock &amp;&amp; data.event == 'init' &amp;&amp; document.getElementById('ts').hidden) || (onBottom &amp;&amp; data.event == 'add')) {
 				var imgs = div.getElementsByTagName('img'),
 					i = imgs.length;
 				while (i--) imgs[i].onload = function() {
@@ -193,7 +193,11 @@ $textarea
 			permalink.appendChild(agot(data.time));
 			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
-			div.appendChild(sig);
+			var currentNode = div;
+			while (!sig.parentNode) {
+				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+				else currentNode = currentNode.lastChild;
+			}
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
 			tCtrls.children[1].onclick = ctrlsLink.onclick;
@@ -230,6 +234,14 @@ $textarea
 			msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '&lt;span class="mention">@' + username + '&lt;/span>$1') : markdown(data.body)).replaceAll('&lt;a', '&lt;a target="_blank"');
 			msg.appendChild(msgCsig);
 			msg.appendChild(msgCtrls);
+			if (onBottom) {
+				cont.scrollTop = cont.scrollHeight;
+				var imgs = msg.getElementsByTagName('img'),
+					i = imgs.length;
+				while (i--) imgs[i].onload = function() {
+					cont.scrollTop = cont.scrollHeight;
+				};
+			}
 		} else if (data.event == 'delete') {
 			var msg = document.getElementById(data.id);
 			if (!msg) return;
@@ -443,7 +455,22 @@ $textarea
 		}
 	};
 	socket.onclose = function() {
-		if (confirm('Connection error. Reload?')) location.reload();
+		if (ta.disabled) return;
+		ta.blur();
+		btn.blur();
+		ta.disabled = btn.disabled = true;
+		var warning = document.createElement('div');
+		warning.className = 'connection-error';
+		warning.appendChild(document.createTextNode('Connection error. '));
+		var link = document.createElement('a');
+		link.appendChild(document.createTextNode('Reload?'));
+		link.href = '';
+		warning.appendChild(link);
+		ta.parentNode.insertBefore(warning, ta);
+		setInterval(function() {
+			if (socket.readyState == 1) return location.reload(true);
+			socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
+		}, 5000);
 	};
 	if (ta) {
 		ta.addEventListener('input', function() {
@@ -701,5 +728,5 @@ $textarea
 		padding: 2px;
 		margin: 0 2px;
 	}
-	.comment > :first-child { margin: 0 }
+	.connection-error { position: absolute }
 </style>

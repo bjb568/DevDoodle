@@ -1,0 +1,17 @@
+<h1>Email confirmation required</h1>
+<p>A confirmation email containing an account activation link for account <strong>$user</strong> has been sent to <strong>$mail</strong>.</p>
+<h2>Resend email</h2>
+<form id="resendform">
+	<input type="hidden" id="userinput" value="$user" />
+	<input type="hidden" id="passinput" value="$pass" />
+	<input type="text" id="mailinput" value="$mail" maxlength="256" required="" /> <button id="submit" type="submit">Resend</button>
+</form>
+<script>
+	document.getElementById('resendform').onsubmit = function(e) {
+		e.preventDefault();
+		request('/api/login/resend', function(res) {
+			document.getElementById('mailinput').disabled = document.getElementById('submit').disabled = true;
+			alert(res);
+		}, 'name=' + encodeURIComponent(document.getElementById('userinput').value) + '&amp;pass=' + encodeURIComponent(document.getElementById('passinput').value) + '&amp;mail=' + encodeURIComponent(document.getElementById('mailinput').value));
+	};
+</script>
