@@ -26,7 +26,7 @@ var fs = require('fs'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes'];
+	usedDBCs = ['users', 'questions', 'answers', 'posthistory', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
 
 db.open(function(err, db) {
 	if (err) throw err;
@@ -890,7 +890,72 @@ wss.on('connection', function(tws) {
 							body: 'JSON error.'
 						}));
 					}
-					if (message.event == 'post') {
+					if (message.event == 'q-edit') {
+						if (!tws.user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You must be logged in and have level 3 moderator tools to edit posts.'
+						}));
+						if (tws.user.level < 3 && question.user != user.name) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'You must have level 3 moderator tools to edit posts other than your own.'
+						}));
+						if (!message.title || !message.lang || !message.description || !message.question || !message.type || (message.type && message.type.length != 3) || !message.tags) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'Edit missing required fields.'
+						}));
+						var tags = message.tags.split();
+						for (var i = 0; i < tags.length; i++) {
+							if (!(tags[i] = parseInt(tags[i]))) {
+								res.writeHead(400);
+								return res.end('Error: Invalid tag list.');
+							}
+						}
+						dbcs.qtags.findOne({lang: message.lang}, function(err, tag) {
+							if (err) throw err;
+							if (!tag) {
+								res.writeHead(400);
+								return res.end('Error: Invalid language.');
+							}
+							dbcs.posthistory.insert({
+								post: question._id,
+								event: 'edit',
+								comment: message.comment.substr(0, 288),
+								time: new Date().getTime(),
+								title: question.title,
+								lang: question.lang,
+								description: question.description,
+								question: question.question,
+								code: question.code,
+								type: question.type,
+								tags: question.tags
+							});
+							dbcs.questions.update({_id: question._id}, {
+								$set: {
+									title: message.title.substr(0, 144),
+									lang: message.lang,
+									description: message.description,
+									question: message.question.substr(0, 144),
+									code: message.code,
+									type: message.type,
+									tags: tags
+								}
+							});
+							var sendto = [];
+							for (var i in wss.clients) {
+								if (wss.clients[i].question == tws.question) sendto.push(wss.clients[i]);
+							}
+							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+								event: 'q-edit',
+								title: message.title.substr(0, 144),
+								lang: message.lang,
+								description: message.description,
+								question: message.question.substr(0, 144),
+								code: message.code,
+								type: message.type,
+								tags: tags // TODO: add tag names & writeTagRecursive
+							}));
+						});
+					} else if (message.event == 'comment') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in and have 20 reputation to comment.'
@@ -955,7 +1020,7 @@ wss.on('connection', function(tws) {
 								}
 							});
 						});
-					} else if (message.event == 'vote') {
+					} else if (message.event == 'c-vote') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in and have 20 reputation to vote on comments.'
@@ -1003,7 +1068,7 @@ wss.on('connection', function(tws) {
 								score: post.votes ? post.votes.length + 1 : 1
 							}));
 						});
-					} else if (message.event == 'unvote') {
+					} else if (message.event == 'c-unvote') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'You must be logged in to vote on comments.'

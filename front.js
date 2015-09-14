@@ -1135,27 +1135,32 @@ var server = https.createServer({
 							return res.end('Error: Invalid tag list.');
 						}
 					}
-					dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+					dbcs.qtags.findOne({lang: post.lang}, function(err, tag) {
 						if (err) throw err;
-						var id = last ? last._id + 1 : 1;
-						dbcs.questions.insert({
-							_id: id,
-							title: post.title.substr(0, 144),
-							lang: post.lang.substr(0, 48),
-							description: post.description,
-							question: post.question.substr(0, 288),
-							code: post.code,
-							type: post.type,
-							tags: tags,
-							gr: post.gr,
-							self: post.self == 'on',
-							bounty: post.bounty == 'on',
-							user: user.name,
-							time: new Date().getTime(),
-							score: 0
+						if (!tag) {
+							res.writeHead(400);
+							return res.end('Error: Invalid language.');
+						}
+						dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(function(err, last) {
+							if (err) throw err;
+							var id = last ? last._id + 1 : 1;
+							dbcs.questions.insert({
+								_id: id,
+								title: post.title.substr(0, 144),
+								lang: post.lang.substr(0, 48),
+								description: post.description,
+								question: post.question.substr(0, 288),
+								code: post.code,
+								type: post.type,
+								tags: tags,
+								gr: post.gr == 'on',
+								user: user.name,
+								time: new Date().getTime(),
+								score: 0
+							});
+							res.writeHead(200);
+							res.end('Location: /qa/' + id);
 						});
-						res.writeHead(200);
-						res.end('Location: /qa/' + id);
 					});
 				} else if (req.url.pathname == '/qa/tags') {
 					res.writeHead(200);

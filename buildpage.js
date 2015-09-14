@@ -475,7 +475,7 @@ http.createServer(function(req,	res) {
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a></small></h1>\n');
+			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>\n');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
 				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
@@ -613,7 +613,7 @@ http.createServer(function(req,	res) {
 															'</div>' +
 														'</div>' +
 													'</div>' +
-													'<small class="blk sumar lft"><a href="#a' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History</a></small>' +
+													'<small class="blk sumar lft"><a href="#' + answer._id + '" class="grey" title="Permalink">#</a> <line /> <a href="?history=' + answer._id + '" class="grey">History</a></small>' +
 												'</div>' +
 											'</div>' +
 											'<form class="a-edit indt" hidden="">' +
@@ -668,7 +668,7 @@ http.createServer(function(req,	res) {
 														if (tag) tlang.push(tag);
 														else {
 															var writeTagRecursive = function(tag) {
-																tageditstr += '<label><input type="checkbox" id="' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+																tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
 																tlang.splice(tlang.indexOf(tag), 1);
 																tageditstr += '<div class="indt">';
 																var i = -1;
@@ -687,19 +687,26 @@ http.createServer(function(req,	res) {
 																	i = -1;
 																}
 															}
-															res.write(data.toString()
-																.replaceAll(
-																	['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-																	[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
-																).replace('$edit-tags', tageditstr).replaceAll(
-																	['$qcommentstr', '$answers', '$tags', '$rep'],
-																	[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
-																).replaceAll(
-																	['$askdate', '$op-name', '$op-rep', '$op-pic'],
-																	[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-																).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-															);
-															respondPageFooter(res);
+															dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
+																if (err) throw err;
+																res.write(data.toString()
+																	.replace('$langs', JSON.stringify(langs))
+																	.replaceAll(
+																		['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
+																		[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																	).replaceAll(
+																		['$edit-tags', '$raw-edit-tags'],
+																		[tageditstr, question.tags.join()]
+																	).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
+																		['$qcommentstr', '$answers', '$tags', '$rep'],
+																		[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+																	).replaceAll(
+																		['$askdate', '$op-name', '$op-rep', '$op-pic'],
+																		[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																	).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+																);
+																respondPageFooter(res);
+															});
 														}
 													});
 												}
