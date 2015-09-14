@@ -101,7 +101,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 		res.write(
 			data.replace(
 				'$title',
-				(title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name
+				(title ? title + ' · ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' · ' : '') + site.name
 			).replaceAll(
 				'"' + req.url.pathname + '"',
 				'"' + req.url.pathname + '" class="active"'

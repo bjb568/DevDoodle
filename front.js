@@ -129,7 +129,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 		res.write(
 			data.replace(
 				'$title',
-				(title ? title + ' | ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' | ' : '') + site.name
+				(title ? title + ' · ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' · ' : '') + site.name
 			).replaceAll(
 				'"' + req.url.pathname + '"',
 				'"' + req.url.pathname + '" class="active"'
@@ -365,169 +365,169 @@ var statics = {
 	},
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
-		title: 'line(x1, y1, x2, y2) | Docs',
+		title: 'line(x1, y1, x2, y2) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
-		title: 'rect(x, y, h, w) | Docs',
+		title: 'rect(x, y, h, w) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
-		title: 'point(x,y) | Docs',
+		title: 'point(x,y) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
-		title: 'ellipse(cx, cy, rx, ry) | Docs',
+		title: 'ellipse(cx, cy, rx, ry) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
 		path: './html/dev/docs/text/text-func.html',
-		title: 'text(x, y, t) | Docs',
+		title: 'text(x, y, t) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/textalign-func': {
 		path: './html/dev/docs/text/textalign-func.html',
-		title: 'textAlign(h, v) | Docs',
+		title: 'textAlign(h, v) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/font-func': {
 		path: './html/dev/docs/text/font-func.html',
-		title: 'font(f) | Docs',
+		title: 'font(f) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
-		title: 'fill([shade] [r, g, b] [color]) | Docs',
+		title: 'fill([shade] [r, g, b] [color]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
-		title: 'stroke([shade] [r, g, b] [color]) | Docs',
+		title: 'stroke([shade] [r, g, b] [color]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/bg-func': {
 		path: './html/dev/docs/fill/bg-func.html',
-		title: 'bg([shade] [r, g, b] [color]) | Docs',
+		title: 'bg([shade] [r, g, b] [color]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/strokewidth-func': {
 		path: './html/dev/docs/fill/strokewidth-func.html',
-		title: 'strokeWidth(w) | Docs',
+		title: 'strokeWidth(w) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/rgb-func': {
 		path: './html/dev/docs/fill/rgb-func.html',
-		title: 'rgb(r, g, b[, a]) | Docs',
+		title: 'rgb(r, g, b[, a]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/hsl-func': {
 		path: './html/dev/docs/fill/hsl-func.html',
-		title: 'hsl(r, g, b[, a]) | Docs',
+		title: 'hsl(r, g, b[, a]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/trans-none': {
 		path: './html/dev/docs/fill/trans-none.html',
-		title: 'trans and none | Docs',
+		title: 'trans and none · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/draw-loop': {
 		path: './html/dev/docs/draw/draw-loop.html',
-		title: 'draw() loop | Docs',
+		title: 'draw() loop · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/framerate': {
 		path: './html/dev/docs/draw/framerate.html',
-		title: 'frameRate | Docs',
+		title: 'frameRate · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousex-y': {
 		path: './html/dev/docs/mouse/mousex-y.html',
-		title: 'mouseX and mouseY | Docs',
+		title: 'mouseX and mouseY · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousepressed': {
 		path: './html/dev/docs/mouse/mousepressed.html',
-		title: 'mousePressed | Docs',
+		title: 'mousePressed · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
 		path: './html/dev/docs/keyboard/keycodes.html',
-		title: 'keyCodes object | Docs',
+		title: 'keyCodes object · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/key': {
 		path: './html/dev/docs/keyboard/key.html',
-		title: 'key variable | Docs',
+		title: 'key variable · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/global-math': {
 		path: './html/dev/docs/math/global-math.html',
-		title: 'Globally-scoped Math | Docs',
+		title: 'Globally-scoped Math · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/rand-func': {
 		path: './html/dev/docs/math/rand-func.html',
-		title: 'rand([x[, y]]) | Docs',
+		title: 'rand([x[, y]]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/number-proto-bound': {
 		path: './html/dev/docs/math/number-proto-bound.html',
-		title: 'Number.prototype.bound(l[, h]) | Docs',
+		title: 'Number.prototype.bound(l[, h]) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
-		title: 'print(input) | Docs',
+		title: 'print(input) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
-		title: 'resetLog() | Docs',
+		title: 'resetLog() · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/size-func': {
 		path: './html/dev/docs/size/size-func.html',
-		title: 'size(x, y) | Docs',
+		title: 'size(x, y) · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/width-height': {
 		path: './html/dev/docs/size/width-height.html',
-		title: 'width and height variables | Docs',
+		title: 'width and height variables · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
 		path: './html/dev/docs/canvas/canvas-ctx.html',
-		title: 'canvas and ctx | Docs',
+		title: 'canvas and ctx · Docs',
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
