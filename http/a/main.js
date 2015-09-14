@@ -275,7 +275,7 @@ HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 };
 
 function mdValidateBody() {
-	if (document.activeElement.mdValidate && document.activeElement.id != 'code') document.activeElement.mdValidate();
+	if (document.activeElement.mdValidate && document.activeElement.spellcheck) document.activeElement.mdValidate();
 };
 addEventListener('input', mdValidateBody);
 
