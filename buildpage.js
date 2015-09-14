@@ -888,7 +888,7 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, user, req, res, function() {
 			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>\n');
-			dbcs.programs.find({deleted: {$exists: false}}).sort({score: -1, updated: -1}).limit(15).each(function(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
 					res.write('<div class="program">\n');
