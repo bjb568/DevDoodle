@@ -257,7 +257,27 @@ http.createServer(function(req,	res) {
 		i;
 	req.url = url.parse(req.url, true);
 	console.log(req.method, req.url.pathname);
-	if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
+	if (req.url.pathname == '/') {
+		respondPage('Users', user, req, res, function() {
+			var programstr = '';
+			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(12).each(function(err, data) {
+			if (err) throw err;
+				if (data) {
+					programstr += '<div class="program">\n';
+					programstr += '\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n';
+					if (data.type == 1) programstr += '\t' + showcanvas.replace('$code', html(JSON.stringify(data.code)));
+					else if (data.type == 2) programstr += '\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js));
+					programstr += '</div>\n';
+				} else {
+					fs.readFile('./html/home.html', function(err, data) {
+						if (err) throw err;
+						res.write(data.toString().replace('$programs', programstr));
+						respondPageFooter(res);
+					});
+				}
+			});
+		});
+	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		dbcs.users.findOne({confirm: i[1]}, function(err, user) {
 			if (err) throw err;
 			if (user) {

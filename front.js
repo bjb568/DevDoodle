@@ -350,9 +350,6 @@ var questionTypes = {
 };
 
 var statics = {
-	'/': {
-		path: './html/home.html'
-	},
 	'/formatting': {
 		path: './html/formatting.html',
 		title: 'Formatting'
