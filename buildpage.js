@@ -258,7 +258,7 @@ http.createServer(function(req,	res) {
 	req.url = url.parse(req.url, true);
 	console.log(req.method, req.url.pathname);
 	if (req.url.pathname == '/') {
-		respondPage('Users', user, req, res, function() {
+		respondPage('', user, req, res, function() {
 			var programstr = '';
 			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(12).each(function(err, data) {
 			if (err) throw err;
