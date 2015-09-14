@@ -264,7 +264,7 @@ http.createServer(function(req,	res) {
 			if (err) throw err;
 				if (data) {
 					programstr += '<div class="program">\n';
-					programstr += '\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n';
+					programstr += '\t<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n';
 					if (data.type == 1) programstr += '\t' + showcanvas.replace('$code', html(JSON.stringify(data.code)));
 					else if (data.type == 2) programstr += '\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js));
 					programstr += '</div>\n';
