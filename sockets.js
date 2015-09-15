@@ -917,7 +917,7 @@ wss.on('connection', function(tws) {
 								return res.end('Error: Invalid language.');
 							}
 							dbcs.posthistory.insert({
-								post: question._id,
+								q: question._id,
 								event: 'edit',
 								comment: message.comment.substr(0, 288),
 								time: new Date().getTime(),

@@ -53,7 +53,7 @@ var http = require('http'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'answers', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
+	usedDBCs = ['users', 'questions', 'answers', 'posthistory', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
 
 db.open(function(err, db) {
 	if (err) throw err;
