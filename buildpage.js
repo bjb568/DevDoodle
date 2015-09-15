@@ -372,7 +372,7 @@ http.createServer(function(req,	res) {
 				dbcs.questions.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16).each(function(err, question) {
 					if (err) throw err;
 					if (question) {
-						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+						res.write('<li><a href="/qa/' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></li>');
 						questions++;
 					} else {
 						res.write('</ul></div>');
@@ -578,7 +578,7 @@ http.createServer(function(req,	res) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
-			respondPage(question.lang + ': ' + question.title, user, req, res, function() {
+			respondPage(html(question.lang) + ': ' + html(question.title), user, req, res, function() {
 				dbcs.users.findOne({name: question.user}, function(err, op) {
 					if (err) throw err;
 					var answerstr = '';
@@ -693,7 +693,7 @@ http.createServer(function(req,	res) {
 																	.replace('$langs', JSON.stringify(langs))
 																	.replaceAll(
 																		['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-																		[question._id.toString(), html(question.title), question.lang, markdown(question.description), html(question.description), markdown(question.question), html(question.question), html(question.code), question.type]
+																		[question._id.toString(), html(question.title), html(question.lang), markdown(question.description), html(question.description), inlineMarkdown(question.question), html(question.question), html(question.code), question.type]
 																	).replaceAll(
 																		['$edit-tags', '$raw-edit-tags'],
 																		[tageditstr, question.tags.join()]

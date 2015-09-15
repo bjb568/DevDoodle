@@ -486,7 +486,7 @@
 		var body = document.createElement('div');
 		body.innerHTML = markdown(description.value)
 			+ (code.value ? '&lt;code class="blk">' + html(code.value) + '&lt;/code>' : '')
-			+ '&lt;p>&lt;strong>' + markdown(question.value) + '&lt;/strong>&lt;/p>';
+			+ '&lt;p>&lt;strong>' + inlineMarkdown(question.value) + '&lt;/strong>&lt;/p>';
 		preview.appendChild(body);
 		var submit = document.createElement('button');
 		submit.appendChild(document.createTextNode('Post Question'));
