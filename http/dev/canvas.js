@@ -106,6 +106,27 @@ function line(x1, y1, x2, y2) {
 	ctx.lineTo(x2, y2);
 	ctx.stroke();
 }
+function curve(x1, y1, x2, y2, x3, y3, x4, y4) {
+	ctx.lineCap = 'round';
+	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	if (x4 !== undefined && y4 !== undefined) ctx.bezierCurveTo(x2, y2, x3, y3, x4, y4);
+	else if (x3 !== undefined && y3 !== undefined) ctx.bezierCurveTo(x2, y2, x2, y2, x3, y3);
+	else ctx.lineTo(x2, y2);
+	ctx.stroke();
+}
+function bcurve(x1, y1, x2, y2, x3, y3, x4, y4) {
+	curve(
+		x2,
+		y2,
+		x2 * 5/4 - x3/4,
+		y2 * 5/4 - y3/4,
+		x1,
+		y1,
+		x1,
+		y1
+	);
+}
 function rect(x, y, w, h) {
 	ctx.fillRect(x, y, w, h);
 	ctx.strokeRect(x, y, w, h);
