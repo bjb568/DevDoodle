@@ -254,33 +254,35 @@ $answers
 	};
 	var langs = $langs,
 		waiting = false;
-	lang.addEventListener('keyup', function() {
-		if (!(langsug.hidden = !this.value)) {
-			var firstChild;
-			while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
-			var i = this.value.length,
-				used = [];
-			while (used.length &lt; 2) {
-				for (var j = 0; j &lt; langs.length; j++) {
-					if (used.indexOf(langs[j]) == -1 &amp;&amp; langs[j].substr(0, i).toLowerCase() == this.value.substr(0, i).toLowerCase()) {
-						used.push(langs[j]);
-						var span = document.createElement('span');
-						span.appendChild(document.createTextNode(langs[j]));
-						span.onmousedown = function(e) {
-							e.preventDefault();
-							lang.value = this.textContent;
-							this.parentNode.hidden = true;
-							findTags();
-						};
-						langsug.appendChild(span);
-						langsug.appendChild(document.createTextNode(' '));
-					}
+	function langKeyUp() {
+		var firstChild;
+		while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
+		var i = lang.value.length,
+			used = [];
+		while (used.length &lt; 2) {
+			for (var j = 0; j &lt; langs.length; j++) {
+				if (used.indexOf(langs[j]) == -1 &amp;&amp; langs[j].substr(0, i).toLowerCase() == lang.value.substr(0, i).toLowerCase()) {
+					used.push(langs[j]);
+					var span = document.createElement('span');
+					span.appendChild(document.createTextNode(langs[j]));
+					span.onmousedown = function(e) {
+						e.preventDefault();
+						lang.value = this.textContent;
+						this.parentNode.hidden = true;
+						findTags();
+					};
+					langsug.appendChild(span);
+					langsug.appendChild(document.createTextNode(' '));
 				}
-				if (i == 0) return;
-				i--;
 			}
+			if (i == 0) return;
+			i--;
 		}
+	}
+	lang.addEventListener('keyup', function() {
+		if (!(langsug.hidden = !this.value)) langKeyUp();
 	});
+	langKeyUp();
 	lang.addEventListener('keydown', function(e) {
 		if (this.value &amp;&amp; e.keyCode == 9) {
 			this.value = langsug.firstChild.textContent;
