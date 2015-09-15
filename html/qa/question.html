@@ -354,9 +354,24 @@ $answers
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
-		if (data.event == 'q-edit') { // TODO: partial page refresh
-			location.hash == '';
-			location.reload();
+		if (data.event == 'q-edit') {
+			if (location.hash == '#edit') location.hash = '';
+			document.getElementById('title').firstChild.nodeValue =
+				(document.getElementById('lang-edit').value = data.lang)
+				+ ': ' +
+				(document.getElementById('title-edit').value = data.title);
+			document.getElementById('q-body').innerHTML =
+				markdown(document.getElementById('q-desc-edit').value = data.description)
+				+ '&lt;code class="blk">' + html(document.getElementById('q-code-edit').value = data.code) + '&lt;/code>'
+				+ '&lt;p>&lt;strong>' + inlineMarkdown(document.getElementById('q-question-edit').value = data.question) + '&lt;/strong>&lt;/p>';
+			var options = document.getElementById('edit-type').options;
+			for (var i = 0; i &lt; options.length; i++) {
+				if (options[i].value == data.type) options[i].selected = true;
+			}
+			document.getElementById('tags').innerHTML = data.tags;
+			document.getElementById('edit-tags').innerHTML = data.editTags;
+			document.getElementById('edit-tags-input').value = data.rawEditTags;
+			document.getElementById('q-edit-comment').value = '';
 		} else if (data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');

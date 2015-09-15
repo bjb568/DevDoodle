@@ -944,16 +944,53 @@ wss.on('connection', function(tws) {
 							for (var i in wss.clients) {
 								if (wss.clients[i].question == tws.question) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
-								event: 'q-edit',
-								title: message.title.substr(0, 144),
-								lang: message.lang,
-								description: message.description,
-								question: message.question.substr(0, 144),
-								code: message.code,
-								type: message.type,
-								tags: tags // TODO: add tag names & writeTagRecursive
-							}));
+							var tagstr = '';
+							dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+								if (err) throw err;
+								if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
+								else {
+									var tlang = [],
+										tageditstr = '';
+									dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
+										if (err) throw err;
+										if (tag) tlang.push(tag);
+										else {
+											var writeTagRecursive = function(tag) {
+												tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+												tlang.splice(tlang.indexOf(tag), 1);
+												tageditstr += '<div class="indt">';
+												var i = -1;
+												while (++i < tlang.length) {
+													if (tlang[i].parentID == tag._id) {
+														writeTagRecursive(tlang[i]);
+														i = -1;
+													}
+												}
+												tageditstr += '</div>';
+											};
+											var i = -1;
+											while (++i < tlang.length) {
+												if (!tlang[i].parentID) {
+													writeTagRecursive(tlang[i]);
+													i = -1;
+												}
+											}
+											for (var i in sendto) sendto[i].trysend(JSON.stringify({
+												event: 'q-edit',
+												title: message.title.substr(0, 144),
+												lang: message.lang,
+												description: message.description,
+												question: message.question.substr(0, 144),
+												code: message.code,
+												type: message.type,
+												tags: tagstr,
+												editTags: tageditstr,
+												rawEditTags: question.tags.join()
+											}));
+										}
+									});
+								}
+							});
 						});
 					} else if (message.event == 'comment') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
