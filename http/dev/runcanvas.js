@@ -560,6 +560,7 @@ function highlight(codeBlock, input) {
 						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:])\s*$/)
 					) || (
 						codeBlock.lastElementChild
+						&& codeBlock.lastElementChild.firstChild
 						&& codeBlock.lastElementChild.firstChild.nodeValue == 'return'
 					)
 				)
