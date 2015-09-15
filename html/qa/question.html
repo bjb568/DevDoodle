@@ -16,7 +16,7 @@
 		<div class="clearfix">
 			<div class="lft">
 				<div id="tags">$tags</div>
-				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a href="?history" class="grey">History ($revcount)</a></small>
+				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a id="q-hist" href="?history" class="grey">History ($revcount)</a></small>
 			</div>
 			<div class="rit">
 				<div>Asked <time datetime="$askdate"></time> by</div>
@@ -374,6 +374,8 @@ $answers
 			document.getElementById('edit-tags').innerHTML = data.editTags;
 			document.getElementById('edit-tags-input').value = data.rawEditTags;
 			document.getElementById('q-edit-comment').value = '';
+			var hist = document.getElementById('q-hist').firstChild;
+			hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
 		} else if (data.event == 'add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
