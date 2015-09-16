@@ -557,7 +557,7 @@ function highlight(codeBlock, input) {
 				&& (
 					(
 						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
-						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:])\s*$/)
+						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/)
 					) || (
 						codeBlock.lastElementChild
 						&& codeBlock.lastElementChild.firstChild
