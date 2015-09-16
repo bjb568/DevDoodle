@@ -578,6 +578,12 @@ function highlight(codeBlock, input) {
 			while ((d = input[++i]) && d != '/') {
 				if (d == '\n') {
 					warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
+					regex.appendChild(document.createTextNode(chunk + '\n'));
+					chunk = '';
+					var linenum = document.createElement('span');
+					linenum.className = 'line';
+					linenum.dataset.linenum = ++line;
+					regex.appendChild(linenum);
 					break;
 				}
 				if (d == '\\') {
@@ -696,7 +702,7 @@ function highlight(codeBlock, input) {
 			}
 			regex.appendChild(document.createTextNode(chunk));
 			chunk = '';
-			if (d) {
+			if (d && d != '\n') {
 				var regexClose = document.createElement('span');
 				regexClose.className = 'close';
 				regexClose.appendChild(document.createTextNode('/'));
