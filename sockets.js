@@ -909,7 +909,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have level 3 moderator tools to edit posts other than your own.'
 						}));
-						if (!message.title || !message.lang || !message.description || !message.question || !message.type || message.type || !message.tags) return tws.trysend(JSON.stringify({
+						if (!message.title || !message.lang || !message.description || !message.question || !message.type || !message.tags) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'Edit missing required fields.'
 						}));
