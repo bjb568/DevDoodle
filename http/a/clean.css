@@ -34,6 +34,7 @@ body {
 }
 .blk, textarea { display: block }
 .ib { display: inline-block }
+.inline, summary * { display: inline }
 .flex { display: -webkit-flex; display: flex }
 .flex > * { webkit-flex: 1; flex: 1 }
 [hidden], .target:not(:target), #content > .sctrls { display: none }
@@ -44,7 +45,7 @@ body {
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
 .nofloat { float: none }
-:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span), .comment > :last-child { margin-top: 0 }
+.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span), .comment > :last-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
@@ -79,6 +80,8 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 .column-small { column-width: 10em }
 .column-medium { column-width: 16em }
 .column-large { column-width: 24em }
+del { background: #f88 }
+ins { background: #8f8 }
 li {
 	-webkit-column-break-inside: avoid;
 	page-break-inside: avoid;
@@ -194,6 +197,19 @@ code {
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
+.tag {
+	display: inline-block;
+	text-decoration: none;
+	padding: 2px 6px;
+	margin-bottom: 4px;
+	background: #afa;
+	box-shadow: 1px 1px 2px #666;
+	transition: background-color 0.1s;
+}
+.tag:hover {
+	color: #000;
+	background: #cfc;
+}
 input[type=text].large, input[type=search].large, input[type=password].large { font-size: 1.3em }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {

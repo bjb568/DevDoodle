@@ -31,6 +31,7 @@ var http = require('http'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./essentials.js'),
+	diff = require('diff'),
 	html = essentials.html,
 	markdownEscape = essentials.markdownEscape,
 	inlineMarkdown = essentials.inlineMarkdown,
@@ -241,6 +242,15 @@ function errorsHTML(errs) {
 	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
 }
 
+var questionTypes = {
+	err: 'an error',
+	bug: 'unexpected behavior',
+	imp: 'improving working code',
+	how: 'achieving an end result',
+	alg: 'algorithms and data structures',
+	pra: 'techniques and best practices',
+	the: 'a theoretical scenario'
+};
 
 var typeIcons = {
 		P: '',
@@ -578,9 +588,94 @@ http.createServer(function(req,	res) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
-			respondPage(html(question.lang) + ': ' + html(question.title), user, req, res, function() {
-				dbcs.posthistory.find({q: question._id}).count(function(err, revcount) {
+			var history = req.url.query.history != undefined;
+			respondPage((history ? 'History of "' : html(question.lang) + ': ') + html(question.title) + (history ? '"' : ''), user, req, res, function() {
+				var revcursor = dbcs.posthistory.find({q: question._id});
+				revcursor.count(function(err, revcount) {
 					if (err) throw err;
+					if (history) {
+						res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
+						res.write('<h2>Current Revision</h2>');
+						res.write('<p class="indt">Owned by <strong><a href="/user/' + question.user + '">' + question.user + '</a></strong>.</p>');
+						res.write('<article class="pad indt">');
+						res.write('<h1 class="nomar">' + question.lang + ': ' + question.title + '</h1>');
+						res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
+						res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
+						res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + '\nType: ' + question.type + '</code>');
+						res.write('<div class="umar">');
+						var langTags = [];
+						dbcs.qtags.find().each(function(err, tag) {
+							if (err) throw err;
+							if (tag) langTags[tag._id] = tag.name;
+							else {
+								var tagify = function(tag) {
+									return '<a href="search?q=[[' + tag + ']]" class="tag">' + langTags[tag] + '</a>';
+								};
+								for (var i = 0; i < question.tags.length; i++) {
+									res.write(tagify(question.tags[i]));
+								}
+								res.write('</div>');
+								res.write('</article>');
+								var revnum = 0,
+									prev = question;
+								revcursor.each(function(err, item) {
+									if (err) throw err;
+									if (item) {
+										res.write('<h2>Revision ' + (revcount - revnum) + ': ' + item.event + '</h2>');
+										res.write('<p class="indt">Replaced <time datetime="' + new Date(item.time).toISOString() + '"></time></p>');
+										if (item.event == 'edit') {
+											var writeDiff = function(o, n) {
+												var d = diff.diffWordsWithSpace(o, n);
+												for (var i = 0; i < d.length; i++) {
+													if (d[i].added) res.write('<ins>' + html(d[i].value) + '</ins>');
+													else if (d[i].removed) res.write('<del>' + html(d[i].value) + '</del>');
+													else res.write(html(d[i].value));
+												}
+											};
+											res.write('<blockquote><i>' + inlineMarkdown(item.comment) + '</i></blockquote>');
+											res.write('<article class="pad indt">');
+											res.write('<h1 class="noumar">');
+											writeDiff(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title);
+											res.write('</h1>');
+											res.write(item.description == prev.description ? '<details>' : '<details open="">');
+											res.write('<summary><h2>Body</h2></summary>');
+											res.write('<code class="blk">');
+											writeDiff(item.description, prev.description);
+											res.write('</code>');
+											res.write('</details>');
+											res.write(item.code == prev.code ? '<details>' : '<details open="">');
+											res.write('<summary><h2>Code</h2></summary>');
+											res.write('<code class="blk">');
+											writeDiff(item.code, prev.code);
+											res.write('</code>');
+											res.write('</details>');
+											res.write('<h2>Core Question:</h2>');
+											res.write('<code class="blk">');
+											writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
+											res.write('</code>');
+											res.write('<div class="bumar">');
+											var d = diff.diffWords(item.tags.join(), prev.tags.join());
+											for (var i = 0; i < d.length; i++) {
+												var t = d[i].value.split(',');
+												for (var j = 0; j < t.length; j++) {
+													if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins>');
+													else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del>');
+													else res.write(tagify(t[j]));
+												}
+											}
+											res.write('</div>');
+											res.write('</article>');
+											prev = item;
+										} else {
+											res.write('<p class="red">Unknown event.</p>');
+										}
+										revnum++;
+									} else respondPageFooter(res);
+								});
+							}
+						});
+						return;
+					}
 					dbcs.users.findOne({name: question.user}, function(err, op) {
 						if (err) throw err;
 						var answerstr = '';
@@ -661,7 +756,7 @@ http.createServer(function(req,	res) {
 												var tagstr = '';
 												dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
 													if (err) throw err;
-													if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
+													if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
 													else {
 														var tlang = [],
 															tageditstr = '';

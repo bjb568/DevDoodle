@@ -43,6 +43,16 @@ db.open(function(err, db) {
 	});
 });
 
+var questionTypes = {
+	err: 'an error',
+	bug: 'unexpected behavior',
+	imp: 'improving working code',
+	how: 'achieving an end result',
+	alg: 'algorithms and data structures',
+	pra: 'techniques and best practices',
+	the: 'a theoretical scenario'
+};
+
 var wss = new ws.Server({
 	server: https.createServer({
 		key: fs.readFileSync('../Secret/devdoodle.net.key'),
@@ -899,9 +909,13 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have level 3 moderator tools to edit posts other than your own.'
 						}));
-						if (!message.title || !message.lang || !message.description || !message.question || !message.type || (message.type && message.type.length != 3) || !message.tags) return tws.trysend(JSON.stringify({
+						if (!message.title || !message.lang || !message.description || !message.question || !message.type || message.type || !message.tags) return tws.trysend(JSON.stringify({
 							event: 'err',
 							body: 'Edit missing required fields.'
+						}));
+						if (!questionTypes.hasOwnProperty(message.type)) return tws.trysend(JSON.stringify({
+							event: 'err',
+							body: 'Invalid type parameter.'
 						}));
 						var tags = message.tags.split();
 						for (var i = 0; i < tags.length; i++) {
@@ -919,6 +933,7 @@ wss.on('connection', function(tws) {
 							dbcs.posthistory.insert({
 								q: question._id,
 								event: 'edit',
+								user: tws.user.name,
 								comment: message.comment.substr(0, 288),
 								time: new Date().getTime(),
 								title: question.title,
