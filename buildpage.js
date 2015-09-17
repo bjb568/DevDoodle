@@ -591,7 +591,7 @@ http.createServer(function(req,	res) {
 			var history = req.url.query.history != undefined;
 			respondPage((history ? 'History of "' : html(question.lang) + ': ') + html(question.title) + (history ? '"' : ''), user, req, res, function() {
 				var revcursor = dbcs.posthistory.find({q: question._id});
-				revcursor.count(function(err, revcount) {
+				revcursor.sort({time: -1}).count(function(err, revcount) {
 					if (err) throw err;
 					if (history) {
 						res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
@@ -611,9 +611,7 @@ http.createServer(function(req,	res) {
 								var tagify = function(tag) {
 									return '<a href="search?q=[[' + tag + ']]" class="tag">' + langTags[tag] + '</a>';
 								};
-								for (var i = 0; i < question.tags.length; i++) {
-									res.write(tagify(question.tags[i]));
-								}
+								for (var i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]));
 								res.write('</div>');
 								res.write('</article>');
 								var revnum = 0,
@@ -637,6 +635,7 @@ http.createServer(function(req,	res) {
 											res.write('<h1 class="noumar">');
 											writeDiff(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title);
 											res.write('</h1>');
+											if (revnum) res.write(prev.description);
 											res.write(item.description == prev.description ? '<details>' : '<details open="">');
 											res.write('<summary><h2>Body</h2></summary>');
 											res.write('<code class="blk">');
@@ -666,9 +665,7 @@ http.createServer(function(req,	res) {
 											res.write('</div>');
 											res.write('</article>');
 											prev = item;
-										} else {
-											res.write('<p class="red">Unknown event.</p>');
-										}
+										} else res.write('<p class="red">Unknown event.</p>');
 										revnum++;
 									} else respondPageFooter(res);
 								});
