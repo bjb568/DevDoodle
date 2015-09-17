@@ -1124,9 +1124,13 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to ask a question.');
 					}
-					if (!post.title || !post.lang || !post.description || !post.question || !post.type || (post.type && post.type.length != 3) || !post.tags) {
+					if (!post.title || !post.lang || !post.description || !post.question || !post.type || post.type || !post.tags) {
 						res.writeHead(400);
 						return res.end('Error: Missing required field.');
+					}
+					if (!questionTypes.hasOwnProperty(post.type)) {
+						res.write(400);
+						return res.end('Error: Invalid type parameter.')
 					}
 					var tags = post.tags.split();
 					for (var i = 0; i < tags.length; i++) {
