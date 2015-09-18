@@ -25,7 +25,11 @@
 				permalink.appendChild(document.createTextNode('#' + res._id));
 				li.appendChild(permalink);
 				li.appendChild(document.createTextNode(' ' + res.name));
-				if (res.parentID) document.getElementById(res.parentID).lastElementChild.appendChild(li);
+				if (res.parentID) {
+					var e = document.getElementById(res.parentID);
+					if (e) e.lastElementChild.appendChild(li);
+					else location.reload();
+				}
 				else if (document.getElementById('lang-' + res.lang)) document.getElementById('lang-' + res.lang).children[1].appendChild(li);
 				else location.reload();
 				tname.value = lang.value = par.value = '';
@@ -44,7 +48,10 @@
 		if (!document.body.classList.contains('active')) return;
 		var e = e.target;
 		while (e) {
-			if (!isNaN(e.id) &amp;&amp; !par.value) par.value = e.id;
+			if (!isNaN(parseInt(e.id)) &amp;&amp; !par.value) {
+				par.value = e.id;
+				document.body.classList.remove('active');
+			}
 			if (e.tagName == 'h2' &amp;&amp; !lang.value) lang.value = e.textContent;
 			if (e.tagName == 'section' &amp;&amp; !lang.value) e = e.firstElementChild;
 			else e = e.parentNode;
