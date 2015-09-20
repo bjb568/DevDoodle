@@ -233,7 +233,7 @@ $answers
 		document.getElementById('title-edit').hidden = 1;
 		document.getElementById('q-content').hidden = 0;
 		document.getElementById('med').href = '#edit';
-	}
+	};
 	document.getElementById('addcomment').onclick = function() {
 		setTimeout(function() {
 			document.getElementById('commentta').focus();
@@ -299,7 +299,7 @@ $answers
 	document.getElementById('edit-tags').onchange = function() {
 		setTimeout(function() {
 			var arr = [],
-				els = tags.querySelectorAll(':checked');
+				els = document.getElementById('edit-tags').querySelectorAll(':checked');
 			for (var i = 0; i &lt; els.length; i++) {
 				arr.push(els[i].id.substr(3));
 			}
@@ -346,13 +346,13 @@ $answers
 		if (data.event == 'q-edit') {
 			if (location.hash == '#edit') location.hash = '';
 			document.getElementById('title').firstChild.nodeValue =
-				(document.getElementById('lang-edit').value = data.lang)
-				+ ': ' +
+				(document.getElementById('lang-edit').value = data.lang) +
+				': ' +
 				(document.getElementById('title-edit').value = data.title);
 			document.getElementById('q-body').innerHTML =
-				markdown(document.getElementById('q-desc-edit').value = data.description)
-				+ '&lt;code class="blk">' + html(document.getElementById('q-code-edit').value = data.code) + '&lt;/code>'
-				+ '&lt;p>&lt;strong>' + inlineMarkdown(document.getElementById('q-question-edit').value = data.question) + '&lt;/strong>&lt;/p>';
+				markdown(document.getElementById('q-desc-edit').value = data.description) +
+				'&lt;code class="blk">' + html(document.getElementById('q-code-edit').value = data.code) + '&lt;/code>' +
+				'&lt;p>&lt;strong>' + inlineMarkdown(document.getElementById('q-question-edit').value = data.question) + '&lt;/strong>&lt;/p>';
 			var options = document.getElementById('edit-type').options;
 			for (var i = 0; i &lt; options.length; i++) {
 				if (options[i].value == data.type) options[i].selected = true;
@@ -380,7 +380,7 @@ $answers
 			sig.appendChild(document.createTextNode('-'));
 			var a = document.createElement('a');
 			a.href = '/user/' + data.user;
-			a.appendChild(document.createTextNode(data.user))
+			a.appendChild(document.createTextNode(data.user));
 			sig.appendChild(a);
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
@@ -424,7 +424,7 @@ $answers
 		e[i].onclick = function() {
 			if (this.children[0].checked) {
 				var ref = this.parentNode.previousElementSibling;
-				ref.children[0].checked = true;
+				if (ref.firstElementChild) ref.firstElementChild.checked = true;
 				if (ref.onclick) ref.onclick();
 			}
 		};

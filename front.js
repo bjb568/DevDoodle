@@ -38,8 +38,6 @@ var http = require('http'),
 	crypto = require('crypto'),
 	essentials = require('./essentials.js'),
 	html = essentials.html,
-	markdownEscape = essentials.markdownEscape,
-	inlineMarkdown = essentials.inlineMarkdown,
 	markdown = essentials.markdown,
 	nodemailer = require('nodemailer'),
 	sendmailTransport = require('nodemailer-sendmail-transport'),
@@ -57,7 +55,7 @@ var http = require('http'),
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err) {
 		if (err) throw err;
 		db.createCollection('questions', function(err, collection) {
 			if (err) throw err;
@@ -66,12 +64,12 @@ db.open(function(err, db) {
 			dbcs.questions = collection;
 		});
 		var i = usedDBCs.length;
-		while (i--) {
-			db.collection(usedDBCs[i], function(err, collection) {
-				if (err) throw err;
-				dbcs[usedDBCs[i]] = collection;
-			});
+		function handleCollection(err, collection) {
+			if (err) throw err;
+			dbcs[usedDBCs[i]] = collection;
+			if (usedDBCs[i] == 'chatusers') collection.drop();
 		}
+		while (i--) db.collection(usedDBCs[i], handleCollection);
 	});
 });
 
@@ -266,16 +264,15 @@ errorPage[521] = function(req, res, user) {
 };
 
 function errorsHTML(errs) {
-	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
+	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>' : '<div class="error">\t<ul>\t\t<li>' + errs.join('</li>\t\t<li>') + '</li>\t</ul></div>') : '';
 }
 
 function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 	if (!post) post = {};
 	var num = 0;
-	while (num == 0) num = Math.floor(Math.random() * 25 - 12);
-	var type = Math.floor(Math.random() * 3);
+	while (!num) num = Math.floor(Math.random() * 25 - 12);
 	respondPage('Login', user, req, res, function() {
-		res.write('<h1>Log in</h1>\n');
+		res.write('<h1>Log in</h1>');
 		var notice = ({
 			ask: 'You must be logged in to ask a question.',
 			recovered: 'Your password has been reset. You may now login.',
@@ -283,42 +280,45 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		})[post.r];
 		res.write(errorsHTML(errs) || (notice ? '<div class="notice">' + notice + '</div>' : ''));
 		res.write('<form method="post">');
-		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>\n');
-		res.write('<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> <span id="name-error" style="color: #f00"></span></div>\n');
-		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>\n');
-		res.write('<div id="ccreate">\n');
-		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
-		res.write('<div><input type="text" name="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>\n');
+		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>');
+		res.write(
+			'<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> ' +
+			'<span id="name-error" style="color: #f00"></span></div>'
+		);
+		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>');
+		res.write('<div id="ccreate">');
+		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>');
+		res.write('<div><input type="text" name="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
-		res.write('</div>\n');
-		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />\n');
-		res.write('<button type="submit" id="submit" class="umar">Submit</button>\n');
-		res.write('</form>\n');
-		res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>\n');
+		res.write('</div>');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />');
+		res.write('<button type="submit" id="submit" class="umar">Submit</button>');
+		res.write('</form>');
+		res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
 		res.write('<script src="login.js"></script>');
 		respondPageFooter(res);
 	}, {
-		inhead: '<link rel="stylesheet" href="/login/login.css" />\n<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'
+		inhead: '<link rel="stylesheet" href="/login/login.css" /><style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'
 	});
 }
 
 function respondCreateRoomPage(errs, user, req, res, post) {
 	if (!post) post = {};
 	respondPage('Create Room', user, req, res, function() {
-		res.write('<h1>Create Room</h1>\n');
+		res.write('<h1>Create Room</h1>');
 		res.write(errorsHTML(errs));
-		res.write('<form method="post">\n');
-		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>\n');
-		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc || '') + '</textarea></div>\n');
-		res.write('<div>Type: <select name="type">\n');
-		res.write('\t<option value="P">Public</option>\n');
-		res.write('\t<option value="R">Read-only</option>\n');
-		res.write('\t<option value="N">Private</option>\n');
-		if (user.level > 4) res.write('\t<option value="M">♦ only</option>\n');
-		res.write('</select>\n');
-		res.write('</div>\n');
-		res.write('<button type="submit">Submit</button>\n');
-		res.write('</form>\n');
+		res.write('<form method="post">');
+		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc || '') + '</textarea></div>');
+		res.write('<div>Type: <select name="type">');
+		res.write('\t<option value="P">Public</option>');
+		res.write('\t<option value="R">Read-only</option>');
+		res.write('\t<option value="N">Private</option>');
+		if (user.level > 4) res.write('\t<option value="M">♦ only</option>');
+		res.write('</select>');
+		res.write('</div>');
+		res.write('<button type="submit">Submit</button>');
+		res.write('</form>');
 		respondPageFooter(res);
 	});
 }
@@ -326,14 +326,20 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 function respondChangePassPage(errs, user, req, res, post) {
 	if (!post) post = {};
 	respondPage('Change Password', user, req, res, function() {
-		res.write('<h1>Change Password for ' + user.name + '</h1>\n');
+		res.write('<h1>Change Password for ' + user.name + '</h1>');
 		res.write(errorsHTML(errs));
-		res.write('<form method="post">\n');
-		res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>\n');
-		res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-strength"></span></div>\n');
-		res.write('<div><input type="password" id="conf" name="conf" placeholder="Confirm new password" required="" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>\n');
-		res.write('<button type="submit" id="submit" disabled="">Submit</button>\n');
-		res.write('</form>\n');
+		res.write('<form method="post">');
+		res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
+		res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-strength"></span></div>');
+		res.write(
+			'<div>' +
+				'<input type="password" id="conf" name="conf" placeholder="Confirm new password" required="" /> ' +
+				'<span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> ' +
+				'<small>Please use a password manager to store passwords</small>' +
+			'</div>'
+		);
+		res.write('<button type="submit" id="submit" disabled="">Submit</button>');
+		res.write('</form>');
 		res.write('<script src="/login/changepass.js"></script>');
 		respondPageFooter(res);
 	});
@@ -366,169 +372,169 @@ var statics = {
 	'/dev/docs/shapes/line-func': {
 		path: './html/dev/docs/shapes/line-func.html',
 		title: 'line(x1, y1, x2, y2) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/rect-func': {
 		path: './html/dev/docs/shapes/rect-func.html',
 		title: 'rect(x, y, h, w) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/point-func': {
 		path: './html/dev/docs/shapes/point-func.html',
 		title: 'point(x,y) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/shapes/ellipse-func': {
 		path: './html/dev/docs/shapes/ellipse-func.html',
 		title: 'ellipse(cx, cy, rx, ry) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/text-func': {
 		path: './html/dev/docs/text/text-func.html',
 		title: 'text(x, y, t) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/textalign-func': {
 		path: './html/dev/docs/text/textalign-func.html',
 		title: 'textAlign(h, v) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/text/font-func': {
 		path: './html/dev/docs/text/font-func.html',
 		title: 'font(f) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/fill-func': {
 		path: './html/dev/docs/fill/fill-func.html',
 		title: 'fill([shade] [r, g, b] [color]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/stroke-func': {
 		path: './html/dev/docs/fill/stroke-func.html',
 		title: 'stroke([shade] [r, g, b] [color]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/bg-func': {
 		path: './html/dev/docs/fill/bg-func.html',
 		title: 'bg([shade] [r, g, b] [color]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/strokewidth-func': {
 		path: './html/dev/docs/fill/strokewidth-func.html',
 		title: 'strokeWidth(w) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/rgb-func': {
 		path: './html/dev/docs/fill/rgb-func.html',
 		title: 'rgb(r, g, b[, a]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/hsl-func': {
 		path: './html/dev/docs/fill/hsl-func.html',
 		title: 'hsl(r, g, b[, a]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/fill/trans-none': {
 		path: './html/dev/docs/fill/trans-none.html',
 		title: 'trans and none · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/draw-loop': {
 		path: './html/dev/docs/draw/draw-loop.html',
 		title: 'draw() loop · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/draw/framerate': {
 		path: './html/dev/docs/draw/framerate.html',
 		title: 'frameRate · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousex-y': {
 		path: './html/dev/docs/mouse/mousex-y.html',
 		title: 'mouseX and mouseY · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/mouse/mousepressed': {
 		path: './html/dev/docs/mouse/mousepressed.html',
 		title: 'mousePressed · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/keycodes': {
 		path: './html/dev/docs/keyboard/keycodes.html',
 		title: 'keyCodes object · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/keyboard/key': {
 		path: './html/dev/docs/keyboard/key.html',
 		title: 'key variable · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/global-math': {
 		path: './html/dev/docs/math/global-math.html',
 		title: 'Globally-scoped Math · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/rand-func': {
 		path: './html/dev/docs/math/rand-func.html',
 		title: 'rand([x[, y]]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/math/number-proto-bound': {
 		path: './html/dev/docs/math/number-proto-bound.html',
 		title: 'Number.prototype.bound(l[, h]) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/print-func': {
 		path: './html/dev/docs/console/print-func.html',
 		title: 'print(input) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/console/resetlog-func': {
 		path: './html/dev/docs/console/resetlog-func.html',
 		title: 'resetLog() · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/size-func': {
 		path: './html/dev/docs/size/size-func.html',
 		title: 'size(x, y) · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/width-height': {
 		path: './html/dev/docs/size/width-height.html',
 		title: 'width and height variables · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/dev/docs/canvas/canvas-ctx': {
 		path: './html/dev/docs/canvas/canvas-ctx.html',
 		title: 'canvas and ctx · Docs',
-		inhead: '<link rel="stylesheet" href="/dev/docs.css" />\n<script src="/dev/runcanvas.js"></script>',
+		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
 	'/learn/web/': {
@@ -573,10 +579,11 @@ var server = https.createServer({
 }, function(req, res) {
 	var origURL = req.url,
 		i,
+		id,
 		post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
-		return errorPage[414](req, res, user);
+		return errorPage[414](req, res, {});
 	}
 	var cookies = cookie.parse(req.headers.cookie || '');
 	req.url = url.parse(req.url, true);
@@ -594,7 +601,7 @@ var server = https.createServer({
 			var options = {
 				clean: i.clean,
 				inhead: i.inhead
-			}
+			};
 			respondPage(i.title, user, req, res, function() {
 				fs.readFile(i.path || './html/' + req.url.pathname, function(err, data) {
 					if (err) throw err;
@@ -708,7 +715,9 @@ var server = https.createServer({
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.mail,
 								subject: 'Password Reset',
-								html: '<p>Your ' + user.name + ' account\'s <em>case sensitive</em> recovery code is <strong>' + token + '</strong></p><p>Enter the code into the existing account recovery page to reset your password.</p><p>If you have not requested a password reset for the account ' + user.name + ' on DevDoodle, you may safely ignore this email.</p>'
+								html: '<p>Your ' + user.name + ' account\'s <em>case sensitive</em> recovery code is <strong>' + token + '</strong></p>' +
+									'<p>Enter the code into the existing account recovery page to reset your password.</p>' +
+									'<p>If you have not requested a password reset for the account ' + user.name + ' on DevDoodle, you may safely ignore this email.</p>'
 							});
 							dbcs.users.update({name: user.name}, {
 								$set: {
@@ -753,7 +762,10 @@ var server = https.createServer({
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: post.mail,
 								subject: 'Confirm your account',
-								html: '<h1>Welcome to DevDoodle!</h1>\n<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
+								html:
+									'<h1>Welcome to DevDoodle!</h1>' +
+									'<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. ' +
+									'Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 							});
 							res.writeHead(200);
 							res.end('Confirmation email sent.');
@@ -784,6 +796,7 @@ var server = https.createServer({
 					var rooms = {},
 						results = [];
 					dbcs.chatrooms.find().each(function(err, room) {
+						if (err) throw err;
 						if (room) rooms[room._id] = room;
 						else {
 							res.writeHead(200);
@@ -815,8 +828,8 @@ var server = https.createServer({
 						}
 					});
 				} else if (req.url.pathname == '/chat/changeroomtype') {
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) {
 						res.writeHead(400);
 						return res.end('Error: Invalid room type.');
@@ -836,8 +849,8 @@ var server = https.createServer({
 						res.end();
 					});
 				} else if (req.url.pathname == '/chat/inviteuser') {
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
 						if (err) throw err;
 						if (!room) {
@@ -867,8 +880,8 @@ var server = https.createServer({
 						});
 					});
 				} else if (req.url.pathname == '/chat/uninviteuser') {
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chatrooms.findOne({_id: id}, function(err, room) {
 						if (err) throw err;
 						if (!room) {
@@ -900,7 +913,7 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be a level 2 moderator to cast delete votes.');
 					}
-					var id = i ? parseInt(i[1]) : 0;
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chat.findOne({_id: id}, function(err, msg) {
 						if (err) throw err;
 						if (!msg) {
@@ -960,7 +973,7 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be a level 2 moderator to dispute flags.');
 					}
-					var id = i ? parseInt(i[1]) : 0;
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chat.findOne({_id: id}, function(err, msg) {
 						if (err) throw err;
 						if (!msg) {
@@ -1028,7 +1041,7 @@ var server = https.createServer({
 						res.writeHead(400);
 						return res.end('Error: Comment length may not exceed 2000 characters.');
 					}
-					var id = i ? parseInt(i[1]) : 0;
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chat.findOne({_id: id}, function(err, msg) {
 						if (err) throw err;
 						if (!msg) {
@@ -1079,7 +1092,7 @@ var server = https.createServer({
 						res.writeHead(400);
 						return res.end('Error: Chat message length may not exceed 2880 characters.');
 					}
-					var id = i ? parseInt(i[1]) : 0;
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chat.findOne({_id: id}, function(err, msg) {
 						if (err) throw err;
 						if (!msg) {
@@ -1108,7 +1121,7 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be a level 2 moderator to skip in review.');
 					}
-					var id = i ? parseInt(i[1]) : 0;
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.chat.findOne({_id: id}, function(err, msg) {
 						if (err) throw err;
 						if (!msg) {
@@ -1130,10 +1143,11 @@ var server = https.createServer({
 					}
 					if (!questionTypes.hasOwnProperty(post.type)) {
 						res.write(400);
-						return res.end('Error: Invalid type parameter.')
+						return res.end('Error: Invalid type parameter.');
 					}
 					var tags = post.tags.split();
-					for (var i = 0; i < tags.length; i++) {
+					i = tags.length;
+					while (i--) {
 						if (!(tags[i] = parseInt(tags[i]))) {
 							res.writeHead(400);
 							return res.end('Error: Invalid tag list.');
@@ -1244,8 +1258,7 @@ var server = https.createServer({
 						res.writeHead(400);
 						return res.end('Error: Body must be 144 characters long.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
-					if (!i) {
+					if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) {
 						res.writeHead(400);
 						return res.end('Error: Bad referer.');
 					}
@@ -1273,8 +1286,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to save a program.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
@@ -1333,8 +1346,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a program title.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) {
@@ -1367,8 +1380,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must have 15 reputation to vote.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) {
@@ -1427,8 +1440,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to delete programs.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) {
@@ -1455,8 +1468,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to undelete programs.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.programs.findOne({_id: id}, function(err, program) {
 						if (err) throw err;
 						if (!program) {
@@ -1476,8 +1489,8 @@ var server = https.createServer({
 						res.writeHead(403);
 						return res.end('Error: You must be logged in to change a lesson title.');
 					}
-					var i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/(\d+)/),
-						id = i ? parseInt(i[1]) : 0;
+					i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/(\d+)/);
+					id = i ? parseInt(i[1]) : 0;
 					dbcs.lessons.findOne({_id: id}, function(err, lesson) {
 						if (err) throw err;
 						if (!lesson) {
@@ -1627,7 +1640,7 @@ var server = https.createServer({
 					if (post.create) {
 						if (post.check != 'JS-confirm') return errorPage[403](req, res, user, 'Suspicious request.');
 						for (var i = -12; i <= 12; i++) {
-							if (i == 0) continue;
+							if (!i) continue;
 							var str = post['sec' + i],
 								fail;
 							if (!str) continue;
@@ -1679,14 +1692,12 @@ var server = https.createServer({
 						if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 						if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
 						var uniqueChars = [];
-						for (var i = 0; i < post.pass.length; i++) {
-							if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
-						}
+						i = post.pass.length;
+						while (i--) if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
 						var matches = post.pass.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
 							penalty = 0;
-						for (var i = 0; i < matches.length; i++) {
-							penalty += matches[i].length;
-						}
+						i = matches.length;
+						while (i--) penalty += matches[i].length;
 						if (uniqueChars.length + uniqueChars.length - Math.sqrt(penalty) / 3 + post.pass.length / 10 < 8) {
 							errors.push('Password is too simple.');
 							if (!nfillm && !nfilln) fpass = true;
@@ -1715,7 +1726,10 @@ var server = https.createServer({
 									from: 'DevDoodle <support@devdoodle.net>',
 									to: post.mail,
 									subject: 'Confirm your account',
-									html: '<h1>Welcome to DevDoodle!</h1>\n<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
+									html:
+										'<h1>Welcome to DevDoodle!</h1>' +
+										'<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. ' +
+										'Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 								});
 								respondPage('Account Created', user, req, res, function() {
 									res.write('An account for you has been created. To activate it, click the link in the email sent to you. It may take a few minutes for the email to reach you, but please check your spam folder.');
@@ -1878,7 +1892,7 @@ var server = https.createServer({
 			fs.stat('./http/' + req.url.pathname, function(err, stats) {
 				if (err || !stats.isFile()) {
 					req.headers.user = JSON.stringify(user) || '';
-					var bres = http.get({
+					http.get({
 						host: 'localhost',
 						port: 8000,
 						path: origURL,
@@ -1899,7 +1913,7 @@ var server = https.createServer({
 									from: 'DevDoodle <support@devdoodle.net>',
 									to: 'support@devdoodle.net',
 									subject: 'front.js cannot connect to buildpage.js: ' + e.message,
-									text: 'Error recieved:\n\n' + JSON.stringify(e)
+									text: 'Error recieved:' + JSON.stringify(e)
 								});
 							}
 							errorPage[500](req, res, user, e.message);
@@ -1911,7 +1925,7 @@ var server = https.createServer({
 								from: 'DevDoodle <support@devdoodle.net>',
 								to: 'support@devdoodle.net',
 								subject: 'front.js cannot connect to buildpage.js: ' + e.message,
-								text: 'Error recieved:\n\n' + JSON.stringify(e)
+								text: 'Error recieved:' + JSON.stringify(e)
 							});
 						}
 						errorPage[500](req, res, user, e.message);
@@ -1981,7 +1995,7 @@ server.on('newSession', function(sessionId, sessionData, callback) {
 });
 server.on('resumeSession', function (sessionId, callback) {
 	callback(null, sslSessionCache[sessionId]);
-})
+});
 console.log('front.js running on port ' + (process.argv[2] || 443));
 
 if (!process.argv[2]) {

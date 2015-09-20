@@ -30,16 +30,15 @@ var fs = require('fs'),
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err) {
 		if (err) throw err;
 		var i = usedDBCs.length;
-		while (i--) {
-			db.collection(usedDBCs[i], function(err, collection) {
-				if (err) throw err;
-				dbcs[usedDBCs[i]] = collection;
-				if (usedDBCs[i] == 'chatusers') collection.drop();
-			});
+		function handleCollection(err, collection) {
+			if (err) throw err;
+			dbcs[usedDBCs[i]] = collection;
+			if (usedDBCs[i] == 'chatusers') collection.drop();
 		}
+		while (i--) db.collection(usedDBCs[i], handleCollection);
 	});
 });
 
@@ -94,7 +93,7 @@ function markdownEscape(input) {
 		if (i && !p1) return m;
 		return p1 + (p2.length % 2 ? p2 : p2 + '\\') + p3;
 	});
-};
+}
 
 wss.on('connection', function(tws) {
 	var i;
@@ -139,7 +138,7 @@ wss.on('connection', function(tws) {
 					]
 				}).count(function(err, count) {
 					if (err) throw err;
-					var i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || 0;
+					i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || 0;
 					dbcs.chat.find({
 						room: tws.room,
 						$or: [
@@ -238,10 +237,10 @@ wss.on('connection', function(tws) {
 								}));
 							} else {
 								var sendto = [];
-								for (var i in wss.clients) {
+								for (i in wss.clients) {
 									if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 								}
-								for (var i in sendto) sendto[i].trysend(JSON.stringify({
+								for (i in sendto) sendto[i].trysend(JSON.stringify({
 									event: 'adduser',
 									name: user.name,
 									state: 1
@@ -265,6 +264,7 @@ wss.on('connection', function(tws) {
 							body: 'JSON error.'
 						}));
 					}
+					var id;
 					if (message.event == 'post') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
@@ -289,7 +289,7 @@ wss.on('connection', function(tws) {
 						}));
 						dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 							if (err) throw err;
-							var id = doc ? doc._id + 1 : 1;
+							id = doc ? doc._id + 1 : 1;
 							dbcs.chat.insert({
 								_id: id,
 								body: message.body,
@@ -298,17 +298,17 @@ wss.on('connection', function(tws) {
 								room: tws.room
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'add',
 								body: message.body,
 								user: tws.user.name,
 								id: id
 							}));
 							var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
-							for (var i = 0; i < matches.length; i++) {
+							for (i = 0; i < matches.length; i++) {
 								dbcs.users.findOne({name: matches[i].substr(1, matches[i].length - 2)}, function(err, user) {
 									if (err) throw err;
 									if (!user) return;
@@ -361,10 +361,10 @@ wss.on('connection', function(tws) {
 							});
 						dbcs.chat.update({_id: post._id}, {$set: {body: message.body}});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'edit',
 								id: post._id,
 								body: message.body
@@ -399,7 +399,7 @@ wss.on('connection', function(tws) {
 									}
 								}
 							};
-							if (post.deleted && !post.mod) changes['$set'].mod = 'Deleted';
+							if (post.deleted && !post.mod) changes.$set.mod = 'Deleted';
 							dbcs.chat.update({_id: post._id}, changes);
 							tws.trysend(JSON.stringify({
 								event: 'notice',
@@ -429,10 +429,10 @@ wss.on('connection', function(tws) {
 							});
 							dbcs.chat.update({_id: post._id}, {$set: {deleted: 1}});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'delete',
 								id: post._id
 							}));
@@ -464,10 +464,10 @@ wss.on('connection', function(tws) {
 							});
 							dbcs.chat.update({_id: post._id}, {$unset: {deleted: 1}});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'undelete',
 								id: post._id,
 								body: post.body,
@@ -483,10 +483,10 @@ wss.on('connection', function(tws) {
 								room: tws.room
 							}, {$set: {state: message.state}}, {upsert: 1});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'statechange',
 								state: message.state,
 								name: tws.user.name
@@ -537,7 +537,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have 30 reputation to star messages.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.chat.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -596,10 +596,10 @@ wss.on('connection', function(tws) {
 											});
 											dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
 											var sendto = [];
-											for (var i in wss.clients) {
+											for (i in wss.clients) {
 												if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 											}
-											for (var i in sendto) sendto[i].trysend(JSON.stringify({
+											for (i in sendto) sendto[i].trysend(JSON.stringify({
 												event: 'star',
 												id: post._id,
 												body: post.body,
@@ -617,7 +617,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must be logged in to unstar messages.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.chat.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -642,10 +642,10 @@ wss.on('connection', function(tws) {
 								});
 								dbcs.chat.update({_id: id}, {$inc: {stars: -1}});
 								var sendto = [];
-								for (var i in wss.clients) {
+								for (i in wss.clients) {
 									if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 								}
-								for (var i in sendto) sendto[i].trysend(JSON.stringify({
+								for (i in sendto) sendto[i].trysend(JSON.stringify({
 									event: 'unstar',
 									id: id
 								}));
@@ -665,8 +665,8 @@ wss.on('connection', function(tws) {
 						});
 						dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 							if (err) throw err;
-							var id = doc ? doc._id + 1 : 1,
-								newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
+							id = doc ? doc._id + 1 : 1;
+							var newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
 							dbcs.chat.insert({
 								_id: id,
 								body: newMessage,
@@ -675,10 +675,10 @@ wss.on('connection', function(tws) {
 								room: tws.room
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) {
+							for (i in sendto) {
 								sendto[i].trysend(JSON.stringify({
 									event: 'info-update',
 									name: message.name,
@@ -700,10 +700,10 @@ wss.on('connection', function(tws) {
 				});
 				tws.on('close', function() {
 					var sendto = [];
-					for (var i in wss.clients) {
+					for (i in wss.clients) {
 						if (wss.clients[i].room == tws.room && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 					}
-					for (var i in sendto) sendto[i].trysend(JSON.stringify({
+					for (i in sendto) sendto[i].trysend(JSON.stringify({
 						event: 'deluser',
 						name: tws.user.name
 					}));
@@ -730,6 +730,7 @@ wss.on('connection', function(tws) {
 							body: 'JSON error.'
 						}));
 					}
+					var id;
 					if (message.event == 'post') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
@@ -750,7 +751,7 @@ wss.on('connection', function(tws) {
 						}));
 						dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 							if (err) throw err;
-							var id = doc ? doc._id + 1 : 1;
+							id = doc ? doc._id + 1 : 1;
 							dbcs.comments.insert({
 								_id: id,
 								body: message.body,
@@ -759,21 +760,21 @@ wss.on('connection', function(tws) {
 								program: tws.program
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'add',
 								body: message.body,
 								user: tws.user.name,
 								id: id
 							}));
 							var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
-							for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
+							for (i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 							dbcs.programs.findOne({_id: tws.program}, function(err, program) {
 								if (err) throw err;
 								if (matches.indexOf(program.user) == -1) matches.push(program.user);
-								for (var i = 0; i < matches.length; i++) {
+								for (i = 0; i < matches.length; i++) {
 									if (matches[i] == tws.user.name) continue;
 									dbcs.users.findOne({name: matches[i]}, function(err, user) {
 										if (err) throw err;
@@ -804,7 +805,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have 20 reputation to vote on comments.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.comments.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -814,7 +815,7 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'Invalid comment id.'
 							}));
-							for (var i in post.votes) {
+							for (i in post.votes) {
 								if (post.votes[i].user == tws.user.name) return tws.trysend(JSON.stringify({
 									event: 'err',
 									body: 'You already voted on this comment.'
@@ -834,10 +835,10 @@ wss.on('connection', function(tws) {
 								}
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'scorechange',
 								id: post._id,
 								score: post.votes ? post.votes.length + 1 : 1
@@ -848,7 +849,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must be logged in to vote on comments.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.comments.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -858,8 +859,8 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'Invalid comment id.'
 							}));
-							var err = true;
-							for (var i in post.votes) {
+							err = true;
+							for (i in post.votes) {
 								if (post.votes[i].user == tws.user.name) err = false;
 							}
 							if (err) return tws.trysend(JSON.stringify({
@@ -868,10 +869,10 @@ wss.on('connection', function(tws) {
 							}));
 							dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].program == tws.program && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'scorechange',
 								id: post._id,
 								score: post.votes.length - 1
@@ -900,6 +901,7 @@ wss.on('connection', function(tws) {
 							body: 'JSON error.'
 						}));
 					}
+					var id;
 					if (message.event == 'q-edit') {
 						if (!tws.user.name) return tws.trysend(JSON.stringify({
 							event: 'err',
@@ -918,18 +920,18 @@ wss.on('connection', function(tws) {
 							body: 'Invalid type parameter.'
 						}));
 						var tags = message.tags.split();
-						for (var i = 0; i < tags.length; i++) {
-							if (!(tags[i] = parseInt(tags[i]))) {
-								res.writeHead(400);
-								return res.end('Error: Invalid tag list.');
-							}
+						for (i = 0; i < tags.length; i++) {
+							if (!(tags[i] = parseInt(tags[i]))) return tws.trysend(JSON.stringify({
+								event: 'err',
+								body: 'Invalid tag list.'
+							}));
 						}
 						dbcs.qtags.findOne({lang: message.lang}, function(err, tag) {
 							if (err) throw err;
-							if (!tag) {
-								res.writeHead(400);
-								return res.end('Error: Invalid language.');
-							}
+							if (!tag) return tws.trysend(JSON.stringify({
+								event: 'err',
+								body: 'Invalid language.'
+							}));
 							dbcs.posthistory.insert({
 								q: question._id,
 								event: 'edit',
@@ -956,7 +958,7 @@ wss.on('connection', function(tws) {
 								}
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].question == tws.question) sendto.push(wss.clients[i]);
 							}
 							var tagstr = '';
@@ -974,7 +976,7 @@ wss.on('connection', function(tws) {
 												tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
 												tlang.splice(tlang.indexOf(tag), 1);
 												tageditstr += '<div class="indt">';
-												var i = -1;
+												i = -1;
 												while (++i < tlang.length) {
 													if (tlang[i].parentID == tag._id) {
 														writeTagRecursive(tlang[i]);
@@ -983,14 +985,14 @@ wss.on('connection', function(tws) {
 												}
 												tageditstr += '</div>';
 											};
-											var i = -1;
+											i = -1;
 											while (++i < tlang.length) {
 												if (!tlang[i].parentID) {
 													writeTagRecursive(tlang[i]);
 													i = -1;
 												}
 											}
-											for (var i in sendto) sendto[i].trysend(JSON.stringify({
+											for (i in sendto) sendto[i].trysend(JSON.stringify({
 												event: 'q-edit',
 												title: message.title.substr(0, 144),
 												lang: message.lang,
@@ -1027,7 +1029,7 @@ wss.on('connection', function(tws) {
 						}));
 						dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(function(err, doc) {
 							if (err) throw err;
-							var id = doc ? doc._id + 1 : 1;
+							id = doc ? doc._id + 1 : 1;
 							dbcs.comments.insert({
 								_id: id,
 								body: message.body,
@@ -1036,21 +1038,21 @@ wss.on('connection', function(tws) {
 								question: tws.question
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'add',
 								body: message.body,
 								user: tws.user.name,
 								id: id
 							}));
 							var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
-							for (var i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
+							for (i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 							dbcs.questions.findOne({_id: tws.question}, function(err, question) {
 								if (err) throw err;
 								if (matches.indexOf(question.user) == -1) matches.push(question.user);
-								for (var i = 0; i < matches.length; i++) {
+								for (i = 0; i < matches.length; i++) {
 									if (matches[i] == tws.user.name) continue;
 									dbcs.users.findOne({name: matches[i]}, function(err, user) {
 										if (err) throw err;
@@ -1081,7 +1083,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must have 20 reputation to vote on comments.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.comments.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -1091,7 +1093,7 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'Invalid comment id.'
 							}));
-							for (var i in post.votes) {
+							for (i in post.votes) {
 								if (post.votes[i].user == tws.user.name) return tws.trysend(JSON.stringify({
 									event: 'err',
 									body: 'You already voted on this comment.'
@@ -1111,10 +1113,10 @@ wss.on('connection', function(tws) {
 								}
 							});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'scorechange',
 								id: post._id,
 								score: post.votes ? post.votes.length + 1 : 1
@@ -1125,7 +1127,7 @@ wss.on('connection', function(tws) {
 							event: 'err',
 							body: 'You must be logged in to vote on comments.'
 						}));
-						var id = parseInt(message.id);
+						id = parseInt(message.id);
 						dbcs.comments.findOne({
 							_id: id,
 							deleted: {$exists: false}
@@ -1135,20 +1137,18 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'Invalid comment id.'
 							}));
-							var err = true;
-							for (var i in post.votes) {
-								if (post.votes[i].user == tws.user.name) err = false;
-							}
+							err = true;
+							for (i in post.votes) if (post.votes[i].user == tws.user.name) err = false;
 							if (err) return tws.trysend(JSON.stringify({
 								event: 'err',
 								body: 'You haven\'t voted on this comment.'
 							}));
 							dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
 							var sendto = [];
-							for (var i in wss.clients) {
+							for (i in wss.clients) {
 								if (wss.clients[i].question == tws.question && sendto.indexOf(wss.clients[i].user.name) == -1) sendto.push(wss.clients[i]);
 							}
-							for (var i in sendto) sendto[i].trysend(JSON.stringify({
+							for (i in sendto) sendto[i].trysend(JSON.stringify({
 								event: 'scorechange',
 								id: post._id,
 								score: post.votes.length - 1

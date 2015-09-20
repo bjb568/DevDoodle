@@ -69,7 +69,7 @@ $textarea
 		}];
 		ta.hIndex = ta.hist.length - 1;
 		ta.value = ta.hist[ta.hIndex].body;
-		var e = document.getElementsByClassName('editing')[0];
+		e = document.getElementsByClassName('editing')[0];
 		if (e) e.classList.remove('editing');
 		editing = true;
 		var msg = this.parentNode.parentNode;
@@ -114,7 +114,7 @@ $textarea
 	ctrls.appendChild(ctrlsDelete);
 	ctrls.appendChild(ctrlsUndelete);
 	ctrls.appendChild(ctrlsFlag);
-	cont.onscroll = function(e) {
+	cont.onscroll = function() {
 		onBottom = cont.scrollTop + cont.offsetHeight >= cont.scrollHeight - 2;
 	};
 	addEventListener('resize', function() {
@@ -213,8 +213,7 @@ $textarea
 			if (data.deleted) tCtrls.children[0].hidden = true;
 			if (username) div.appendChild(tCtrls);
 			if (data.event == 'init') {
-				var after = 0,
-					e;
+				var after = 0;
 				while (e = cont.children[after] &amp;&amp; e.id &lt; data.id) after++;
 				cont.insertBefore(div, cont.children[after]);
 				if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
@@ -364,7 +363,6 @@ $textarea
 				else starwall.appendChild(li);
 			}
 		} else if (data.event == 'unstar') {
-			var e;
 			if (e = document.getElementById(data.id)) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
@@ -455,7 +453,6 @@ $textarea
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.revertInfo) resetEditForm();
-			var e;
 			if (e = document.getElementById(data.revertStar)) e.getElementsByClassName('ctrls')[0].firstChild.classList.remove('clkd');
 		}
 	};

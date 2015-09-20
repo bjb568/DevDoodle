@@ -27,13 +27,11 @@ var site = {
 var http = require('http'),
 	fs = require('fs'),
 	url = require('url'),
-	querystring = require('querystring'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./essentials.js'),
 	diff = require('diff'),
 	html = essentials.html,
-	markdownEscape = essentials.markdownEscape,
 	inlineMarkdown = essentials.inlineMarkdown,
 	markdown = essentials.markdown,
 	mongo = require('mongodb'),
@@ -49,17 +47,33 @@ var http = require('http'),
 
 db.open(function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err, result) {
+	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err) {
 		if (err) throw err;
 		var i = usedDBCs.length;
-		while (i--) {
-			db.collection(usedDBCs[i], function(err, collection) {
-				if (err) throw err;
-				dbcs[usedDBCs[i]] = collection;
-			});
+		function handleCollection(err, collection) {
+			if (err) throw err;
+			dbcs[usedDBCs[i]] = collection;
+			if (usedDBCs[i] == 'chatusers') collection.drop();
 		}
+		while (i--) db.collection(usedDBCs[i], handleCollection);
 	});
 });
+
+function writeTagRecursive(tlang, tag, res) {
+	res.write('<li id="' + tag._id + '">');
+	res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
+	tlang.splice(tlang.indexOf(tag), 1);
+	res.write('<ul>');
+	var i = -1;
+	while (++i < tlang.length) {
+		if (tlang[i].parentID == tag._id) {
+			writeTagRecursive(tlang, tlang[i], res);
+			i = -1;
+		}
+	}
+	res.write('</ul>');
+	res.write('</li>');
+}
 
 function respondPage(title, user, req, res, callback, header, status) {
 	if (title) title = html(title);
@@ -239,23 +253,17 @@ errorPage[521] = function(req, res, user) {
 };
 
 function errorsHTML(errs) {
-	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>\n' : '<div class="error">\n\t<ul>\n\t\t<li>' + errs.join('</li>\n\t\t<li>') + '</li>\n\t</ul>\n</div>\n') : '';
+	return errs.length ? (errs.length == 1 ? '<div class="error">' + errs[0] + '</div>' : '<div class="error"><ul><li>' + errs.join('</li><li>') + '</li></ul></div>') : '';
 }
-
-var questionTypes = {
-	err: 'an error',
-	bug: 'unexpected behavior',
-	imp: 'improving working code',
-	how: 'achieving an end result',
-	alg: 'algorithms and data structures',
-	pra: 'techniques and best practices',
-	the: 'a theoretical scenario'
-};
 
 var typeIcons = {
 		P: '',
-		R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" /></svg>',
-		N: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="14"><path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" /></svg>',
+		R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16">' +
+				'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
+			'</svg>',
+		N: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="14">' +
+				'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
+			'</svg>',
 		M: ' <span class="diamond">♦</span>'
 	},
 	showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
@@ -263,8 +271,8 @@ var typeIcons = {
 	mailform = fs.readFileSync('./html/user/mailform.html').toString();
 
 http.createServer(function(req,	res) {
-	var user = JSON.parse(req.headers.user) || {},
-		i;
+	var i,
+		user = JSON.parse(req.headers.user) || {};
 	req.url = url.parse(req.url, true);
 	console.log(req.method, req.url.pathname);
 	if (req.url.pathname == '/') {
@@ -273,11 +281,11 @@ http.createServer(function(req,	res) {
 			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(12).each(function(err, data) {
 			if (err) throw err;
 				if (data) {
-					programstr += '<div class="program">\n';
-					programstr += '\t<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n';
-					if (data.type == 1) programstr += '\t' + showcanvas.replace('$code', html(JSON.stringify(data.code)));
-					else if (data.type == 2) programstr += '\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js));
-					programstr += '</div>\n';
+					programstr += '<div class="program">';
+					programstr += '<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>';
+					if (data.type == 1) programstr += showcanvas.replace('$code', html(JSON.stringify(data.code)));
+					else if (data.type == 2) programstr += showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js));
+					programstr += '</div> ';
 				} else {
 					fs.readFile('./html/home.html', function(err, data) {
 						if (err) throw err;
@@ -340,9 +348,9 @@ http.createServer(function(req,	res) {
 				if (cUser) {
 					num++;
 					dstr +=
-						'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-						'\t\t<div>\n\t\t\t<a href="/user/' + cUser.name + '">' + cUser.name + '</a>\n\t\t\t<small class="rep">' + cUser.rep + '</small>\n\t\t</div>' +
-						'\n\t</div>\n';
+						'<div class="lft user"><img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+						'<div><a href="/user/' + cUser.name + '">' + cUser.name + '</a><small class="rep">' + cUser.rep + '</small></div>' +
+						'</div>';
 				} else {
 					fs.readFile('./html/user/userlist.html', function(err, data) {
 						if (err) throw err;
@@ -366,15 +374,20 @@ http.createServer(function(req,	res) {
 			var questions = 0;
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
-				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>\n');
-				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />\n');
-				res.write('<div style="padding-left: 6px; overflow: hidden;">\n');
-				res.write('\t<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>\n');
-				if (dispUser.seen) res.write('\t<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>\n');
-				res.write('\t<div class="grey">Moderator level ' + dispUser.level + '</div>');
-				if (me) res.write('\t<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> (you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)\n');
-				res.write('</div>\n');
-				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>\n');
+				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
+				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />');
+				res.write('<div style="padding-left: 6px; overflow: hidden;">');
+				res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
+				if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
+				res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
+				if (me) {
+					res.write(
+						'<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
+						'(you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
+					);
+				}
+				res.write('</div>');
+				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>');
 				res.write('<div class="resp-flex">');
 				res.write('<section>');
 				res.write('<h2>Questions</h2>');
@@ -407,8 +420,8 @@ http.createServer(function(req,	res) {
 								if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
 								res.write('</section>');
 								res.write('</div>');
-								res.write('<section class="lim-programs resp-block">\n');
-								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>\n');
+								res.write('<section class="lim-programs resp-block">');
+								res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>');
 								var programs = 0;
 								dbcs.programs.find({
 									user: dispUser.name,
@@ -419,30 +432,32 @@ http.createServer(function(req,	res) {
 								}).limit(6).each(function(err, data) {
 									if (err) throw err;
 									if (data) {
-										res.write('<div class="program">\n');
-										res.write('\t<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>\n');
-										if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-										else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
-										res.write('</div>\n');
+										res.write('<div class="program">');
+										res.write('<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>');
+										if (data.type == 1) res.write(showcanvas.replace('$code', html(JSON.stringify(data.code))));
+										else if (data.type == 2) res.write(showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+										res.write('</div> ');
 										programs++;
 									} else {
 										if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
-										res.write('</section>\n');
+										res.write('</section>');
 										if (me) {
-											res.write('<h2 class="underline">Private</h2>\n');
+											res.write('<h2 class="underline">Private</h2>');
 											res.write(mailform.replaceAll('$mail', html(user.mail)));
 											if (user.notifs) {
 												var notifs = [];
-												for (var i = 0; i < user.notifs.length; i++) {
+												i = user.notifs.length;
+												while (i--) {
 													if (user.notifs[i].unread) notifs.push(user.notifs[i]);
 													user.notifs[i].unread = false;
 												}
 												if (notifs.length) {
-													res.write('<h2>Notifications</h2>\n');
-													res.write('<ul id="notifs">\n');
-													for (var i = 0; i < notifs.length; i++) res.write(
-														'\t<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
-														'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>\n'
+													res.write('<h2>Notifications</h2>');
+													res.write('<ul id="notifs">');
+													i = notifs.length;
+													while (i--) res.write(
+														'<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
+														'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>'
 													);
 													res.write('</ul>');
 													dbcs.users.update({name: user.name}, {
@@ -467,13 +482,13 @@ http.createServer(function(req,	res) {
 	} else if (req.url.pathname == '/notifs') {
 		if (!user.name) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
 		respondPage('Notifications', user, req, res, function() {
-			res.write('<h1>Notifications</h1>\n');
-			res.write('<ul id="notifs">\n');
+			res.write('<h1>Notifications</h1>');
+			res.write('<ul id="notifs">');
 			for (var i = user.notifs.length - 1; i >= 0; i--) res.write(
-				'\t<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + markdown(user.notifs[i].body) + '</blockquote>' +
-				'-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>\n'
+				'<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + markdown(user.notifs[i].body) + '</blockquote>' +
+				'-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>'
 			);
-			res.write('</ul>\n');
+			res.write('</ul>');
 			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/logout') {
@@ -485,10 +500,10 @@ http.createServer(function(req,	res) {
 		res.end();
 	} else if (req.url.pathname == '/qa/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>\n');
+			res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
 			dbcs.questions.find().each(function(err, doc) {
 				if (err) throw err;
-				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>\n');
+				if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>');
 				else respondPageFooter(res);
 			});
 		});
@@ -505,65 +520,35 @@ http.createServer(function(req,	res) {
 						if (tag.lang == clang) tlang.push(tag);
 						else {
 							if (clang) {
-								res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">\n');
-								res.write('<h2>' + html(clang) + '</h2>\n');
-								res.write('<ul>\n');
-								var writeTagRecursive = function(tag) {
-									res.write('<li id="' + tag._id + '">');
-									res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
-									tlang.splice(tlang.indexOf(tag), 1);
-									res.write('<ul>');
-									var i = -1;
-									while (++i < tlang.length) {
-										if (tlang[i].parentID == tag._id) {
-											writeTagRecursive(tlang[i]);
-											i = -1;
-										}
-									}
-									res.write('</ul>');
-									res.write('</li>');
-								};
-								var i = -1;
+								res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">');
+								res.write('<h2>' + html(clang) + '</h2>');
+								res.write('<ul>');
+								i = -1;
 								while (++i < tlang.length) {
 									if (!tlang[i].parentID) {
-										writeTagRecursive(tlang[i]);
+										writeTagRecursive(tlang, tlang[i], res);
 										i = -1;
 									}
 								}
-								res.write('</ul>\n');
-								res.write('</section>\n');
+								res.write('</ul>');
+								res.write('</section>');
 							}
 							clang = tag.lang;
 							tlang = [tag];
 						}
 					} else {
-						res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">\n');
-						res.write('<h2>' + html(clang) + '</h2>\n');
-						res.write('<ul>\n');
-						var writeTagRecursive = function(tag) {
-							res.write('<li id="' + tag._id + '">');
-							res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
-							tlang.splice(tlang.indexOf(tag), 1);
-							res.write('<ul>');
-							var i = -1;
-							while (++i < tlang.length) {
-								if (tlang[i].parentID == tag._id) {
-									writeTagRecursive(tlang[i]);
-									i = -1;
-								}
-							}
-							res.write('</ul>');
-							res.write('</li>');
-						};
-						var i = -1;
+						res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">');
+						res.write('<h2>' + html(clang) + '</h2>');
+						res.write('<ul>');
+						i = -1;
 						while (++i < tlang.length) {
 							if (!tlang[i].parentID) {
-								writeTagRecursive(tlang[i]);
+								writeTagRecursive(tlang, tlang[i], res);
 								i = -1;
 							}
 						}
-						res.write('</ul>\n');
-						res.write('</section>\n');
+						res.write('</ul>');
+						res.write('</section>');
 						respondPageFooter(res);
 					}
 				});
@@ -588,7 +573,7 @@ http.createServer(function(req,	res) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
 			if (!question) return errorPage[404](req, res, user);
-			var history = req.url.query.history != undefined;
+			var history = typeof req.url.query.history == 'string';
 			respondPage((history ? 'History of "' : html(question.lang) + ': ') + html(question.title) + (history ? '"' : ''), user, req, res, function() {
 				var revcursor = dbcs.posthistory.find({q: question._id});
 				revcursor.sort({time: -1}).count(function(err, revcount) {
@@ -601,7 +586,7 @@ http.createServer(function(req,	res) {
 						res.write('<h1 class="nomar">' + question.lang + ': ' + question.title + '</h1>');
 						res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
 						res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
-						res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + '\nType: ' + question.type + '</code>');
+						res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + 'Type: ' + question.type + '</code>');
 						res.write('<div class="umar">');
 						var langTags = [];
 						dbcs.qtags.find().each(function(err, tag) {
@@ -650,7 +635,7 @@ http.createServer(function(req,	res) {
 											res.write('</details>');
 											res.write('<h2>Core Question:</h2>');
 											res.write('<code class="blk">');
-											writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
+											writeDiff(item.question + 'Type: ' + item.type, prev.question + 'Type: ' + prev.type);
 											res.write('</code>');
 											res.write('<div class="bumar">');
 											var d = diff.diffWords(item.tags.join(), prev.tags.join());
@@ -731,9 +716,12 @@ http.createServer(function(req,	res) {
 											for (var i in votes) if (votes[i].user == user.name) voted = true;
 											var commentBody = markdown(comment.body),
 												endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
-											commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
-												+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
-												+ commentBody.substring(commentBody.length - endTagsLength);
+											commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
+												'<span class="c-sig">' +
+													'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +
+													' <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a>' +
+												'</span>' +
+												commentBody.substring(commentBody.length - endTagsLength);
 											commentstr +=
 												'<div id="c' + comment._id + '" class="comment">' +
 												'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
@@ -741,8 +729,8 @@ http.createServer(function(req,	res) {
 													user.rep >= 50 ?
 													(
 														'<span class="sctrls">' +
-														'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-														'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+															'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+															'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
 														'</span>'
 													) :
 													''
@@ -761,14 +749,14 @@ http.createServer(function(req,	res) {
 															if (err) throw err;
 															if (tag) tlang.push(tag);
 															else {
-																var writeTagRecursive = function(tag) {
+																var writeFormTagRecursive = function(tag) {
 																	tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
 																	tlang.splice(tlang.indexOf(tag), 1);
 																	tageditstr += '<div class="indt">';
 																	var i = -1;
 																	while (++i < tlang.length) {
 																		if (tlang[i].parentID == tag._id) {
-																			writeTagRecursive(tlang[i]);
+																			writeFormTagRecursive(tlang[i]);
 																			i = -1;
 																		}
 																	}
@@ -777,7 +765,7 @@ http.createServer(function(req,	res) {
 																var i = -1;
 																while (++i < tlang.length) {
 																	if (!tlang[i].parentID) {
-																		writeTagRecursive(tlang[i]);
+																		writeFormTagRecursive(tlang[i]);
 																		i = -1;
 																	}
 																}
@@ -787,8 +775,11 @@ http.createServer(function(req,	res) {
 																		.replace('$langs', JSON.stringify(langs))
 																		.replace(revcount ? '$revcount': ' ($revcount)', revcount || '')
 																		.replaceAll(
-																			['$id', '$title', '$lang', '$description', '$rawdesc', '$question', '$rawq', '$code', '$type'],
-																			[question._id.toString(), html(question.title), html(question.lang), markdown(question.description), html(question.description), inlineMarkdown(question.question), html(question.question), html(question.code), question.type]
+																			['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
+																			[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.question), html(question.code), question.type]
+																		).replaceAll(
+																			['$description', '$question'],
+																			[markdown(question.description), inlineMarkdown(question.question)]
 																		).replaceAll(
 																			['$edit-tags', '$raw-edit-tags'],
 																			[tageditstr, question.tags.join()]
@@ -819,7 +810,7 @@ http.createServer(function(req,	res) {
 		});
 	} else if (req.url.pathname == '/chat/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Chat Rooms</h1>\n');
+			res.write('<h1>Chat Rooms</h1>');
 			var roomnames = [],
 				publicRooms = [];
 			dbcs.chatrooms.find().each(function(err, doc) {
@@ -827,19 +818,19 @@ http.createServer(function(req,	res) {
 				if (doc) {
 					if (doc.type == 'M' && (!user || user.level < 5)) return;
 					if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
-					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>\n');
-					res.write(markdown(doc.desc) + '\n');
+					res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>');
+					res.write(markdown(doc.desc));
 					roomnames[doc._id] = doc.name;
 					if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
 				} else {
-					res.write('<hr />\n');
+					res.write('<hr />');
 					res.write('<small>');
 					res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
 					if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
-					res.write('</small>\n');
-					res.write('</div>\n');
-					res.write('<aside id="sidebar" style="overflow-x: hidden">\n');
-					res.write('<h2>Recent Posts</h2>\n');
+					res.write('</small>');
+					res.write('</div>');
+					res.write('<aside id="sidebar" style="overflow-x: hidden">');
+					res.write('<h2>Recent Posts</h2>');
 					dbcs.chat.find({
 						deleted: {$exists: false},
 						room: {$in: publicRooms}
@@ -848,9 +839,12 @@ http.createServer(function(req,	res) {
 						if (comment) {
 							var commentBody = markdown(comment.body),
 								endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
-							commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
-								+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a></span>'
-								+ commentBody.substring(commentBody.length - endTagsLength);
+							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
+								'<span class="c-sig">' +
+									'-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
+									'<a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a>' +
+								'</span>' +
+								commentBody.substring(commentBody.length - endTagsLength);
 							res.write('<div class="comment">' + commentBody + '</div>');
 						} else respondPageFooter(res, true);
 					});
@@ -891,9 +885,9 @@ http.createServer(function(req,	res) {
 					dbcs.users.find({name: {$in: doc.invited}}).each(function(err, invUser) {
 						if (err) throw err;
 						if (invUser) userstr +=
-							'\t<div class="lft user">\n\t\t<img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />\n' +
-							'\t\t<div>\n\t\t\t<a href="/user/' + invUser.name + '">' + invUser.name + '</a>\n\t\t\t<small class="rep">' + invUser.rep + '</small>\n\t\t</div><span>✕</span>' +
-							'\n\t</div>\n';
+							'<div class="lft user"><img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+							'<div><a href="/user/' + invUser.name + '">' + invUser.name + '</a><small class="rep">' + invUser.rep + '</small></div><span>✕</span>' +
+							'</div>';
 						else {
 							fs.readFile('./html/chat/access.html', function(err, data) {
 								if (err) throw err;
@@ -927,8 +921,9 @@ http.createServer(function(req,	res) {
 										user.rep < 30 ?
 											'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
 											(
-												isInvited ?
-													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea><div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
+												isInvited?
+													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea>' +
+														'<div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>':
 													'<p>Posting in a non-public room is by invitation only.</p>'
 											)
 									) :
@@ -952,22 +947,22 @@ http.createServer(function(req,	res) {
 				}
 				var revisions = 0,
 					events;
-				res.write('<h1>Message #' + doc._id + '</h1>\n');
-				res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>\n');
-				res.write('<p>Current revision:</p>\n');
-				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>\n');
+				res.write('<h1>Message #' + doc._id + '</h1>');
+				res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>');
+				res.write('<p>Current revision:</p>');
+				res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
 				dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(function(err, data) {
 					if (err) throw err;
 					if (data) {
 						if (!events) {
-							res.write('<h2>History:</h2>\n');
-							res.write('<ul>\n');
+							res.write('<h2>History:</h2>');
+							res.write('<ul>');
 							events = true;
 						}
-						res.write('<li>\n');
+						res.write('<li>');
 						if (data.event == 'edit') {
 							revisions++;
-							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>)' + (data.note ? ' ' + data.note : '') + ':\n');
+							res.write('Revision ' + revisions + ' (<time datetime="' + new Date(data.time).toISOString() + '"></time>)' + (data.note ? ' ' + data.note : '') + ':');
 							res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 						} else if (data.event == 'delete' || data.event == 'undelete') {
 							var deletersstr = '',
@@ -975,14 +970,14 @@ http.createServer(function(req,	res) {
 							while (i--) {
 								deletersstr += '<a href="/user/' + data.by[i] + '">' + data.by[i] + '</a>';
 								if (i == 1) deletersstr += ', and ';
-								else if (i != 0) deletersstr += ', ';
+								else if (i) deletersstr += ', ';
 							}
 							res.write('<div>' + data.event[0].toUpperCase() + data.event.substr(1) + 'd <time datetime="' + new Date(data.time).toISOString() + '"></time> by ' + deletersstr + '</div>');
 						}
-						res.write('</li>\n');
+						res.write('</li>');
 					} else {
 						if (events) res.write('</ul>');
-						else res.write('<p>(no message history)</p>\n');
+						else res.write('<p>(no message history)</p>');
 						respondPageFooter(res);
 					}
 				});
@@ -990,17 +985,17 @@ http.createServer(function(req,	res) {
 		});
 	} else if (req.url.pathname == '/dev/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>\n');
+			res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>');
 			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(15).each(function(err, data) {
 				if (err) throw err;
 				if (data) {
-					res.write('<div class="program">\n');
-					res.write('\t<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>\n');
-					if (data.type == 1) res.write('\t' + showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write('\t' + showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
-					res.write('</div>\n');
+					res.write('<div class="program">');
+					res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
+					if (data.type == 1) res.write(showcanvas.replace('$code', html(JSON.stringify(data.code))));
+						else if (data.type == 2) res.write(showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+					res.write('</div> ');
 				} else {
-					res.write('<a href="search/" class="center-text blk">See more</a>\n');
+					res.write('<a href="search/" class="center-text blk">See more</a>');
 					respondPageFooter(res);
 				}
 			});
@@ -1018,7 +1013,7 @@ http.createServer(function(req,	res) {
 				};
 			dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(function(err, data) {
 				if (err) throw err;
-				if (data) liststr += '\t<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>\n';
+				if (data) liststr += '<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>';
 				else {
 					fs.readFile('./html/dev/search.html', function(err, data) {
 						if (err) throw err;
@@ -1072,30 +1067,30 @@ http.createServer(function(req,	res) {
 			if (!program) return errorPage[404](req, res, user);
 			if (program.deleted) {
 				respondPage('[Deleted]', user, req, res, function() {
-					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nYou deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a class="red" id="undelete">[undelete]</a>');
-					else if (user.level >= 4) {
+					if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) {
+						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. <a class="red" id="undelete">[undelete]</a>');
+					} else if (user.level >= 4) {
 						var deletersstr = '',
 							i = program.deleted.by.length;
 						while (i--) {
 							deletersstr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
 							if (i == 1) deletersstr += ', and ';
-							else if (i != 0) deletersstr += ', ';
+							else if (i) deletersstr += ', ';
 						}
-						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>\nThis program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a class="red" id="undelete">[undelete]</a>');
-					} else res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' + (program.deleted.by.length == 1 && program.deleted.by == program.user ? 'voluntarily by its owner' : 'for moderation reasons') + '.');
-					res.write('\n<script>\n');
-					res.write('\tvar undel = document.getElementById(\'undelete\');\n');
-					res.write('\tif (undel) undel.onclick = function() {\n');
-					res.write('\t\tif (confirm(\'Do you want to undelete this program?\'))\n');
-					res.write('\t\t\trequest(\'/api/program/undelete\', function(res) {\n');
-					res.write('\t\t\t\tif (res.indexOf(\'Error\') == 0) alert(res);\n');
-					res.write('\t\t\t\telse if (res == \'Success\') location.reload();\n');
-					res.write('\t\t\t\telse alert(\'Unknown error. Response was: \' + res);\n');
-					res.write('\t\t\t});\n');
-					res.write('\t}\n');
-					res.write('</script>');
+						res.write('<h1>' + html(program.title || 'Untitled') + '</h1>This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. <a class="red" id="undelete">[undelete]</a>');
+					} else {
+						res.write(
+							'This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' +
+							(
+								program.deleted.by.length == 1 && program.deleted.by == program.user?
+									'voluntarily by its owner':
+									'for moderation reasons'
+							) +
+							'.'
+						);
+					}
 					respondPageFooter(res);
-				}, {}, 404);
+				}, {inhead: '<script src="deleted-program.js"></script>'}, 404);
 			} else {
 				respondPage(program.title || 'Untitled', user, req, res, function() {
 					dbcs.votes.findOne({
@@ -1115,9 +1110,9 @@ http.createServer(function(req,	res) {
 									for (var i in votes) if (votes[i].user == user.name) voted = true;
 									var commentBody = markdown(comment.body),
 										endTagsLength = (commentBody.match(/(<\/((?!blockquote).)+?>)+$/) || [{length: 0}])[0].length;
-									commentBody = commentBody.substring(0, commentBody.length - endTagsLength)
-										+ '<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>'
-										+ commentBody.substring(commentBody.length - endTagsLength);
+									commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
+										'<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>' +
+										commentBody.substring(commentBody.length - endTagsLength);
 									commentstr +=
 										'<div id="c' + comment._id + '" class="comment">' +
 										'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
@@ -1145,16 +1140,25 @@ http.createServer(function(req,	res) {
 														res.write(
 															data.toString()
 															.replaceAll(
-																['$id', '$title', '$code', '$created', '$updated', '$comments'],
-																[program._id.toString(), html(program.title || 'Untitled'), html(program.code), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+																['$id', '$title', '$code'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.code)]
+															).replaceAll(
+																['$created', '$updated'],
+																[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 															).replaceAll(
 																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
 															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
 															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+															.replace(
+																'$forked',
+																forkedFrom?
+																	' Forked from <a href="' + forkedFrom._id + '">' +
+																		html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
+																		'</a>':
+																	''
+															).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 														);
 														respondPageFooter(res);
 													});
@@ -1164,16 +1168,25 @@ http.createServer(function(req,	res) {
 														res.write(
 															data.toString()
 															.replaceAll(
-																['$id', '$title', '$html', '$css', '$js', '$created', '$updated', '$comments'],
-																[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js), new Date(program.created).toISOString(), new Date(program.updated).toISOString(), commentstr]
+																['$id', '$title', '$html', '$css', '$js'],
+																[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js)]
 															).replaceAll(
+																['$created', '$updated'],
+																[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
+															).replace('$comments', commentstr).replaceAll(
 																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
 															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
 															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-															.replace('$forked', forkedFrom ? ' Forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a>' : '')
-															.replace('$forks', forks.length ? '<h2>Forks</h2>\n<ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+															.replace(
+																'$forked',
+																forkedFrom?
+																	' Forked from <a href="' + forkedFrom._id + '">' +
+																		html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
+																		'</a>':
+																	''
+															).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 														);
 														respondPageFooter(res);
 													});
@@ -1216,9 +1229,9 @@ http.createServer(function(req,	res) {
 						.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
 							return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
 						}).join('') + '</ul>' + (
-							post.user == user.name
-							? '<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>'
-							: ''
+							post.user == user.name?
+							'<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>':
+							''
 						))
 						.replace('$mine', post.user == user.name ? 'true' : 'false')
 					);
@@ -1271,13 +1284,13 @@ http.createServer(function(req,	res) {
 		});
 	} else if (req.url.pathname == '/mod/') {
 		respondPage(null, user, req, res, function() {
-			res.write('<h1>Moderation Queues</h1>\n');
-			res.write('' + (user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>\n');
+			res.write('<h1>Moderation Queues</h1>');
+			res.write((user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') + 'Chat flags' + (user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') + '</h2>');
 			respondPageFooter(res);
 		});
 	} else if (req.url.pathname == '/mod/chatflag') {
 		respondPage('Chat Flags', user, req, res, function() {
-			res.write('<h1>Chat Flags</h1>\n');
+			res.write('<h1>Chat Flags</h1>');
 			if (!user.name) {
 				res.write('<p>You must be logged in and have level 2 moderator tools to access this queue.</p>');
 				return respondPageFooter(res);
@@ -1300,31 +1313,31 @@ http.createServer(function(req,	res) {
 					res.write('<h2><a href="#' + message._id + '">#</a>' + message._id + '</h2>');
 					res.write('<div class="indt">');
 					if (message.mod) res.write('<p class="large red">Mod-only; ' + message.mod + '</p>');
-					res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a>:\n');
-					res.write('<blockquote class="op"><pre>' + html(message.body) + '</pre></blockquote>\n');
+					res.write('<a href="/user/' + message.user + '">' + message.user + '</a> posted <a href="/chat/' + message.room + '#' + message._id + '"><time datetime="' + new Date(message.time).toISOString() + '"></time></a>:');
+					res.write('<blockquote class="op"><pre>' + html(message.body) + '</pre></blockquote>');
 					res.write('<form hidden="" onsubmit="arguments[0].preventDefault(); ' +
 						'request(\'/api/chat/msg/' + message._id + '/edit\', ' +
 							'function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } }, ' +
 						'\'body=\' + encodeURIComponent(this.firstChild.value))">');
-					res.write('<textarea class="edit fullwidth" rows="6">' + html(message.body) + '</textarea>\n');
-					res.write('<div><button type="submit">Submit Edit</button> <button type="reset" onclick="this.parentNode.parentNode.hidden = true; this.parentNode.parentNode.previousSibling.previousSibling.hidden = false">Cancel Edit</button></div>\n');
+					res.write('<textarea class="edit fullwidth" rows="6">' + html(message.body) + '</textarea>');
+					res.write('<div><button type="submit">Submit Edit</button> <button type="reset" onclick="this.parentNode.parentNode.hidden = true; this.parentNode.parentNode.previousSibling.previousSibling.hidden = false">Cancel Edit</button></div>');
 					res.write('</form>');
 					res.write('Quality score: ' + (
-						message.stars || 1
-						- (message.body.length < 8 ? 1 : 0)
-						- (message.body.length > 700 ? 2 : 0)
-						- (message.body.match(/\b(i|u|r)\b/) ? 1 : 0)
-						- (message.body.match(/\b(im|ur|u|r|pls|plz|omg)\W/i) ? 1 : 0)
-						- (message.body.match(/^\W+[a-z]/) ? 1 : 0)
-						- (message.body.match(/\w\s+:/) ? 1 : 0)
-						- (message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || []).length
-						- (message.body.match(/(.+)\s*\1\s*\1/g) || []).length
-						- (message.body.match(/\!\!+/g) || []).length
-						- (message.body.match(/\b[A-Z]\w*\b/) ? 0 : 1)
-						- ((message.body.match(/\b[A-Z]\w*\b/g) || []).length / ((message.body.match(/\b\w+\b/g) || []).length + 2) > 0.5 ? 2 : 0)
-						+ ((message.body.match(/\w{8,}/g) || []).length > 3 ? 1 : 0)
-						+ ((message.body.match(/\. [A-Z]/g) || []).length > 3 ? 1 : 0)
-						+ (message.body.indexOf(', ') != -1 ? 1 : 0)
+						message.stars || 1 -
+						(message.body.length < 8 ? 1 : 0) -
+						(message.body.length > 700 ? 2 : 0) -
+						(message.body.match(/\b(i|u|r)\b/) ? 1 : 0) -
+						(message.body.match(/\b(im|ur|u|r|pls|plz|omg)\W/i) ? 1 : 0) -
+						(message.body.match(/^\W+[a-z]/) ? 1 : 0) -
+						(message.body.match(/\w\s+:/) ? 1 : 0) -
+						(message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || []).length -
+						(message.body.match(/(.+)\s*\1\s*\1/g) || []).length -
+						(message.body.match(/\!\!+/g) || []).length -
+						(message.body.match(/\b[A-Z]\w*\b/) ? 0 : 1) -
+						((message.body.match(/\b[A-Z]\w*\b/g) || []).length / ((message.body.match(/\b\w+\b/g) || []).length + 2) > 0.5 ? 2 : 0) +
+						((message.body.match(/\w{8,}/g) || []).length > 3 ? 1 : 0) +
+						((message.body.match(/\. [A-Z]/g) || []).length > 3 ? 1 : 0) +
+						(message.body.indexOf(', ') != -1 ? 1 : 0)
 					) + ', Length: ' + message.body.length + ', Uppercase ratio: ' + (Math.round((message.body.match(/[A-Z]/g) || []).length / (message.body.match(/[a-z]/g) || []).length * 100) / 100));
 					res.write('<h3>Comments</h3>');
 					for (var i = 0; i < message.flags.length; i++) {
@@ -1334,10 +1347,15 @@ http.createServer(function(req,	res) {
 						res.write('</div>');
 					}
 					res.write('<div class="actions">');
-					if (!message.deleted) res.write('<span><a class="bad" title="Soft-delete this post" onclick="' +
-						'request(\'/api/chat/msg/' + message._id + '/delv\', function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } })' +
-						'">Vote to Delete</a></span> ');
-					res.write('<span><a class="bad" title="Publicly edit this post" onclick="var e = document.getElementById(\'' + message._id + '\').getElementsByTagName(\'form\')[0]; e.hidden = false; e.previousSibling.previousSibling.hidden = true">Edit</a></span> ');
+					if (!message.deleted) res.write(
+						'<span><a class="bad" title="Soft-delete this post" onclick="' +
+							'request(\'/api/chat/msg/' + message._id + '/delv\', function(res) { if (res == \'Success\') { document.getElementById(\'' + message._id + '\').hidden = true } else { alert(res) } })' +
+							'">Vote to Delete</a></span> ');
+					res.write(
+						'<span><a class="bad" title="Publicly edit this post" onclick="' +
+							'var e = document.getElementById(\'' + message._id + '\').getElementsByTagName(\'form\')[0]; e.hidden = false; e.previousSibling.previousSibling.hidden = true' +
+							'">Edit</a></span> '
+					);
 					if (!message.mod) res.write('<span><a class="bad" title="Push this post to the mod queue with a comment explaining what actions you wish to be performed by moderators" onclick="' +
 						'var body = prompt(\'Enter your comment.\'); if (body) request(\'/api/chat/msg/' + message._id + '/rcomment\', function(res) { ' +
 							'if (res.substr(0, 4) == \'Ok: \') { var e = document.createElement(\'div\'), f = document.getElementById(\'' + message._id + '\').children[1]; e.innerHTML = res.substr(4); f.insertBefore(e, f.lastChild) } else { alert(res) } ' +
