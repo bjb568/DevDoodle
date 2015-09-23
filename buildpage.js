@@ -921,9 +921,9 @@ http.createServer(function(req,	res) {
 										user.rep < 30 ?
 											'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
 											(
-												isInvited?
+												isInvited ?
 													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea>' +
-														'<div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>':
+														'<div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
 													'<p>Posting in a non-public room is by invitation only.</p>'
 											)
 									) :
@@ -1082,8 +1082,8 @@ http.createServer(function(req,	res) {
 						res.write(
 							'This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' +
 							(
-								program.deleted.by.length == 1 && program.deleted.by == program.user?
-									'voluntarily by its owner':
+								program.deleted.by.length == 1 && program.deleted.by == program.user ?
+									'voluntarily by its owner' :
 									'for moderation reasons'
 							) +
 							'.'
@@ -1153,10 +1153,10 @@ http.createServer(function(req,	res) {
 															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
 															.replace(
 																'$forked',
-																forkedFrom?
+																forkedFrom ?
 																	' Forked from <a href="' + forkedFrom._id + '">' +
 																		html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-																		'</a>':
+																		'</a>' :
 																	''
 															).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 														);
@@ -1181,10 +1181,10 @@ http.createServer(function(req,	res) {
 															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
 															.replace(
 																'$forked',
-																forkedFrom?
+																forkedFrom ?
 																	' Forked from <a href="' + forkedFrom._id + '">' +
 																		html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-																		'</a>':
+																		'</a>' :
 																	''
 															).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 														);
@@ -1229,8 +1229,8 @@ http.createServer(function(req,	res) {
 						.replaceAll('$list', '<ul>' + post.content.map(function(val, i) {
 							return '<li><a href="' + (i + 1) + '">' + html(val.stitle) + '</a></li>';
 						}).join('') + '</ul>' + (
-							post.user == user.name?
-							'<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>':
+							post.user == user.name ?
+							'<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>' :
 							''
 						))
 						.replace('$mine', post.user == user.name ? 'true' : 'false')
