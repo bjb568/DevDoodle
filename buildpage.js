@@ -1127,7 +1127,7 @@ http.createServer(function(req,	res) {
 											''
 										) + commentBody + '</div>';
 								} else {
-									dbcs.programs.findOne({_id: program.fork}, function(err, forkedFrom) {
+									dbcs.programs.findOne({_id: program.fork || 0}, function(err, forkedFrom) {
 										if (err) throw err;
 										var forks = [];
 										dbcs.programs.find({fork: program._id}).each(function(err, forkFrom) {
@@ -1145,7 +1145,7 @@ http.createServer(function(req,	res) {
 															).replaceAll(
 																['$created', '$updated'],
 																[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-															).replaceAll(
+															).replace('$comments', commentstr).replaceAll(
 																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
 															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
