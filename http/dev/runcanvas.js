@@ -40,6 +40,8 @@ addEventListener('DOMContentLoaded', function() {
 	caret.appendChild(document.createTextNode('\xA0'));
 	codeDisplay.insertAfter(caret, codeDisplay.firstChild);
 	blinkTimeout = setTimeout(blink, 500);
+	var oldValue,
+		origionalValue = code.value;
 	function handleTAInput() {
 		var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 		if (code.value != code.lastValue) {
@@ -67,6 +69,25 @@ addEventListener('DOMContentLoaded', function() {
 			insertNodeAtPosition(caret, codeDisplay, cursorPos);
 			clearTimeout(blinkTimeout);
 			blinkTimeout = setTimeout(blink, 500);
+		}
+		if (code.value != oldValue) {
+			oldValue = code.value;
+			var lines = code.value.split('\n');
+			for (var i = 0; i < lines.length; i++) {
+				if (lines[i].indexOf('requestEnableFullScreen;') == 0) {
+					lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
+					if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
+				}
+			}
+			if (save && !save.classList.contains('progress')) save.textContent = 'Save';
+			output.srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(lines.join('\n')) + ')}catch(e){error(e)}</script></body></html>';
+		}
+		if (code.value == origionalValue) {
+			onbeforeunload = null;
+		} else {
+			onbeforeunload = function() {
+				return 'You have unsaved code.';
+			};
 		}
 	}
 	code.addEventListener('keypress', function() {
@@ -218,30 +239,6 @@ addEventListener('DOMContentLoaded', function() {
 		addEventListener('hashchange', hashChangeFullScreenHandler);
 		hashChangeFullScreenHandler();
 	}
-	var oldValue;
-	function handleCode(init) {
-		if (code.value != oldValue) {
-			oldValue = code.value;
-			var lines = code.value.split('\n');
-			for (var i = 0; i < lines.length; i++) {
-				if (lines[i].indexOf('requestEnableFullScreen;') == 0) {
-					lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
-					if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
-				}
-			}
-			if (save && !save.classList.contains('progress')) save.textContent = 'Save';
-			output.srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(lines.join('\n')) + ')}catch(e){error(e)}</script></body></html>';
-		}
-	}
-	var timeout = setTimeout(handleCode, 100);
-	code.addEventListener('input', function() {
-		clearTimeout(timeout);
-		timeout = setTimeout(handleCode, 100);
-		onbeforeunload = function() {
-			return 'You have unsaved code.';
-		};
-	});
-	handleCode(true);
 	if (save) save.onclick = function() {
 		if (save.classList.contains('progress')) return;
 		save.classList.add('progress');
