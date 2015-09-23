@@ -93,6 +93,7 @@ function respondPage(title, user, req, res, callback, header, status) {
 	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
 	if (!header['X-Frame-Options']) header['X-Frame-Options'] = 'DENY';
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
+	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; max-age=2592000; includeSubdomains';
 	if (user.name) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date().getTime() - user.seen > 3600000) {
