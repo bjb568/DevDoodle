@@ -29,6 +29,10 @@ addEventListener('DOMContentLoaded', function() {
 		fork = document.getElementById('fork'),
 		up = document.getElementById('up'),
 		dn = document.getElementById('dn');
+	var savedValue = code.value;
+	onbeforeunload = function() {
+		return code.value == savedValue ? null : 'You have unsaved code.';
+	};
 	code.lastSelectionStart = 0;
 	code.lastSelectionEnd = 0;
 	code.lastCursorPos = 0;
@@ -40,8 +44,7 @@ addEventListener('DOMContentLoaded', function() {
 	caret.appendChild(document.createTextNode('\xA0'));
 	codeDisplay.insertAfter(caret, codeDisplay.firstChild);
 	blinkTimeout = setTimeout(blink, 500);
-	var oldValue,
-		origionalValue = code.value;
+	var oldValue;
 	function handleTAInput() {
 		var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 		if (code.value != code.lastValue) {
@@ -81,13 +84,6 @@ addEventListener('DOMContentLoaded', function() {
 			}
 			if (save && !save.classList.contains('progress')) save.textContent = 'Save';
 			output.srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(lines.join('\n')) + ')}catch(e){error(e)}</script></body></html>';
-		}
-		if (code.value == origionalValue) {
-			onbeforeunload = null;
-		} else {
-			onbeforeunload = function() {
-				return 'You have unsaved code.';
-			};
 		}
 	}
 	code.addEventListener('keypress', function() {
@@ -254,7 +250,7 @@ addEventListener('DOMContentLoaded', function() {
 				onbeforeunload = null;
 				location.href = res.split(' ')[1];
 			} else if (res == 'Success') {
-				onbeforeunload = null;
+				savedValue = code.value;
 				save.textContent = 'Saved';
 				document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 			} else {
