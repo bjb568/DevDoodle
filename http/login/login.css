@@ -1,6 +1,31 @@
 form div { margin: 0.2em 0 }
 #create:not(:checked) ~ #ccreate { display: none }
-#submit { display: block }
+#pass-bar-outer, #pass-bar { height: 6px }
+#pass-bar-outer {
+	opacity: 0;
+	transition: opacity 0.2s;
+	margin-bottom: 4px;
+	background: #000;
+	width: 18em;
+	max-width: 100%;
+}
+#submit {
+	display: block;
+	margin: 8px 0;
+	font-size: 16px;
+	padding: 4px 8px;
+	background: #6cf;
+	border-radius: 4px;
+	border: 0.5px solid #666;
+	transition: background-color 0.2s;
+	box-shadow: 1px 1px 3px #666;
+}
+#submit:hover { background: #7df }
+#submit:active { background: #0bf }
+#submit:disabled {
+	background: #fff;
+	transition: none;
+}
 #sec { font-size: 0 }
 #sec::before, #sec input { font-size: 1rem }
 #sec input { width: 10em }
