@@ -1,5 +1,14 @@
 form div { margin: 0.2em 0 }
 #create:not(:checked) ~ #ccreate { display: none }
+#pass-bar-outer, #pass-bar { height: 6px }
+#pass-bar-outer {
+	opacity: 0;
+	transition: opacity 0.2s;
+	margin-bottom: 4px;
+	background: #000;
+	width: 18em;
+	max-width: 100%;
+}
 #submit { display: block }
 #sec { font-size: 0 }
 #sec::before, #sec input { font-size: 1rem }

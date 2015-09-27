@@ -39,6 +39,7 @@ var http = require('http'),
 	essentials = require('./essentials.js'),
 	html = essentials.html,
 	markdown = essentials.markdown,
+	passStrength = essentials.passStrength,
 	nodemailer = require('nodemailer'),
 	sendmailTransport = require('nodemailer-sendmail-transport'),
 	transport = nodemailer.createTransport(sendmailTransport()),
@@ -283,11 +284,13 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>');
 		res.write(
 			'<div><input type="text" id="name" name="name" placeholder="Name"' + (filln && post.name ? ' value="' + html(post.name) + '"' : '') + ' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') + ' /> ' +
-			'<span id="name-error" style="color: #f00"></span></div>'
+			'<span id="name-error" class="red"> </span></div>'
 		);
-		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-strength"></span></div>');
+		res.write('<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> <span id="pass-bad" class="red" hidden="">too short</span></div>');
 		res.write('<div id="ccreate">');
-		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> <small>Please use a password manager to store passwords</small></div>');
+		res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
+		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">Doesn\'t match</span></div>');
+		res.write('<p><small>Please use a password manager to store passwords</small></p>');
 		res.write('<div><input type="text" name="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>');
@@ -297,11 +300,25 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
 		res.write('<script src="login.js"></script>');
 		respondPageFooter(res);
-	}, {
-		inhead: '<link rel="stylesheet" href="/login/login.css" /><style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'
-	});
+	}, {inhead: '<link rel="stylesheet" href="/login/login.css" /><style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'});
 }
-
+function respondChangePassPage(errs, user, req, res, post) {
+	if (!post) post = {};
+	respondPage('Change Password', user, req, res, function() {
+		res.write('<h1>Change Password for ' + user.name + '</h1>');
+		res.write(errorsHTML(errs));
+		res.write('<form method="post">');
+		res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
+		res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-bad" class="red" hidden="">too short</span></div>');
+		res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
+		res.write('<div><input type="password" id="conf" name="conf" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">Doesn\'t match</span></div>');
+		res.write('<p><small>Please use a password manager to store passwords</small></p>');
+		res.write('<button type="submit" id="submit" disabled="">Submit</button>');
+		res.write('</form>');
+		res.write('<script src="/login/changepass.js"></script>');
+		respondPageFooter(res);
+	}, {inhead: '<link rel="stylesheet" href="/login/login.css" />'});
+}
 function respondCreateRoomPage(errs, user, req, res, post) {
 	if (!post) post = {};
 	respondPage('Create Room', user, req, res, function() {
@@ -319,28 +336,6 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('</div>');
 		res.write('<button type="submit">Submit</button>');
 		res.write('</form>');
-		respondPageFooter(res);
-	});
-}
-
-function respondChangePassPage(errs, user, req, res, post) {
-	if (!post) post = {};
-	respondPage('Change Password', user, req, res, function() {
-		res.write('<h1>Change Password for ' + user.name + '</h1>');
-		res.write(errorsHTML(errs));
-		res.write('<form method="post">');
-		res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
-		res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-strength"></span></div>');
-		res.write(
-			'<div>' +
-				'<input type="password" id="conf" name="conf" placeholder="Confirm new password" required="" /> ' +
-				'<span id="pass-match" style="color: #f00" hidden="">Doesn\'t match</span> ' +
-				'<small>Please use a password manager to store passwords</small>' +
-			'</div>'
-		);
-		res.write('<button type="submit" id="submit" disabled="">Submit</button>');
-		res.write('</form>');
-		res.write('<script src="/login/changepass.js"></script>');
 		respondPageFooter(res);
 	});
 }
@@ -1691,15 +1686,8 @@ var server = https.createServer({
 						if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
 						if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 						if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
-						var uniqueChars = [];
-						i = post.pass.length;
-						while (i--) if (uniqueChars.indexOf(post.pass[i]) == -1) uniqueChars.push(post.pass[i]);
-						var matches = post.pass.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
-							penalty = 0;
-						i = matches.length;
-						while (i--) penalty += matches[i].length;
-						if (uniqueChars.length + uniqueChars.length - Math.sqrt(penalty) / 3 + post.pass.length / 10 < 8) {
-							errors.push('Password is too simple.');
+						if (passStrength(post.pass) < 1/4) {
+							errors.push('Password is too short.');
 							if (!nfillm && !nfilln) fpass = true;
 						}
 						if (errors.length) return respondLoginPage(errors, user, req, res, post, !nfillm, !nfilln, fpass);
@@ -1824,6 +1812,7 @@ var server = https.createServer({
 					if (!user || user.name != i[1]) return errorPage[403](req, res, user);
 					if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 					if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
+					if (passStrength(post.pass) < 1/4) return respondChangePassPage(['Password is too short.'], user, req, res, {});
 					crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, function(err, key) {
 						if (err) throw err;
 						if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
