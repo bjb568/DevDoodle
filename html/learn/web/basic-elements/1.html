@@ -1,8 +1,8 @@
-Paragraphs - Basic Tags
+Paragraphs - Basic Elements
 <div class="row">
 	<div id="text">
 		<div id="text-inner">
-			<h1>Basic Tags</h1>
+			<h1>Basic Elements</h1>
 			<div>In this lesson, we're going to start learning about basic content-formatting tags.</div>
 			<h3>"P" is for Paragraph</h3>
 			<p>As we alreadly learned, body text can be put inside paragraph elements (wrapped in <code>&lt;p></code> and <code>&lt;/p></code>). It looks like this: </p>
@@ -31,17 +31,22 @@ Paragraphs - Basic Tags
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html'),
+		runtTimeout;
 	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-	function submit() {
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
+	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
+	document.getElementById('check').onclick = function() {
 		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xhtml+xml');
 		if (doc.body &amp;&amp; doc.body.getElementsByTagName('p').length) {
 			document.getElementById('passed').classList.add('show');
@@ -51,5 +56,5 @@ Paragraphs - Basic Tags
 			document.getElementById('passed').classList.remove('show');
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	}
+	};
 </script>
