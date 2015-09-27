@@ -19,9 +19,11 @@ var pass = document.getElementById('pass'),
 	create = document.getElementById('create'),
 	namef = document.getElementById('name'),
 	nameError = document.getElementById('name-error'),
+	mail = document.getElementById('mail'),
 	submit = document.getElementById('submit');
 
-create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = function() {
+create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = mail.oninput = function() {
+	submit.firstChild.nodeValue = create.checked ? 'Create Account' : 'Submit';
 	if (!create.checked) {
 		submit.disabled = false;
 		return;
@@ -51,5 +53,8 @@ create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = 
 		fail = true;
 		passMatch.hidden = false;
 	} else passMatch.hidden = true;
+	console.log(fail);
+	fail |= !mail.value;
+	console.log(fail);
 	submit.disabled = fail;
 };

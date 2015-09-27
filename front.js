@@ -291,7 +291,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
 		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">Doesn\'t match</span></div>');
 		res.write('<p><small>Please use a password manager to store passwords</small></p>');
-		res.write('<div><input type="text" name="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
+		res.write('<div><input type="text" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>');
 		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />');
@@ -1796,6 +1796,7 @@ var server = https.createServer({
 				});
 			});
 		} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
+			if (!user) return errorPage[403](req, res, user, 'You must be <a href="/login/">logged in</a> to change your password.');
 			if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
