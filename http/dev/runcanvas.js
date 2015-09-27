@@ -46,13 +46,11 @@ addEventListener('DOMContentLoaded', function() {
 	blinkTimeout = setTimeout(blink, 500);
 	var oldValue;
 	function handleTAInput() {
-		var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 		if (code.value != code.lastValue) {
 			highlight(codeDisplay, code.lastValue = code.value);
 			taCont.className = codeDisplay.className;
 		}
 		code.style.height = codeDisplay.offsetHeight + 'px';
-		taCont.scrollTop += codeScrollDiff;
 		if (code.selectionStart != code.lastSelectionStart) {
 			code.lastSelectionStart = code.selectionStart;
 			code.whichSelection = false;
