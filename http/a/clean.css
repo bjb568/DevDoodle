@@ -120,14 +120,14 @@ code .line.warning::before {
 #ta-cont.line-dig5 { padding-left: 3.8em }
 #ta-cont.line-dig6 { padding-left: 4.4em }
 #ta-cont.line-dig7 { padding-left: 5em }
-#ta-cont.line-dig0 #code { width: calc(100% - 0.8rem - 5px) }
-#ta-cont.line-dig1 #code { width: calc(100% - 1.4rem - 5px) }
-#ta-cont.line-dig2 #code { width: calc(100% - 2rem - 5px) }
-#ta-cont.line-dig3 #code { width: calc(100% - 2.6rem - 5px) }
-#ta-cont.line-dig4 #code { width: calc(100% - 3.2rem - 5px) }
-#ta-cont.line-dig5 #code { width: calc(100% - 3.8rem - 5px) }
-#ta-cont.line-dig6 #code { width: calc(100% - 4.4rem - 5px) }
-#ta-cont.line-dig7 #code { width: calc(100% - 5rem - 5px) }
+#ta-cont.line-dig0 textarea { width: calc(100% - 0.8rem - 5px) }
+#ta-cont.line-dig1 textarea { width: calc(100% - 1.4rem - 5px) }
+#ta-cont.line-dig2 textarea { width: calc(100% - 2rem - 5px) }
+#ta-cont.line-dig3 textarea { width: calc(100% - 2.6rem - 5px) }
+#ta-cont.line-dig4 textarea { width: calc(100% - 3.2rem - 5px) }
+#ta-cont.line-dig5 textarea { width: calc(100% - 3.8rem - 5px) }
+#ta-cont.line-dig6 textarea { width: calc(100% - 4.4rem - 5px) }
+#ta-cont.line-dig7 textarea { width: calc(100% - 5rem - 5px) }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .constant, code .string .escape { color: #df0 }
