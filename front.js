@@ -327,7 +327,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
 		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
-		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80">' + html(post.desc || '') + '</textarea></div>');
+		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80" style="max-width: 100%">' + html(post.desc || '') + '</textarea></div>');
 		res.write('<div>Type: <select name="type">');
 		res.write('\t<option value="P">Public</option>');
 		res.write('\t<option value="R">Read-only</option>');
