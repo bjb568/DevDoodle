@@ -377,15 +377,15 @@ http.createServer(function(req,	res) {
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
 				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
-				res.write('<img class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />');
+				res.write('<img id="profpic" class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />');
 				res.write('<div style="padding-left: 6px; overflow: hidden;">');
 				res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 				if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 				res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
 				if (me) {
 					res.write(
-						'<a href="//gravatar.com/' + dispUser.mailhash + '" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
-						'(you must <a href="http://gravatar.com/login">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
+						'<a href="//gravatar.com/' + dispUser.mailhash + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
+						'(you must <a href="http://gravatar.com/login" target="_blank">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
 					);
 				}
 				res.write('</div>');

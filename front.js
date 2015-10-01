@@ -672,14 +672,15 @@ var server = https.createServer({
 							res.writeHead(403);
 							return res.end('Error: You are not logged in.');
 						}
+						var mailhash = crypto.createHash('md5').update(newmail).digest('hex');
 						dbcs.users.update({name: user.name}, {
 							$set: {
 								mail: newmail,
-								mailhash: crypto.createHash('md5').update(newmail).digest('hex')
+								mailhash: mailhash
 							}
 						});
-						res.writeHead(204);
-						res.end();
+						res.writeHead(200);
+						res.end(mailhash);
 					});
 				} else if (req.url.pathname == '/login/recover') {
 					if (post.code) {
