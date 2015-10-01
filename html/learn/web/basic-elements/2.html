@@ -1,12 +1,12 @@
-Headings - Basic Tags
+Headings - Basic Elements
 <div class="row">
 	<div id="text">
 		<div id="text-inner">
-			<h1>Basic Tags</h1>
+			<h1>Basic Elements</h1>
 			<h3>"H" is for Heading</h3>
 			<p>Heading elements outline the structure of a document. HTML provides 6 levels of headings: <code>&lt;h1></code> for the page title, <code>&lt;h2></code> for the section title, <code>&lt;h3></code> for the subsection title, and so on down to <code>&lt;h6></code> for the subsubsubsubsection title. ideally, these headings could be used to create a table of contents.</p>
 			<p>To move on, write all the possible header tags from most to least important and give each of them some text content.</p>
-			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
 			</div>
@@ -34,17 +34,22 @@ Headings - Basic Tags
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html'),
+		runtTimeout;
 	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-	function submit() {
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
+	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
+	document.getElementById('check').onclick = function() {
 		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xhtml+xml');
 		if (
 			doc.body &amp;&amp;
@@ -62,5 +67,5 @@ Headings - Basic Tags
 			document.getElementById('passed').classList.remove('show');
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	}
+	};
 </script>

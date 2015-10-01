@@ -5,17 +5,13 @@
 			<h2>$stitle</h2>
 			$md-sbody
 			<div id="checker">
-				<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+				<button type="button" id="check" class="blk">Test User Submit</button>
 				<div id="passed" class="passed clearfix">
-					<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+					<h2><span id="passtext"> </span> <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
 				</div>
-				<div id="failed1" class="failed clearfix">
+				<div id="failed" class="failed clearfix">
 					<h2>Try Again</h2>
-					<p>$md-ftext</p>
-				</div>
-				<div id="failed2" class="failed clearfix">
-					<h2>Almost!</h2>
-					<p>$md-stext</p>
+					<p id="fail"> </p>
 				</div>
 			</div>
 		</div>
@@ -24,10 +20,7 @@
 				<input type="hidden" value="$title" name="title" />
 				<input type="hidden" value="$stitle" name="stitle" />
 				<textarea hidden="" name="sbody">$sbody</textarea>
-				<input type="hidden" value="$pregex" name="pregex" />
-				<input type="hidden" value="$sregex" name="sregex" />
-				<input type="hidden" value="$stext" name="stext" />
-				<input type="hidden" value="$ftext" name="ftext" />
+				<textarea hidden="" name="validate">$validate</textarea>
 				<textarea hidden="" name="html">$html</textarea>
 				<button type="submit">Save Lesson</button>
 			</form>
@@ -35,10 +28,7 @@
 				<input type="hidden" value="$title" name="title" />
 				<input type="hidden" value="$stitle" name="stitle" />
 				<textarea hidden="" name="sbody">$sbody</textarea>
-				<input type="hidden" value="$pregex" name="pregex" />
-				<input type="hidden" value="$sregex" name="sregex" />
-				<input type="hidden" value="$stext" name="stext" />
-				<input type="hidden" value="$ftext" name="ftext" />
+				<textarea hidden="" name="validate">$validate</textarea>
 				<textarea hidden="" name="html">$html</textarea>
 				<button type="submit">Edit Lesson</button>
 			</form>
@@ -52,32 +42,44 @@
 		display: inline;
 		margin: 0;
 	}
+	#cntrls {
+		padding: 4px;
+		background: #0ff;
+	}
+	#cntrls button {
+		height: 20px;
+		width: 120px;
+	}
 </style>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html');
+	document.getElementById('check').onclick = function(e) {
+		e.preventDefault();
+		var checkerWorker = new Worker(URL.createObjectURL(new Blob([$jsonvalidate + '\n;onmessage = function(e) { postMessage(validate(e.data)); }'])));
+		checkerWorker.postMessage(htmlTA.value);
+		checkerWorker.onerror = checkerWorker.onmessage = function(e) {
+			if (e instanceof ErrorEvent) alert(e.message);
+			console.log(e);
+			var success = !e || !e.data || e.data.success;
+			var msg = !e || !e.data || typeof(e.data.msg) != 'string' ? 'You did it!' : e.data.msg;
+			document.getElementById(success ? 'passed' : 'failed').classList.add('show');
+			document.getElementById(success ? 'failed' : 'passed').classList.remove('show');
+			document.getElementById(success ? 'passtext' : 'fail').firstChild.nodeValue = msg;
+			checkerWorker.terminate();
+		};
+	};
+	var runTimeout;
 	function run() {
-		document.getElementById('output').srcdoc = document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-	function submit() {
-		if (document.getElementById('html').value.match(new RegExp($str-pregex, 'i'))) {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed1').classList.remove('show');
-			document.getElementById('failed2').classList.remove('show');
-		} else if (document.getElementById('html').value.match(new RegExp($str-sregex, 'i'))) {
-			document.getElementById('failed2').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-			document.getElementById('failed1').classList.remove('show');
-		} else {
-			document.getElementById('failed1').classList.add('show');
-			document.getElementById('failed2').classList.remove('show');
-			document.getElementById('passed').classList.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
 	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
 </script>

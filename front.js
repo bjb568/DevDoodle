@@ -533,6 +533,14 @@ var statics = {
 		inhead: '<link rel="stylesheet" href="/dev/docs.css" /><script src="/dev/runcanvas.js"></script>',
 		clean: true
 	},
+	'/learn/api/': {
+		path: './html/learn/api/api.html',
+		title: 'Course Creation APIs'
+	},
+	'/learn/api/validation': {
+		path: './html/learn/api/validation.html',
+		title: 'Validation API'
+	},
 	'/learn/web/': {
 		path: './html/learn/web/web.html',
 		title: 'Web'
@@ -1521,7 +1529,7 @@ var server = https.createServer({
 				respondPage('New Lesson', user, req, res, function() {
 					fs.readFile('./html/learn/newlesson.html', function(err, data) {
 						if (err) throw err;
-						res.write(data.toString().replace('id="checker"', 'id="checker" hidden=""').replace('$title', html(req.url.query.title || '')).replace(/\$[^\s"<]+/g, ''));
+						res.write(data.toString().replace('$title', html(req.url.query.title || '')).replace(/\$[^\/\s"<]+/g, ''));
 						respondPageFooter(res);
 					});
 				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
@@ -1551,10 +1559,7 @@ var server = https.createServer({
 										content: {
 											stitle: post.stitle || 'Untitled',
 											sbody: post.sbody || '',
-											pregex: post.pregex,
-											sregex: post.sregex,
-											stext: post.stext,
-											ftext: post.ftext,
+											validate: post.validate || '',
 											html: post.html || ''
 										}
 									}
@@ -1574,10 +1579,7 @@ var server = https.createServer({
 										content: [{
 											stitle: post.stitle || 'Untitled',
 											sbody: post.sbody || '',
-											pregex: post.pregex,
-											sregex: post.sregex,
-											stext: post.stext,
-											ftext: post.ftext,
+											validate: post.validate || '',
 											html: post.html || ''
 										}]
 									});
@@ -1592,16 +1594,12 @@ var server = https.createServer({
 								if (err) throw err;
 								res.write(
 									data.toString()
-									.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
 									.replaceAll(
-										['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
-										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.pregex || ''), html(post.sregex || ''), html(post.stext || ''), html(post.ftext || ''), html(post.html || '')]
+										['$title', '$stitle', '$sbody', '$validate', '$html'],
+										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || '')]
 									).replaceAll(
-										['$md-ftext', '$md-stext', '$md-sbody'],
-										[markdown(post.ftext), markdown(post.stext), markdown(post.sbody)]
-									).replaceAll(
-										['$str-pregex', '$str-sregex'],
-										[html(JSON.stringify(post.pregex || '')), html(JSON.stringify(post.sregex || ''))]
+										['$md-sbody', '$jsonvalidate'],
+										[markdown(post.sbody), JSON.stringify(post.validate || '')]
 									)
 								);
 								respondPageFooter(res);
@@ -1613,13 +1611,9 @@ var server = https.createServer({
 								if (err) throw err;
 								res.write(
 									data.toString()
-									.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
 									.replaceAll(
-										['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
-										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.pregex || ''), html(post.sregex || ''), html(post.stext || ''), html(post.ftext || ''), html(post.html || '')]
-									).replaceAll(
-										['$md-ftext', '$md-stext'],
-										[markdown(post.ftext), markdown(post.stext)]
+										['$title', '$stitle', '$sbody', '$validate', '$html'],
+										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || '')]
 									)
 								);
 								respondPageFooter(res);

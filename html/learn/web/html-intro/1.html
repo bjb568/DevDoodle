@@ -24,14 +24,19 @@ Intro to HTML
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html'),
+		runtTimeout;
 	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
+	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
 </script>

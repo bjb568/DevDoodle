@@ -24,7 +24,7 @@ Tags and Page Setup - Intro to HTML
 			<p>Right now, we need to set up a webpage, so we need to use some tags.</p>
 			<p>After the doctype, there is an <code>&lt;html></code> tag. Inside it is <code>&lt;head></code> and <code>&lt;body></code>. The head tag will contain all meta-tags (title, description, etc.), while the body tag will contain visible content.</p>
 			<p>To move on, write the basic page with a doctype and html, head, and body elements. You may refer to the example above.</p>
-			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
 			</div>
@@ -41,17 +41,22 @@ Tags and Page Setup - Intro to HTML
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html'),
+		runtTimeout;
 	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-	function submit() {
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
+	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
+	document.getElementById('check').onclick = function() {
 		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
 			document.getElementById('passed').classList.add('show');
 			document.getElementById('failed').classList.remove('show');
@@ -60,5 +65,5 @@ Tags and Page Setup - Intro to HTML
 			document.getElementById('passed').classList.remove('show');
 		}
 		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	}
+	};
 </script>

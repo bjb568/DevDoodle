@@ -1252,16 +1252,12 @@ http.createServer(function(req,	res) {
 					if (err) throw err;
 					res.write(
 						data.toString()
-						.replace('id="checker"', post.pregex ? 'id="checker"' : 'id="checker" hidden=""')
 						.replaceAll(
-							['$title', '$stitle', '$sbody', '$pregex', '$sregex', '$stext', '$ftext', '$html'],
-							[html(lesson.title), html(post.stitle), html(post.sbody), html(post.pregex), html(post.sregex), html(post.stext), html(post.ftext), html(post.html)]
+							['$title', '$stitle', '$sbody', '$validate', '$html'],
+							[html(lesson.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || '')]
 						).replaceAll(
-							['$md-ftext', '$md-stext', '$md-sbody'],
-							[markdown(post.ftext), markdown(post.stext), markdown(post.sbody)]
-						).replaceAll(
-							['$str-pregex', '$str-sregex'],
-							[html(JSON.stringify(post.pregex)), html(JSON.stringify(post.sregex))]
+							['$md-sbody', '$jsonvalidate'],
+							[markdown(post.sbody), JSON.stringify(post.validate || '')]
 						).replaceAll(['$back', '$next'], [i[2] ? i[2].toString() : '" title="This is the first slide." class="disabled', i[2] == lesson.content.length - 1 ? '" title="This is the last slide." class="disabled' : (i[2] + 2).toString()])
 					);
 					respondPageFooter(res);

@@ -12,11 +12,11 @@ Intro to HTML Recap
 				<li>The basic HTML document consists of a doctype, a root html element, and head and body sections. Metadata like the page title goes in the head element, while visible content like paragraphs go in the body element</li>
 			</ul>
 			<p>Next, we'll learn more about tags, and how to format text.</p>
-			<form action="../../basic-tags/">
+			<form action="../../basic-elements/">
 				<button id="check" type="submit">Move on</button>
 			</form>
 		</div>
-		<div id="cntrls"><a href="../4/" class="lft">Back</a> <a href="../../basic-tags/" class="rit">Next ❯</a></div>
+		<div id="cntrls"><a href="../4/" class="lft">Back</a> <a href="../../basic-elements/" class="rit">Next ❯</a></div>
 	</div>
 	<textarea id="html">&lt;!DOCTYPE html>
 &lt;html xmlns="http://www.w3.org/1999/xhtml">
@@ -30,14 +30,19 @@ Intro to HTML Recap
 	<iframe id="output"></iframe>
 </div>
 <script>
-	var footerOff = true, noPageOverflow = 520;
+	var footerOff = true,
+		noPageOverflow = 520,
+		htmlTA = document.getElementById('html'),
+		runtTimeout;
 	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
 	}
 	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
+	function beforeRun() {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 100);
+	}
+	htmlTA.addEventListener('keyup', beforeRun);
+	htmlTA.addEventListener('keydown', beforeRun);
+	htmlTA.addEventListener('keypress', beforeRun);
 </script>

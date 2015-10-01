@@ -4,7 +4,10 @@ html, #content, #footer {
 }
 #content { padding: 0 }
 a { color: inherit }
-#text-inner h1 { margin-top: .2em }
+#footer a:visited { color: #ccc; }
+#footer a:hover, .ctrl:hover { color: #4ee }
+#footer a:active, .ctrl:active { color: #faa }
+#text-inner h1 { margin-top: 0.2em }
 h2 {
 	margin-top: 0;
 	border-bottom: 1px dashed #aaa;
@@ -18,10 +21,11 @@ h2 {
 #text {
 	background: rgba(255, 255, 255, .85);
 	color: #000;
-	padding: 4px 6px;
 	position: relative;
 	width: 100%;
 }
+#text-inner, #cntrls { padding: 0 6px }
+#text-inner input { margin: 0 }
 #html {
 	background: #000;
 	color: #fff;
@@ -47,15 +51,15 @@ h2 {
 	#text-inner {
 		overflow: auto;
 		position: absolute;
-		top: 2px;
-		right: 8px;
-		bottom: 24px;
-		left: 6px;
+		top: 2px; right: 0; bottom: 28px; left: 0;
 	}
 	#cntrls {
 		position: absolute;
-		bottom: 2px;
-		width: calc(100% - 12px);
+		height: 28px;
+		bottom: 0;
+		padding: 6px 4px 2px;
+		width: 100%;
+		background: #ccc;
 	}
 }
 @media (min-width: 1500px) {
