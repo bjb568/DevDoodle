@@ -573,6 +573,16 @@ var server = https.createServer({
 	honorCipherOrder: true,
 	secureOptions: SSL_ONLY_TLS_1_2
 }, function(req, res) {
+	if (!req.headers.host) {
+		res.writeHead(400, {'Content-Type': 'text/html'});
+		return res.end('Please send the host HTTP header.');
+	} else if (req.headers.host == '205.186.144.188') {
+		res.writeHead(400, {'Content-type': 'text/html'});
+		return res.end('Perhaps you were looking for <a href="https://devdoodle.net">devdoodle.net</a>?');
+	} else if (req.headers.host != 'devdoodle.net' && req.headers.host != 'localhost') {
+		res.writeHead(400, {'Content-type': 'text/html'});
+		return res.end('This is the server for <a href="https://devdoodle.net">devdoodle.net</a>. You must connect to this server from that domain.');
+	}
 	var origURL = req.url,
 		i,
 		id,
