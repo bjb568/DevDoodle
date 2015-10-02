@@ -84,6 +84,7 @@ addEventListener('DOMContentLoaded', function() {
 			output.srcdoc = '<!DOCTYPE html><html><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script src="/dev/canvas.js"></script><script>\'use strict\';window.alert=window.confirm=window.prompt=null;try{this.eval(' + JSON.stringify(lines.join('\n')) + ')}catch(e){error(e)}</script></body></html>';
 		}
 	}
+	handleTAInput();
 	code.addEventListener('keypress', function() {
 		setTimeout(handleTAInput, 0);
 	});
