@@ -587,7 +587,7 @@ var server = https.createServer({
 	} else if (req.headers.host == '205.186.144.188') {
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('Perhaps you were looking for <a href="https://devdoodle.net">devdoodle.net</a>?');
-	} else if (req.headers.host != 'devdoodle.net' && req.headers.host != 'localhost') {
+	} else if (req.headers.host != 'devdoodle.net' && req.headers.host != 'localhost' && !req.headers.host.match(/\w/)) {
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('This is the server for <a href="https://devdoodle.net">devdoodle.net</a>. You must connect to this server from that domain.');
 	}
