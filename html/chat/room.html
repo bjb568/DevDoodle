@@ -479,9 +479,11 @@ $textarea
 		warning.appendChild(link);
 		ta.parentNode.insertBefore(warning, ta);
 		setInterval(function() {
-			if (socket.readyState == 1) return location.reload(true);
 			socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
-		}, 5000);
+			socket.onopen = function() {
+				location.reload();
+			};
+		}, 200);
 	};
 	if (ta) {
 		ta.addEventListener('input', function() {
@@ -739,5 +741,8 @@ $textarea
 		padding: 2px;
 		margin: 0 2px;
 	}
-	.connection-error { position: absolute }
+	.connection-error {
+		position: absolute;
+		z-index: 1;
+	}
 </style>
