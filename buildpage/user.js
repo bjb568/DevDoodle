@@ -159,7 +159,7 @@ module.exports = function(req, res, user) {
 												}
 												respondPageFooter(res);
 											});
-										}
+										} else respondPageFooter(res);
 									}
 								});
 							}
