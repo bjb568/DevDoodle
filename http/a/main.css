@@ -1,16 +1,10 @@
-html { position: relative }
-html::before {
-	content: '';
-	position: absolute;
-	z-index: -1;
-	top: 0; right: 0; bottom: 0; left: 0;
-	background: #000;
-}
+html { background: #fff }
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
 	tab-size: 4;
 	line-height: 1.2;
+	background: #000;
 }
 * {
 	box-sizing: border-box;
