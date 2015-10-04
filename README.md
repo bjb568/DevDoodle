@@ -8,12 +8,12 @@ Before submitting a bug, try hard-reloading.
 
 ## Files
 
-- essentials.js: `require()`d by front, buildpage
-- front.js: default port 443 (changeable via command line argument), manages HTTPS, and by default sets up a redirect from HTTP on port 80 to HTTPS (on port 443)
-- buildpage.js: default port 8000 (changeable via command line argument), dependancy front.js
+- server.js: runs all HTTPS on port 443 (changeable via command line argument), and by default sets up a redirect from HTTP on port 80 to HTTPS (on port 443)
+- api.js: required by server.js, manages POST requests to /api/*
+- buildpage: (folder) contains serverlets required by server.js that manage GET requests
 - sockets.js: default port 81 (changeable via command line argument), handles secure web socket connections (`wss://`)
-- html: (folder) contains dependancies used in front and buildpage
-- http: (folder) content that is accessible thru http requests to front.js
+- html: (folder) contains html templates used by server.js and buildpage serverlets
+- http: (folder) content that is accessible thru https requests (via server.js)
 
 ## Running Locally
 
@@ -25,9 +25,9 @@ Before submitting a bug, try hard-reloading.
 
 		> use DevDoodle
 		> db.createUser({user: 'DevDoodle', pwd: 'YOUR-DB-PASSWORD', roles: [{role: 'readWrite', db: 'DevDoodle'}]})
-- `node front.js` with sudo (or change it's port to ≥ 1024 via command line argument (e.g. `node front 1337`))
-- `node buildpage.js`
+- `node server` with sudo (or change it's port to ≥ 1024 via command line argument (e.g. `node server 1337`))
 - `node sockets.js` with sudo (changing port is not supported since port 81 is hard coded into client side javascript)
+- verify everything is working at `https://localhost/status/` (or `https://localhost:1337/status/` for a custom port)
 
 Apparently node processes don't need to run as root if you do this first (on Linux):
 
@@ -46,6 +46,6 @@ npm:
 
     sudo npm update -g npm
 
-Dependancies:
+dependancies:
 
     npm update
