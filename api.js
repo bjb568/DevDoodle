@@ -1,5 +1,6 @@
 'use strict';
 module.exports = function(req, res, user, post) {
+	var i;
 	if (req.url.pathname == '/notif') {
 		res.writeHead(200);
 		res.end(user && user.unread ? '1' : '');
