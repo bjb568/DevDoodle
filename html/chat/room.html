@@ -429,19 +429,19 @@ $textarea
 				document.getElementById('ts').hidden = false;
 			} else {
 				setInterval(function() {
-					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 72) {
+					if (cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 72) {
 						skipped = Math.max(0, skipped - 1);
 						socket.send(JSON.stringify({event: 'req', skip: skipped}));
 					}
 				}, 10);
 				setInterval(function() {
-					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 720) {
+					if (cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; 720) {
 						skipped = Math.max(0, skipped - 1);
 						socket.send(JSON.stringify({event: 'req', skip: skipped}));
 					}
 				}, 200);
 				setInterval(function() {
-					if (innerWidth >= 700 &amp;&amp; cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; cont.scrollHeight / 2) {
+					if (cont.children.length >= 92 &amp;&amp; skipped &amp;&amp; cont.scrollTop &lt; cont.scrollHeight / 2) {
 						skipped = Math.max(0, skipped - 1);
 						socket.send(JSON.stringify({event: 'req', skip: skipped}));
 					}
