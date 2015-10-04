@@ -1,3 +1,4 @@
+html { position: relative }
 html::before {
 	content: '';
 	position: absolute;
