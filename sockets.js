@@ -28,7 +28,7 @@ var fs = require('fs'),
 	usedDBCs = [
 		'users',
 		'questions',
-		'qtags'
+		'qtags',
 		'answers',
 		'posthistory',
 		'chat',
