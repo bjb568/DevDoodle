@@ -38,6 +38,10 @@
 		top: 0; right: 0; bottom: 0; left: 0;
 		background: rgba(255, 128, 128, 0.95);
 	}
+	#results:empty::after {
+		content: '(no results)';
+		color: #444;
+	}
 </style>
 <script>
 	var user = '$user',
