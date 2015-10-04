@@ -28,7 +28,11 @@ addEventListener('DOMContentLoaded', function() {
 		save = document.getElementById('save'),
 		fork = document.getElementById('fork'),
 		up = document.getElementById('up'),
-		dn = document.getElementById('dn');
+		dn = document.getElementById('dn')
+		fullScreen = false,
+		fsBtn = document.getElementById('fullscreen-button'),
+		regLayout = document.getElementById('regular-layout');
+
 	var savedValue = code.value;
 	onbeforeunload = function() {
 		return code.value == savedValue ? null : 'You have unsaved code.';
@@ -43,7 +47,10 @@ addEventListener('DOMContentLoaded', function() {
 	caret.id = 'caret';
 	caret.appendChild(document.createTextNode('\xA0'));
 	codeDisplay.insertAfter(caret, codeDisplay.firstChild);
-	blinkTimeout = setTimeout(blink, 500);
+	if (navigator.userAgent.indexOf('Mobile') == -1) {
+		code.focus();
+		blinkTimeout = setTimeout(blink, 500);
+	} else caret.hidden = true;
 	var oldValue;
 	function handleTAInput() {
 		if (code.value != code.lastValue) {
@@ -61,7 +68,7 @@ addEventListener('DOMContentLoaded', function() {
 		}
 		var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
 		var oldCaret = document.getElementById('caret');
-		if (cursorPos != code.lastCursorPos || !oldCaret) {
+		if (navigator.userAgent.indexOf('Mobile') == -1 && (cursorPos != code.lastCursorPos || !oldCaret)) {
 			code.lastCursorPos = cursorPos;
 			if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 			var caret = document.createElement('span');
@@ -75,7 +82,7 @@ addEventListener('DOMContentLoaded', function() {
 			oldValue = code.value;
 			var lines = code.value.split('\n');
 			for (var i = 0; i < lines.length; i++) {
-				if (lines[i].indexOf('requestEnableFullScreen;') == 0) {
+				if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
 					lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
 					if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
 				}
@@ -105,11 +112,12 @@ addEventListener('DOMContentLoaded', function() {
 		document.getElementById('caret').hidden = true;
 		clearTimeout(blinkTimeout);
 	});
-	code.addEventListener('focus', function() {
-		document.getElementById('caret').hidden = false;
-		clearTimeout(blinkTimeout);
-		blinkTimeout = setTimeout(blink, 500);
-	});
+	if (navigator.userAgent.indexOf('Mobile') == -1) {
+		code.addEventListener('focus', function() {
+			document.getElementById('caret').hidden = false;
+			blinkTimeout = setTimeout(blink, 500);
+		});
+	}
 	code.addEventListener('keypress', function(e) {
 		var oldSelectionStart = this.selectionStart;
 		var pairChars = {};
@@ -121,7 +129,7 @@ addEventListener('DOMContentLoaded', function() {
 		endChars[93] = ']';
 		endChars[125] = '}';
 		if (e.keyCode == 13) {
-			if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+			if (e.metaKey) return title.dispatchEvent(new MouseEvent('click'));
 			var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
 			this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 			oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
@@ -194,16 +202,13 @@ addEventListener('DOMContentLoaded', function() {
 	addEventListener('keypress', function(e) {
 		if (e.keyCode == 13 && e.metaKey) {
 			e.preventDefault();
-			document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+			title.dispatchEvent(new MouseEvent('click'));
 		} else if (e.keyCode == 115 && e.metaKey) {
 			e.preventDefault();
 			var target = e.shiftKey ? fork : save;
 			if (target) target.dispatchEvent(new MouseEvent('click'));
 		}
 	});
-	var fullScreen = false,
-		fsBtn = document.getElementById('fullscreen-button'),
-		regLayout = document.getElementById('regular-layout');
 	function enableFullScreen() {
 		document.body.classList.add('fullscreen');
 		fsBtn.hidden = false;
@@ -223,7 +228,7 @@ addEventListener('DOMContentLoaded', function() {
 			output.classList.remove('fullscreen');
 			document.body.classList.remove('noscrl');
 			document.getElementById('close-fullscreen').hidden = true;
-			code.focus();
+			if (navigator.userAgent.indexOf('Mobile') == -1) code.focus();
 		}
 	}
 	if (fsBtn) {
@@ -282,29 +287,35 @@ addEventListener('DOMContentLoaded', function() {
 	};
 	if (document.getElementById('meta')) {
 		if (window.mine) {
-			document.getElementById('title').onclick = function() {
+			var title = document.getElementById('title'),
+				edit = document.getElementById('edit-title');
+			title.onclick = function() {
 				this.hidden = true;
-				var edit = document.getElementById('edit-title');
 				edit.hidden = false;
 				edit.focus();
 			};
-			document.getElementById('edit-title').onblur = function() {
+			edit.onblur = function() {
 				request('/api/program/edit-title', function(res) {
-					var edit = document.getElementById('edit-title');
 					if (res.indexOf('Error') == 0) {
 						alert(res);
-						edit.value = document.getElementById('title').textContent;
+						edit.value = title.textContent;
 					} else if (res == 'Success') {
 						edit.hidden = true;
-						var title = document.getElementById('title');
 						document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
 						if (!edit.value) edit.value = 'Untitled';
 						title.hidden = false;
+						code.focus();
 					} else alert('Unknown error. Response was: ' + res);
 				}, 'title=' + encodeURIComponent(this.value));
 			};
-			document.getElementById('edit-title').onkeypress = function(e) {
+			edit.onkeypress = function(e) {
 				if (e.keyCode == 13) this.onblur.call(this);
+				else if (e.keyCode == 27) {
+					this.value = title.textContent;
+					title.hidden = false;
+					this.hidden = true;
+					code.focus();
+				}
 			};
 		}
 		up.onclick = function() {
@@ -381,7 +392,7 @@ addEventListener('DOMContentLoaded', function() {
 				sig.appendChild(permalink);
 				var currentNode = div;
 				while (!sig.parentNode) {
-					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
 					else currentNode = currentNode.lastChild;
 				}
 				document.getElementById('comments').appendChild(div);

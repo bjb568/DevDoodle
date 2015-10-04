@@ -144,7 +144,11 @@
 				permalink.appendChild(document.createTextNode(' in ' + data.roomName));
 				permalink.href = data.room + '#' + (div.id = data.id);
 				sig.appendChild(permalink);
-				div.appendChild(sig);
+				var currentNode = div;
+				while (!sig.parentNode) {
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
+					else currentNode = currentNode.lastChild;
+				}
 				results.appendChild(div);
 			}
 		}, 'search=' + encodeURIComponent(document.getElementById('searchbox').value) + '&amp;sort=' + document.getElementById('sort').value + '&amp;user=' + encodeURIComponent(document.getElementById('user').value) + '&amp;room=' + document.getElementById('room').value);

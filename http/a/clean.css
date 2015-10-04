@@ -20,12 +20,12 @@ body {
 }
 @keyframes target {
 	0%, 30% {
-		background: #fc0;
+		background: #950;
 	}
 }
 @-webkit-keyframes target {
 	0%, 30% {
-		background: #fc0;
+		background: #950;
 	}
 }
 :not(.target):target {
@@ -191,7 +191,7 @@ code {
 }
 .comment:not(:hover) .sctrls svg:not(.clkd) { opacity: 0.4 }
 .comment img { max-height: 200px }
-.c-sig { padding-left: 4px }
+.c-sig { padding: 2px 0 0 4px }
 .c-sig, .c-sig > * { color: #ccc }
 .ctrls :hover { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }

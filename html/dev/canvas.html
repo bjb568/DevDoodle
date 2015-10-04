@@ -2,7 +2,7 @@
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <small><a id="save">Save</a></small></h1>
 	<div id="row" class="row">
 		<div id="ta-cont">
-			<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
+			<textarea id="code" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
 			<code id="code-display"></code>
 		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
@@ -55,7 +55,7 @@
 		display: inline-block;
 		margin-left: 8px;
 	}
-	#ta-cont, #output { width: 95% }
+	#output { width: 100% }
 	#main { height: 500px }
 	#row { height: calc(100% - 2rem - 2px) }
 	#edit-title {
@@ -105,34 +105,34 @@
 	}
 	#caret[hidden] { display: none }
 	#ta-cont, #output { height: calc(50% - 4px) }
-	@media (min-width: 600px) {
+	@media (min-width: 720px) {
 		h1 {
 			height: 1.65rem;
 			margin-bottom: .35em;
 		}
 		#ta-cont, #output { height: 100% }
 		#ta-cont { width: 60% }
+		body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
 		#output {
 			width: 39%;
 			float: right;
 		}
-		.fullscreen #ta-cont:not(:focus) { width: 39% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 60% }
+		body:not(.fullscreen) #output { max-width: 640px }
+		.fullscreen #ta-cont { width: calc(20% + 28ch) }
+		.fullscreen #output { width: calc(79% - 28ch) }
 	}
-	@media (min-width: 600px) and (max-width: 800px) {
-		#ta-cont { width: 55% }
-		#output { width: 44% }
-		.fullscreen #ta-cont:not(:focus) { width: 44% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 55% }
+	@media (min-width: 850px) {
+		.fullscreen #ta-cont { width: calc(40% + 9ch) }
+		.fullscreen #output { width: calc(59% - 9ch) }
+	}
+	@media (min-width: 1200px) {
+		.fullscreen #ta-cont { width: calc(20% + 36ch) }
+		.fullscreen #output { width: calc(79% - 36ch) }
 	}
 	@media (min-width: 1500px) {
 		#ta-cont { margin-bottom: 0 }
-	}
-	@media (min-width: 1600px) {
-		#ta-cont { width: 65% }
-		#output { width: 34% }
-		.fullscreen #ta-cont:not(:focus) { width: 34% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 65% }
+		.fullscreen #ta-cont { width: calc(5% + 70ch) }
+		.fullscreen #output { width: calc(94% - 70ch) }
 	}
 	.fullscreen #main #output.fullscreen {
 		position: fixed;
@@ -249,7 +249,7 @@
 		opName = '$op-name',
 		myRep = $rep,
 		footerOff = true,
-		noPageOverflow = 400,
+		noPageOverflow = 700,
 		pageOverflowMobile = true,
 		mainBottomPad = 60,
 		mainContentEl = document.getElementById('main');

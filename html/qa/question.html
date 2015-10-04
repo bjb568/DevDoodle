@@ -390,7 +390,7 @@ $answers
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
 				else currentNode = currentNode.lastChild;
 			}
 			document.getElementById('comments').appendChild(div);

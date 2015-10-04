@@ -1,5 +1,4 @@
 'use strict';
-
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;

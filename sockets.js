@@ -1,5 +1,4 @@
 'use strict';
-
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;
@@ -26,7 +25,22 @@ var fs = require('fs'),
 		native_parser: false
 	}),
 	dbcs = {},
-	usedDBCs = ['users', 'questions', 'answers', 'posthistory', 'chat', 'chathistory', 'chatstars', 'chatusers', 'chatrooms', 'programs', 'comments', 'votes', 'lessons', 'qtags'];
+	usedDBCs = [
+		'users',
+		'questions',
+		'qtags'
+		'answers',
+		'posthistory',
+		'chat',
+		'chathistory',
+		'chatstars',
+		'chatusers',
+		'chatrooms',
+		'programs',
+		'comments',
+		'votes',
+		'lessons'
+	];
 
 db.open(function(err, db) {
 	if (err) throw err;
@@ -52,41 +66,30 @@ var questionTypes = {
 	the: 'a theoretical scenario'
 };
 
-var wss = new ws.Server({
-	server: https.createServer({
-		key: fs.readFileSync('../Secret/devdoodle.net.key'),
-		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
-		ssl: true,
-		ciphers: [
-			'ECDHE-RSA-AES128-GCM-SHA256',
-			'ECDHE-ECDSA-AES128-GCM-SHA256',
-			'ECDHE-RSA-AES256-GCM-SHA384',
-			'ECDHE-ECDSA-AES256-GCM-SHA384',
-			'DHE-RSA-AES128-GCM-SHA256',
-			'ECDHE-RSA-AES128-SHA256',
-			'DHE-RSA-AES128-SHA256',
-			'ECDHE-RSA-AES256-SHA384',
-			'DHE-RSA-AES256-SHA384',
-			'ECDHE-RSA-AES256-SHA256',
-			'DHE-RSA-AES256-SHA256',
-			'HIGH',
-			'!aNULL',
-			'!eNULL',
-			'!EXPORT',
-			'!DES',
-			'!RC4',
-			'!MD5',
-			'!PSK',
-			'!SRP',
-			'!CAMELLIA'
-		].join(':'),
-		honorCipherOrder: true
-	}, function(req, res) {
-		res.writeHead(200);
-		res.end('All glory to WebSockets!\n');
-	}).listen(81)
-});
+var constants = require('constants'),
+	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+
+var httpsServer = https.createServer({
+	key: fs.readFileSync('../Secret/devdoodle.net.key'),
+	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+	ecdhCurve: 'secp384r1',
+	ciphers: [
+		'ECDHE-ECDSA-AES256-GCM-SHA384',
+		'ECDHE-RSA-AES256-GCM-SHA384',
+		'ECDHE-ECDSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-ECDSA-AES256-SHA',
+		'ECDHE-RSA-AES256-SHA'
+	].join(':'),
+	honorCipherOrder: true,
+	secureOptions: SSL_ONLY_TLS_1_2
+}, function(req, res) {
+	res.writeHead(200);
+	res.end('This is the DevDoodle socket server. It uses the wss protocol.');
+}).listen(81);
+
+var wss = new ws.Server({server: httpsServer});
 
 function markdownEscape(input) {
 	return input.replace(/([^\\]?)(\\*)([`*_–\-+[(:"])/g, function(m, p1, p2, p3, i) {
@@ -113,7 +116,10 @@ wss.on('connection', function(tws) {
 				tws.send(msg);
 			} catch(e) {}
 		};
-		if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
+		if (tws.upgradeReq.url == '/test') {
+			tws.trysend('Socket connection successful.');
+			tws.close();
+		} else if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
 			dbcs.chatrooms.findOne({_id: tws.room = parseInt(i[1])}, function(err, room) {
 				if (err) throw err;
 				if (!room) return tws.trysend(JSON.stringify({

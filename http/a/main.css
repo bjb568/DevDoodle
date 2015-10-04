@@ -1,4 +1,10 @@
-html { background: linear-gradient(rgba(20, 20, 20, 0.85), rgba(20, 20, 20, 0.85)), url('/a/background.png') no-repeat left center fixed }
+html::before {
+	content: '';
+	position: absolute;
+	z-index: -1;
+	top: 0; right: 0; bottom: 0; left: 0;
+	background: #000;
+}
 body {
 	font-family: helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
@@ -73,6 +79,7 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
 .red { color: #f00 }
+.green { color: #0b0 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
 .column-small { -webkit-column-width: 10em; -moz-column-width: 10em; column-width: 10em }
@@ -184,7 +191,7 @@ code .browser { color: #9bd }
 }
 .comment:not(:hover) .sctrls svg:not(.clkd) { opacity: 0.4 }
 .comment img { max-height: 200px }
-.c-sig { padding-left: 4px }
+.c-sig { padding: 2px 0 0 4px }
 .c-sig > * { color: #666 }
 .ctrls :hover, .diamond { color: #000 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }

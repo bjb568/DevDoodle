@@ -1,3 +1,4 @@
+'use strict'
 function html(input, replaceQuoteOff) {
 	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
 	return input.toString().replaceAll(['&', '<', '"', '\b'], ['&amp;', '&lt;', '&quot;', '']);
@@ -243,5 +244,14 @@ module.exports = {
 	spanMarkdown: spanMarkdown,
 	inlineMarkdown: inlineMarkdown,
 	markdown: markdown,
-	passStrength: passStrength
+	passStrength: passStrength,
+	mime: {
+		'.html': 'text/html',
+		'.css': 'text/css',
+		'.js': 'text/javascript',
+		'.png': 'image/png',
+		'.svg': 'image/svg+xml',
+		'.mp3': 'audio/mpeg',
+		'.ico': 'image/x-icon'
+	}
 };

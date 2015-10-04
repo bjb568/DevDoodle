@@ -6,7 +6,7 @@
 			<button onclick="run(1)">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
 		</div>
 		<div id="left" class="half">
-			<textarea id="html" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML" wrap="off" autofocus="">$html</textarea>
+			<textarea id="html" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML" wrap="off">$html</textarea>
 			<textarea id="css" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="CSS" wrap="off">$css</textarea>
 			<textarea id="js" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="JS" wrap="off">$js</textarea>
 		</div>
@@ -66,7 +66,6 @@
 		width: 400px;
 		max-width: 100%;
 	}
-	.half { max-width: 90vw }
 	#main textarea, #output {
 		max-width: 100%;
 		border: 1px solid #fff;
@@ -163,7 +162,7 @@
 </style>
 <script>
 	var footerOff = true,
-		noPageOverflow = 400,
+		noPageOverflow = 800,
 		pageOverflowMobile = 700,
 		mainBottomPad = 60,
 		mainContentEl = document.getElementById('main'),
@@ -444,7 +443,7 @@
 				sig.appendChild(permalink);
 				var currentNode = div;
 				while (!sig.parentNode) {
-					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote') currentNode.appendChild(sig);
+					if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
 					else currentNode = currentNode.lastChild;
 				}
 				document.getElementById('comments').appendChild(div);
