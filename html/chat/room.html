@@ -470,9 +470,11 @@ $textarea
 		warning.appendChild(link);
 		ta.parentNode.insertBefore(warning, ta);
 		setInterval(function() {
-			if (socket.readyState == 1) return location.reload(true);
 			socket = new WebSocket('wss://' + location.hostname + ':81/chat/$id' + (!isNaN(hash) ? '/' + hash : ''));
-		}, 5000);
+			socket.onopen = function() {
+				location.reload();
+			};
+		}, 200);
 	};
 	if (ta) {
 		ta.addEventListener('input', function() {
