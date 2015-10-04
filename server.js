@@ -27,7 +27,6 @@ var http = require('http'),
 	essentials = require('./essentials.js'),
 	nodemailer = require('nodemailer'),
 	sendmailTransport = require('nodemailer-sendmail-transport'),
-	transport = nodemailer.createTransport(sendmailTransport()),
 	mongo = require('mongodb'),
 	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
 		auto_reconnect: false,
@@ -63,6 +62,7 @@ global.site = {
 		mod: 'Moderation'
 	}
 };
+global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
@@ -334,10 +334,10 @@ var server = https.createServer({
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('This is the server for <a href="https://devdoodle.net">devdoodle.net</a>. You must connect to this server from that domain.');
 	}
-	var i, id, post;
+	var i, post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
-		return respondPage('414', user, req, res, function() {
+		return respondPage('414', {}, req, res, function() {
 			res.write('<h1>Error 414</h1>');
 			res.write('<p>Request URI too long.</p>');
 			res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');

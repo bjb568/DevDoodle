@@ -1,10 +1,16 @@
 'use strict';
+var url = require('url'),
+	crypto = require('crypto');
 module.exports = function(req, res, user, post) {
-	var i;
+	var i, id;
 	if (req.url.pathname == '/notif') {
 		res.writeHead(200);
 		res.end(user && user.unread ? '1' : '');
 	} else if (req.url.pathname == '/me/changemail') {
+		if (!user) {
+			res.writeHead(403);
+			return res.end('Error: You must be logged in to change your email.');
+		}
 		var newmail = post.newmail;
 		if (!newmail) {
 			res.writeHead(400);
@@ -14,29 +20,15 @@ module.exports = function(req, res, user, post) {
 			res.writeHead(400);
 			return res.end('Error: Email address must be no longer than 256 characters.');
 		}
-		dbcs.users.findOne({
-			cookie: {
-				$elemMatch: {
-					token: cookie.parse(req.headers.cookie || '').id,
-					created: {$gt: new Date() -  2592000000}
-				}
+		var mailhash = crypto.createHash('md5').update(newmail).digest('hex');
+		dbcs.users.update({name: user.name}, {
+			$set: {
+				mail: newmail,
+				mailhash: mailhash
 			}
-		}, function(err, user) {
-			if (err) throw err;
-			if (!user) {
-				res.writeHead(403);
-				return res.end('Error: You are not logged in.');
-			}
-			var mailhash = crypto.createHash('md5').update(newmail).digest('hex');
-			dbcs.users.update({name: user.name}, {
-				$set: {
-					mail: newmail,
-					mailhash: mailhash
-				}
-			});
-			res.writeHead(200);
-			res.end(mailhash);
 		});
+		res.writeHead(200);
+		res.end(mailhash);
 	} else if (req.url.pathname == '/login/recover') {
 		if (post.code) {
 			dbcs.users.findOne({
@@ -879,4 +871,4 @@ module.exports = function(req, res, user, post) {
 		res.writeHead(404);
 		res.end('The API feature requested has not been implemented.');
 	}
-}
+};
