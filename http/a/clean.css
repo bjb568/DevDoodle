@@ -338,7 +338,7 @@ ul, ol, p { margin: 0.3em 0 0.2em }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, footer, .clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
+.clear, footer, .clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after, h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * {
 	content: '';
 	display: block;
 	clear: both;
@@ -450,6 +450,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	max-width: 100%;
 }
 #nav form {
+	max-width: 100%;
 	padding: 4px 0;
 	line-height: 1;
 	display: inline-block;
