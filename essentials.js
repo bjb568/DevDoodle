@@ -78,11 +78,11 @@ function inlineMarkdown(input) {
 						if (stags[j].start == input.substr(i, l)) {
 							output += spanMarkdown(span) + '<' + j + '>';
 							span = '';
-							current.push(stags[j].end);
+							current.push(j);
 							i += l - 1;
 							continue outer;
 						} else if (stags[j].end == input.substr(i, l)) {
-							if (current[current.length - 1] == stags[j].end) {
+							if (stags[current[current.length - 1]] == stags[j]) {
 								output += spanMarkdown(span) + '</' + j + '>';
 								span = '';
 								current.pop();
