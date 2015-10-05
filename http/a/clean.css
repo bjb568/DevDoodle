@@ -537,7 +537,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 	.resp-flex > section:not(:first-child) { margin-left: 6px }
 }
-@media (min-width: 701px) {
+@media (min-width: 750px) {
 	.half { float: left }
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
 	.half { width: 49.5% }
