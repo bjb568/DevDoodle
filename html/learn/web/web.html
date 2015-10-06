@@ -345,6 +345,7 @@
 		box-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
 		transition: box-shadow .3s, background-color .3s;
 		font-weight: normal;
+		text-decoration: none;
 	}
 	#tree-inner .course .description {
 		visibility: hidden;
@@ -377,14 +378,14 @@
 	#tree-inner .cline {
 		height: 24em;
 		margin: 0 auto;
-		width: 2em;
+		width: 2px;
 		background: #000;
 	}
 	#tree-inner .split {
 		height: 24em;
 		width: 100%;
 	}
-	#tree-inner .split:before {
+	#tree-inner .split::before {
 		content: '';
 		position: absolute;
 		left: 50%;
@@ -394,10 +395,10 @@
 		transform-origin: top;
 		-webkit-transform-origin: top;
 		margin: 0 auto;
-		width: 2em;
+		width: 2px;
 		background: #000;
 	}
-	#tree-inner .split:after {
+	#tree-inner .split::after {
 		content: '';
 		position: absolute;
 		left: 50%;
@@ -407,33 +408,33 @@
 		transform-origin: top;
 		-webkit-transform-origin: top;
 		margin: 0 auto;
-		width: 2em;
+		width: 2px;
 		background: #000;
 	}
-	#tree-inner .uneven-split:before {
+	#tree-inner .uneven-split::before {
 		height: 203em;
 		transform: rotate(82.9deg);
 		-webkit-transform: rotate(82.9deg);
 	}
-	#tree-inner div div .split:before {
+	#tree-inner div div .split::before {
 		height: 102em;
 		transform: rotate(76deg);
 		-webkit-transform: rotate(76deg);
 	}
-	#tree-inner div div .split:after, #tree-inner .html-css:after {
+	#tree-inner div div .split::after, #tree-inner .html-css::after {
 		height: 102em;
 		transform: rotate(-76deg);
 		-webkit-transform: rotate(-76deg);
 	}
 	#tree-inner .umar { margin-top: 24em }
 	#tree-inner .left-down, #tree-inner .functions-popups, #tree-inner .conversion-nodelist, #tree-inner .looping-elements { width: auto; height: 0 }
-	#tree-inner .left-down:before {
+	#tree-inner .left-down::before {
 		content: '';
 		position: absolute;
 		top: 6em;
 		right: 100%;
 		margin-right: -20em;
-		width: 2em;
+		width: 2px;
 		height: 110em;
 		transform: rotate(72deg);
 		-webkit-transform: rotate(72deg);
@@ -441,26 +442,24 @@
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .functions-popups:before, #tree-inner .conversion-nodelist:before {
+	#tree-inner .functions-popups::before, #tree-inner .conversion-nodelist::before {
 		content: '';
 		position: absolute;
 		top: 10em;
 		left: 100%;
-		margin-left: -2em;
-		width: 2em;
-		height: 45em;
-		transform: rotate(-34deg);
-		-webkit-transform: rotate(-34deg);
+		width: 2px;
 		transform-origin: top;
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .conversion-nodelist:before {
+	#tree-inner .conversion-nodelist::before {
+		margin-left: -2px;
 		height: 112em;
-		transform: rotate(-48deg);
-		-webkit-transform: rotate(-48deg);
+		transform: rotate(-49deg);
+		-webkit-transform: rotate(-49deg);
 	}
-	#tree-inner .functions-popups:before {
+	#tree-inner .functions-popups::before {
+		height: 45em;
 		margin-left: -16em;
 		transform: rotate(-60deg);
 		-webkit-transform: rotate(-60deg);
@@ -476,12 +475,12 @@
 		left: 18em;
 	}
 	#tree-inner .css-selectors-branch { margin-top: 26em }
-	#tree-inner .css-selectors-branch:before {
+	#tree-inner .css-selectors-branch::before {
 		content: '';
 		position: absolute;
 		top: 0;
 		left: 50%;
-		width: 2em;
+		width: 2px;
 		height: 238em;
 		transform: rotate(-99.6deg);
 		-webkit-transform: rotate(-99.6deg);
@@ -489,15 +488,15 @@
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .ajax-form:before {
+	#tree-inner .ajax-form::before {
 		content: '';
 		position: absolute;
 		z-index: 1;
 		top: 50%;
 		left: 100%;
-		margin-left: -2em;
-		margin-top: 2em;
-		width: 2em;
+		margin-left: -2px;
+		margin-top: 2px;
+		width: 2px;
 		height: 245em;
 		transform: rotate(-99.1deg);
 		-webkit-transform: rotate(-99.1deg);
@@ -505,26 +504,26 @@
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .looping-elements:after {
+	#tree-inner .looping-elements::after {
 		content: '';
 		position: absolute;
 		top: 0;
-		left: 50%;
-		width: 2em;
+		left: calc(50% + 4em);
+		width: 2px;
 		height: 163em;
-		transform: rotate(34.2deg);
-		-webkit-transform: rotate(34.2deg);
+		transform: rotate(36.0deg);
+		-webkit-transform: rotate(36.0deg);
 		transform-origin: top;
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .css-js:after {
+	#tree-inner .css-js::after {
 		content: '';
 		position: absolute;
 		z-index: 1;
 		top: 12em;
 		left: 60em;
-		width: 2em;
+		width: 2px;
 		height: 460em;
 		transform: rotate(-73.1deg);
 		-webkit-transform: rotate(-73.1deg);
@@ -532,14 +531,14 @@
 		-webkit-transform-origin: top;
 		background: #000;
 	}
-	#tree-inner .box-events:after {
+	#tree-inner .box-events::after {
 		content: '';
 		position: absolute;
 		z-index: 1;
 		top: 50%;
 		left: 100%;
 		margin-left: -1em;
-		width: 2em;
+		width: 2px;
 		height: 297em;
 		transform: rotate(-69.6deg);
 		-webkit-transform: rotate(-71deg);
@@ -548,18 +547,34 @@
 		background: #000;
 	}
 	#tree-inner .media-queries { background: transparent }
-	#tree-inner .media-queries:after {
+	#tree-inner .media-queries::after {
 		content: '';
 		position: absolute;
 		top: 100%;
-		margin-top: em;
+		margin-top: 2em;
 		right: 100em;
-		width: 2em;
-		height: 10em;
+		width: 2px;
+		height: 110em;
 		transform: rotate(255.3deg);
 		-webkit-transform: rotate(255.3deg);
 		transform-origin: top;
 		-webkit-transform-origin: top;
 		background: #000;
+	}
+	@media (max-width: 1200px) {
+		#tree-inner .cline,
+		#tree-inner .split::after,
+		#tree-inner .split::before,
+		#tree-inner .left-down::before,
+		#tree-inner .functions-popups::before,
+		#tree-inner .conversion-nodelist::before,
+		#tree-inner .css-selectors-branch::before,
+		#tree-inner .ajax-form::before,
+		#tree-inner .looping-elements::after,
+		#tree-inner .css-js::after,
+		#tree-inner .box-events::after,
+		#tree-inner .media-queries::after {
+			width: 1px;
+		}
 	}
 </style>
