@@ -333,7 +333,8 @@ ul, ol, p { margin: 0.3em 0 0.2em }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
-.clear, footer, .clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after, h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * {
+.clear, footer, h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * { clear: both }
+.clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
