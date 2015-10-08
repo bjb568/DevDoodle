@@ -122,7 +122,7 @@ global.respondPage = function(title, user, req, res, callback, header, status) {
 				path: '/',
 				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 				httpOnly: true,
-				secure: true
+				secure: usingSSL
 			});
 		}
 	}
@@ -307,6 +307,8 @@ var cache = {};
 
 var constants = require('constants'),
 	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+
+var usingSSL = true;
 
 function serverHandler(req, res) {
 	if (!req.headers.host) {
@@ -618,7 +620,7 @@ function serverHandler(req, res) {
 										path: '/',
 										expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 										httpOnly: true,
-										secure: true
+										secure: usingSSL
 									});
 								dbcs.users.update({name: fuser.name}, {
 									$push: {
@@ -738,7 +740,7 @@ function serverHandler(req, res) {
 								path: '/',
 								expires: new Date(),
 								httpOnly: true,
-								secure: true
+								secure: usingSSL
 							});
 							res.writeHead(303, {
 								Location: '/login/?r=updated',
@@ -897,6 +899,7 @@ if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
 		console.log('Notice: HTTP on port 80 will redirect to HTTPS on port 443');
 	}
 } else {
+	usingSSL = false;
 	http.createServer(serverHandler).listen(80);
 	console.log('server.js running on port 80');
 }
