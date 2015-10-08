@@ -308,22 +308,7 @@ var cache = {};
 var constants = require('constants'),
 	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
 
-var server = https.createServer({
-	key: fs.readFileSync('../Secret/devdoodle.net.key'),
-	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-	ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
-	ecdhCurve: 'secp384r1',
-	ciphers: [
-		'ECDHE-ECDSA-AES256-GCM-SHA384',
-		'ECDHE-RSA-AES256-GCM-SHA384',
-		'ECDHE-ECDSA-AES128-GCM-SHA256',
-		'ECDHE-RSA-AES128-GCM-SHA256',
-		'ECDHE-ECDSA-AES256-SHA',
-		'ECDHE-RSA-AES256-SHA'
-	].join(':'),
-	honorCipherOrder: true,
-	secureOptions: SSL_ONLY_TLS_1_2
-}, function(req, res) {
+function serverHandler(req, res) {
 	if (!req.headers.host) {
 		res.writeHead(400, {'Content-Type': 'text/html'});
 		return res.end('Please send the host HTTP header.');
@@ -860,38 +845,58 @@ var server = https.createServer({
 			}
 		}
 	});
-});
-server.listen(process.argv[2] || 443);
-var ocspCache = new ocsp.Cache();
-if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
-	server.on('OCSPRequest', function(cert, issuer, callback) {
-		ocsp.getOCSPURI(cert, function(err, uri) {
-			if (err) return callback(err);
-			var req = ocsp.request.generate(cert, issuer);
-			var options = {
-				url: uri,
-				ocsp: req.data
-			};
-			ocspCache.request(req.id, options, callback);
+};
+if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
+	var server = https.createServer({
+		key: fs.readFileSync('../Secret/devdoodle.net.key'),
+		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+		ecdhCurve: 'secp384r1',
+		ciphers: [
+			'ECDHE-ECDSA-AES256-GCM-SHA384',
+			'ECDHE-RSA-AES256-GCM-SHA384',
+			'ECDHE-ECDSA-AES128-GCM-SHA256',
+			'ECDHE-RSA-AES128-GCM-SHA256',
+			'ECDHE-ECDSA-AES256-SHA',
+			'ECDHE-RSA-AES256-SHA'
+		].join(':'),
+		honorCipherOrder: true,
+		secureOptions: SSL_ONLY_TLS_1_2
+	}, serverHandler);
+	server.listen(process.argv[2] || 443);
+	var ocspCache = new ocsp.Cache();
+	if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
+		server.on('OCSPRequest', function(cert, issuer, callback) {
+			ocsp.getOCSPURI(cert, function(err, uri) {
+				if (err) return callback(err);
+				var req = ocsp.request.generate(cert, issuer);
+				var options = {
+					url: uri,
+					ocsp: req.data
+				};
+				ocspCache.request(req.id, options, callback);
+			});
 		});
+	} else console.log('Notice: OCSP stapling is turned OFF.');
+	var sslSessionCache = {};
+	server.on('newSession', function(sessionId, sessionData, callback) {
+		sslSessionCache[sessionId] = sessionData;
+		callback();
 	});
-} else console.log('Notice: OCSP stapling is turned OFF.');
-var sslSessionCache = {};
-server.on('newSession', function(sessionId, sessionData, callback) {
-	sslSessionCache[sessionId] = sessionData;
-	callback();
-});
-server.on('resumeSession', function (sessionId, callback) {
-	callback(null, sslSessionCache[sessionId]);
-});
-console.log('front.js running on port ' + (process.argv[2] || 443));
-
-if (!process.argv[2]) {
-	http.createServer(function(req, res) {
-		res.writeHead(301, {
-			Location: 'https://' + req.headers.host + req.url
-		});
-		res.end();
-	}).listen(80);
-	console.log('Notice: HTTP on port 80 will redirect to HTTPS on port 443');
+	server.on('resumeSession', function (sessionId, callback) {
+		callback(null, sslSessionCache[sessionId]);
+	});
+	console.log('server.js running on port ' + (process.argv[2] || 443));
+	if (!process.argv[2]) {
+		http.createServer(function(req, res) {
+			res.writeHead(301, {
+				Location: 'https://' + req.headers.host + req.url
+			});
+			res.end();
+		}).listen(80);
+		console.log('Notice: HTTP on port 80 will redirect to HTTPS on port 443');
+	}
+} else {
+	http.createServer(serverHandler).listen(80);
+	console.log('server.js running on port 80');
 }
