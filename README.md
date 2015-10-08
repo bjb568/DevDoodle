@@ -18,7 +18,7 @@ Before submitting a bug, try hard-reloading.
 ## Running Locally
 
 - Clone this repository
-- Create a directory called `Secret` inside DevDoodle's parent and add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-geotrust.crt`, which you'll have to self-sign unless you have the real certs. In addition, create the file `devdoodleDB.key` which contains your mongodb database password for the user `DevDoodle`. Make sure your permissions are set right for this folder.
+- Create a directory called `Secret` inside DevDoodle's parent and if you want to use SSL add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-geotrust.crt`, which you'll have to self-sign unless you have the real certs. In addition, create the file `devdoodleDB.key` which contains your mongodb database password for the user `DevDoodle`. Make sure your permissions are set right for this folder.
 - Install a recent version of node and mongodb (run the mongod process (you must create a data directory, if it doesn't already exist)).
 - `npm install`
 - Run a mongo shell process and:
@@ -26,6 +26,8 @@ Before submitting a bug, try hard-reloading.
 		> use DevDoodle
 		> db.createUser({user: 'DevDoodle', pwd: 'YOUR-DB-PASSWORD', roles: [{role: 'readWrite', db: 'DevDoodle'}]})
 - `node server` with sudo (or change it's port to ≥ 1024 via command line argument (e.g. `node server 1337`))
+    - optional `--nossl` argument to run the server on http, port 80
+    - optional `--no-ocsp-stapling` to turn off OCSP stapling for the SSL server
 - `node sockets.js` with sudo (changing port is not supported since port 81 is hard coded into client side javascript)
 - verify everything is working at `https://localhost/status/` (or `https://localhost:1337/status/` for a custom port)
 
