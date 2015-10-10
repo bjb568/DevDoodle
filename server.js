@@ -865,7 +865,7 @@ if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
 		honorCipherOrder: true,
 		secureOptions: SSL_ONLY_TLS_1_2
 	}, serverHandler);
-	server.listen(process.argv[2] || 443);
+	server.listen(parseInt(process.argv[2]) || 443);
 	var ocspCache = new ocsp.Cache();
 	if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
 		server.on('OCSPRequest', function(cert, issuer, callback) {
@@ -888,16 +888,14 @@ if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
 	server.on('resumeSession', function (sessionId, callback) {
 		callback(null, sslSessionCache[sessionId]);
 	});
-	console.log('server.js running on port ' + (process.argv[2] || 443));
-	if (!process.argv[2]) {
-		http.createServer(function(req, res) {
-			res.writeHead(301, {
-				Location: 'https://' + req.headers.host + req.url
-			});
-			res.end();
-		}).listen(80);
-		console.log('Notice: HTTP on port 80 will redirect to HTTPS on port 443');
-	}
+	console.log('server.js running on port ' + (parseInt(process.argv[2]) || 443));
+	http.createServer(function(req, res) {
+		res.writeHead(301, {
+			Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
+		});
+		res.end();
+	}).listen(80);
+	console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
 } else {
 	usingSSL = false;
 	http.createServer(serverHandler).listen(80);
