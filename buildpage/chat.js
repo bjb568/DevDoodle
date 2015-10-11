@@ -65,7 +65,7 @@ module.exports = function(req, res, user) {
 					if (doc) {
 						if (doc.type == 'M' && (!user || user.level < 5)) return;
 						if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
-						if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') rooms.push({id: doc._id, name: doc.name});
+						rooms.push({id: doc._id, name: doc.name});
 					} else {
 						res.write(
 							data.toString()
