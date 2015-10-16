@@ -1,12 +1,15 @@
 language: node_js
 node_js:
   - stable
-services:
-  - mongodb
 install:
   - npm install
+  - wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.0.4.tgz -O /tmp/mongodb.tgz
+  - tar -xvf /tmp/mongodb.tgz
+  - mkdir /tmp/data
+  - ${PWD}/mongodb-linux-x86_64-3.0.4/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --auth &> /dev/null &
+  - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 before_script:
   - mkdir ../Secret
   - echo "asdf" > ../Secret/devdoodleDB.key
-  - mongo mydb_test --eval 'db.addUser({user:"DevDoodle",pwd:"asdf",roles:[{role:"readWrite",db:"DevDoodle"}]});'
+  - mongo mydb_test --eval 'db.createUser({user:"DevDoodle",pwd:"asdf",roles:[{role:"readWrite",db:"DevDoodle"}]});'
 script: node server 8080 --nossl
