@@ -8,5 +8,5 @@ install:
 before_script:
   - mkdir ../Secret
   - echo "asdf" > ../Secret/devdoodleDB.key
-  - mongo mydb_test --eval 'db.createUser({user:"DevDoodle",pwd:"asdf",roles:[{role:"readWrite",db:"DevDoodle"}]});'
+  - mongo mydb_test --eval 'db.addUser({user:"DevDoodle",pwd:"asdf",roles:[{role:"readWrite",db:"DevDoodle"}]});'
 script: node server 8080 --nossl
