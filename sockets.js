@@ -35,7 +35,7 @@ var fs = require('fs'),
 		'lessons'
 	];
 
-mongo.connect('mongodb://localhost:27017/', function(err, db) {
+mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 	if (err) throw err;
 	db.createCollection('questions', function(err, collection) {
 		if (err) throw err;
