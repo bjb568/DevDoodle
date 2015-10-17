@@ -12,15 +12,15 @@
 		"url": "https://github.com/bjb568/DevDoodle"
 	},
 	"dependencies": {
-		"cookie": "^0.2.0",
-		"nodemailer": "^1.4.0",
+		"cookie": "^0.2.2",
+		"nodemailer": "^1.8.0",
 		"nodemailer-sendmail-transport": "^1.0.0",
 		"ws": "^0.8.0",
-		"mongodb": "^2.0.39",
+		"mongodb": "^2.0.46",
 		"etag": "^1.7.0",
-		"uglify-js": "^2.4.24",
-		"clean-css": "^3.3.9",
+		"uglify-js": "^2.5.0",
+		"clean-css": "^3.4.6",
 		"ocsp": "^1.0.1",
-		"diff": "^2.1.1"
+		"diff": "^2.1.3"
 	}
 }
