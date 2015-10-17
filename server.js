@@ -79,10 +79,15 @@ mongo.connect('mongodb://localhost:27017/', function(err, db) {
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	if (process.argv.indexOf('--test') != -1) {
-		setTimeout(function() {
-			console.log('Things seem to work!');
-			process.exit();
-		}, 2000);
+		var testReq = http.get("http://localhost:8080/", function(testRes) {
+			testRes.on('data', function(d) {
+				console.log('Things seem to work!');
+				process.exit();
+			});
+		});
+		testReq.on('error', function(e) {
+			throw e;
+		});
 	}
 });
 

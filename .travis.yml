@@ -5,8 +5,3 @@ services:
   - mongodb
 install:
   - npm install
-before_script:
-  - mkdir ../Secret
-  - echo "asdf" > ../Secret/devdoodleDB.key
-  - mongo DevDoodle --eval 'db.addUser({user:"DevDoodle",pwd:"asdf",roles:["userAdminAnyDatabase"]});'
-script: node server 8080 --nossl --test
