@@ -16,14 +16,7 @@ var fs = require('fs'),
 	cookie = require('cookie'),
 	https = require('https'),
 	ws = require('ws'),
-	mongo = require('mongodb'),
-	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
-		auto_reconnect: false,
-		poolSize: 4
-	}), {
-		w: 0,
-		native_parser: false
-	}),
+	mongo = require('mongodb').MongoClient,
 	dbcs = {},
 	usedDBCs = [
 		'users',
@@ -42,18 +35,27 @@ var fs = require('fs'),
 		'lessons'
 	];
 
-db.open(function(err, db) {
+mongo.connect('mongodb://localhost:27017/', function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err) {
+	db.createCollection('questions', function(err, collection) {
 		if (err) throw err;
-		var i = usedDBCs.length;
-		function handleCollection(err, collection) {
-			if (err) throw err;
-			dbcs[usedDBCs[i]] = collection;
-			if (usedDBCs[i] == 'chatusers') collection.drop();
-		}
-		while (i--) db.collection(usedDBCs[i], handleCollection);
+		db.createIndex('questions', {description: 'text'}, {}, function() {});
+		db.createIndex('chat', {body: 'text'}, {}, function() {});
+		dbcs.questions = collection;
 	});
+	var i = usedDBCs.length;
+	function handleCollection(err, collection) {
+		if (err) throw err;
+		dbcs[usedDBCs[i]] = collection;
+		if (usedDBCs[i] == 'chatusers') collection.drop();
+	}
+	while (i--) db.collection(usedDBCs[i], handleCollection);
+	if (process.argv.indexOf('--test') != -1) {
+		setTimeout(function() {
+			console.log('Things seem to work!');
+			process.exit();
+		}, 2000);
+	}
 });
 
 var questionTypes = {

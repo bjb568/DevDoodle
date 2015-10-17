@@ -27,14 +27,7 @@ var http = require('http'),
 	essentials = require('./essentials.js'),
 	nodemailer = require('nodemailer'),
 	sendmailTransport = require('nodemailer-sendmail-transport'),
-	mongo = require('mongodb'),
-	db = new mongo.Db('DevDoodle', new mongo.Server('localhost', 27017, {
-		auto_reconnect: false,
-		poolSize: 4
-	}), {
-		w: 0,
-		native_parser: false
-	}),
+	mongo = require('mongodb').MongoClient,
 	usedDBCs = [
 		'users',
 		'questions',
@@ -70,24 +63,27 @@ global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
-db.open(function(err, db) {
+mongo.connect('mongodb://localhost:27017/', function(err, db) {
 	if (err) throw err;
-	db.authenticate('DevDoodle', fs.readFileSync('../Secret/devdoodleDB.key').toString(), function(err) {
+	db.createCollection('questions', function(err, collection) {
 		if (err) throw err;
-		db.createCollection('questions', function(err, collection) {
-			if (err) throw err;
-			db.createIndex('questions', {description: 'text'}, {}, function() {});
-			db.createIndex('chat', {body: 'text'}, {}, function() {});
-			dbcs.questions = collection;
-		});
-		var i = usedDBCs.length;
-		function handleCollection(err, collection) {
-			if (err) throw err;
-			dbcs[usedDBCs[i]] = collection;
-			if (usedDBCs[i] == 'chatusers') collection.drop();
-		}
-		while (i--) db.collection(usedDBCs[i], handleCollection);
+		db.createIndex('questions', {description: 'text'}, {}, function() {});
+		db.createIndex('chat', {body: 'text'}, {}, function() {});
+		dbcs.questions = collection;
 	});
+	var i = usedDBCs.length;
+	function handleCollection(err, collection) {
+		if (err) throw err;
+		dbcs[usedDBCs[i]] = collection;
+		if (usedDBCs[i] == 'chatusers') collection.drop();
+	}
+	while (i--) db.collection(usedDBCs[i], handleCollection);
+	if (process.argv.indexOf('--test') != -1) {
+		setTimeout(function() {
+			console.log('Things seem to work!');
+			process.exit();
+		}, 2000);
+	}
 });
 
 global.respondPage = function(title, user, req, res, callback, header, status) {
