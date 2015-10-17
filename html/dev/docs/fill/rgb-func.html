@@ -1,11 +1,11 @@
 <h1>rgb(r, g, b[, a])</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The rgb() function (red, green, blue) returns a string containing the CSS color that can then be passed to functions like `fill` and `stroke`.
  * You can learn about the RGB colorspace in these wikipedia articles: http://en.wikipedia.org/wiki/RGB_color_model and https://en.wikipedia.org/wiki/RGB_color_space
  * This function accepts an optional fourth parameter for opacity.
- * 
+ *
  * Usages:
  * rgb(r, g, b)
  * rgb(r, g, b, a)
@@ -28,10 +28,5 @@ rect(100, 25, 50, 50);
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

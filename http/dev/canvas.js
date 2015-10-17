@@ -1,4 +1,4 @@
-'use strict';
+window.alert = window.confirm = window.prompt = null;
 
 var canvas = document.getElementById('canvas'),
 	ctx = canvas.getContext('2d'),
@@ -212,7 +212,18 @@ function reset(a) {
 	strokeWidth(2);
 }
 function error(e) {
-	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + ((navigator.userAgent.indexOf('Safari') != -1 && e.line == 1 && e instanceof SyntaxError ? '' : (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ')) + e) + '</pre>');
+	var pre = document.createElement('pre');
+	pre.style.color = '#f22';
+	if (!(navigator.userAgent.indexOf('Safari') != -1 && e instanceof SyntaxError)) {
+		if (window.chrome) pre.appendChild(document.createTextNode(e.stack));
+		else {
+			var strong = document.createElement('strong');
+			strong.appendChild(document.createTextNode('Line ' + (e.line || e.lineNumber) + ' '));
+			pre.appendChild(strong);
+		}
+	}
+	pre.appendChild(document.createTextNode(e));
+	document.getElementById('console').appendChild(pre);
 }
 var frameRate = 30;
 var draw = function() {};

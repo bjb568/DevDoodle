@@ -6,7 +6,8 @@
 	<input type="hidden" id="passinput" value="$pass" />
 	<input type="text" id="mailinput" value="$mail" maxlength="256" required="" /> <button id="submit" type="submit">Resend</button>
 </form>
-<script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	document.getElementById('resendform').onsubmit = function(e) {
 		e.preventDefault();
 		request('/api/login/resend', function(res) {

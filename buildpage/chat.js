@@ -70,14 +70,14 @@ module.exports = function(req, res, user) {
 						res.write(
 							data.toString()
 							.replace('$user', user.name)
-							.replace('$rooms', JSON.stringify(rooms))
+							.replace('$rooms', html(JSON.stringify(rooms), true))
 							.replace('$qroom', req.url.query && req.url.query.room ? req.url.query.room : '')
 						);
 						respondPageFooter(res);
 					}
 				});
 			});
-		});
+		}, {inhead: '<link rel="stylesheet" href="chat.css" />'});
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
 		dbcs.chatrooms.findOne({_id: parseInt(i[1])}, function(err, doc) {
 			if (err) throw err;
@@ -104,7 +104,7 @@ module.exports = function(req, res, user) {
 							});
 						}
 					});
-				});
+				}, {inhead: '<link rel="stylesheet" href="chat.css" />'});
 			} else {
 				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorForbidden(req, res, user, 'You have not been invited to this private room.');
 				if (doc.type == 'M' && (!user || user.level < 5)) return errorForbidden(req, res, user, 'You must be a moderator to join this room.');
@@ -126,8 +126,8 @@ module.exports = function(req, res, user) {
 											'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
 											(
 												isInvited ?
-													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth" style="height: 96px"></textarea>' +
-														'<div id="subta" class="umar"><button id="btn" onclick="send()">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
+													'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth"></textarea>' +
+														'<div id="subta" class="umar"><button id="btn">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
 													'<p>Posting in a non-public room is by invitation only.</p>'
 											)
 									) :
@@ -137,7 +137,7 @@ module.exports = function(req, res, user) {
 						);
 						respondPageFooter(res);
 					});
-				});
+				}, {inhead: '<link rel="stylesheet" href="chat.css" />'});
 			}
 		});
 	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)$/)) {

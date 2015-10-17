@@ -103,10 +103,17 @@ global.respondPage = function(title, user, req, res, callback, header, status) {
 	delete header.user;
 	delete header.nonotif;
 	delete header.clean;
-	if (clean) inhead += '<script>var footerOff = true;</script>';
-	if (!header['Content-Type']) header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
-	if (!header['Cache-Control']) header['Cache-Control'] = 'no-cache';
-	if (!header['X-Frame-Options']) header['X-Frame-Options'] = 'DENY';
+	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
+	if (typeof header['Cache-Control'] != 'string') header['Cache-Control'] = 'no-cache';
+	if (typeof header['X-Frame-Options'] != 'string') header['X-Frame-Options'] = 'DENY';
+	if (typeof header['Content-Security-Policy'] != 'string') {
+		header['Content-Security-Policy'] =
+			"default-src 'self'; " +
+			"connect-src 'self' wss://" + req.headers.host + ":81;" +
+			" child-src blob:; " +
+			(req.headers['user-agent'].indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
+			"img-src *";
+	}
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; max-age=2592000; includeSubdomains';
 	if (user) {
@@ -214,7 +221,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write(
 			'<div>' +
 				'<input type="text" id="name" name="name" placeholder="Name"' +
-					(filln && post.name ? ' value="' + html(post.name) + '"' : '') +
+					(filln && post.name ? ' value="' + html(post.name, true) + '"' : '') +
 					' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') +
 				' /> ' +
 				'<span id="name-error" class="red"> </span>' +
@@ -228,10 +235,10 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
 		res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">Doesn\'t match</span></div>');
 		res.write('<p><small>Please use a password manager to store passwords</small></p>');
-		res.write('<div><input type="text" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
+		res.write('<div><input type="text" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail, true) + '"' : '') + ' /></div>');
 		res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
 		res.write('</div>');
-		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />');
+		res.write('<input type="hidden" name="referer" value="' + html(post.referer || '', true) + '" />');
 		res.write('<button type="submit" id="submit" class="umar">Submit</button>');
 		res.write('</form>');
 		res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
@@ -265,7 +272,7 @@ function respondCreateRoomPage(errs, user, req, res, post) {
 		res.write('<h1>Create Room</h1>');
 		res.write(errorsHTML(errs));
 		res.write('<form method="post">');
-		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
+		res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '', true) + '" /></div>');
 		res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80" style="max-width: 100%">' + html(post.desc || '') + '</textarea></div>');
 		res.write('<div>Type: <select name="type">');
 		res.write('\t<option value="P">Public</option>');
@@ -301,7 +308,8 @@ var statics = JSON.parse(fs.readFileSync('./statics.json')),
 		['/mod/', require('./buildpage/mod.js')],
 		['/', require('./buildpage/home.js')]
 	],
-	apiServer = require('./api.js');
+	apiServer = require('./api.js'),
+	canvasJS = fs.readFileSync('./http/dev/canvas.js');
 
 var cache = {};
 
@@ -351,7 +359,7 @@ function serverHandler(req, res) {
 			respondPage(i.title, user, req, res, function() {
 				fs.readFile(i.path || './html/' + req.url.pathname, function(err, data) {
 					if (err) throw err;
-					res.write(data.toString());
+					res.write(data.toString().replace('$canvasjs', html(canvasJS)));
 					respondPageFooter(res);
 				});
 			}, options);

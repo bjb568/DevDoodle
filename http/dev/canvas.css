@@ -1,0 +1,208 @@
+*::-webkit-input-placeholder { color: #888 }
+*::-moz-placeholder { color: #999 }
+html, #content, #output, #footer, #main { background: #000 }
+#main { padding: 0 }
+#content { padding: 0 4px }
+#main a:hover { color: #4ff }
+#main a:active { color: #06f }
+#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+#main { clear: both }
+#meta {
+	clear: both;
+	padding: 4px;
+	margin-top: 8px;
+	background: rgba(255, 255, 255, .8);
+	color: #000;
+}
+#fullscreen-button {
+	display: inline-block;
+	margin-left: 8px;
+}
+#output { width: 100% }
+#main { height: 500px }
+#row { height: calc(100% - 2rem - 2px) }
+#edit-title {
+	width: 400px;
+	max-width: 100%;
+}
+#ta-cont {
+	width: 100%;
+	margin-bottom: 8px;
+	position: relative;
+	overflow: auto;
+	border: 1px solid #fff;
+}
+#code, #code-display {
+	display: block;
+	min-height: 100%;
+	padding: 0;
+	margin: 2px;
+	color: #fff;
+	background: transparent;
+	font-family: monospace;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	font-size: 1rem;
+	line-height: 1.2;
+	resize: none;
+	outline: none;
+	border: none;
+	padding-left: 4px;
+}
+#code {
+	position: absolute;
+	top: 0; right: 0;
+	z-index: 1;
+	color: transparent;
+}
+#code-display {
+	width: calc(100% - 4px);
+	border-left: 1px solid #444;
+	padding-right: 1px;
+}
+#caret {
+	display: inline-block;
+	position: absolute;
+	background: #fff;
+	width: 1px;
+}
+#caret[hidden] { display: none }
+#ta-cont, #output { height: calc(50% - 4px) }
+@media (min-width: 720px) {
+	h1 {
+		height: 1.65rem;
+		margin-bottom: .35em;
+	}
+	#ta-cont, #output { height: 100% }
+	#ta-cont { width: 60% }
+	body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
+	#output {
+		width: 39%;
+		float: right;
+	}
+	body:not(.fullscreen) #output { max-width: 640px }
+	.fullscreen #ta-cont { width: calc(20% + 28ch) }
+	.fullscreen #output { width: calc(79% - 28ch) }
+}
+@media (min-width: 850px) {
+	.fullscreen #ta-cont { width: calc(40% + 9ch) }
+	.fullscreen #output { width: calc(59% - 9ch) }
+}
+@media (min-width: 1200px) {
+	.fullscreen #ta-cont { width: calc(20% + 36ch) }
+	.fullscreen #output { width: calc(79% - 36ch) }
+}
+@media (min-width: 1500px) {
+	#ta-cont { margin-bottom: 0 }
+	.fullscreen #ta-cont { width: calc(5% + 70ch) }
+	.fullscreen #output { width: calc(94% - 70ch) }
+}
+.fullscreen #main #output.fullscreen {
+	position: fixed;
+	top: 0; right: 0;
+	width: calc(100% - 32px);
+	height: 100%;
+	z-index: 1;
+}
+#close-fullscreen {
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	width: 32px; height: 32px;
+	line-height: 32px;
+	background: #000;
+	text-align: center;
+}
+#close-fullscreen { height: 100% }
+#close-fullscreen a {
+	display: inline-block;
+	width: 100%;
+	text-decoration: none;
+	background: #aaa;
+}
+#close-fullscreen a:hover { background: #fff }
+@media (min-width: 1500px) {
+	#nav { right: calc(96% - 144px) }
+	.fullscreen #nav {
+		top: 0;
+		right: calc(100% - 40px);
+		left: auto;
+		transition: right 0.5s, top 0.2s, opacity 0.3s, z-index 1s;
+	}
+	.fullscreen #nav:hover {
+		right: calc(96% - 144px);
+		z-index: 2;
+		transition: right 0.5s, opacity 0.3s;
+	}
+	.fullscreen #nav:not(:hover) { opacity: 0.3 }
+	.fullscreen #content { margin: 6px 0 6px 46px }
+	.fullscreen.noscrl #nav { display: none }
+}
+#save.progress {
+	cursor: progress;
+	color: #4ff;
+}
+#up, #dn {
+	width: 22px;
+	height: 24px;
+	fill: #777;
+}
+#up:hover, #dn:hover {
+	fill: #888;
+	transition: fill 0.1s;
+}
+#up:active, #dn:active {
+	fill: #666;
+	transition: none;
+}
+#up.clkd, #dn.clkd {
+	fill: #f90;
+}
+#fl {
+	width: 20px;
+	height: 24px;
+	fill: #f44;
+	margin-left: 12px;
+}
+#fl:hover {
+	fill: #f55;
+	transition: fill 0.2s;
+}
+#fl.clkd {
+	fill: #f00;
+}
+#fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}
+#comment:target + #addcomment { display: none }
+.up {
+	width: 18px;
+	height: 20px;
+	fill: #888;
+}
+.up:hover {
+	fill: #999;
+	transition: fill 0.1s;
+}
+.up:active {
+	fill: #777;
+	transition: none;
+}
+.up.clkd { fill: #f90 }
+.fl {
+	width: 20px;
+	height: 20px;
+	fill: #f88;
+}
+.fl:hover {
+	fill: #f66;
+	transition: fill 0.2s;
+}
+.fl.clkd { fill: #f00 }
+.fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}

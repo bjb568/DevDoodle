@@ -37,7 +37,8 @@
 	<textarea id="html">$html</textarea>
 	<iframe id="output"></iframe>
 </div>
-<style>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	#cntrls form {
 		display: inline;
 		margin: 0;
@@ -51,7 +52,8 @@
 		width: 120px;
 	}
 </style>
-<script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	var footerOff = true,
 		noPageOverflow = 520,
 		htmlTA = document.getElementById('html');

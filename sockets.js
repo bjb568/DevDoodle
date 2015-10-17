@@ -359,6 +359,7 @@ wss.on('connection', function(tws) {
 								event: 'err',
 								body: 'You may edit only your own messages.'
 							}));
+							if (post.body == message.body) return;
 							dbcs.chathistory.insert({
 								message: post._id,
 								event: 'edit',

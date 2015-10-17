@@ -1,7 +1,7 @@
 'use strict'
-function html(input, replaceQuoteOff) {
-	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
-	return input.toString().replaceAll(['&', '<', '"', '\b'], ['&amp;', '&lt;', '&quot;', '']);
+function html(input, attribute) {
+	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
 }
 function warning(message) {
 	//console.log(message);

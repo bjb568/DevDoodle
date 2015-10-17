@@ -36,7 +36,8 @@
 	<textarea id="html" name="html">$html</textarea>
 	<iframe id="output"></iframe>
 </form>
-<style>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	#text-inner input, textarea { width: 100% }
 	h1, h2 { border: none }
 	#text-inner h1 { margin: 2px 0 0 }
@@ -93,7 +94,8 @@
 		width: 120px;
 	}
 </style>
-<script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	var footerOff = true,
 		noPageOverflow = 520,
 		htmlTA = document.getElementById('html'),

@@ -18,11 +18,8 @@
 		<option value="trusted">&gt; 200 reputation</option>
 	</select>
 </form>
-<style>
-	.user, .user:first-child { margin-top: 6px }
-</style>
 <h2>$num</h2>
-<div class="umar clearfix">
+<div id="userlist" class="umar clearfix">
 	$users</div>
 <script>
 	document.getElementById('orderby').onchange = document.getElementById('orderdir').onchange = document.getElementById('where').onchange = function() {

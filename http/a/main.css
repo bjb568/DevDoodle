@@ -440,6 +440,36 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	font-size: 0.9rem;
 	line-height: 1.5;
 }
+#userlist .user { margin-top: 6px }
+#mailinput { width: 240px }
+#profpic {
+	max-width: 144px;
+	max-height: 144px;
+}
+#profpic + div {
+	padding-left: 6px;
+	overflow: hidden;
+}
+.big-rep { font-size: 1.8em }
+#logo-big {
+	max-width: 100%;
+	max-height: 180px;
+	display: block;
+	margin: 0 auto;
+	font-size: 5vmin;
+}
+@media screen and (min-width: 800px) {
+	#logo-big {
+		max-width: 80%;
+	}
+}
+@media screen and (min-width: 1500px) {
+	#logo-big {
+		width: 50%;
+		max-width: 900px;
+		max-height: 200px;
+	}
+}
 #logo {
 	display: block;
 	width: 180px;
@@ -447,6 +477,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 0;
 	max-width: 100%;
 }
+#nav #logo { background: rgba(255, 255, 255, .9) }
 #nav form {
 	max-width: 100%;
 	padding: 4px 0;
@@ -458,10 +489,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	max-width: 100%;
 	color: #000;
 	font-size: 16px;
-}
-#nav input::-webkit-search-results-decoration { display: none }
-@media screen and(-webkit-min-device-pixel-ratio: 0) { /* Safari only */
-	#nav input::-webkit-search-results-decoration { display: block }
+	line-height: 1em;
 }
 #logo svg {
 	max-width: 100%; max-height: 100%;

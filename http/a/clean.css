@@ -450,6 +450,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 0;
 	max-width: 100%;
 }
+#nav #logo { background: rgba(255, 255, 255, .9) }
 #nav form {
 	max-width: 100%;
 	padding: 4px 0;
@@ -460,6 +461,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	width: 160px;
 	max-width: 100%;
 	color: #000;
+	line-height: 1em;
 }
 #logo svg {
 	max-width: 100%; max-height: 100%;

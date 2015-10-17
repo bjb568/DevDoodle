@@ -1,7 +1,5 @@
 'use strict';
-var fs = require('fs'),
-	showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
-	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString();
+var fs = require('fs');
 module.exports = function(req, res, user) {
 	var i;
 	if (req.url.pathname == '/user/') {
@@ -62,8 +60,8 @@ module.exports = function(req, res, user) {
 			respondPage(dispUser.name, user, req, res, function() {
 				var me = user.name == dispUser.name;
 				res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
-				res.write('<img id="profpic" class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" style="max-width: 144px; max-height: 144px;" />');
-				res.write('<div style="padding-left: 6px; overflow: hidden;">');
+				res.write('<img id="profpic" class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" />');
+				res.write('<div>');
 				res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 				if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 				res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
@@ -74,7 +72,7 @@ module.exports = function(req, res, user) {
 					);
 				}
 				res.write('</div>');
-				res.write('<div class="clear"><span style="font-size: 1.8em">' + dispUser.rep + '</span> reputation</div>');
+				res.write('<div class="clear"><span class="big-rep">' + dispUser.rep + '</span> reputation</div>');
 				res.write('<div class="resp-flex">');
 				res.write('<section>');
 				res.write('<h2>Questions</h2>');
@@ -121,8 +119,8 @@ module.exports = function(req, res, user) {
 									if (data) {
 										res.write('<div class="program">');
 										res.write('<h2 class="title"><a href="/dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a></h2>');
-										if (data.type == 1) res.write(showcanvas.replace('$code', html(JSON.stringify(data.code))));
-										else if (data.type == 2) res.write(showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+										if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code, true) + '"></iframe></div>');
+										else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>');
 										res.write('</div> ');
 										programs++;
 									} else {

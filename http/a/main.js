@@ -18,9 +18,9 @@ HTMLElement.prototype.insertAfter = function(newEl, refEl) {
 	else refEl.parentNode.appendChild(newEl);
 };
 
-function html(input, replaceQuoteOff) {
-	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
-	return input.toString().replaceAll(['&', '<', '"', '\b'], ['&amp;', '&lt;', '&quot;', '']);
+function html(input, attribute) {
+	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
 }
 
 var mdWarnings = [];
@@ -448,7 +448,33 @@ addEventListener('DOMContentLoaded', function() {
 			if (times[i].textContent != t) times[i].textContent = t;
 		}
 	}, 100);
-	minHeight();
+	e = document.getElementsByClassName('html-program');
+	i = e.length;
+	while (i--) {
+		var outputBlob = new Blob([
+			'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + e[i].dataset.html + '<style>' + e[i].dataset.css + '</style><script>alert=prompt=confirm=null;' + e[i].dataset.js + '</script></body></html>'
+		], {type: 'application/xhtml+xml'});
+		e[i].src = URL.createObjectURL(outputBlob);
+	}
+	e = document.getElementsByClassName('canvas-program');
+	i = e.length;
+	if (i) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/dev/canvas.js', true);
+		xhr.send();
+		xhr.onload = function() {
+			while (i--) {
+				var outputBlob = new Blob([
+					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch(e){error(e)}</script></body></html>'
+				], {type: 'application/xhtml+xml'});
+				e[i].src = URL.createObjectURL(outputBlob);
+			}
+		};
+	}
+	e = document.getElementsByTagName('link');
+	for (i = 0; i < e.length; i++ ) {
+		if (e[i].getAttribute('href') == '/a/clean.css') footerOff = true;
+	}
 });
 
 document.addEventListener('visibilitychange', function() {

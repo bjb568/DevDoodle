@@ -5,7 +5,8 @@
 	<input type="text" id="lang" name="lang" placeholder="Language" required="" />
 	<input type="number" id="par" name="par" placeholder="Parent ID" />
 </form>
-<script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	var tname = document.getElementById('name'),
 		lang = document.getElementById('lang'),
 		par = document.getElementById('par');
@@ -58,7 +59,8 @@
 		}
 	}
 </script>
-<style>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>
 	.active li:hover, .active section:hover { outline: 1px solid #00f }
 	ul {
 		padding-bottom: 4px;

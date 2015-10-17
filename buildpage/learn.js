@@ -16,7 +16,7 @@ module.exports = function(req, res, user) {
 					});
 				}
 			});
-		});
+		}, {inhead: '<link rel="stylesheet" href="learn.css" />'});
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/$/)) {
 		dbcs.lessons.findOne({_id: parseInt(i[1])}, function(err, post) {
 			if (err) throw err;
