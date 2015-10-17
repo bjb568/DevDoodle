@@ -889,15 +889,17 @@ if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
 		callback(null, sslSessionCache[sessionId]);
 	});
 	console.log('server.js running on port ' + (parseInt(process.argv[2]) || 443));
-	http.createServer(function(req, res) {
-		res.writeHead(301, {
-			Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
-		});
-		res.end();
-	}).listen(80);
-	console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
+	if (!parseInt(process.argv[2])) {
+		http.createServer(function(req, res) {
+			res.writeHead(301, {
+				Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
+			});
+			res.end();
+		}).listen(80);
+		console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
+	}
 } else {
 	usingSSL = false;
-	http.createServer(serverHandler).listen(80);
-	console.log('server.js running on port 80');
+	http.createServer(serverHandler).listen(process.argv[2] || 80);
+	console.log('server.js running on port ' + (process.argv[2] || 80));
 }
