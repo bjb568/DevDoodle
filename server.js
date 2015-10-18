@@ -14,6 +14,7 @@ Number.prototype.bound = function(l, h) {
 
 var http = require('http'),
 	https = require('https'),
+	http2 = require('http2'),
 	ocsp = require('ocsp'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
@@ -854,7 +855,7 @@ function serverHandler(req, res) {
 	});
 };
 if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
-	var server = https.createServer({
+	var server = http2.createServer({
 		key: fs.readFileSync('../Secret/devdoodle.net.key'),
 		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
 		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],

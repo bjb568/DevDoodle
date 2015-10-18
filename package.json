@@ -17,6 +17,7 @@
 		"url": "https://github.com/bjb568/DevDoodle"
 	},
 	"dependencies": {
+		"http2": "^3.2.0",
 		"cookie": "^0.2.2",
 		"nodemailer": "^1.8.0",
 		"nodemailer-sendmail-transport": "^1.0.0",
