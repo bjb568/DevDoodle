@@ -116,7 +116,7 @@ global.respondPage = function(title, user, req, res, callback, header, status) {
 			"img-src *";
 	}
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="03Yp9b7zlEaaJUIWosWYHJcdKYxMSa3Z4bZXWf8LXtI="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() -  user.seen > 3600000) {
