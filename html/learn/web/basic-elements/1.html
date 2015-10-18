@@ -10,11 +10,11 @@ Paragraphs - Basic Elements
 			<p>To move on, create a paragraph element inside the document body with any text you like.</p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../2/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the tags correctly? They look like this: <code>&lt;p>&lt;/p></code></p>
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a> <a href="../2/" class="rit">Next</a></div>
@@ -30,4 +30,12 @@ Paragraphs - Basic Elements
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
+<textarea id="validator" hidden="">function validate() {
+	if (!document.getElementsByTagName('p').length) {
+		return {
+			success: false,
+			msg: 'Did you write the tags correctly? They look like this: `&lt;p>` `&lt;/p>`'
+		};
+	}
+}</textarea>
 <script src="/learn/course.js" async=""></script>

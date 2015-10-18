@@ -112,7 +112,7 @@ global.respondPage = function(title, user, req, res, callback, header, status) {
 			"default-src 'self'; " +
 			"connect-src 'self' wss://" + req.headers.host + ":81;" +
 			" child-src blob:; " +
-			(req.headers['user-agent'].indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
+			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
 			"img-src *";
 	}
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
@@ -397,7 +397,7 @@ function serverHandler(req, res) {
 						res.write(data.toString().replace('$title', html(req.url.query.title || '')).replace(/\$[^\/\s"<]+/g, ''));
 						respondPageFooter(res);
 					});
-				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+				}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'});
 			} else if (req.method == 'POST') {
 				post = '';
 				req.on('data', function(data) {
@@ -461,16 +461,13 @@ function serverHandler(req, res) {
 								res.write(
 									data.toString()
 									.replaceAll(
-										['$title', '$stitle', '$sbody', '$validate', '$html'],
-										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || '')]
-									).replaceAll(
-										['$md-sbody', '$jsonvalidate'],
-										[markdown(post.sbody), JSON.stringify(post.validate || '')]
+										['$title', '$stitle', '$sbody', '$validate', '$html', '$md-sbody'],
+										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || ''), markdown(post.sbody || '')]
 									)
 								);
 								respondPageFooter(res);
 							});
-						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'});
 					} else {
 						respondPage('New Lesson', user, req, res, function() {
 							fs.readFile('./html/learn/newlesson.html', function(err, data) {
@@ -482,10 +479,9 @@ function serverHandler(req, res) {
 										[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.html || '')]
 									).replace(/>function[\s\S]+?<\/textarea/, '>' + html(post.validate || '') + '</textarea')
 								);
-								console.log(post.validate);
 								respondPageFooter(res);
 							});
-						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+						}, {inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'});
 					}
 				});
 			} else {

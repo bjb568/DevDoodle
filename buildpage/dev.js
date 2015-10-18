@@ -75,7 +75,7 @@ module.exports = function(req, res, user) {
 				);
 				respondPageFooter(res);
 			});
-		}, {inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
+		}, {inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;

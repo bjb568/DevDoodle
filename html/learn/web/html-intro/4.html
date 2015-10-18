@@ -19,7 +19,7 @@ Your first webpage - Intro to HTML
 	&lt;title>My awesome webpage&lt;/title>
 &lt;/head>
 …</code>
-			<p>This shows up in a browser like such:</p>
+			<p>This shows up in a browser like this:</p>
 			<img src="/learn/courses/document-title.png" style="width: 246px" />
 			<p>Add one to your document!</p>
 			<h3>How about some content?</h3>
@@ -27,11 +27,11 @@ Your first webpage - Intro to HTML
 			<p>To move on, write the basic page with a doctype and html, head, and body elements. You may refer to the example above.</p>
 			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../5/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../5/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				Did you put your title inside the head and your paragraph inside the body? Make sure you write your tags correctly.
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../3/" class="lft">Back</a> <a href="../5/" class="rit">Next</a></div>
@@ -47,32 +47,22 @@ Your first webpage - Intro to HTML
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
-<textarea hidden="" id="canvas-js">$canvasjs</textarea>
-<script src="/dev/runcanvas.js"></script>
-	var footerOff = true,
-		noPageOverflow = 520,
-		htmlTA = document.getElementById('html'),
-		runtTimeout;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
+<textarea id="validator" hidden="">function validate(data) {
+	if (!document.head || !document.body) {
+		return {
+			success: false,
+			msg: 'Make sure you wrote all your tags correctly and you have a head and body.'
+		};
+	} else if (document.head.getElementsByTagName('title').length != 1) {
+		return {
+			success: false,
+			msg: 'Did you put your title inside the head and your paragraph inside the body? Make sure you write your tags correctly.'
+		};
+	} else if (document.body.getElementsByTagName('p').length == 0) {
+		return {
+			success: false,
+			msg: 'Did you put your paragraph inside the body? Make sure you write your tags correctly.'
+		};
 	}
-	run();
-	function beforeRun() {
-		clearTimeout(runTimeout);
-		runTimeout = setTimeout(run, 100);
-	}
-	htmlTA.addEventListener('keyup', beforeRun);
-	htmlTA.addEventListener('keydown', beforeRun);
-	htmlTA.addEventListener('keypress', beforeRun);
-	document.getElementById('check').onclick = function() {
-		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xml');
-		if (doc.getElementsByTagName('head')[0].getElementsByTagName('title').length == 1 &amp;&amp; doc.getElementsByTagName('body')[0].getElementsByTagName('p').length) {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed').classList.remove('show');
-		} else {
-			document.getElementById('failed').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	};
-</script>
+}</textarea>
+<script src="/learn/course.js" async=""></script>

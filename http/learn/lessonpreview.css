@@ -1,0 +1,12 @@
+#cntrls form {
+	display: inline;
+	margin: 0;
+}
+#cntrls {
+	padding: 4px;
+	background: #0ff;
+}
+#cntrls button {
+	height: 20px;
+	width: 120px;
+}

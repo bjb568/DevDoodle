@@ -1,10 +1,10 @@
 <h1><a href="./" title="Back to Course Creation API index">←</a> Input Validation</h1>
-<p>In the textarea given, you must define a <code>function validate(String data)</code>. It is passed a string parameter <code>data</code> containing the contents of the user's code <code>&lt;textarea></code>.</p>
+<p>In the textarea given, you must define a <code>function validate(String data)</code>. It is passed a string parameter <code>data</code> containing the contents of the user's code <code>&lt;textarea></code>. It is executed in the context of the user's code textarea, so the result DOM from the user's code can be inspected.</p>
 <h2>Return object</h2>
 <p>This function is to return an object containing properties:</p>
 <ul>
-	<li><strong><code>success</code></strong>: Boolean of whether the code is a correct solution (default <code>true</code>)</li>
-	<li><strong><code>msg</code></strong>: String shown to the user that describes the mistake or a congradulation (default <code>"You did it!"</code>)</li>
+	<li><code>success</code>: Boolean of whether the code is a correct solution (default <code>true</code>)</li>
+	<li><code>msg</code>: String shown to the user that describes the mistake or a congradulation (default <code>"You did it!"</code>)</li>
 </ul>
 <h2>Example</h2>
 <p>This is the default code given.</p>
@@ -21,9 +21,3 @@
 	<span class="punctuation">}</span><span class="punctuation">;</span>
 <span class="punctuation">}</span></code>
 <p>This will pass any code containing the string <code>"test"</code>, otherwise it will show the message <q>Did you remember to foo the bar?</q>. Note that the second return statement is optional.</p>
-<style>
-	.highlight {
-		color: #fff;
-		background: #000;
-	}
-</style>

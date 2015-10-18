@@ -6,7 +6,7 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	footerOff = true,
 	noPageOverflow = 700,
 	pageOverflowMobile = true,
-	mainBottomPad = 60,
+	mainBottomPad = location.href.indexOf('/dev/new/') == -1 ? 60 : 0,
 	mainContentEl = document.getElementById('main');
 function blink() {
 	document.getElementById('caret').hidden ^= 1;

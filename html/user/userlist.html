@@ -21,8 +21,4 @@
 <h2>$num</h2>
 <div id="userlist" class="umar clearfix">
 	$users</div>
-<script>
-	document.getElementById('orderby').onchange = document.getElementById('orderdir').onchange = document.getElementById('where').onchange = function() {
-		window.location.href = '?orderby=' + document.getElementById('orderby').value + '&amp;orderdir=' + document.getElementById('orderdir').value + '&amp;where=' + document.getElementById('where').value;
-	};
-</script>
+<script src="search.js" async=""></script>

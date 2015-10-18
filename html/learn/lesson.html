@@ -7,7 +7,7 @@
 			<div id="checker">
 				<button type="button" id="check" class="blk">Submit</button>
 				<div id="passed" class="passed clearfix">
-					<h2><span id="passtext"> </span> <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+					<h2><span id="passtext"> </span> <small class="rit"><a href="$next">Move on →</a></small></h2>
 				</div>
 				<div id="failed" class="failed clearfix">
 					<h2>Try Again</h2>
@@ -15,50 +15,10 @@
 				</div>
 			</div>
 		</div>
-		<div id="cntrls"><a href="$back">Back</a> <a href="./">Course-Info</a> <a href="$next">Next</a></div>
+		<div id="cntrls" class="justify"><a href="$back">Back</a> <a href="./">Course-Info</a> <a href="$next">Next</a></div>
 	</div>
 	<textarea id="html">$html</textarea>
 	<iframe id="output"></iframe>
 </div>
-<textarea hidden="" id="canvas-js">$canvasjs</textarea>
-<script src="/dev/runcanvas.js"></script>
-	#cntrls { text-align: justify }
-	#cntrls::after {
-		content: '';
-		display: inline-block;
-		width: 100%;
-	}
-</style>
-<textarea hidden="" id="canvas-js">$canvasjs</textarea>
-<script src="/dev/runcanvas.js"></script>
-	var footerOff = true,
-		noPageOverflow = 520,
-		htmlTA = document.getElementById('html');
-	document.getElementById('check').onclick = function(e) {
-		e.preventDefault();
-		var checkerWorker = new Worker(URL.createObjectURL(new Blob([$jsonvalidate + '\n;onmessage = function(e) { postMessage(validate(e.data)); }'])));
-		checkerWorker.postMessage(htmlTA.value);
-		checkerWorker.onerror = checkerWorker.onmessage = function(e) {
-			if (e instanceof ErrorEvent) alert(e.message);
-			console.log(e);
-			var success = !e || !e.data || e.data.success;
-			var msg = !e || !e.data || typeof(e.data.msg) != 'string' ? 'You did it!' : e.data.msg;
-			document.getElementById(success ? 'passed' : 'failed').classList.add('show');
-			document.getElementById(success ? 'failed' : 'passed').classList.remove('show');
-			document.getElementById(success ? 'passtext' : 'fail').firstChild.nodeValue = msg;
-			checkerWorker.terminate();
-		};
-	};
-	var runTimeout;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
-	}
-	run();
-	function beforeRun() {
-		clearTimeout(runTimeout);
-		runTimeout = setTimeout(run, 100);
-	}
-	htmlTA.addEventListener('keyup', beforeRun);
-	htmlTA.addEventListener('keydown', beforeRun);
-	htmlTA.addEventListener('keypress', beforeRun);
-</script>
+<textarea id="validator" hidden="">$validate</textarea>
+<script src="/learn/course.js" async=""></script>

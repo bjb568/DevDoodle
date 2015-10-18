@@ -36,8 +36,8 @@ function spanMarkdown(input) {
 		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
+		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
 		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/!\[([^\[\]]+?)\]\[([\d\w]+)\]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" style="width: $2" src="https://$3" />')
 		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
 		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
 		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, '$1' + '$3'.link('$2'))
@@ -456,6 +456,10 @@ addEventListener('DOMContentLoaded', function() {
 		], {type: 'application/xhtml+xml'});
 		e[i].src = URL.createObjectURL(outputBlob);
 	}
+	e = document.getElementsByTagName('link');
+	for (i = 0; i < e.length; i++ ) {
+		if (e[i].getAttribute('href') == '/a/clean.css') footerOff = true;
+	}
 	e = document.getElementsByClassName('canvas-program');
 	i = e.length;
 	if (i) {
@@ -470,10 +474,6 @@ addEventListener('DOMContentLoaded', function() {
 				e[i].src = URL.createObjectURL(outputBlob);
 			}
 		};
-	}
-	e = document.getElementsByTagName('link');
-	for (i = 0; i < e.length; i++ ) {
-		if (e[i].getAttribute('href') == '/a/clean.css') footerOff = true;
 	}
 });
 
