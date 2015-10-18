@@ -175,7 +175,7 @@ module.exports = function(req, res, user, post) {
 				dbcs.chat.find(criteria, {score: {$meta: 'textScore'}}).sort(sort[post.sort] || post.text).each(function(err, msg) {
 					if (err) throw err;
 					if (msg) {
-						if (rooms[msg.room].type != 'N' && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
+						if ((rooms[msg.room].type != 'N' || rooms[msg.room].invited.indexOf(user.name) != -1) && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
 							id: msg._id,
 							body: msg.body,
 							user: msg.user,

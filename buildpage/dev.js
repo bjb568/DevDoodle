@@ -1,7 +1,5 @@
 'use strict';
-var fs = require('fs'),
-	showcanvas = fs.readFileSync('./html/dev/showcanvas.html').toString(),
-	showhtml = fs.readFileSync('./html/dev/showhtml.html').toString();
+var fs = require('fs');
 module.exports = function(req, res, user) {
 	var i;
 	if (req.url.pathname == '/dev/') {
@@ -12,8 +10,8 @@ module.exports = function(req, res, user) {
 				if (data) {
 					res.write('<div class="program">');
 					res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
-					if (data.type == 1) res.write(showcanvas.replace('$code', html(JSON.stringify(data.code))));
-						else if (data.type == 2) res.write(showhtml.replace('$html', html(data.html)).replace('$css', html(data.css)).replace('$js', html(data.js)));
+					if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code, true) + '"></iframe></div>');
+					else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>');
 					res.write('</div> ');
 				} else {
 					res.write('<a href="search/" class="center-text blk">See more</a>');
@@ -44,29 +42,25 @@ module.exports = function(req, res, user) {
 				}
 			});
 		});
-	} else if (req.url.pathname == '/dev/new/') {
-		respondPage('New', user, req, res, function() {
-			fs.readFile('./html/dev/new.html', function(err, data) {
-				if (err) throw err;
-				res.write(data);
-				respondPageFooter(res);
-			});
-		});
 	} else if (req.url.pathname == '/dev/new/canvas') {
 		respondPage('Canvas Playground', user, req, res, function() {
-			fs.readFile('./html/dev/canvas.html', function(err, data) {
+			fs.readFile('./http/dev/canvas.js', function(err, canvasJS) {
 				if (err) throw err;
-				res.write(
-					data.toString()
-					.replace(/<section id="meta">[^]+<\/section>/, '')
-					.replaceAll(
-						['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
-						['false', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
-					)
-				);
-				respondPageFooter(res);
+				fs.readFile('./html/dev/canvas.html', function(err, data) {
+					if (err) throw err;
+					res.write(
+						data.toString()
+						.replace('$canvasjs', html(canvasJS))
+						.replace(/<section id="meta">[^]+<\/section>/, '')
+						.replaceAll(
+							['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
+							['', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+						)
+					);
+					respondPageFooter(res);
+				});
 			});
-		}, {inhead: '<script src="/dev/runcanvas.js"></script>'});
+		}, {inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
 	} else if (req.url.pathname == '/dev/new/html') {
 		respondPage('HTML Playground', user, req, res, function() {
 			fs.readFile('./html/dev/html.html', function(err, data) {
@@ -81,7 +75,7 @@ module.exports = function(req, res, user) {
 				);
 				respondPageFooter(res);
 			});
-		});
+		}, {inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		dbcs.programs.findOne({_id: i = parseInt(i[1])}, function(err, program) {
 			if (err) throw err;
@@ -156,32 +150,36 @@ module.exports = function(req, res, user) {
 											if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
 											else {
 												if (program.type == 1) {
-													fs.readFile('./html/dev/canvas.html', function(err, data) {
+													fs.readFile('./http/dev/canvas.js', function(err, canvasJS) {
 														if (err) throw err;
-														res.write(
-															data.toString()
-															.replaceAll(
-																['$id', '$title', '$code'],
-																[program._id.toString(), html(program.title || 'Untitled'), html(program.code)]
-															).replaceAll(
-																['$created', '$updated'],
-																[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-															).replace('$comments', commentstr).replaceAll(
-																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
-															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
-															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-															.replace(
-																'$forked',
-																forkedFrom ?
-																	' Forked from <a href="' + forkedFrom._id + '">' +
-																		html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-																		'</a>' :
-																	''
-															).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-														);
-														respondPageFooter(res);
+														fs.readFile('./html/dev/canvas.html', function(err, data) {
+															if (err) throw err;
+															res.write(
+																data.toString()
+																.replace('$canvasjs', html(canvasJS))
+																.replaceAll(
+																	['$id', '$title', '$code'],
+																	[program._id.toString(), html(program.title || 'Untitled'), html(program.code)]
+																).replaceAll(
+																	['$created', '$updated'],
+																	[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
+																).replace('$comments', commentstr).replaceAll(
+																	['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+																	[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
+																.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+																.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+																.replace(
+																	'$forked',
+																	forkedFrom ?
+																		' Forked from <a href="' + forkedFrom._id + '">' +
+																			html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
+																			'</a>' :
+																		''
+																).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+															);
+															respondPageFooter(res);
+														});
 													});
 												} else if (program.type == 2) {
 													fs.readFile('./html/dev/html.html', function(err, data) {
@@ -196,7 +194,7 @@ module.exports = function(req, res, user) {
 																[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 															).replace('$comments', commentstr).replaceAll(
 																['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-																[op.name == user.name ? 'true' : 'false', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+																[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
 															).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
 															.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 															.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
@@ -219,7 +217,7 @@ module.exports = function(req, res, user) {
 							});
 						});
 					});
-				}, program.type == 1 ? {inhead: '<script src="/dev/runcanvas.js"></script>'} : null);
+				}, {inhead: '<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />'});
 			}
 		});
 	} else errorNotFound(req, res, user);

@@ -1,0 +1,122 @@
+body { line-height: 1.4 }
+#nav, #footer { transition: opacity 0.5s 0.2s }
+#nav:not(:hover), #footer:not(:hover) { opacity: 0.5 }
+h1 {
+	border-bottom: none;
+	font-size: 2em;
+	padding-top: 24px;
+	padding-bottom: 12px;
+	-webkit-animation: fadein 3s;
+	animation: fadein 3s;
+}
+#content > p, h1, h2 {
+	text-align: center;
+	padding: 0 5%;
+}
+em {
+	color: #f96;
+	font-style: normal;
+}
+.row { margin-top: 32px }
+.half { padding: 0 1% }
+ul { padding-left: 48px }
+#quality-b ul {
+	padding-left: 12px;
+	list-style-type: none;
+}
+:not(#privleges-b) > ul > li { padding: 4px 0 }
+svg { vertical-align: middle }
+#overview {
+	-webkit-animation: fadeinb 4s;
+	animation: fadeinb 4s;
+}
+#q-ov {
+	-webkit-animation: fadeinc 4s;
+	animation: fadeinc 4s;
+}
+#l-ov {
+	-webkit-animation: fadeind 4s;
+	animation: fadeind 4s;
+}
+#c-ov {
+	-webkit-animation: fadeine 4s;
+	animation: fadeine 4s;
+}
+#quality, #community {
+	-webkit-animation: fadeinf 4s;
+	animation: fadeinf 4s;
+}
+#quality-b, #community-b {
+	-webkit-animation: fadeinf 4s;
+	animation: fadeinf 4s;
+}
+#moderation, #privleges {
+	-webkit-animation: fadeing 4s;
+	animation: fadeing 4s;
+}
+#moderation-b, #privleges-b {
+	-webkit-animation: fadeing 4s;
+	animation: fadeing 4s;
+}
+@-webkit-keyframes fadein {
+	from { opacity: 0 }
+}
+@keyframes fadein {
+	from { opacity: 0 }
+}
+@-webkit-keyframes fadeinb {
+	from { opacity: 0 }
+	20% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@keyframes fadeinb {
+	from { opacity: 0 }
+	20% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@-webkit-keyframes fadeinc {
+	from { opacity: 0 }
+	25% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@keyframes fadeinc {
+	from { opacity: 0 }
+	25% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@-webkit-keyframes fadeind {
+	from { opacity: 0 }
+	29% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@keyframes fadeind {
+	from { opacity: 0 }
+	29% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@-webkit-keyframes fadeine {
+	from { opacity: 0 }
+	34% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@keyframes fadeine {
+	from { opacity: 0 }
+	34% { opacity: 0 }
+	80% { opacity: 1 }
+}
+@-webkit-keyframes fadeinf {
+	from { opacity: 0 }
+	38% { opacity: 0 }
+}
+@keyframes fadeinf {
+	from { opacity: 0 }
+	38% { opacity: 0 }
+}
+@-webkit-keyframes fadeing {
+	from { opacity: 0 }
+	40% { opacity: 0 }
+}
+@keyframes fadeing {
+	from { opacity: 0 }
+	40% { opacity: 0 }
+}

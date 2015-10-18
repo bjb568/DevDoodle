@@ -1,0 +1,121 @@
+*::-webkit-input-placeholder { color: #888 }
+*::-moz-placeholder { color: #999 }
+html, #content, #footer, #main { background: #000 }
+#main { padding: 0 }
+#content { padding: 0 4px }
+#main a:hover { color: #4ff }
+#main a:active { color: #06f }
+#main :not(input):not(button):not(.red):not(a), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
+#meta {
+	clear: both;
+	padding: 4px;
+	margin-top: 8px;
+	background: rgba(255, 255, 255, .8);
+	color: #000;
+}
+#main textarea {
+	color: #fff;
+	background: #000;
+	font-family: monospace;
+	font-size: 1rem;
+	width: 100%;
+	margin: 4px 0;
+}
+#main textarea:first-child { margin-top: 0 }
+#edit-title {
+	width: 400px;
+	max-width: 100%;
+}
+#main textarea, #output {
+	max-width: 100%;
+	border: 1px solid #fff;
+	outline: none;
+	white-space: pre;
+}
+#output {
+	width: 100%;
+	height: calc(100% - 5px);
+}
+#outputbox { height: calc(100% - 24px) }
+#left { height: 900px }
+#right { height: 400px }
+@media (min-width: 700px) {
+	.row { height: calc(100% - 2em) }
+	#left, #right {
+		height: 100%;
+		margin-bottom: 0;
+		max-width: 50%;
+	}
+	#left { float: left }
+	#right { float: right }
+}
+textarea {
+	height: calc(33.33% - 2px);
+	resize: none;
+}
+#save.progress {
+	cursor: progress;
+	color: #4ff;
+}
+#up, #dn {
+	width: 22px;
+	height: 24px;
+	fill: #777;
+}
+#up:hover, #dn:hover {
+	fill: #888;
+	transition: fill 0.1s;
+}
+#up:active, #dn:active {
+	fill: #666;
+	transition: none;
+}
+#up.clkd, #dn.clkd {
+	fill: #f90;
+}
+#fl {
+	width: 20px;
+	height: 24px;
+	fill: #f44;
+	margin-left: 12px;
+}
+#fl:hover {
+	fill: #f55;
+	transition: fill 0.2s;
+}
+#fl.clkd {
+	fill: #f00;
+}
+#fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}
+#comment:target + #addcomment { display: none }
+.up {
+	width: 18px;
+	height: 20px;
+	fill: #888;
+}
+.up:hover {
+	fill: #999;
+	transition: fill 0.1s;
+}
+.up:active {
+	fill: #777;
+	transition: none;
+}
+.up.clkd { fill: #f90 }
+.fl {
+	width: 20px;
+	height: 20px;
+	fill: #f88;
+}
+.fl:hover {
+	fill: #f66;
+	transition: fill 0.2s;
+}
+.fl.clkd { fill: #f00 }
+.fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}

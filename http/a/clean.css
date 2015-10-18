@@ -32,7 +32,7 @@ body {
 	animation: target 1s;
 	-webkit-animation: target 1s;
 }
-.blk, textarea { display: block }
+.blk, img.center, textarea { display: block }
 .ib { display: inline-block }
 .inline, summary * { display: inline }
 .flex { display: -webkit-flex; display: flex }
@@ -80,12 +80,22 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 .column-small { column-width: 10em }
 .column-medium { column-width: 16em }
 .column-large { column-width: 24em }
+.highlight {
+	color: #fff;
+	background: #000;
+}
 del { background: #f88 }
 ins { background: #8f8 }
 li {
 	-webkit-column-break-inside: avoid;
 	page-break-inside: avoid;
 	break-inside: avoid-column;
+}
+.justify { text-align: justify }
+.justify::after {
+	content: '';
+	display: inline-block;
+	width: 100%;
 }
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
@@ -450,6 +460,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 0;
 	max-width: 100%;
 }
+#nav #logo { background: rgba(255, 255, 255, .9) }
 #nav form {
 	max-width: 100%;
 	padding: 4px 0;
@@ -460,6 +471,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	width: 160px;
 	max-width: 100%;
 	color: #000;
+	line-height: 1em;
 }
 #logo svg {
 	max-width: 100%; max-height: 100%;

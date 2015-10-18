@@ -69,11 +69,12 @@
 	</li>
 	<li>
 		<h4 id="images" class="title">Images <a class="grey" href="#images">#</a></h4>
-		<p>Embedded mages have similar syntax as links, just with an <code>!</code>. Alt text is shown when images are disabled or otherwise unavailable.</p>
+		<p>Embedded images have similar syntax as links, just with an <code>!</code>. Alt text is shown when images are disabled or otherwise unavailable.</p>
 		<code class="blk">![Alt text](https://devdoodle.net/a/logosquare.svg)</code>
-		<p>A width can be optionally specified, enclosed in brackets, after the alt text:</p>
-		<code class="blk">![Alt text][12em](https://devdoodle.net/a/logosquare.svg)</code>
-		<blockquote><img alt="Alt text" style="width: 12em" src="https://devdoodle.net/a/logosquare.svg" /></blockquote>
+		<blockquote><img alt="Alt text" src="https://devdoodle.net/a/logosquare.svg" /></blockquote>
+		<p>You can also surround the image with <code>[[ </code> and <code> ]]</code> to center it.</p>
+		<code class="blk">[[ ![Alt text](https://devdoodle.net/a/logosquare.svg) ]]</code>
+		<blockquote><img alt="Alt text" class="center" src="https://devdoodle.net/a/logosquare.svg" /></blockquote>
 	</li>
 	<li>
 		<h4 id="abbrs" class="title">Abbreviations <a class="grey" href="#abbrs">#</a></h4>
@@ -185,21 +186,3 @@ cite[1]: Chapter 2 of [c][example document](http://example.com)[c].</code>
 		<div><sup class="reference-list">1</sup> Chapter 2 of <cite><a href="http://example.com">example document</a></cite>.</div>
 	</blockquote>
 </section>
-<style>
-	section { padding: 6px }
-	:not(:hover) > a.grey { display: none }
-	table {
-		background: rgba(255, 255, 192, 0.5);
-		padding: 4px;
-		margin: 6px 8px 6px 32px;
-	}
-	table code {
-		display: inline-block;
-		min-width: 5em;
-		text-align: center;
-	}
-	@media (min-width: 550px) {
-		table { float: left }
-		table ~ div { overflow: hidden }
-	}
-</style>

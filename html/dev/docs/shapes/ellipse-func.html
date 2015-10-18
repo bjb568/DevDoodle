@@ -1,9 +1,9 @@
 <h1>ellipse(cx, cy, rx, ry)</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The ellipse() function draws ovals (and circles) on the canvas with a center and horizontal and vertical radii according to the arguments are passed in.
- * 
+ *
  * Usage:
  * ellipse(cx, cy, rx, ry)
 */
@@ -28,10 +28,5 @@ ellipse(300, 300, 70, 60); // This is an ellipse with a center at (300, 300), a 
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

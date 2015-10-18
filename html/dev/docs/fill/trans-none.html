@@ -1,5 +1,5 @@
 <h1>trans and none</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * trans is used to set the default fill, stroke, and background and none is to make shapes have a transparent fill and stroke.
@@ -36,10 +36,5 @@ rect(200, 200, 100, 100);
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

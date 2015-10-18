@@ -1,7 +1,7 @@
 'use strict'
-function html(input, replaceQuoteOff) {
-	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
-	return input.toString().replaceAll(['&', '<', '"', '\b'], ['&amp;', '&lt;', '&quot;', '']);
+function html(input, attribute) {
+	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
 }
 function warning(message) {
 	//console.log(message);
@@ -15,8 +15,8 @@ function spanMarkdown(input) {
 		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
+		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
 		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/!\[([^\[\]]+?)\]\[([\d\w]+)\]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" style="width: $2" src="https://$3" />')
 		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
 		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
 		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, '$1' + '$3'.link('$2'))

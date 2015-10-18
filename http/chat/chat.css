@@ -1,0 +1,105 @@
+.user, .user:first-child { margin-top: 6px }
+.user span { float: right }
+.rem { opacity: 0.5 }
+#changetypeStat:empty { color: rgba(0, 0, 0, 0) }
+#changetypeStat:not(:empty) {
+	transition: color 0.2s 0.2s;
+	color: #000;
+}
+#changetypeStat.saved {
+	transition: opacity 2s;
+	opacity: 0;
+}
+#searchbox {
+	width: 100%;
+	font-size: 1em;
+}
+#roomlist {
+	background: #4af;
+	z-index: 1;
+}
+#roomlist span {
+	cursor: pointer;
+	display: block;
+	margin: 0;
+	padding: 2px 6px;
+	border: 1px solid #000;
+	border-top: none;
+}
+#roomlist .selected { background: #6df }
+.deleted { position: relative }
+.deleted::before {
+	content: '';
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+	background: rgba(255, 128, 128, 0.95);
+}
+#results:empty::after {
+	content: '(no results)';
+	color: #444;
+}
+#chat, #aside {
+	height: 100%;
+	overflow-x: hidden;
+}
+#chat-div { height: calc(100% - 120px) }
+textarea { height: 96px }
+.comment:hover { outline: 1px dotted #000 }
+.ctrls { border: 1px solid #aaa }
+#stars {
+	list-style-type: none;
+	padding: 0;
+}
+#stars li { margin: 4px 0 }
+#editform { margin: 0 }
+#users a {
+	color: #000;
+	text-decoration: none;
+}
+#users li.inactive {
+	opacity: 0.3;
+	transition: opacity 60s, color .2s;
+}
+#users li { transition: color .2s }
+.writing, .writing a { color: green }
+#users a { font-weight: normal }
+#users:empty::after { content: 'No users in room' }
+#stars:empty::after { content: 'No multistarred messages' }
+.comment:not(:hover) .ctrls:not(:hover) { display: none }
+#aside {
+	float: right;
+	padding-top: 4px;
+}
+@media (max-width: 699px) {
+	#chat { width: 100% }
+	#aside { display: none }
+}
+@media (min-width: 700px) {
+	#chat { width: 80% }
+	#aside { width: 19.5% }
+}
+.mention {
+	background: #faa;
+	border-radius: 4px;
+}
+.editing, .deleted { position: relative }
+.editing::before, .deleted::before {
+	content: '';
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+}
+.deleted::before { background: rgba(255, 128, 128, 0.95) }
+.editing::before { background: rgba(48, 168, 255, 0.4) }
+#pingsug {
+	position: absolute;
+	margin-top: -18px;
+}
+#pingsug span {
+	background: #ffa;
+	padding: 2px;
+	margin: 0 2px;
+}
+.connection-error {
+	position: absolute;
+	z-index: 1;
+}

@@ -1,5 +1,5 @@
 <h1>Globally-scoped Math</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * In the DevDoodle Canvas Library, all properties and methods of Math are applied to the global scope for the user's convenience.
@@ -27,10 +27,5 @@ for (var i = -200; i &lt; 200; i++) {
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

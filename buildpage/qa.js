@@ -88,7 +88,7 @@ module.exports = function(req, res, user) {
 					respondPageFooter(res);
 				});
 			});
-		});
+		}, {inhead: '<link rel="stylesheet" href="ask.css" />'});
 	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
 		dbcs.questions.findOne({_id: parseInt(i[1])}, function(err, question) {
 			if (err) throw err;
@@ -326,7 +326,7 @@ module.exports = function(req, res, user) {
 						});
 					});
 				});
-			});
+			}, {inhead: '<link rel="stylesheet" href="question.css" />'});
 		});
 	} else errorNotFound(req, res, user);
 };

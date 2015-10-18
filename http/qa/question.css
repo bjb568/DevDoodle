@@ -1,0 +1,110 @@
+.clr { clear: left }
+.err {
+	position: absolute;
+	padding: 8px;
+	width: 300px;
+	background: #f00;
+	z-index: 1;
+}
+.err:empty { display: none }
+#answer-error { margin-left: 4em }
+.q-editing h1 { border-bottom: none }
+.answer { padding: 8px 0 4px }
+#q-content, .a-content {
+	border-left: 1px solid #aaa;
+	padding-left: 6px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+#q-body, .a-body { margin-bottom: 8px }
+.ctrl + * { margin-left: 32px }
+#q-edit, .a-edit { padding-left: 2px}
+#q-edit textarea, .a-edit textarea, #answerta {
+	width: 100%;
+	max-height: 70vmin;
+	min-height: 200px;
+}
+#title-edit {
+	font-size: 0.8em;
+	width: 100%;
+	padding-left: 4px;
+	margin-bottom: -0.18em;
+}
+#langsug {
+	padding: 8px 3px 4px;
+	background: #eee;
+	margin-top: -5px;
+	box-shadow: 1px 3px 3px #444;
+}
+#langsug span {
+	cursor: pointer;
+	background: #afa;
+	padding: 2px 6px;
+	box-shadow: 1px 1px 1px #444;
+}
+#comments { margin: 8px 0 }
+code.blk:empty { display: none }
+.up, .dn {
+	width: 20px;
+	height: 20px;
+	fill: #999;
+	margin-bottom: 4px;
+}
+.up:hover, .dn:hover {
+	fill: #aaa;
+	transition: fill 0.1s;
+}
+.up:active, .dn:active {
+	fill: #888;
+	transition: none;
+}
+.up.clkd, .dn.clkd { fill: #f90 }
+.ctrl .fl { margin-bottom: 12px }
+.fl {
+	width: 20px;
+	height: 24px;
+	fill: #f66;
+}
+.fl:hover {
+	fill: #f44;
+	transition: fill 0.2s;
+}
+.fl.clkd { fill: #f00 }
+.fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}
+.ctrlicon:not([hidden]) { display: block }
+.ctrlicon {
+	margin: 4px -3px;
+	padding-top: 1px; padding-left: 5px;
+	height: 25px; width: 25px;
+	font-size: 20px; font-weight: bold;
+	text-decoration: none;
+	border-radius: 50%;
+	background: #fff;
+}
+.ctrlicon:hover, .ctrlicon:active { box-shadow: 0.5px 0.5px 2px #000 }
+.ctrlicon:active { background: #ddd }
+.editbtn, .editbtn:hover { color: #0b0 }
+.editbtn:visited { color: #090 }
+.delbtn, .delbtn:hover { color: #f00 }
+.comment .up, .comment .dn { width: 18px }
+#comment:target + #addcomment { display: none }
+#answer, #answerta { z-index: 1 }
+#answerta:focus + #answertips, #answertips:hover {
+	z-index: 1;
+	opacity: 1;
+	bottom: calc(100% + 12px);
+	left: 0;
+	transition: opacity 0.7s, bottom 0.7s;
+}
+#answertips {
+	z-index: -1;
+	bottom: calc(100% - 240px);
+	background: #ffa;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+	border: 1px solid #888;
+	opacity: 0;
+	transition: opacity 0.3s ease-out, bottom 0.6s, left 0 0.6s;
+}

@@ -1,9 +1,9 @@
 <h1>fill([shade] [r, g, b] [color])</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The fill() function is used to set the fill of shapes and text to be drawn on the canvas.
- * 
+ *
  * Usages:
  * fill(shade)
  * fill(r, g, b)
@@ -47,10 +47,5 @@ ellipse(300, 300, 70, 70);
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

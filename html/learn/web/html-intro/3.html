@@ -26,11 +26,11 @@ Tags and Page Setup - Intro to HTML
 			<p>To move on, write the basic page with a doctype and html, head, and body elements. You may refer to the example above.</p>
 			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../4/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../4/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				Did you copy the tags correctly? Make sure you have them in the right order. You need to add a body and a head element inside the HTML element.
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../2/" class="lft">Back</a> <a href="../4/" class="rit">Next</a></div>
@@ -40,30 +40,12 @@ Tags and Page Setup - Intro to HTML
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
-<script>
-	var footerOff = true,
-		noPageOverflow = 520,
-		htmlTA = document.getElementById('html'),
-		runtTimeout;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
+<textarea id="validator" hidden="">function validate(data) {
+	if (!data.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html[^>]+?>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
+		return {
+			success: false,
+			msg: 'Did you copy the tags correctly? Make sure you have them in the right order. You need to add a body and a head element inside the HTML element.'
+		};
 	}
-	run();
-	function beforeRun() {
-		clearTimeout(runTimeout);
-		runTimeout = setTimeout(run, 100);
-	}
-	htmlTA.addEventListener('keyup', beforeRun);
-	htmlTA.addEventListener('keydown', beforeRun);
-	htmlTA.addEventListener('keypress', beforeRun);
-	document.getElementById('check').onclick = function() {
-		if (document.getElementById('html').value.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed').classList.remove('show');
-		} else {
-			document.getElementById('failed').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	};
-</script>
+}</textarea>
+<script src="/learn/course.js" async=""></script>

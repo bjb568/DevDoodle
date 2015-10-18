@@ -10,11 +10,11 @@ Paragraphs - Basic Elements
 			<p>To move on, create a paragraph element inside the document body with any text you like.</p>
 			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../2/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../2/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the tags correctly? They look like this: <code>&lt;p>&lt;/p></code></p>
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a> <a href="../2/" class="rit">Next</a></div>
@@ -30,31 +30,12 @@ Paragraphs - Basic Elements
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
-<script>
-	var footerOff = true,
-		noPageOverflow = 520,
-		htmlTA = document.getElementById('html'),
-		runtTimeout;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
+<textarea id="validator" hidden="">function validate() {
+	if (!document.getElementsByTagName('p').length) {
+		return {
+			success: false,
+			msg: 'Did you write the tags correctly? They look like this: `&lt;p>` `&lt;/p>`'
+		};
 	}
-	run();
-	function beforeRun() {
-		clearTimeout(runTimeout);
-		runTimeout = setTimeout(run, 100);
-	}
-	htmlTA.addEventListener('keyup', beforeRun);
-	htmlTA.addEventListener('keydown', beforeRun);
-	htmlTA.addEventListener('keypress', beforeRun);
-	document.getElementById('check').onclick = function() {
-		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xhtml+xml');
-		if (doc.body &amp;&amp; doc.body.getElementsByTagName('p').length) {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed').classList.remove('show');
-		} else {
-			document.getElementById('failed').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	};
-</script>
+}</textarea>
+<script src="/learn/course.js" async=""></script>

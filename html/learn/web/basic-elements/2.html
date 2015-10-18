@@ -8,18 +8,11 @@ Headings - Basic Elements
 			<p>To move on, write all the possible header tags from most to least important and give each of them some text content.</p>
 			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../3/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				<p>Did you write the tags correctly? Remember, there are 6 levels which look like this:</p>
-				<code class="blk">&lt;h1>&lt;/h1>
-&lt;h2>&lt;/h2>
-&lt;h3>&lt;/h3>
-&lt;h4>&lt;/h4>
-&lt;h5>&lt;/h5>
-&lt;h6>&lt;/h6></code>
-				<p>Give each heading some text content too.</p>
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../1/" class="lft">Back</a> <a href="../3/" class="rit">Next</a></div>
@@ -33,39 +26,19 @@ Headings - Basic Elements
 &lt;/html></textarea>
 	<iframe id="output"></iframe>
 </div>
-<script>
-	var footerOff = true,
-		noPageOverflow = 520,
-		htmlTA = document.getElementById('html'),
-		runtTimeout;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + htmlTA.value;
+<textarea id="validator" hidden="">function validate() {
+	if (
+		!(document.body.getElementsByTagName('h1')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h2')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h3')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h4')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h5')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h6')[0] || {firstChild: {}}).firstChild.nodeValue
+	) {
+		return {
+			success: false,
+			msg: 'Did you write the tags correctly? Remember, there are 6 levels which look like this:\n\t&lt;h1>&lt;/h1>\n\t&lt;h2>&lt;/h2>\n\t&lt;h3>&lt;/h3>\n\t&lt;h4>&lt;/h4>\n\t&lt;h5>&lt;/h5>\n\t&lt;h6>&lt;/h6>\nGive each heading some text content too.'
+		};
 	}
-	run();
-	function beforeRun() {
-		clearTimeout(runTimeout);
-		runTimeout = setTimeout(run, 100);
-	}
-	htmlTA.addEventListener('keyup', beforeRun);
-	htmlTA.addEventListener('keydown', beforeRun);
-	htmlTA.addEventListener('keypress', beforeRun);
-	document.getElementById('check').onclick = function() {
-		var doc = new DOMParser().parseFromString(document.getElementById('html').value, 'application/xhtml+xml');
-		if (
-			doc.body &amp;&amp;
-			(doc.body.getElementsByTagName('h1')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
-			(doc.body.getElementsByTagName('h2')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
-			(doc.body.getElementsByTagName('h3')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
-			(doc.body.getElementsByTagName('h4')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
-			(doc.body.getElementsByTagName('h5')[0] || {firstChild: {}}).firstChild.nodeValue &amp;&amp;
-			(doc.body.getElementsByTagName('h6')[0] || {firstChild: {}}).firstChild.nodeValue
-		) {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed').classList.remove('show');
-		} else {
-			document.getElementById('failed').classList.add('show');
-			document.getElementById('passed').classList.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	};
-</script>
+}</textarea>
+<script src="/learn/course.js" async=""></script>
