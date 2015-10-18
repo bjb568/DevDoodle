@@ -114,7 +114,7 @@ global.respondPage = function(title, user, req, res, callback, header, status) {
 			"connect-src 'self' wss://" + req.headers.host + ":81;" +
 			" child-src blob:; " +
 			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
-			"img-src *";
+			"img-src https://*";
 	}
 	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="03Yp9b7zlEaaJUIWosWYHJcdKYxMSa3Z4bZXWf8LXtI="; max-age=2592000; includeSubdomains';
