@@ -1,0 +1,7 @@
+.active li:hover, .active section:hover { outline: 1px solid #00f }
+ul {
+	padding-bottom: 4px;
+	margin: 0;
+}
+ul:empty { display: none }
+section { padding: 4px 4px 0 4px }

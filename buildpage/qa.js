@@ -73,7 +73,7 @@ module.exports = function(req, res, user) {
 					}
 				});
 			});
-		});
+		}, {inhead: '<link rel="stylesheet" href="ask.css" />'});
 	} else if (req.url.pathname == '/qa/ask') {
 		if (!user.name) {
 			res.writeHead('303', {Location: '/login/?r=ask'});
