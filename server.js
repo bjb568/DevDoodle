@@ -255,7 +255,7 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 			" child-src blob:; " +
 			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
 			"img-src https://*; " +
-			"style-src 'unsafe-inline'";
+			"style-src 'self' 'unsafe-inline'"
 	});
 }
 function respondChangePassPage(errs, user, req, res, post) {
