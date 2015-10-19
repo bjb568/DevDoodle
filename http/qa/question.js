@@ -1,4 +1,7 @@
-var langsug = document.getElementById('langsug'),
+var rep = parseInt(document.getElementById('rep').value),
+	id = parseInt(location.href.match(/\d+/)[0]),
+	langs = JSON.parse(document.getElementById('langs').value),
+	langsug = document.getElementById('langsug'),
 	lang = document.getElementById('lang-edit');
 function handleLocationUpdate() {
 	var e = document.getElementById(location.hash.substr(1)),
@@ -33,8 +36,7 @@ document.getElementById('addcomment').onclick = function() {
 		document.getElementById('commentta').focus();
 	}, 0);
 };
-var langs = $langs,
-	waiting = false;
+var waiting = false;
 function langKeyUp() {
 	var firstChild;
 	while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);
@@ -114,7 +116,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answerBody));
 });
-var socket = new WebSocket('wss://' + location.hostname + ':81/q/$id');
+var socket = new WebSocket('wss://' + location.hostname + ':81/q/' + id);
 document.getElementById('comment').onsubmit = function(e) {
 	socket.send(JSON.stringify({
 		event: 'comment',
@@ -161,7 +163,7 @@ socket.onmessage = function(e) {
 		var div = document.createElement('div');
 		div.classList.add('comment');
 		div.innerHTML = ' ' + markdown(data.body);
-		if ($rep >= 50) {
+		if (rep >= 50) {
 			div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 			div.firstChild.firstChild.onclick = upvoteComment;
 			var score = document.createElement('span');

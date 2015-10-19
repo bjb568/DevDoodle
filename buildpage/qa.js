@@ -84,7 +84,7 @@ module.exports = function(req, res, user) {
 				if (err) throw err;
 				dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, function(err, langs) {
 					if (err) throw err;
-					res.write(data.toString().replace('$langs', JSON.stringify(langs)));
+					res.write(data.toString().replace('$langs', html(JSON.stringify(langs))));
 					respondPageFooter(res);
 				});
 			});

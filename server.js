@@ -248,7 +248,14 @@ function respondLoginPage(errs, user, req, res, post, fillm, filln, fpass) {
 		respondPageFooter(res);
 	}, {
 		inhead: '<link rel="stylesheet" href="/login/login.css" />' +
-			'<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>'
+			'<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>',
+		'Content-Security-Policy':
+			"default-src 'self'; " +
+			"connect-src 'self' wss://" + req.headers.host + ":81;" +
+			" child-src blob:; " +
+			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
+			"img-src https://*; " +
+			"style-src 'unsafe-inline'";
 	});
 }
 function respondChangePassPage(errs, user, req, res, post) {

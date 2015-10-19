@@ -28,7 +28,7 @@ addEventListener('input', function() {
 	}
 });
 var step = 0,
-	langs = $langs,
+	langs = JSON.parse(document.getElementById('langs').value),
 	waiting = false;
 lang.addEventListener('keyup', function() {
 	if (!(langsug.hidden = !this.value)) {
