@@ -125,7 +125,7 @@ module.exports = function(req, res, user) {
 									if (err) throw err;
 									if (item) {
 										res.write('<h2>Revision ' + (revcount - revnum) + ': ' + item.event + '</h2>');
-										res.write('<p class="indt">Replaced <time datetime="' + new Date(item.time).toISOString() + '"></time></p>');
+										res.write('<p class="indt">Replaced <time datetime="' + new Date(item.time).toISOString() + '"></time> by <a href="/user/' + item.user + '" target="_blank">' + item.user + '</a></p>');
 										if (item.event == 'edit') {
 											var writeDiff = function(o, n) {
 												var d = diff.diffWordsWithSpace(o, n);
