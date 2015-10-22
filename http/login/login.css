@@ -1,3 +1,5 @@
+#part2 { transition: opacity 0.5s }
+.hide { opacity: 0 }
 form div { margin: 0.2em 0 }
 #create:not(:checked) ~ #ccreate { display: none }
 #pass-bar-outer, #pass-bar { height: 6px }

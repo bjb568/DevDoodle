@@ -1,7 +1,8 @@
 {
 	"/login/recover": {
 		"path": "./html/login-recovery.html",
-		"title": "Recover Account"
+		"title": "Recover Account",
+		"inhead": "<link rel=\"stylesheet\" href=\"login.css\" />"
 	},
 	"/formatting": {
 		"path": "./html/formatting.html",
