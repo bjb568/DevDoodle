@@ -145,7 +145,7 @@ module.exports = function(req, res, user) {
 			if (err) throw err;
 			if (!doc) return errorNotFound(req, res, user);
 			respondPage('Message #' + doc._id, user, req, res, function() {
-				if (doc.deleted && doc.user != user.name) {
+				if (doc.deleted && doc.user != user.name && !(user.level < 4)) {
 					res.write('This message has been deleted.');
 					return respondPageFooter(res);
 				}
