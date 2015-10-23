@@ -475,6 +475,7 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		};
 	}
+	minHeight();
 });
 
 document.addEventListener('visibilitychange', function() {
