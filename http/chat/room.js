@@ -204,6 +204,7 @@ socket.onmessage = function(e) {
 		}
 		cont.onscroll();
 		if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
+		minHeight();
 	} else if (data.event == 'edit') {
 		source[data.id] = data.body;
 		var msg = document.getElementById(data.id);
