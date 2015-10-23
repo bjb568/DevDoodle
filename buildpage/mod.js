@@ -85,11 +85,12 @@ module.exports = function(req, res, user) {
 					);
 				} else {
 					res.write('</div>');
+					res.write('<script src="mod.js" async=""></script>');
 					respondPageFooter(res);
 				}
 			});
 		}, {
-			inhead: '<link rel="stylesheet" href="mod.css" /><script src="mod.js"></script>',
+			inhead: '<link rel="stylesheet" href="mod.css" />',
 			clean: true
 		});
 	} else errorNotFound(req, res, user);
