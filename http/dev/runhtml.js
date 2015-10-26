@@ -23,7 +23,7 @@ function run(f) {
 	if (document.getElementById('autorun').checked) {
 		if (!save.classList.contains('progress')) save.textContent = 'Save';
 		var outputBlob = new Blob([
-			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + css.value + '</style><script>alert=prompt=confirm=null;' + js.value + '</script></body></html>'
+			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
 		], {type: 'application/xhtml+xml'});
 		document.getElementById('output').src = URL.createObjectURL(outputBlob);
 	}

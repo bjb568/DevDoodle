@@ -452,7 +452,7 @@ addEventListener('DOMContentLoaded', function() {
 	i = e.length;
 	while (i--) {
 		var outputBlob = new Blob([
-			'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + e[i].dataset.html + '<style>html{zoom:0.5}' + e[i].dataset.css + '</style><script>alert=prompt=confirm=null;' + e[i].dataset.js + '</script></body></html>'
+			'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + e[i].dataset.html + '<style>html{zoom:0.5}' + html(e[i].dataset.css) + '</style><script>alert=prompt=confirm=null;' + html(e[i].dataset.js) + '</script></body></html>'
 		], {type: 'application/xhtml+xml'});
 		e[i].src = URL.createObjectURL(outputBlob);
 	}
