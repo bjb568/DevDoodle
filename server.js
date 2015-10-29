@@ -600,7 +600,7 @@ function serverHandler(req, res) {
 									subject: 'Confirm your account',
 									html:
 										'<h1>Welcome to DevDoodle!</h1>' +
-										'<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. ' +
+										'<p>An account on devdoodle.net has been made for this email address under the name ' + post.name + '. ' +
 										'Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
 								});
 								respondPage('Account Created', user, req, res, function() {
