@@ -232,12 +232,12 @@ if (regLayout) regLayout.onclick = function() {
 };
 function hashChangeFullScreenHandler() {
 	if (location.hash == '#fullscreen') {
-		output.classList.add('fullscreen');
+		document.body.classList.add('fullscreen');
 		document.body.classList.add('noscrl');
 		document.getElementById('close-fullscreen').hidden = false;
 		output.focus();
 	} else {
-		output.classList.remove('fullscreen');
+		document.body.classList.remove('fullscreen');
 		document.body.classList.remove('noscrl');
 		document.getElementById('close-fullscreen').hidden = true;
 		if (navigator.userAgent.indexOf('Mobile') == -1) code.focus();
