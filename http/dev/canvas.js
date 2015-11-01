@@ -191,7 +191,7 @@ function print() {
 	for (var i = 0; i < arguments.length; i++) {
 		pre.appendChild(document.createTextNode(' '));
 		var span = document.createElement('span');
-		span.innerHTML = arguments[i];
+		span.appendChild(document.createTextNode(arguments[i]));
 		pre.appendChild(span);
 	}
 	document.getElementById('console').appendChild(pre);
