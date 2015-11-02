@@ -2,14 +2,16 @@
 <form id="sendmail">
 	<div><input type="text" id="uname" placeholder="Name" required="" autofocus="" /></div>
 	<div><input type="text" id="mail" placeholder="Recovery email" required="" /></div>
-	<div><button type="submit" id="submit1">Submit</button> <button type="reset" onclick="if (uname.disabled) location.reload(); else uname.focus();">Clear form</button></div>
+	<div><button type="submit" id="submit1" disabled="">Submit</button> <button id="reset" type="reset">Clear form</button></div>
 </form>
 <p>You will have 5 minutes after recieving the email to enter the recovery code on this page.</p>
-<form id="part2" method="POST" action="/api/login/recover" class="hide">
+<form id="part2" method="POST" action="/api/login/recover" class="hide" hidden="">
 	<p>If you can not find the email, please check your spam folder and make sure your username and email are written correctly.</p>
 	<div><input type="text" id="code" name="code" placeholder="Recovery Code (16 chars)" /></div>
-	<div><input type="password" id="pass" name="pass" placeholder="New Password" /> <span id="pass-strength"></span></div>
-	<div><input type="password" id="passc" placeholder="Confirm new Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn't match</span> <small>Please use a password manager to store passwords</small></div>
+	<div><input type="password" id="pass" name="pass" placeholder="New password" required="" /> <span id="pass-bad" class="red" hidden="">too short</span></div>
+	<div id="pass-bar-outer"><div id="pass-bar"></div></div>
+	<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn't match</span></div>
+	<p><small>Please use a password manager to store passwords</small></p>
 	<div><button type="submit" id="submit2" disabled="">Submit</button></div>
 </form>
 <script src="recover.js" async=""></script>

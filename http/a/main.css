@@ -382,6 +382,9 @@ a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }
 a.red:hover { color: #f65 }
 a.red:active { color: #c00 }
+.error a { color: #ffb }
+.error a:hover { color: #ff6 }
+.error a:active { color: #cc0 }
 a.blk {
 	color: #000;
 	font-weight: bold;

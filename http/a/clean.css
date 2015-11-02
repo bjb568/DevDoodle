@@ -388,6 +388,9 @@ a:active, .ctrl:active { color: #faa }
 .user a { color: #000 }
 .user a:hover { color: #15f }
 .user a:active { color: #02d }
+.error a { color: #ffb }
+.error a:hover { color: #ff6 }
+.error a:active { color: #cc0 }
 a.blk { font-weight: bold }
 a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
