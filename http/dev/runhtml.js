@@ -32,11 +32,12 @@ htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart;
 	if (e.keyCode == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-		var tabs = this.value.substr(0, oldSelectionStart)
-			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+		var toSelection = this.value.substr(0, oldSelectionStart),
+			tabs = toSelection
+			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(false/* Parse? */)
+				(toSelection.match(/<\s*[^/\s<][^<]*>\s*$/))
 				? 0
 				: 1
 			);
@@ -51,6 +52,13 @@ htmle.onkeypress = function(e) {
 	} else if (e.keyCode == 39) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
+		e.preventDefault();
+	} else if (e.keyCode == 47) {
+		var lines = this.value.substr(0, oldSelectionStart).split('\n');
+		if (lines[lines.length - 1].indexOf('\t') == -1) return;
+		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
+		this.value = lines.join('\n') + '/' + this.value.substr(oldSelectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart;
 		e.preventDefault();
 	}
 };
