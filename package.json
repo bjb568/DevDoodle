@@ -17,6 +17,7 @@
 		"url": "https://github.com/bjb568/DevDoodle"
 	},
 	"dependencies": {
+		"yield-yield": "^1.0.0",
 		"http2": "^3.2.0",
 		"cookie": "^0.2.3",
 		"nodemailer": "^1.8.0",
