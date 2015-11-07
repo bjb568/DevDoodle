@@ -142,7 +142,7 @@ code.addEventListener('keypress', function(e) {
 	endChars[125] = '}';
 	if (e.keyCode == 13) {
 		if (e.metaKey) return title.dispatchEvent(new MouseEvent('click'));
-		var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
+		var cut = this.value.substr(0, oldSelectionStart).match(/[\n^]\s+$/) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
 		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
 		if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
