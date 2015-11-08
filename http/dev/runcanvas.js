@@ -39,8 +39,6 @@ var code = document.getElementById('code'),
 	up = document.getElementById('up'),
 	dn = document.getElementById('dn')
 	fullScreen = false,
-	fsBtn = document.getElementById('fullscreen-button'),
-	regLayout = document.getElementById('regular-layout'),
 	savedValue = code.value,
 	onbeforeunload = function() {
 		return code.value == savedValue ? null : 'You have unsaved code.';
@@ -71,7 +69,7 @@ function run() {
 	for (var i = 0; i < lines.length; i++) {
 		if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
 			lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
-			if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
+			if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) document.body.classList.add('fullscreen');
 		}
 	}
 	if (save && !save.classList.contains('progress')) save.textContent = 'Save';
@@ -239,36 +237,6 @@ addEventListener('keypress', function(e) {
 		if (target) target.dispatchEvent(new MouseEvent('click'));
 	}
 });
-function enableFullScreen() {
-	document.body.classList.add('fullscreen');
-	fsBtn.hidden = false;
-	regLayout.hidden = false;
-}
-if (regLayout) regLayout.onclick = function() {
-	document.body.classList.remove('fullscreen');
-	this.hidden = true;
-};
-function hashChangeFullScreenHandler() {
-	if (location.hash == '#fullscreen') {
-		document.body.classList.add('fullscreen');
-		document.body.classList.add('noscrl');
-		document.getElementById('close-fullscreen').hidden = false;
-		output.focus();
-	} else {
-		document.body.classList.remove('fullscreen');
-		document.body.classList.remove('noscrl');
-		document.getElementById('close-fullscreen').hidden = true;
-		if (navigator.userAgent.indexOf('Mobile') == -1) code.focus();
-	}
-}
-if (fsBtn) {
-	fsBtn.onclick = function() {
-		document.getElementById('close-fullscreen').hidden = false;
-		enableFullScreen();
-	};
-	addEventListener('hashchange', hashChangeFullScreenHandler);
-	hashChangeFullScreenHandler();
-}
 if (save) save.onclick = function() {
 	if (save.classList.contains('progress')) return;
 	save.classList.add('progress');
