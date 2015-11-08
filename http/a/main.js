@@ -517,7 +517,7 @@ function highlightHTML(codeBlock, input) {
 		} else chunk += c;
 	}
 	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
-	codeBlock.className = 'line-dig' + Math.floor(Math.log10(line));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
 		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
@@ -551,7 +551,7 @@ function highlightCSS(codeBlock, input) {
 		} else chunk += c;
 	}
 	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
-	codeBlock.className = 'line-dig' + Math.floor(Math.log10(line));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
 		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
@@ -1242,7 +1242,7 @@ function highlightJS(codeBlock, input) {
 		} else chunk += c;
 	}
 	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
-	codeBlock.className = 'line-dig' + Math.floor(Math.log10(line));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
 		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,

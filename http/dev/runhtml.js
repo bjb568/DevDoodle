@@ -42,19 +42,13 @@ function insertNodeAtPosition(node, refNode, pos) {
 	}
 }
 highlightHTML(htmlDisplay, htmle.value);
-htmlCont.className = htmlDisplay.className;
-htmlDisplay.classList.add('code-display');
-htmlCont.classList.add('ta-cont');
+htmlCont.dataset.line = htmlDisplay.dataset.line;
 htmle.style.height = htmlDisplay.offsetHeight + 'px';
 highlightCSS(cssDisplay, css.value);
-cssCont.className = cssDisplay.className;
-cssDisplay.classList.add('code-display');
-cssCont.classList.add('ta-cont');
+cssCont.dataset.line = cssDisplay.dataset.line;
 css.style.height = cssDisplay.offsetHeight + 'px';
 highlightJS(jsDisplay, js.value);
-jsCont.className = jsDisplay.className;
-jsDisplay.classList.add('code-display');
-jsCont.classList.add('ta-cont');
+jsCont.dataset.line = jsDisplay.dataset.line;
 js.style.height = jsDisplay.offsetHeight + 'px';
 var caret = document.createElement('span');
 caret.id = 'caret';
@@ -199,9 +193,7 @@ function handleTAInput() {
 	var cursorPos, oldCaret;
 	if (htmle.value != lastValue[0]) {
 		highlightHTML(htmlDisplay, htmle.value);
-		htmlCont.className = htmlDisplay.className;
-		htmlDisplay.classList.add('code-display');
-		htmlCont.classList.add('ta-cont');
+		htmlCont.dataset.line = htmlDisplay.dataset.line;
 		htmle.style.height = htmlDisplay.offsetHeight + 'px';
 	}
 	if (htmle.selectionStart != htmle.lastSelectionStart) {
@@ -226,9 +218,7 @@ function handleTAInput() {
 	}
 	if (css.value != lastValue[1]) {
 		highlightCSS(cssDisplay, css.value);
-		cssCont.className = cssDisplay.className;
-		cssDisplay.classList.add('code-display');
-		cssCont.classList.add('ta-cont');
+		cssCont.dataset.line = cssDisplay.dataset.line;
 		css.style.height = cssDisplay.offsetHeight + 'px';
 	}
 	if (css.selectionStart != css.lastSelectionStart) {
@@ -253,9 +243,7 @@ function handleTAInput() {
 	}
 	if (js.value != lastValue[2]) {
 		highlightJS(jsDisplay, js.value);
-		jsCont.className = jsDisplay.className;
-		jsDisplay.classList.add('code-display');
-		jsCont.classList.add('ta-cont');
+		jsCont.dataset.line = jsDisplay.dataset.line;
 		js.style.height = jsDisplay.offsetHeight + 'px';
 	}
 	if (js.selectionStart != js.lastSelectionStart) {

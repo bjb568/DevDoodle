@@ -166,22 +166,22 @@ code .line.warning::before {
 	color: #ff6;
 	font-weight: bold;
 }
-.ta-cont.line-dig0 { padding-left: 0.8em }
-.ta-cont.line-dig1 { padding-left: 1.4em }
-.ta-cont.line-dig2 { padding-left: 2em }
-.ta-cont.line-dig3 { padding-left: 2.6em }
-.ta-cont.line-dig4 { padding-left: 3.2em }
-.ta-cont.line-dig5 { padding-left: 3.8em }
-.ta-cont.line-dig6 { padding-left: 4.4em }
-.ta-cont.line-dig7 { padding-left: 5em }
-.ta-cont.line-dig0 textarea { width: calc(100% - 0.8rem - 5px) }
-.ta-cont.line-dig1 textarea { width: calc(100% - 1.4rem - 5px) }
-.ta-cont.line-dig2 textarea { width: calc(100% - 2rem - 5px) }
-.ta-cont.line-dig3 textarea { width: calc(100% - 2.6rem - 5px) }
-.ta-cont.line-dig4 textarea { width: calc(100% - 3.2rem - 5px) }
-.ta-cont.line-dig5 textarea { width: calc(100% - 3.8rem - 5px) }
-.ta-cont.line-dig6 textarea { width: calc(100% - 4.4rem - 5px) }
-.ta-cont.line-dig7 textarea { width: calc(100% - 5rem - 5px) }
+.ta-cont[data-line="0"] { padding-left: 0.8em }
+.ta-cont[data-line="1"] { padding-left: 1.4em }
+.ta-cont[data-line="2"] { padding-left: 2em }
+.ta-cont[data-line="3"] { padding-left: 2.6em }
+.ta-cont[data-line="4"] { padding-left: 3.2em }
+.ta-cont[data-line="5"] { padding-left: 3.8em }
+.ta-cont[data-line="6"] { padding-left: 4.4em }
+.ta-cont[data-line="7"] { padding-left: 5em }
+.ta-cont[data-line="0"] textarea { width: calc(100% - 0.8rem - 5px) }
+.ta-cont[data-line="1"] textarea { width: calc(100% - 1.4rem - 5px) }
+.ta-cont[data-line="2"] textarea { width: calc(100% - 2rem - 5px) }
+.ta-cont[data-line="3"] textarea { width: calc(100% - 2.6rem - 5px) }
+.ta-cont[data-line="4"] textarea { width: calc(100% - 3.2rem - 5px) }
+.ta-cont[data-line="5"] textarea { width: calc(100% - 3.8rem - 5px) }
+.ta-cont[data-line="6"] textarea { width: calc(100% - 4.4rem - 5px) }
+.ta-cont[data-line="7"] textarea { width: calc(100% - 5rem - 5px) }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .constant, code .string .escape { color: #df0 }
