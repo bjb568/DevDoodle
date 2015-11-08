@@ -56,6 +56,14 @@ jsCont.className = jsDisplay.className;
 jsDisplay.classList.add('code-display');
 jsCont.classList.add('ta-cont');
 js.style.height = jsDisplay.offsetHeight + 'px';
+var caret = document.createElement('span');
+caret.id = 'caret';
+caret.appendChild(document.createTextNode('\xA0'));
+htmlDisplay.insertAfter(caret, htmlDisplay.firstChild);
+if (navigator.userAgent.indexOf('Mobile') == -1) {
+	htmle.focus();
+	blinkTimeout = setTimeout(blink, 500);
+} else caret.hidden = true;
 function run() {
 	if (!save.classList.contains('progress')) save.textContent = 'Save';
 	var outputBlob = new Blob([
