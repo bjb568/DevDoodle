@@ -107,6 +107,7 @@ li {
 	color: #aaa;
 	transition: opacity 0.2s;
 }
+.focused { outline: 3px solid #8bf }
 .ta-cont {
 	width: 100%;
 	margin-bottom: 8px;

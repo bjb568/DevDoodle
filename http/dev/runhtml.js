@@ -62,6 +62,7 @@ caret.appendChild(document.createTextNode('\xA0'));
 htmlDisplay.insertAfter(caret, htmlDisplay.firstChild);
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	htmle.focus();
+	htmlCont.classList.add('focused');
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
 function run() {
@@ -300,8 +301,12 @@ addEventListener('mousemove', function() {
 	setTimeout(handleTAInput, 0);
 });
 addEventListener('input', handleTAInput);
+htmle.onfocus = css.onfocus = js.onfocus = function() {
+	this.parentNode.classList.add('focused');
+};
 htmle.onblur = css.onblur = js.onblur = function(e) {
 	delete this.lastCursorPos;
+	this.parentNode.classList.remove('focused');
 	(document.getElementById('caret') || {}).hidden = true;
 	clearTimeout(blinkTimeout);
 };

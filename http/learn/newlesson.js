@@ -20,8 +20,10 @@ code.lastSelectionStart = 0;
 code.lastSelectionEnd = 0;
 code.lastCursorPos = 0;
 code.whichSelection = true;
-highlight(codeDisplay, code.lastValue = code.value);
+highlightJS(codeDisplay, code.lastValue = code.value);
 taCont.className = codeDisplay.className;
+codeDisplay.classList.add('code-display');
+taCont.classList.add('ta-cont');
 var caret = document.createElement('span');
 caret.id = 'caret';
 caret.appendChild(document.createTextNode('\xA0'));
@@ -30,8 +32,10 @@ caret.hidden = true;
 function handleTAInput() {
 	var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 	if (code.value != code.lastValue) {
-		highlight(codeDisplay, code.lastValue = code.value);
+		highlightJS(codeDisplay, code.lastValue = code.value);
 		taCont.className = codeDisplay.className;
+		codeDisplay.classList.add('code-display');
+		taCont.classList.add('ta-cont');
 	}
 	code.style.height = codeDisplay.offsetHeight + 'px';
 	taCont.scrollTop += codeScrollDiff;
@@ -72,14 +76,17 @@ addEventListener('mousemove', function() {
 	setTimeout(handleTAInput, 0);
 });
 code.addEventListener('input', handleTAInput);
-code.addEventListener('blur', function() {
-	document.getElementById('caret').hidden = true;
-	clearTimeout(blinkTimeout);
-});
 code.addEventListener('focus', function() {
+	this.parentNode.classList.add('focused');
 	document.getElementById('caret').hidden = false;
 	clearTimeout(blinkTimeout);
 	blinkTimeout = setTimeout(blink, 500);
+});
+code.addEventListener('blur', function() {
+	delete this.lastCursorPos;
+	this.parentNode.classList.remove('focused');
+	document.getElementById('caret').hidden = true;
+	clearTimeout(blinkTimeout);
 });
 code.addEventListener('keypress', function(e) {
 	var oldSelectionStart = this.selectionStart;

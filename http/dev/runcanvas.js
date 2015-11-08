@@ -59,6 +59,7 @@ caret.appendChild(document.createTextNode('\xA0'));
 codeDisplay.insertAfter(caret, codeDisplay.firstChild);
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	code.focus();
+	taCont.classList.add('focused');
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
 var oldValue,
@@ -127,7 +128,12 @@ addEventListener('mousemove', function() {
 	setTimeout(handleTAInput, 0);
 });
 code.addEventListener('input', handleTAInput);
+code.addEventListener('focus', function() {
+	this.parentNode.classList.add('focused');
+});
 code.addEventListener('blur', function() {
+	delete this.lastCursorPos;
+	this.parentNode.classList.remove('focused');
 	document.getElementById('caret').hidden = true;
 	clearTimeout(blinkTimeout);
 });
