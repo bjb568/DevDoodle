@@ -2,7 +2,7 @@
 *::-moz-placeholder { color: #999 }
 html, #content, #output, #footer, #main { background: #000 }
 #main { padding: 0 }
-#content { padding: 0 4px }
+#content { padding-bottom: 0 }
 #main a:hover { color: #4ff }
 #main a:active { color: #06f }
 #main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
@@ -25,49 +25,6 @@ html, #content, #output, #footer, #main { background: #000 }
 	width: 400px;
 	max-width: 100%;
 }
-#ta-cont {
-	width: 100%;
-	margin-bottom: 8px;
-	position: relative;
-	overflow: auto;
-	border: 1px solid #fff;
-}
-#code, #code-display {
-	display: block;
-	min-height: 100%;
-	padding: 0;
-	margin: 2px;
-	color: #fff;
-	background: transparent;
-	font-family: monospace;
-	white-space: pre-wrap;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	font-size: 1rem;
-	line-height: 1.2;
-	resize: none;
-	outline: none;
-	border: none;
-	padding-left: 4px;
-}
-#code {
-	position: absolute;
-	top: 0; right: 0;
-	z-index: 1;
-	color: transparent;
-}
-#code-display {
-	width: calc(100% - 4px);
-	border-left: 1px solid #444;
-	padding-right: 1px;
-}
-#caret {
-	display: inline-block;
-	position: absolute;
-	background: #fff;
-	width: 1px;
-}
-#caret[hidden] { display: none }
 #ta-cont, #output { height: calc(50% - 4px) }
 @media (min-width: 720px) {
 	h1 {

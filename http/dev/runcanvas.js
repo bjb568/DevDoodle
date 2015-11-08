@@ -49,8 +49,10 @@ code.lastSelectionStart = 0;
 code.lastSelectionEnd = 0;
 code.lastCursorPos = 0;
 code.whichSelection = true;
-highlight(codeDisplay, code.lastValue = code.value);
+highlightJS(codeDisplay, code.lastValue = code.value);
 taCont.className = codeDisplay.className;
+codeDisplay.classList.add('code-display');
+taCont.classList.add('ta-cont');
 var caret = document.createElement('span');
 caret.id = 'caret';
 caret.appendChild(document.createTextNode('\xA0'));
@@ -59,11 +61,30 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	code.focus();
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
-var oldValue;
+var oldValue,
+	runTimeout;
+function run() {
+	if (oldValue == code.value) return;
+	oldValue = code.value;
+	var lines = code.value.split('\n');
+	for (var i = 0; i < lines.length; i++) {
+		if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
+			lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
+			if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
+		}
+	}
+	if (save && !save.classList.contains('progress')) save.textContent = 'Save';
+	var outputBlob = new Blob([
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(canvasJS) + 'try{this.eval(\'\\\'use strict\\\';\' + ' + html(JSON.stringify(lines.join('\n'))) + ')}catch(e){error(e)}</script></body></html>'
+	], {type: 'application/xhtml+xml'});
+	output.src = URL.createObjectURL(outputBlob);
+}
 function handleTAInput() {
 	if (code.value != code.lastValue) {
-		highlight(codeDisplay, code.lastValue = code.value);
+		highlightJS(codeDisplay, code.lastValue = code.value);
 		taCont.className = codeDisplay.className;
+		codeDisplay.classList.add('code-display');
+		taCont.classList.add('ta-cont');
 	}
 	code.style.height = codeDisplay.offsetHeight + 'px';
 	if (code.selectionStart != code.lastSelectionStart) {
@@ -76,7 +97,7 @@ function handleTAInput() {
 	}
 	var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
 	var oldCaret = document.getElementById('caret');
-	if (navigator.userAgent.indexOf('Mobile') == -1 && (cursorPos != code.lastCursorPos || !oldCaret)) {
+	if (navigator.userAgent.indexOf('Mobile') == -1 && code == document.activeElement && (cursorPos != code.lastCursorPos || !oldCaret)) {
 		code.lastCursorPos = cursorPos;
 		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 		var caret = document.createElement('span');
@@ -86,34 +107,20 @@ function handleTAInput() {
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
-	if (code.value != oldValue) {
-		oldValue = code.value;
-		var lines = code.value.split('\n');
-		for (var i = 0; i < lines.length; i++) {
-			if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
-				lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
-				if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
-			}
-		}
-		if (save && !save.classList.contains('progress')) save.textContent = 'Save';
-		var outputBlob = new Blob([
-			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(canvasJS) + 'try{this.eval(' + html(JSON.stringify(lines.join('\n'))) + ')}catch(e){error(e)}</script></body></html>'
-		], {type: 'application/xhtml+xml'});
-		console.log(p);
-		output.src = URL.createObjectURL(outputBlob);
-	}
+	clearTimeout(runTimeout);
+	runTimeout = setTimeout(run, 200);
 }
 handleTAInput();
-code.addEventListener('keypress', function() {
+addEventListener('keypress', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('keyup', function() {
+addEventListener('keyup', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('keydown', function() {
+addEventListener('keydown', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('mousedown', function() {
+addEventListener('mousedown', function() {
 	setTimeout(handleTAInput, 0);
 });
 addEventListener('mousemove', function() {
@@ -126,8 +133,8 @@ code.addEventListener('blur', function() {
 });
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	code.addEventListener('focus', function() {
-		document.getElementById('caret').hidden = false;
-		blinkTimeout = setTimeout(blink, 500);
+		(document.getElementById('caret') || {}).hidden = false;
+		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
 	});
 }
 code.addEventListener('keypress', function(e) {
@@ -178,8 +185,13 @@ code.addEventListener('keypress', function(e) {
 		e.preventDefault();
 	} else if (e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
 		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
-		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '};' + this.value.substr(this.selectionStart);
+		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
+		e.preventDefault();
+	} else if (e.keyCode == 116 && this.value.substr(0, this.selectionStart).match(/func$/)) {
+		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
 		e.preventDefault();
 	} else if (e.keyCode == 44) {
 		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);

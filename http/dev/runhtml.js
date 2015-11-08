@@ -10,24 +10,60 @@ var mine = document.getElementById('mine').value == '1',
 	htmle = document.getElementById('html'),
 	css = document.getElementById('css'),
 	js = document.getElementById('js'),
+	htmlDisplay = document.getElementById('html-display'),
+	cssDisplay = document.getElementById('css-display'),
+	jsDisplay = document.getElementById('js-display'),
+	htmlCont = document.getElementById('html-cont'),
+	cssCont = document.getElementById('css-cont'),
+	jsCont = document.getElementById('js-cont'),
+	restart = document.getElementById('restart'),
 	save = document.getElementById('save'),
 	fork = document.getElementById('fork'),
 	up = document.getElementById('up'),
 	dn = document.getElementById('dn'),
 	savedValue = [htmle.value, css.value, js.value],
+	lastValue = savedValue,
 	onbeforeunload = function() {
 		return ([htmle.value, css.value, js.value]).toString() == savedValue.toString() ? null : 'You have unsaved code.';
-	};
-var p = '';
-function run(f) {
-	if (document.getElementById('autorun').checked) {
-		if (!save.classList.contains('progress')) save.textContent = 'Save';
-		var outputBlob = new Blob([
-			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
-		], {type: 'application/xhtml+xml'});
-		document.getElementById('output').src = URL.createObjectURL(outputBlob);
+	},
+	blinkTimeout;
+function blink() {
+	document.getElementById('caret').hidden ^= 1;
+	blinkTimeout = setTimeout(blink, 500);
+}
+function insertNodeAtPosition(node, refNode, pos) {
+	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.splitText(pos));
+	else {
+		for (var i = 0; i < refNode.childNodes.length; i++) {
+			var chNode = refNode.childNodes[i];
+			if (chNode.textContent.length <= pos && i != refNode.childNodes.length - 1) pos -= chNode.textContent.length;
+			else return insertNodeAtPosition(node, chNode, pos);
+		}
 	}
 }
+highlightHTML(htmlDisplay, htmle.value);
+htmlCont.className = htmlDisplay.className;
+htmlDisplay.classList.add('code-display');
+htmlCont.classList.add('ta-cont');
+htmle.style.height = htmlDisplay.offsetHeight + 'px';
+highlightCSS(cssDisplay, css.value);
+cssCont.className = cssDisplay.className;
+cssDisplay.classList.add('code-display');
+cssCont.classList.add('ta-cont');
+css.style.height = cssDisplay.offsetHeight + 'px';
+highlightJS(jsDisplay, js.value);
+jsCont.className = jsDisplay.className;
+jsDisplay.classList.add('code-display');
+jsCont.classList.add('ta-cont');
+js.style.height = jsDisplay.offsetHeight + 'px';
+function run() {
+	if (!save.classList.contains('progress')) save.textContent = 'Save';
+	var outputBlob = new Blob([
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
+	], {type: 'application/xhtml+xml'});
+	document.getElementById('output').src = URL.createObjectURL(outputBlob);
+}
+restart.onclick = run;
 htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart;
 	if (e.keyCode == 13) {
@@ -124,14 +160,149 @@ css.onkeypress = js.onkeypress = function(e) {
 	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
 		this.selectionStart = ++this.selectionEnd;
 		e.preventDefault();
+	} else if (this.id == 'js' && e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
+		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
+		e.preventDefault();
+	} else if (this.id == 'js' && e.keyCode == 116 && this.value.substr(0, this.selectionStart).match(/func$/)) {
+		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
+		e.preventDefault();
 	} else if (e.keyCode == 44) {
 		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 		e.preventDefault();
+	} else if (e.keyCode == 58) {
+		this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
+		e.preventDefault();
+	} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
+		this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart;
+		e.preventDefault();
 	}
 };
-htmle.oninput = css.oninput = js.oninput = run;
 run();
+var runTimeout;
+function handleTAInput() {
+	var cursorPos, oldCaret;
+	if (htmle.value != lastValue[0]) {
+		highlightHTML(htmlDisplay, htmle.value);
+		htmlCont.className = htmlDisplay.className;
+		htmlDisplay.classList.add('code-display');
+		htmlCont.classList.add('ta-cont');
+		htmle.style.height = htmlDisplay.offsetHeight + 'px';
+	}
+	if (htmle.selectionStart != htmle.lastSelectionStart) {
+		htmle.lastSelectionStart = htmle.selectionStart;
+		htmle.whichSelection = false;
+	}
+	if (htmle.selectionEnd != htmle.lastSelectionEnd) {
+		htmle.lastSelectionEnd = htmle.selectionEnd;
+		htmle.whichSelection = true;
+	}
+	cursorPos = htmle.whichSelection ? htmle.selectionEnd : htmle.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && htmle == document.activeElement && (cursorPos != htmle.lastCursorPos || !oldCaret)) {
+		htmle.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, htmlDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	if (css.value != lastValue[1]) {
+		highlightCSS(cssDisplay, css.value);
+		cssCont.className = cssDisplay.className;
+		cssDisplay.classList.add('code-display');
+		cssCont.classList.add('ta-cont');
+		css.style.height = cssDisplay.offsetHeight + 'px';
+	}
+	if (css.selectionStart != css.lastSelectionStart) {
+		css.lastSelectionStart = css.selectionStart;
+		css.whichSelection = false;
+	}
+	if (css.selectionEnd != css.lastSelectionEnd) {
+		css.lastSelectionEnd = css.selectionEnd;
+		css.whichSelection = true;
+	}
+	cursorPos = css.whichSelection ? css.selectionEnd : css.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && css == document.activeElement && (cursorPos != css.lastCursorPos || !oldCaret)) {
+		css.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, cssDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	if (js.value != lastValue[2]) {
+		highlightJS(jsDisplay, js.value);
+		jsCont.className = jsDisplay.className;
+		jsDisplay.classList.add('code-display');
+		jsCont.classList.add('ta-cont');
+		js.style.height = jsDisplay.offsetHeight + 'px';
+	}
+	if (js.selectionStart != js.lastSelectionStart) {
+		js.lastSelectionStart = js.selectionStart;
+		js.whichSelection = false;
+	}
+	if (js.selectionEnd != js.lastSelectionEnd) {
+		js.lastSelectionEnd = js.selectionEnd;
+		js.whichSelection = true;
+	}
+	cursorPos = js.whichSelection ? js.selectionEnd : js.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && js == document.activeElement && (cursorPos != js.lastCursorPos || !oldCaret)) {
+		js.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, jsDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	var newValue = [htmle.value, css.value, js.value];
+	if (document.getElementById('autorun').checked && lastValue.toString() != newValue.toString()) {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 200);
+	}
+	lastValue = newValue;
+}
+addEventListener('keypress', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('keyup', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('keydown', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('mousedown', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('mousemove', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('input', handleTAInput);
+htmle.onblur = css.onblur = js.onblur = function(e) {
+	delete this.lastCursorPos;
+	(document.getElementById('caret') || {}).hidden = true;
+	clearTimeout(blinkTimeout);
+};
+if (navigator.userAgent.indexOf('Mobile') == -1) {
+	addEventListener('focus', function() {
+		(document.getElementById('caret') || {}).hidden = false;
+		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
+	});
+}
 addEventListener('keypress', function(e) {
 	if (e.keyCode == 13 && e.metaKey) {
 		e.preventDefault();

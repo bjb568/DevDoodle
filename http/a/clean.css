@@ -45,7 +45,7 @@ body {
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
 .nofloat { float: none }
-.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span), .comment > :last-child { margin-top: 0 }
+.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
@@ -107,6 +107,49 @@ li {
 	color: #aaa;
 	transition: opacity 0.2s;
 }
+.ta-cont {
+	width: 100%;
+	margin-bottom: 8px;
+	position: relative;
+	overflow: auto;
+	border: 1px solid #fff;
+}
+.code, .code-display {
+	display: block;
+	min-height: calc(100% - 2px);
+	padding: 0;
+	margin: 2px;
+	color: #fff;
+	background: transparent;
+	font-family: monospace;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	font-size: 1rem;
+	line-height: 1.2;
+	resize: none;
+	outline: none;
+	border: none;
+	padding-left: 4px;
+}
+.code {
+	position: absolute;
+	top: 0; right: 0;
+	z-index: 1;
+	color: transparent;
+}
+.code-display {
+	width: calc(100% - 4px);
+	border-left: 1px solid #444;
+	padding-right: 1px;
+}
+#caret {
+	display: inline-block;
+	position: absolute;
+	background: #fff;
+	width: 1px;
+}
+#caret[hidden] { display: none }
 code .line::before {
 	left: 0;
 	content: attr(data-linenum);
@@ -122,22 +165,22 @@ code .line.warning::before {
 	color: #ff6;
 	font-weight: bold;
 }
-#ta-cont.line-dig0 { padding-left: 0.8em }
-#ta-cont.line-dig1 { padding-left: 1.4em }
-#ta-cont.line-dig2 { padding-left: 2em }
-#ta-cont.line-dig3 { padding-left: 2.6em }
-#ta-cont.line-dig4 { padding-left: 3.2em }
-#ta-cont.line-dig5 { padding-left: 3.8em }
-#ta-cont.line-dig6 { padding-left: 4.4em }
-#ta-cont.line-dig7 { padding-left: 5em }
-#ta-cont.line-dig0 textarea { width: calc(100% - 0.8rem - 5px) }
-#ta-cont.line-dig1 textarea { width: calc(100% - 1.4rem - 5px) }
-#ta-cont.line-dig2 textarea { width: calc(100% - 2rem - 5px) }
-#ta-cont.line-dig3 textarea { width: calc(100% - 2.6rem - 5px) }
-#ta-cont.line-dig4 textarea { width: calc(100% - 3.2rem - 5px) }
-#ta-cont.line-dig5 textarea { width: calc(100% - 3.8rem - 5px) }
-#ta-cont.line-dig6 textarea { width: calc(100% - 4.4rem - 5px) }
-#ta-cont.line-dig7 textarea { width: calc(100% - 5rem - 5px) }
+.ta-cont.line-dig0 { padding-left: 0.8em }
+.ta-cont.line-dig1 { padding-left: 1.4em }
+.ta-cont.line-dig2 { padding-left: 2em }
+.ta-cont.line-dig3 { padding-left: 2.6em }
+.ta-cont.line-dig4 { padding-left: 3.2em }
+.ta-cont.line-dig5 { padding-left: 3.8em }
+.ta-cont.line-dig6 { padding-left: 4.4em }
+.ta-cont.line-dig7 { padding-left: 5em }
+.ta-cont.line-dig0 textarea { width: calc(100% - 0.8rem - 5px) }
+.ta-cont.line-dig1 textarea { width: calc(100% - 1.4rem - 5px) }
+.ta-cont.line-dig2 textarea { width: calc(100% - 2rem - 5px) }
+.ta-cont.line-dig3 textarea { width: calc(100% - 2.6rem - 5px) }
+.ta-cont.line-dig4 textarea { width: calc(100% - 3.2rem - 5px) }
+.ta-cont.line-dig5 textarea { width: calc(100% - 3.8rem - 5px) }
+.ta-cont.line-dig6 textarea { width: calc(100% - 4.4rem - 5px) }
+.ta-cont.line-dig7 textarea { width: calc(100% - 5rem - 5px) }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .constant, code .string .escape { color: #df0 }
@@ -151,16 +194,14 @@ code .regex .grouper { color: #fff }
 code .regex .charclass { color: #ffd }
 code .regex .charclass { background: #730 }
 code .regex .charclass .range { color: #fed }
-code .regex .charclass .punctuation { color: #f90 }
+code .regex .charclass .punctuation, code .function-call { color: #f90 }
 code .regex .quantifier { color: #2af }
 code .regex .quantifier .punctuation { color: #8cf }
-code .regex .modifier { font-weight: bold }
-code .operator { color: #ff8 }
+code .regex .modifier, code .generator-star, code .newvar { font-weight: bold }
+code .operator, code .generator-star { color: #ff8 }
 code .operator.assigns, code .equals { color: #8ff }
 code .argument, code .number { color: #3df }
-code .newvar { font-weight: bold }
 code .function-name { color: #f60 }
-code .function-call { color: #f90 }
 code .prototype { color: #f00 }
 code .punctuation, code .dot { color: #ddd }
 code .capvar { color: #9ac }
