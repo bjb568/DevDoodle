@@ -82,7 +82,7 @@ htmle.onkeypress = function(e) {
 			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(toSelection.match(/<\s*[^/\s<][^<]*>\s*$/))
+				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>\s*$/))
 				? 0
 				: 1
 			);
