@@ -32,7 +32,7 @@ Before submitting a bug, try hard-reloading.
 Apparently node processes don't need to run as root if you do this first (on Linux):
 
 	sudo apt-get install libcap2-bin
-	setcap 'cap_net_bind_service=+ep' /usr/bin/nodejs
+	sudo setcap 'cap_net_bind_service=+ep' /usr/local/bin/node
 
 To make Safari/OS X like the cert (and allow connecting with sockets), add the certs to Keychain Access and set it to Always Trust.
 
