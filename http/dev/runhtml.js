@@ -10,33 +10,73 @@ var mine = document.getElementById('mine').value == '1',
 	htmle = document.getElementById('html'),
 	css = document.getElementById('css'),
 	js = document.getElementById('js'),
+	htmlDisplay = document.getElementById('html-display'),
+	cssDisplay = document.getElementById('css-display'),
+	jsDisplay = document.getElementById('js-display'),
+	htmlCont = document.getElementById('html-cont'),
+	cssCont = document.getElementById('css-cont'),
+	jsCont = document.getElementById('js-cont'),
+	restart = document.getElementById('restart'),
 	save = document.getElementById('save'),
 	fork = document.getElementById('fork'),
 	up = document.getElementById('up'),
 	dn = document.getElementById('dn'),
 	savedValue = [htmle.value, css.value, js.value],
+	lastValue = savedValue,
 	onbeforeunload = function() {
 		return ([htmle.value, css.value, js.value]).toString() == savedValue.toString() ? null : 'You have unsaved code.';
-	};
-var p = '';
-function run(f) {
-	if (document.getElementById('autorun').checked) {
-		if (!save.classList.contains('progress')) save.textContent = 'Save';
-		var outputBlob = new Blob([
-			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
-		], {type: 'application/xhtml+xml'});
-		document.getElementById('output').src = URL.createObjectURL(outputBlob);
+	},
+	blinkTimeout;
+function blink() {
+	document.getElementById('caret').hidden ^= 1;
+	blinkTimeout = setTimeout(blink, 500);
+}
+function insertNodeAtPosition(node, refNode, pos) {
+	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.splitText(pos));
+	else {
+		for (var i = 0; i < refNode.childNodes.length; i++) {
+			var chNode = refNode.childNodes[i];
+			if (chNode.textContent.length <= pos && i != refNode.childNodes.length - 1) pos -= chNode.textContent.length;
+			else return insertNodeAtPosition(node, chNode, pos);
+		}
 	}
 }
+highlightHTML(htmlDisplay, htmle.value);
+htmlCont.dataset.line = htmlDisplay.dataset.line;
+htmle.style.height = htmlDisplay.offsetHeight + 'px';
+highlightCSS(cssDisplay, css.value);
+cssCont.dataset.line = cssDisplay.dataset.line;
+css.style.height = cssDisplay.offsetHeight + 'px';
+highlightJS(jsDisplay, js.value);
+jsCont.dataset.line = jsDisplay.dataset.line;
+js.style.height = jsDisplay.offsetHeight + 'px';
+var caret = document.createElement('span');
+caret.id = 'caret';
+caret.appendChild(document.createTextNode('\xA0'));
+htmlDisplay.insertAfter(caret, htmlDisplay.firstChild);
+if (navigator.userAgent.indexOf('Mobile') == -1) {
+	htmle.focus();
+	htmlCont.classList.add('focused');
+	blinkTimeout = setTimeout(blink, 500);
+} else caret.hidden = true;
+function run() {
+	if (!save.classList.contains('progress')) save.textContent = 'Save';
+	var outputBlob = new Blob([
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
+	], {type: 'application/xhtml+xml'});
+	document.getElementById('output').src = URL.createObjectURL(outputBlob);
+}
+restart.onclick = run;
 htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart;
 	if (e.keyCode == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-		var tabs = this.value.substr(0, oldSelectionStart)
-			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+		var toSelection = this.value.substr(0, oldSelectionStart),
+			tabs = toSelection
+			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(false/* Parse? */)
+				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>\s*$/))
 				? 0
 				: 1
 			);
@@ -51,6 +91,13 @@ htmle.onkeypress = function(e) {
 	} else if (e.keyCode == 39) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
+		e.preventDefault();
+	} else if (e.keyCode == 47) {
+		var lines = this.value.substr(0, oldSelectionStart).split('\n');
+		if (lines[lines.length - 1].indexOf('\t') == -1) return;
+		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
+		this.value = lines.join('\n') + '/' + this.value.substr(oldSelectionStart);
+		this.selectionEnd = this.selectionStart = oldSelectionStart;
 		e.preventDefault();
 	}
 };
@@ -70,60 +117,124 @@ htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
 		}
 	}
 };
-css.onkeypress = js.onkeypress = function(e) {
-	var oldSelectionStart = this.selectionStart;
-	var pairChars = {};
-	pairChars[40] = '()';
-	pairChars[91] = '[]';
-	pairChars[123] = '{}';
-	var endChars = {};
-	endChars[41] = ')';
-	endChars[93] = ']';
-	endChars[125] = '}';
-	if (e.keyCode == 13) {
-		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-		var cut = (this.value.substr(0, oldSelectionStart).match(/\s+$/) || '').length;
-		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
-		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
-		if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
-		var tabs = this.value.substr(0, oldSelectionStart)
-			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-			.split('\t').length
-			- (
-				('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
-				? 0
-				: (
-					this.value[oldSelectionStart - 1] == ';' && this.eIndent
-					? (this.eIndent = false || 2)
-					: 1
-				)
-			);
-		this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + ('{([:,'.indexOf(this.value[oldSelectionStart - 1]) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
-		e.preventDefault();
-	} else if (e.keyCode == 34) {
-		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (e.keyCode == 39) {
-		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (pairChars[e.keyCode]) {
-		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionStart);
-		this.selectionEnd = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
-		this.selectionStart = ++this.selectionEnd;
-		e.preventDefault();
-	} else if (e.keyCode == 44) {
-		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
-		e.preventDefault();
-	}
-};
-htmle.oninput = css.oninput = js.oninput = run;
+css.onkeypress = js.onkeypress = jsKeypressHandler;
 run();
+var runTimeout;
+function handleTAInput() {
+	var cursorPos, oldCaret;
+	if (htmle.value != lastValue[0]) {
+		highlightHTML(htmlDisplay, htmle.value);
+		htmlCont.dataset.line = htmlDisplay.dataset.line;
+		htmle.style.height = htmlDisplay.offsetHeight + 'px';
+	}
+	if (htmle.selectionStart != htmle.lastSelectionStart) {
+		htmle.lastSelectionStart = htmle.selectionStart;
+		htmle.whichSelection = false;
+	}
+	if (htmle.selectionEnd != htmle.lastSelectionEnd) {
+		htmle.lastSelectionEnd = htmle.selectionEnd;
+		htmle.whichSelection = true;
+	}
+	cursorPos = htmle.whichSelection ? htmle.selectionEnd : htmle.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && htmle == document.activeElement && (cursorPos != htmle.lastCursorPos || !oldCaret)) {
+		htmle.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, htmlDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	if (css.value != lastValue[1]) {
+		highlightCSS(cssDisplay, css.value);
+		cssCont.dataset.line = cssDisplay.dataset.line;
+		css.style.height = cssDisplay.offsetHeight + 'px';
+	}
+	if (css.selectionStart != css.lastSelectionStart) {
+		css.lastSelectionStart = css.selectionStart;
+		css.whichSelection = false;
+	}
+	if (css.selectionEnd != css.lastSelectionEnd) {
+		css.lastSelectionEnd = css.selectionEnd;
+		css.whichSelection = true;
+	}
+	cursorPos = css.whichSelection ? css.selectionEnd : css.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && css == document.activeElement && (cursorPos != css.lastCursorPos || !oldCaret)) {
+		css.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, cssDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	if (js.value != lastValue[2]) {
+		highlightJS(jsDisplay, js.value);
+		jsCont.dataset.line = jsDisplay.dataset.line;
+		js.style.height = jsDisplay.offsetHeight + 'px';
+	}
+	if (js.selectionStart != js.lastSelectionStart) {
+		js.lastSelectionStart = js.selectionStart;
+		js.whichSelection = false;
+	}
+	if (js.selectionEnd != js.lastSelectionEnd) {
+		js.lastSelectionEnd = js.selectionEnd;
+		js.whichSelection = true;
+	}
+	cursorPos = js.whichSelection ? js.selectionEnd : js.selectionStart;
+	oldCaret = document.getElementById('caret');
+	if (navigator.userAgent.indexOf('Mobile') == -1 && js == document.activeElement && (cursorPos != js.lastCursorPos || !oldCaret)) {
+		js.lastCursorPos = cursorPos;
+		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
+		var caret = document.createElement('span');
+		caret.id = 'caret';
+		caret.appendChild(document.createTextNode('\xA0'));
+		insertNodeAtPosition(caret, jsDisplay, cursorPos);
+		clearTimeout(blinkTimeout);
+		blinkTimeout = setTimeout(blink, 500);
+	}
+	var newValue = [htmle.value, css.value, js.value];
+	if (document.getElementById('autorun').checked && lastValue.toString() != newValue.toString()) {
+		clearTimeout(runTimeout);
+		runTimeout = setTimeout(run, 200);
+	}
+	lastValue = newValue;
+}
+addEventListener('keypress', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('keyup', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('keydown', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('mousedown', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('mousemove', function() {
+	setTimeout(handleTAInput, 0);
+});
+addEventListener('input', handleTAInput);
+htmle.onfocus = css.onfocus = js.onfocus = function() {
+	this.parentNode.classList.add('focused');
+};
+htmle.onblur = css.onblur = js.onblur = function(e) {
+	delete this.lastCursorPos;
+	this.parentNode.classList.remove('focused');
+	(document.getElementById('caret') || {}).hidden = true;
+	clearTimeout(blinkTimeout);
+};
+if (navigator.userAgent.indexOf('Mobile') == -1) {
+	addEventListener('focus', function() {
+		(document.getElementById('caret') || {}).hidden = false;
+		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
+	});
+}
 addEventListener('keypress', function(e) {
 	if (e.keyCode == 13 && e.metaKey) {
 		e.preventDefault();

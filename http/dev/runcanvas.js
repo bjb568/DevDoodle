@@ -39,8 +39,6 @@ var code = document.getElementById('code'),
 	up = document.getElementById('up'),
 	dn = document.getElementById('dn')
 	fullScreen = false,
-	fsBtn = document.getElementById('fullscreen-button'),
-	regLayout = document.getElementById('regular-layout'),
 	savedValue = code.value,
 	onbeforeunload = function() {
 		return code.value == savedValue ? null : 'You have unsaved code.';
@@ -49,21 +47,41 @@ code.lastSelectionStart = 0;
 code.lastSelectionEnd = 0;
 code.lastCursorPos = 0;
 code.whichSelection = true;
-highlight(codeDisplay, code.lastValue = code.value);
-taCont.className = codeDisplay.className;
+highlightJS(codeDisplay, code.lastValue = code.value);
+taCont.dataset.line = codeDisplay.dataset.line;
+codeDisplay.classList.add('code-display');
+taCont.classList.add('ta-cont');
 var caret = document.createElement('span');
 caret.id = 'caret';
 caret.appendChild(document.createTextNode('\xA0'));
 codeDisplay.insertAfter(caret, codeDisplay.firstChild);
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	code.focus();
+	taCont.classList.add('focused');
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
-var oldValue;
+var oldValue,
+	runTimeout;
+function run() {
+	if (oldValue == code.value) return;
+	oldValue = code.value;
+	var lines = code.value.split('\n');
+	for (var i = 0; i < lines.length; i++) {
+		if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
+			lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
+			if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) document.body.classList.add('fullscreen');
+		}
+	}
+	if (save && !save.classList.contains('progress')) save.textContent = 'Save';
+	var outputBlob = new Blob([
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(canvasJS) + 'try{this.eval(\'\\\'use strict\\\';\' + ' + html(JSON.stringify(lines.join('\n'))) + ')}catch(e){error(e)}</script></body></html>'
+	], {type: 'application/xhtml+xml'});
+	output.src = URL.createObjectURL(outputBlob);
+}
 function handleTAInput() {
 	if (code.value != code.lastValue) {
-		highlight(codeDisplay, code.lastValue = code.value);
-		taCont.className = codeDisplay.className;
+		highlightJS(codeDisplay, code.lastValue = code.value);
+		taCont.dataset.line = codeDisplay.dataset.line;
 	}
 	code.style.height = codeDisplay.offsetHeight + 'px';
 	if (code.selectionStart != code.lastSelectionStart) {
@@ -76,7 +94,7 @@ function handleTAInput() {
 	}
 	var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
 	var oldCaret = document.getElementById('caret');
-	if (navigator.userAgent.indexOf('Mobile') == -1 && (cursorPos != code.lastCursorPos || !oldCaret)) {
+	if (navigator.userAgent.indexOf('Mobile') == -1 && code == document.activeElement && (cursorPos != code.lastCursorPos || !oldCaret)) {
 		code.lastCursorPos = cursorPos;
 		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 		var caret = document.createElement('span');
@@ -86,115 +104,42 @@ function handleTAInput() {
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
-	if (code.value != oldValue) {
-		oldValue = code.value;
-		var lines = code.value.split('\n');
-		for (var i = 0; i < lines.length; i++) {
-			if (navigator.userAgent.indexOf('Mobile') == -1 && lines[i].indexOf('requestEnableFullScreen;') == 0) {
-				lines[i] = 'requestFullLayoutMode();' + lines[i].substr(25);
-				if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) enableFullScreen();
-			}
-		}
-		if (save && !save.classList.contains('progress')) save.textContent = 'Save';
-		var outputBlob = new Blob([
-			p = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(canvasJS) + 'try{this.eval(' + html(JSON.stringify(lines.join('\n'))) + ')}catch(e){error(e)}</script></body></html>'
-		], {type: 'application/xhtml+xml'});
-		console.log(p);
-		output.src = URL.createObjectURL(outputBlob);
-	}
+	clearTimeout(runTimeout);
+	runTimeout = setTimeout(run, 200);
 }
 handleTAInput();
-code.addEventListener('keypress', function() {
+addEventListener('keypress', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('keyup', function() {
+addEventListener('keyup', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('keydown', function() {
+addEventListener('keydown', function() {
 	setTimeout(handleTAInput, 0);
 });
-code.addEventListener('mousedown', function() {
+addEventListener('mousedown', function() {
 	setTimeout(handleTAInput, 0);
 });
 addEventListener('mousemove', function() {
 	setTimeout(handleTAInput, 0);
 });
 code.addEventListener('input', handleTAInput);
+code.addEventListener('focus', function() {
+	this.parentNode.classList.add('focused');
+});
 code.addEventListener('blur', function() {
+	delete this.lastCursorPos;
+	this.parentNode.classList.remove('focused');
 	document.getElementById('caret').hidden = true;
 	clearTimeout(blinkTimeout);
 });
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	code.addEventListener('focus', function() {
-		document.getElementById('caret').hidden = false;
-		blinkTimeout = setTimeout(blink, 500);
+		(document.getElementById('caret') || {}).hidden = false;
+		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
 	});
 }
-code.addEventListener('keypress', function(e) {
-	var oldSelectionStart = this.selectionStart;
-	var pairChars = {};
-	pairChars[40] = '()';
-	pairChars[91] = '[]';
-	pairChars[123] = '{}';
-	var endChars = {};
-	endChars[41] = ')';
-	endChars[93] = ']';
-	endChars[125] = '}';
-	if (e.keyCode == 13) {
-		if (e.metaKey) return title.dispatchEvent(new MouseEvent('click'));
-		var cut = (this.value.substr(0, oldSelectionStart).match(/(\S([ \t]+)| +)$/) || ['', '', ''])[2].length;
-		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
-		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
-		if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
-		var tabs = this.value.substr(0, oldSelectionStart)
-			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-			.split('\t').length
-			- (
-				('{([:'.indexOf(this.value[oldSelectionStart - 1]) + 1)
-				? 0
-				: (
-					this.value[oldSelectionStart - 1] == ';' && this.eIndent
-					? (this.eIndent = false || 2)
-					: 1
-				)
-			);
-		this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + (['{}', '()', '[]'].indexOf(this.value.substr(oldSelectionStart - 1, 2)) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
-		e.preventDefault();
-	} else if (e.charCode == 34) {
-		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (e.charCode == 39) {
-		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (pairChars[e.keyCode]) {
-		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionStart);
-		this.selectionEnd = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
-		this.selectionStart = ++this.selectionEnd;
-		e.preventDefault();
-	} else if (e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
-		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
-		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '};' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
-		e.preventDefault();
-	} else if (e.keyCode == 44) {
-		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
-		e.preventDefault();
-	} else if (e.keyCode == 58) {
-		this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
-		e.preventDefault();
-	} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
-		this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart;
-		e.preventDefault();
-	}
-});
+code.addEventListener('keypress', jsKeypressHandler);
 code.addEventListener('keydown', function(e) {
 	if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
 		if (
@@ -221,36 +166,6 @@ addEventListener('keypress', function(e) {
 		if (target) target.dispatchEvent(new MouseEvent('click'));
 	}
 });
-function enableFullScreen() {
-	document.body.classList.add('fullscreen');
-	fsBtn.hidden = false;
-	regLayout.hidden = false;
-}
-if (regLayout) regLayout.onclick = function() {
-	document.body.classList.remove('fullscreen');
-	this.hidden = true;
-};
-function hashChangeFullScreenHandler() {
-	if (location.hash == '#fullscreen') {
-		document.body.classList.add('fullscreen');
-		document.body.classList.add('noscrl');
-		document.getElementById('close-fullscreen').hidden = false;
-		output.focus();
-	} else {
-		document.body.classList.remove('fullscreen');
-		document.body.classList.remove('noscrl');
-		document.getElementById('close-fullscreen').hidden = true;
-		if (navigator.userAgent.indexOf('Mobile') == -1) code.focus();
-	}
-}
-if (fsBtn) {
-	fsBtn.onclick = function() {
-		document.getElementById('close-fullscreen').hidden = false;
-		enableFullScreen();
-	};
-	addEventListener('hashchange', hashChangeFullScreenHandler);
-	hashChangeFullScreenHandler();
-}
 if (save) save.onclick = function() {
 	if (save.classList.contains('progress')) return;
 	save.classList.add('progress');

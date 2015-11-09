@@ -3,12 +3,21 @@
 	<div class="row">
 		<div id="right" class="half">
 			<div id="outputbox" class="scrl"><iframe id="output" sandbox="allow-scripts"></iframe></div>
-			<button onclick="run(1)">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
+			<button id="restart">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
 		</div>
 		<div id="left" class="half">
-			<textarea id="html" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML" wrap="off">$html</textarea>
-			<textarea id="css" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="CSS" wrap="off">$css</textarea>
-			<textarea id="js" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="JS" wrap="off">$js</textarea>
+			<div id="html-cont" class="ta-cont">
+				<textarea id="html" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML">$html</textarea>
+				<code id="html-display" class="code-display"></code>
+			</div>
+			<div id="css-cont" class="ta-cont">
+				<textarea id="css" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML">$css</textarea>
+				<code id="css-display" class="code-display"></code>
+			</div>
+			<div id="js-cont" class="ta-cont">
+				<textarea id="js" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="HTML">$js</textarea>
+				<code id="js-display" class="code-display"></code>
+			</div>
 		</div>
 	</div>
 </section>

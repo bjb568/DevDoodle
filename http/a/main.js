@@ -353,7 +353,7 @@ function agot(d) {
 	return time;
 }
 
-function textareaHandler(e) {
+function textareaHandler(e, s) {
 	if (this.noHandle) return delete this.nHandle;
 	if (!this.hist) this.hist = [{
 		body: '',
@@ -361,7 +361,7 @@ function textareaHandler(e) {
 		end: 0
 	}];
 	if (!this.hIndex) this.hIndex = 0;
-	if (e.keyCode == 9) {
+	if (!s && e.keyCode == 9) {
 		if (this.selectionStart == this.selectionEnd) {
 			if (e.shiftKey) {
 				var cS = this.selectionEnd - 1;
@@ -440,7 +440,13 @@ addEventListener('DOMContentLoaded', function() {
 	}
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
-	while (i--) e[i].addEventListener('keydown', textareaHandler);
+	while (i--) {
+		e[i].addEventListener('keyup', function() {
+			textareaHandler.call(this, true);
+		});
+		e[i].addEventListener('keydown', textareaHandler);
+		e[i].addEventListener('keypress', textareaHandler);
+	}
 	setInterval(function() {
 		var times = document.getElementsByTagName('time');
 		for (var i = 0; i < times.length; i++) {
@@ -488,7 +494,151 @@ document.addEventListener('visibilitychange', function() {
 
 if (navigator.userAgent.indexOf('Mobile') != -1) addEventListener('touchend', function() {}); //Fixes mobile-safari bug with touch listeners in iframes not firing
 
-function highlight(codeBlock, input) {
+function jsKeypressHandler(e) {
+	var oldSelectionStart = this.selectionStart;
+	var pairChars = {};
+	pairChars[40] = '()';
+	pairChars[91] = '[]';
+	pairChars[123] = '{}';
+	var endChars = {};
+	endChars[41] = ')';
+	endChars[93] = ']';
+	endChars[125] = '}';
+	if (e.keyCode == 13) {
+		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+		var cut = this.value.substr(0, oldSelectionStart).match(/[\n^]\s+$/) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
+		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
+		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
+		var tabs = this.value.substr(0, oldSelectionStart)
+			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
+			.split('\t').length
+			- (
+				('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
+				? 0
+				: (
+					['}', ')', ']'].indexOf(this.value[oldSelectionStart]) == -1
+					? 1
+					: 2
+				)
+			);
+			this.value =
+				this.value.substr(0, oldSelectionStart) + '\n' + '\t'.repeat(tabs) +
+				(
+					'{(['.indexOf(this.value[oldSelectionStart - 1]) == -1 || '{([])}'.indexOf(this.value[oldSelectionStart]) == -1
+					? ''
+					: '\n' + '\t'.repeat(tabs - 1)
+				) + this.value.substr(oldSelectionStart);
+		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
+		e.preventDefault();
+	} else if (e.keyCode == 34) {
+		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
+		e.preventDefault();
+	} else if (e.keyCode == 39) {
+		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
+		e.preventDefault();
+	} else if (pairChars[e.keyCode]) {
+		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionEnd);
+		this.selectionEnd = ++oldSelectionStart;
+		e.preventDefault();
+	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode] && this.selectionStart == this.selectionEnd) {
+		this.selectionStart = ++this.selectionEnd;
+		e.preventDefault();
+	} else if (this.id != 'css' && e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
+		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
+		e.preventDefault();
+	} else if (this.id != 'css' && e.keyCode == 116 && this.value.substr(0, this.selectionStart).match(/func$/)) {
+		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
+		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
+		e.preventDefault();
+	} else if (e.keyCode == 44) {
+		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
+		e.preventDefault();
+	} else if (this.id != 'css' && e.keyCode == 58) {
+		this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
+		e.preventDefault();
+	} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
+		this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionEnd);
+		this.selectionEnd = this.selectionStart = oldSelectionStart;
+		e.preventDefault();
+	}
+}
+
+function highlightHTML(codeBlock, input) {
+	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
+		chunk = '',
+		warnings = [],
+		line = 1,
+		fc;
+	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
+	var linenum = document.createElement('span');
+	linenum.className = 'line';
+	linenum.dataset.linenum = line;
+	codeBlock.appendChild(linenum);
+	for (var i = 0; i < input.length; i++) {
+		var c = input[i];
+		if (c == '\n') {
+			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
+			chunk = '';
+			var linenum = document.createElement('span');
+			linenum.className = 'line';
+			linenum.dataset.linenum = ++line;
+			codeBlock.appendChild(linenum);
+		} else chunk += c;
+	}
+	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
+	var lines = input.split('\n');
+	for (var i = 0; i < warnings.length; i++) {
+		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
+			lineEl = codeBlock.getElementsByClassName('line')[line];
+		lineEl.classList.add('warning');
+		if (lineEl.title) lineEl.title += '\n';
+		lineEl.title += 'Column ' + (warnings[i][0] - lines.slice(0, line).join('\n').length) + ': ' + warnings[i][1];
+	}
+}
+
+function highlightCSS(codeBlock, input) {
+	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
+		chunk = '',
+		warnings = [],
+		line = 1,
+		fc;
+	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
+	var linenum = document.createElement('span');
+	linenum.className = 'line';
+	linenum.dataset.linenum = line;
+	codeBlock.appendChild(linenum);
+	for (var i = 0; i < input.length; i++) {
+		var c = input[i];
+		if (c == '\n') {
+			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
+			chunk = '';
+			var linenum = document.createElement('span');
+			linenum.className = 'line';
+			linenum.dataset.linenum = ++line;
+			codeBlock.appendChild(linenum);
+		} else chunk += c;
+	}
+	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
+	var lines = input.split('\n');
+	for (var i = 0; i < warnings.length; i++) {
+		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
+			lineEl = codeBlock.getElementsByClassName('line')[line];
+		lineEl.classList.add('warning');
+		if (lineEl.title) lineEl.title += '\n';
+		lineEl.title += 'Column ' + (warnings[i][0] - lines.slice(0, line).join('\n').length) + ': ' + warnings[i][1];
+	}
+}
+
+function highlightJS(codeBlock, input) {
 	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
 		chunk = '',
 		warnings = [],
@@ -505,15 +655,24 @@ function highlight(codeBlock, input) {
 	for (var i = 0; i < input.length; i++) {
 		var c = input[i],
 			l;
-		if (c == '"' || c == "'") {
+		if (c == '"' || c == "'" || c == '`') {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = c;
 			var string = document.createElement('span');
 			string.className = 'string';
 			while ((d = input[++i]) && d != c) {
 				if (d == '\n') {
-					warnings.push([i, 'Unexpected line end with unterminated string literal.']);
-					break;
+					if (c != '`' ) {
+						warnings.push([i, 'Unexpected line end with unterminated string literal.']);
+						break;
+					} else {
+						string.appendChild(document.createTextNode(chunk + '\n'));
+						chunk = '';
+						var linenum = document.createElement('span');
+						linenum.className = 'line';
+						linenum.dataset.linenum = ++line;
+						string.appendChild(linenum);
+					}
 				} else if (d == '\\') {
 					string.appendChild(document.createTextNode(chunk));
 					chunk = d;
@@ -765,16 +924,6 @@ function highlight(codeBlock, input) {
 				i += modifiers[0].length;
 			}
 			codeBlock.appendChild(regex);
-		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && c != c.toLowerCase()) {
-		 	codeBlock.appendChild(document.createTextNode(chunk));
-			chunk = c;
-			var capvar = document.createElement('span');
-			capvar.className = 'capvar';
-			while ((d = input[++i]) && d.match(/[\w\d]/)) chunk += d;
-			i--;
-			capvar.appendChild(document.createTextNode(chunk));
-			codeBlock.appendChild(capvar);
-			chunk = '';
 		} else if (input.substr(i, 10) == '.prototype') {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -787,7 +936,7 @@ function highlight(codeBlock, input) {
 			proto.appendChild(document.createTextNode('prototype'));
 			codeBlock.appendChild(proto);
 			i += 9;
-		} else if (beforeWord && (
+		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && (
 				('NaN' == input.substr(i, 3) && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
 				('true' == input.substr(i, 4) && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
 				('null' == input.substr(i, 4) && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
@@ -801,13 +950,23 @@ function highlight(codeBlock, input) {
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
+		} else if (beforeWord && c != c.toLowerCase()) {
+		 	codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = c;
+			var capvar = document.createElement('span');
+			capvar.className = 'capvar';
+			while ((d = input[++i]) && d.match(/[\w\d]/)) chunk += d;
+			i--;
+			capvar.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(capvar);
+			chunk = '';
 		} else if (beforeWord && (
 				(['do', 'if', 'in'].indexOf(input.substr(i, 2)) != -1 && !(input[i + 2] || '').match(/\w/) && (l = 2)) ||
-				(['for', 'let', 'new', 'try', 'var'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
+				(['for', 'get', 'let', 'new', 'try', 'var'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
 				(['case', 'else', 'this', 'void', 'with'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
 				(['break', 'class', 'catch', 'const', 'super', 'throw', 'while', 'yield'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
-				(['delete', 'export', 'import', 'return', 'switch', 'typeof'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
-				(['default', 'finally'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
+				(['delete', 'export', 'import', 'return', 'static', 'switch', 'typeof'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
+				(['default', 'extends', 'finally'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
 				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
 				(['instanceof'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10))
 			)) {
@@ -826,13 +985,36 @@ function highlight(codeBlock, input) {
 			if (input.substr(i, l) == 'in') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
+				(['enum', 'eval'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
+				(['await'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
+				(['public'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
+				(['package', 'private'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
+				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
+				(['interface', 'protected'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
+				(['implements'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10))
+			)) {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			var keyword = document.createElement('span');
+			keyword.className = 'keyword reserved';
+			keyword.appendChild(document.createTextNode(input.substr(i, l)));
+			codeBlock.appendChild(keyword);
+			if (input.substr(i, l) == 'var') inVarDec.unshift({
+				parens: 0,
+				brackets: 0,
+				braces: 0,
+				equals: false
+			});
+			if (input.substr(i, l) == 'in') inVarDec.shift();
+			i += l - 1;
+		} else if (beforeWord && (
 				(['top'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
 				(['self'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
 				(['fetch'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
 				(['window', 'screen', 'crypto', 'status', 'frames', 'opener', 'parent'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
 				(['console', 'history', 'menubar', 'toolbar'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
 				(['document'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
-				(['statusbar', 'navigator', 'indexedDB'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
+				(['arguments', 'statusbar', 'navigator', 'indexedDB'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
 				(['scrollbars', 'styleMedia'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10)) ||
 				(['locationbar', 'personalbar', 'performance'].indexOf(input.substr(i, 11)) != -1 && !(input[i + 11] || '').match(/\w/) && (l = 11)) ||
 				(['frameElement', 'localStorage'].indexOf(input.substr(i, 12)) != -1 && !(input[i + 12] || '').match(/\w/) && (l = 12)) ||
@@ -847,7 +1029,7 @@ function highlight(codeBlock, input) {
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
-		} else if (input.substr(i, 8) == 'function') {
+		} else if (input.substr(i, 8) == 'function' && !(input[i - 1] || ' ').match(/\w/)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var node,
@@ -904,8 +1086,27 @@ function highlight(codeBlock, input) {
 			var funcKeyword = document.createElement('span');
 			funcKeyword.className = 'keyword';
 			funcKeyword.appendChild(document.createTextNode('function'));
-			codeBlock.appendChild(funcKeyword);
 			i += 7;
+			while ((c = input[++i]) && c.match(/\s/)) {
+				chunk += c;
+				if (c == '\n') {
+					funcKeyword.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					var linenum = document.createElement('span');
+					linenum.className = 'line';
+					linenum.dataset.linenum = ++line;
+					funcKeyword.appendChild(linenum);
+				}
+			}
+			funcKeyword.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			if (input[i] == '*') {
+				var star = document.createElement('span');
+				star.className = 'generator-star';
+				star.appendChild(document.createTextNode('*'));
+				funcKeyword.appendChild(star);
+			} else i--;
+			codeBlock.appendChild(funcKeyword);
 			var fname = document.createElement('span');
 			fname.className = 'function-name';
 			while ((c = input[++i]) && c != '(') {
@@ -974,6 +1175,14 @@ function highlight(codeBlock, input) {
 			charspan.appendChild(document.createTextNode('('));
 			codeBlock.appendChild(charspan);
 			if (inVarDec[0]) inVarDec[0].parens++;
+		} else if (input.substr(i, 2) == '=>') {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			var operator = document.createElement('span');
+			operator.className = 'operator';
+			operator.appendChild(document.createTextNode('=>'));
+			codeBlock.appendChild(operator);
+			i++;
 		} else if (['++', '--', '*=', '/=', '%=', '+=', '-=', '&=', '|=', '^='].indexOf(input.substr(i, 2)) != -1) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -982,6 +1191,14 @@ function highlight(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 2)));
 			codeBlock.appendChild(operator);
 			i++;
+		} else if (input.substr(i, 4) == '>>>=') {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			var operator = document.createElement('span');
+			operator.className = 'operator assigns';
+			operator.appendChild(document.createTextNode(input.substr(i, 4)));
+			codeBlock.appendChild(operator);
+			i += 3;
 		} else if (input.substr(i, 3) == '<<=' || input.substr(i, 3) == '>>=') {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -990,30 +1207,7 @@ function highlight(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
-		} else if (input.substr(i, 3) == '>>>=') {
-			codeBlock.appendChild(document.createTextNode(chunk));
-			chunk = '';
-			var operator = document.createElement('span');
-			operator.className = 'operator assigns';
-			operator.appendChild(document.createTextNode(input.substr(i, 3)));
-			codeBlock.appendChild(operator);
-			i += 3;
-		} else if ('?:+-*/%&|^'.indexOf(c) != -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
-			chunk = '';
-			var operator = document.createElement('span');
-			operator.className = 'operator';
-			operator.appendChild(document.createTextNode(c));
-			codeBlock.appendChild(operator);
-		} else if (['<=', '>=', '==', '!=', '<<', '>>', '&&', '||'].indexOf(input.substr(i, 2)) != -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
-			chunk = '';
-			var operator = document.createElement('span');
-			operator.className = 'operator';
-			operator.appendChild(document.createTextNode(input.substr(i, 2)));
-			codeBlock.appendChild(operator);
-			i++;
-		} else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || input.substr(i, 3) == '>>>') {
+		}else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input.charAt(i + 3) != '=')) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
@@ -1021,7 +1215,22 @@ function highlight(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
-		} else if (beforeWord && c.match(/\d/)) {
+		} else if (['<=', '>=', '==', '!=', '<<', '>>', '&&', '||'].indexOf(input.substr(i, 2)) != -1 && ['=', '<', '>'].indexOf(input.charAt(i + 2)) == -1) {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			var operator = document.createElement('span');
+			operator.className = 'operator';
+			operator.appendChild(document.createTextNode(input.substr(i, 2)));
+			codeBlock.appendChild(operator);
+			i++;
+		} else if ('?:+-*/%&|^!~'.indexOf(c) != -1) {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+			var operator = document.createElement('span');
+			operator.className = 'operator';
+			operator.appendChild(document.createTextNode(c));
+			codeBlock.appendChild(operator);
+		}  else if (beforeWord && c.match(/\d/)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var start = i;
@@ -1108,8 +1317,8 @@ function highlight(codeBlock, input) {
 			codeBlock.appendChild(newvar);
 		} else chunk += c;
 	}
-	codeBlock.appendChild(document.createTextNode(chunk));
-	codeBlock.className = 'line-dig' + Math.floor(Math.log10(line));
+	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
 		var line = input.substr(0, warnings[i][0]).split('\n').length - 1,
