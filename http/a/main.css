@@ -182,6 +182,11 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
+code .element { color: #fa0 }
+code .class { color: #ff0 }
+code .id { color: #b80 }
+code .property { font-style: italic }
+code .value { color: #aaf }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .reserved { color: #f00 }

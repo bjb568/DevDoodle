@@ -117,76 +117,7 @@ htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
 		}
 	}
 };
-css.onkeypress = js.onkeypress = function(e) {
-	var oldSelectionStart = this.selectionStart;
-	var pairChars = {};
-	pairChars[40] = '()';
-	pairChars[91] = '[]';
-	pairChars[123] = '{}';
-	var endChars = {};
-	endChars[41] = ')';
-	endChars[93] = ']';
-	endChars[125] = '}';
-	if (e.keyCode == 13) {
-		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-		var cut = this.value.substr(0, oldSelectionStart).match(/[\n^]\s+$/) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
-		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
-		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
-		if (this.value[oldSelectionStart - 1] == ',') this.eIndent = true;
-		var tabs = this.value.substr(0, oldSelectionStart)
-			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-			.split('\t').length
-			- (
-				('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
-				? 0
-				: (
-					this.value[oldSelectionStart - 1] == ';' && this.eIndent
-					? (this.eIndent = false || 2)
-					: 1
-				)
-			);
-		this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + ('{([:,'.indexOf(this.value[oldSelectionStart - 1]) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)) + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
-		e.preventDefault();
-	} else if (e.keyCode == 34) {
-		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (e.keyCode == 39) {
-		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (pairChars[e.keyCode]) {
-		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionStart);
-		this.selectionEnd = ++oldSelectionStart;
-		e.preventDefault();
-	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode]) {
-		this.selectionStart = ++this.selectionEnd;
-		e.preventDefault();
-	} else if (this.id == 'js' && e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
-		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
-		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
-		e.preventDefault();
-	} else if (this.id == 'js' && e.keyCode == 116 && this.value.substr(0, this.selectionStart).match(/func$/)) {
-		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
-		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
-		e.preventDefault();
-	} else if (e.keyCode == 44) {
-		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
-		e.preventDefault();
-	} else if (e.keyCode == 58) {
-		this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
-		e.preventDefault();
-	} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
-		this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionStart);
-		this.selectionEnd = this.selectionStart = oldSelectionStart;
-		e.preventDefault();
-	}
-};
+css.onkeypress = js.onkeypress = jsKeypressHandler;
 run();
 var runTimeout;
 function handleTAInput() {
