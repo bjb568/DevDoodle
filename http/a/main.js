@@ -485,7 +485,7 @@ addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('visibilitychange', function() {
-	if (!document.hidden) {
+	if (!document.hidden && document.querySelector('#nav > a:nth-child(8)').firstChild.nodeValue != 'Log in') {
 		request('/api/notif', function(res) {
 			document.getElementById('nav').children[7].classList.toggle('unread', res);
 		});
