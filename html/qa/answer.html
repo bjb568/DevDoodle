@@ -1,0 +1,32 @@
+<div id="a$id" class="answer hglt pad br">
+	<div class="ctrl pad lft">
+		<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg"><polygon points="10,1 1,19 19,19" /></svg></a>
+		<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg"><polygon points="10,19 1,1 19,1" /></svg></a>
+		<a class="fl" title="This answer has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+		<a class="ctrlicon editbtn" href="#edit-$id" title="Edit">✎</a>
+		<a class="ctrlicon delbtn" title="Delete">✕</a>
+	</div>
+	<div class="a-content">
+		<div class="a-body">$body-markdown</div>
+		<div class="clearfix">
+			<div class="rit">
+				<div>Answered <time datetime="$time"></time> by</div>
+				<div class="user user-$user">
+					<img src="//gravatar.com/avatar/$op-mailhash?s=576&amp;d=identicon" width="40" height="40" />
+					<div>
+						<a href="/user/$user">$user</a>
+						<small class="rep">$op-rep</small>
+					</div>
+				</div>
+			</div>
+			<small class="blk sumar lft"><a href="#$id" class="grey" title="Permalink">#</a> <line /> <a href="?history=$id" class="grey">History</a></small>
+		</div>
+	</div>
+	<form class="a-edit indt" hidden="">
+		<textarea rows="24">$body-html</textarea>
+		<div>
+			<button type="submit">Submit Edit</button>
+			<button type="reset" class="cancel-edit">Cancel</button>
+		</div>
+	</form>
+</div>
