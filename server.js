@@ -139,7 +139,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	}
 	res.writeHead(status || 200, header);
 	var data = (yield fs.readFile('html/a/head.html', yield)).toString();
-	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/">Login</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
+	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/">Log in</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 	var dirs = req.url.pathname.split('/');
 	res.write(
 		data.replace(
