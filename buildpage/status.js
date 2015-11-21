@@ -1,5 +1,6 @@
 'use strict';
-var spawn = require('child_process').spawn;
+var spawn = require('child_process').spawn,
+	fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname != '/status/') return errorNotFound(req, res, user);
 	yield respondPage('Status', user, req, res, yield);
