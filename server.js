@@ -65,35 +65,6 @@ global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
-o(function*() {
-	var db = yield mongo.connect('mongodb://localhost:27017/DevDoodle/', yield);
-	db.createCollection('questions', function(err, collection) {
-		if (err) throw err;
-		db.createIndex('questions', {description: 'text'}, {}, function() {});
-		dbcs.questions = collection;
-	});
-	db.createCollection('chat', function(err, collection) {
-		if (err) throw err;
-		db.createIndex('chat', {body: 'text'}, {}, function() {});
-		dbcs.chat = collection;
-	});
-	var i = usedDBCs.length;
-	function handleCollection(err, collection) {
-		if (err) throw err;
-		dbcs[usedDBCs[i]] = collection;
-		if (usedDBCs[i] == 'chatusers') collection.drop();
-	}
-	while (i--) db.collection(usedDBCs[i], handleCollection);
-	if (process.argv.indexOf('--test') != -1) {
-		var testReq = http.get("http://localhost:8080/", function(testRes) {
-			testRes.on('data', function(d) {
-				console.log('Things seem to work!');
-				process.exit();
-			});
-		});
-	}
-})();
-
 global.respondPage = o(function*(title, user, req, res, callback, header, status) {
 	if (title) title = html(title);
 	var query = req.url.query,
@@ -805,58 +776,88 @@ var serverHandler = o(function*(req, res) {
 		}
 	}
 });
-if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
-	var server = http2.createServer({
-		key: fs.readFileSync('../Secret/devdoodle.net.key'),
-		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-		ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
-		ecdhCurve: 'secp384r1',
-		ciphers: [
-			'ECDHE-ECDSA-AES256-GCM-SHA384',
-			'ECDHE-RSA-AES256-GCM-SHA384',
-			'ECDHE-ECDSA-AES128-GCM-SHA256',
-			'ECDHE-RSA-AES128-GCM-SHA256',
-			'ECDHE-ECDSA-AES256-SHA',
-			'ECDHE-RSA-AES256-SHA'
-		].join(':'),
-		honorCipherOrder: true,
-		secureOptions: SSL_ONLY_TLS_1_2
-	}, serverHandler);
-	server.listen(parseInt(process.argv[2]) || 443);
-	var ocspCache = new ocsp.Cache();
-	if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
-		server.on('OCSPRequest', function(cert, issuer, callback) {
-			ocsp.getOCSPURI(cert, function(err, uri) {
-				if (err) return callback(err);
-				var req = ocsp.request.generate(cert, issuer);
-				var options = {
-					url: uri,
-					ocsp: req.data
-				};
-				ocspCache.request(req.id, options, callback);
+console.log('Connecting to mongodb…');
+mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
+	if (err) throw err;
+	db.createCollection('questions', function(err, collection) {
+		if (err) throw err;
+		db.createIndex('questions', {description: 'text'}, {}, function() {});
+		dbcs.questions = collection;
+	});
+	db.createCollection('chat', function(err, collection) {
+		if (err) throw err;
+		db.createIndex('chat', {body: 'text'}, {}, function() {});
+		dbcs.chat = collection;
+	});
+	var i = usedDBCs.length;
+	function handleCollection(err, collection) {
+		if (err) throw err;
+		dbcs[usedDBCs[i]] = collection;
+		if (usedDBCs[i] == 'chatusers') collection.drop();
+	}
+	while (i--) db.collection(usedDBCs[i], handleCollection);
+	if (process.argv.indexOf('--test') != -1) {
+		var testReq = http.get("http://localhost:8080/", function(testRes) {
+			testRes.on('data', function(d) {
+				console.log('Things seem to work!');
+				process.exit();
 			});
 		});
-	} else console.log('Notice: OCSP stapling is turned OFF.');
-	var sslSessionCache = {};
-	server.on('newSession', function(sessionId, sessionData, callback) {
-		sslSessionCache[sessionId] = sessionData;
-		callback();
-	});
-	server.on('resumeSession', function (sessionId, callback) {
-		callback(null, sslSessionCache[sessionId]);
-	});
-	console.log('server.js running on port ' + (parseInt(process.argv[2]) || 443));
-	if (!parseInt(process.argv[2])) {
-		http.createServer(function(req, res) {
-			res.writeHead(301, {
-				Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
-			});
-			res.end();
-		}).listen(80);
-		console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
 	}
-} else {
-	usingSSL = false;
-	http.createServer(serverHandler).listen(process.argv[2] || 80);
-	console.log('server.js running on port ' + (process.argv[2] || 80));
-}
+	console.log('Connected to mongodb');
+	if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
+		var server = http2.createServer({
+			key: fs.readFileSync('../Secret/devdoodle.net.key'),
+			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+			ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+			ecdhCurve: 'secp384r1',
+			ciphers: [
+				'ECDHE-ECDSA-AES256-GCM-SHA384',
+				'ECDHE-RSA-AES256-GCM-SHA384',
+				'ECDHE-ECDSA-AES128-GCM-SHA256',
+				'ECDHE-RSA-AES128-GCM-SHA256',
+				'ECDHE-ECDSA-AES256-SHA',
+				'ECDHE-RSA-AES256-SHA'
+			].join(':'),
+			honorCipherOrder: true,
+			secureOptions: SSL_ONLY_TLS_1_2
+		}, serverHandler);
+		server.listen(parseInt(process.argv[2]) || 443);
+		var ocspCache = new ocsp.Cache();
+		if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
+			server.on('OCSPRequest', function(cert, issuer, callback) {
+				ocsp.getOCSPURI(cert, function(err, uri) {
+					if (err) return callback(err);
+					var req = ocsp.request.generate(cert, issuer);
+					var options = {
+						url: uri,
+						ocsp: req.data
+					};
+					ocspCache.request(req.id, options, callback);
+				});
+			});
+		} else console.log('Notice: OCSP stapling is turned OFF.');
+		var sslSessionCache = {};
+		server.on('newSession', function(sessionId, sessionData, callback) {
+			sslSessionCache[sessionId] = sessionData;
+			callback();
+		});
+		server.on('resumeSession', function (sessionId, callback) {
+			callback(null, sslSessionCache[sessionId]);
+		});
+		console.log('server.js running on port ' + (parseInt(process.argv[2]) || 443));
+		if (!parseInt(process.argv[2])) {
+			http.createServer(function(req, res) {
+				res.writeHead(301, {
+					Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
+				});
+				res.end();
+			}).listen(80);
+			console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
+		}
+	} else {
+		usingSSL = false;
+		http.createServer(serverHandler).listen(process.argv[2] || 80);
+		console.log('server.js running on port ' + (process.argv[2] || 80));
+	}
+});
