@@ -12,7 +12,7 @@ module.exports = o(function*(req, res, user) {
 	});
 	child.stdout.on('end', o(function*() {
 		res.write('</p>');
-		if (user) res.write('<p>You are logged in as <strong>' + user.name + '</strong></p>');
+		if (user.name) res.write('<p>You are logged in as <strong>' + user.name + '</strong></p>');
 		else res.write('<p>You are not logged in</p>');
 		res.write('<p>Current host header is <strong>' + req.headers.host + '</strong></p>');
 		res.write('<code class="blk" id="socket-test">Connecting to socket…</code>');
