@@ -5,3 +5,7 @@ services:
   - mongodb
 install:
   - npm install
+  - npm install -g snyk
+script:
+  - npm test
+  - snyk test
