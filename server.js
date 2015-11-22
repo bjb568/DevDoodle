@@ -15,7 +15,6 @@ Number.prototype.bound = function(l, h) {
 global.o = require('yield-yield');
 
 var http = require('http'),
-	https = require('https'),
 	http2 = require('http2'),
 	ocsp = require('ocsp'),
 	uglifyJS = require('uglify-js'),
@@ -516,7 +515,7 @@ var serverHandler = o(function*(req, res) {
 					var existingUser = yield dbcs.users.findOne({name: post.name}, yield);
 					if (existingUser) return respondLoginPage(['Username already taken.'], user, req, res, post, true);
 					var salt = crypto.randomBytes(64).toString('base64'),
-						key = yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield);
+						key = yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield),
 						pass = new Buffer(key).toString('base64'),
 						confirmToken = crypto.randomBytes(128).toString('base64');
 					dbcs.users.insert({
@@ -599,7 +598,7 @@ var serverHandler = o(function*(req, res) {
 		   res.end('Method not allowed. Use GET or POST.');
 	   }
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
-		var user = yield dbcs.users.findOne({confirm: i[1]}, yield);
+		user = yield dbcs.users.findOne({confirm: i[1]}, yield);
 		if (user) {
 			dbcs.users.update({name: user.name}, {
 				$set: {
@@ -724,9 +723,7 @@ var serverHandler = o(function*(req, res) {
 	} else if (req.url.pathname.indexOf('.') != -1) {
 		try {
 			var stats = yield fs.stat('./http/' + req.url.pathname, yield);
-		} catch(e) {
-			return errorNotFound(req, res, user);
-		}
+		} catch(e) { return errorNotFound(req, res, user); }
 		if (!stats.isFile()) return errorNotFound(req, res, user);
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
