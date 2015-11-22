@@ -582,6 +582,7 @@ function highlightHTML(codeBlock, input) {
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
 	for (var i = 0; i < input.length; i++) {
+		if (input.substr(i - 9, 9).toLowerCase() == '<!doctype') warnings.push([i, 'No need for doctype, you\'re writing inside the body.']);
 		var c = input[i];
 		if (c == '\n') {
 			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
