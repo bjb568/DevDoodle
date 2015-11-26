@@ -500,7 +500,7 @@ module.exports = o(function*(req, res, user, post) {
 		id = i ? parseInt(i[1]) : 0;
 		var program = yield dbcs.programs.findOne({_id: id}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You can\'t vote for your own post');
+		if (program.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own program.');
 		var current = yield dbcs.votes.findOne({
 			program: id,
 			user: user.name
