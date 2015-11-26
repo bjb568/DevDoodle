@@ -1,5 +1,5 @@
 Intro to HTML
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
@@ -17,7 +17,8 @@ Intro to HTML
 		</div>
 		<div id="cntrls"><a href="../../" class="lft">Back</a> <a href="../2/" class="rit">Next</a></div>
 	</div>
-	<textarea id="html">&lt;!DOCTYPE html>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
 &lt;html xmlns="http://www.w3.org/1999/xhtml">
 	&lt;head>
 		&lt;title>This is the document title&lt;/title>
@@ -26,7 +27,8 @@ Intro to HTML
 		&lt;p>This is a paragraph&lt;/p>
 	&lt;/body>
 &lt;/html></textarea>
-	<iframe id="output"></iframe>
+		<iframe id="output"></iframe>
+	</div>
 </div>
 <textarea id="validator" hidden="">function validate() {
 	return {

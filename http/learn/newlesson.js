@@ -21,7 +21,7 @@ code.lastSelectionEnd = 0;
 code.lastCursorPos = 0;
 code.whichSelection = true;
 highlightJS(codeDisplay, code.lastValue = code.value);
-taCont.className = codeDisplay.className;
+taCont.dataset.line = codeDisplay.dataset.line;
 codeDisplay.classList.add('code-display');
 taCont.classList.add('ta-cont');
 var caret = document.createElement('span');
@@ -33,7 +33,7 @@ function handleTAInput() {
 	var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 	if (code.value != code.lastValue) {
 		highlightJS(codeDisplay, code.lastValue = code.value);
-		taCont.className = codeDisplay.className;
+		taCont.dataset.line = codeDisplay.dataset.line;
 		codeDisplay.classList.add('code-display');
 		taCont.classList.add('ta-cont');
 	}

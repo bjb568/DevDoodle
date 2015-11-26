@@ -1,12 +1,12 @@
 #courses { max-width: 3200px }
 #courses h2 { text-align: center }
 #courses > div {
-	background: rgba(16, 140, 255, .8);
-	transition: background .2s;
+	background: rgba(16, 140, 255, 0.8);
+	transition: background 0.2s;
 }
 #courses ul { margin: 0 }
 #courses > div:not(:first-child) { margin-top: 8px }
-#courses > div:hover { background: rgba(24, 160, 255, .8) }
+#courses > div:hover { background: rgba(24, 160, 255, 0.8) }
 #courses a:hover { color: #333 }
 #courses a:active { color: #100 }
 #courses img {
@@ -30,7 +30,7 @@
 #tree {
 	overflow-x: scroll;
 	height: 680em;
-	background: rgba(255, 255, 255, .5);
+	background: rgba(255, 255, 255, 0.5);
 	font-size: 1px;
 }
 @media (max-width: 1200px) {
@@ -93,8 +93,8 @@
 	font-size: 18em;
 	line-height: 0.89em;
 	min-width: 6.67em;
-	box-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
-	transition: box-shadow .3s, background-color .3s;
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+	transition: box-shadow 0.3s, background-color 0.3s;
 	font-weight: normal;
 	text-decoration: none;
 }
@@ -111,13 +111,13 @@
 	font-size: 14em;
 	line-height: 1.1em;
 	opacity: 0;
-	transition: opacity .7s;
-	box-shadow: 1px 1px 2px rgba(0, 0, 0, .4);
+	transition: opacity 0.7s;
+	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 	text-align: left;
 	white-space: normal;
 }
 #tree-inner .course:hover a {
-	box-shadow: 1px 1px 2px rgba(0, 0, 0, .4);
+	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 	background: #4cf;
 	color: #333;
 }

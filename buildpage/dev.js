@@ -42,7 +42,7 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (req.url.pathname == '/dev/new/canvas') {
-		yield respondPage('Canvas Playground', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
+		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
 			.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
@@ -54,7 +54,7 @@ module.exports = o(function*(req, res, user) {
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/dev/new/html') {
-		yield respondPage('HTML Playground', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
+		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/html.html', yield)).toString()
 			.replace(/<section id="meta">[^]+<\/section>/, '')
@@ -99,6 +99,7 @@ module.exports = o(function*(req, res, user) {
 		} else {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield,
 				{
+					clean: true,
 					inhead: '<link rel="stylesheet" href="/dev/'
 						+ (program.type == 1 ? 'canvas' : 'html')
 						+ '.css" />'

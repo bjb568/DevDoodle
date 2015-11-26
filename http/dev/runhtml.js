@@ -1,12 +1,8 @@
+if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = document.getElementById('mine').value == '1',
 	id = parseInt(document.getElementById('id').value),
 	opName = document.getElementById('user').value,
 	myRep = parseInt(document.getElementById('rep').value),
-	footerOff = true,
-	noPageOverflow = 800,
-	pageOverflowMobile = 700,
-	mainBottomPad = location.href.indexOf('/dev/new/') == -1 ? 60 : 0,
-	mainContentEl = document.getElementById('main'),
 	htmle = document.getElementById('html'),
 	css = document.getElementById('css'),
 	js = document.getElementById('js'),
@@ -293,6 +289,9 @@ save.onclick = function() {
 	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 };
 if (document.getElementById('meta')) {
+	addEventListener('DOMContentLoaded', function() {
+		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
+	});
 	if (mine) {
 		document.getElementById('title').onclick = function() {
 			this.hidden = true;

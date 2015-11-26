@@ -1,4 +1,4 @@
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>$title</h1>
@@ -34,8 +34,10 @@
 			</form>
 		</div>
 	</div>
-	<textarea id="html">$html</textarea>
-	<iframe id="output"></iframe>
+	<div id="ide">
+		<textarea id="html">$html</textarea>
+		<iframe id="output"></iframe>
+	</div>
 </div>
 <textarea id="validator" hidden="">$validate</textarea>
 <script src="/learn/course.js" async=""></script>

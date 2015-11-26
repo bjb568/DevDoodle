@@ -52,14 +52,14 @@ body {
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
+.bmar, .error, .half, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
-.pad, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
+.pad, a.center-text.blk, .desc, #content, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
-.scrly, #sidebar { overflow-y: auto }
+.scrly { overflow-y: auto }
 .noscrl, .comment > :last-child, blockquote { overflow: hidden }
 .br, .desc, aside.rit { border-radius: 4px }
 .hglt, .desc, .comment, article { background: #333 }
@@ -110,7 +110,6 @@ li {
 .focused { outline: 3px solid #8bf }
 .ta-cont {
 	width: 100%;
-	margin-bottom: 8px;
 	position: relative;
 	overflow: auto;
 	border: 1px solid #fff;
@@ -302,7 +301,7 @@ code.blk {
 	}
 }
 h1 small, h2 small { font-size: 0.85rem }
-h1 small { margin: 0.5em }
+h1 small { margin: 0.5em 0.5em 0 0 }
 h2 small { margin: 0.2em 0.2em 0 0 }
 fieldset {
 	padding: 0;
@@ -391,7 +390,7 @@ ul, ol, p { margin: 0.3em 0 0.2em }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
 .clear, footer, h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * { clear: both }
-.clearfix::after, #content::after, #sidebar::after, .comment::after, nav::after, .row::after, .user::after {
+.clearfix::after, #content::after, .comment::after, nav::after, .row::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -486,6 +485,17 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 1.2;
 }
 .starcount[data-count="0"] { display: none }
+html, body, #cont { height: 100% }
+#cont {
+	display: flex;
+	flex-direction: column;
+}
+#cont > * { flex-shrink: 0 }
+#content { flex-grow: 1 }
+#footer {
+	position: absolute;
+	width: 100%;
+}
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
@@ -505,7 +515,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 0;
 	max-width: 100%;
 }
-#nav #logo { background: rgba(255, 255, 255, .9) }
+#nav #logo { background: rgba(255, 255, 255, 0.9) }
 #nav form {
 	max-width: 100%;
 	padding: 4px 0;
@@ -677,15 +687,4 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#nav nav:nth-child(4) { left: calc(12rem + 43px) }
 	#nav nav:nth-child(6) { left: calc(14.5rem + 72px) }
 	#nav :not(:hover) + nav:not(:hover) { display: none }
-}
-@media (min-width: 1500px) {
-	#content:nth-child(2):nth-last-child(3) {
-		float: left;
-		width: calc(-94px + 84%);
-	}
-	#sidebar {
-		float: right;
-		width: calc(88px + 16%);
-		margin: 6px 6px 6px 0;
-	}
 }

@@ -1,13 +1,9 @@
+if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = (document.getElementById('mine') || {}).value == '1',
 	id = parseInt((document.getElementById('id') || {}).value),
 	opName = (document.getElementById('user') || {}).value,
 	myRep = parseInt((document.getElementById('rep') || {}).value),
- 	canvasJS = document.getElementById('canvas-js').value,
-	footerOff = true,
-	noPageOverflow = 700,
-	pageOverflowMobile = true,
-	mainBottomPad = location.href.indexOf('/dev/new/') == -1 ? 60 : 0,
-	mainContentEl = document.getElementById('main');
+ 	canvasJS = document.getElementById('canvas-js').value;
 function blink() {
 	document.getElementById('caret').hidden ^= 1;
 	blinkTimeout = setTimeout(blink, 500);
@@ -214,6 +210,9 @@ if (save) save.onclick = function() {
 	}, 'code=' + encodeURIComponent(code.value));
 };
 if (document.getElementById('meta')) {
+	addEventListener('DOMContentLoaded', function() {
+		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
+	});
 	if (mine) {
 		var title = document.getElementById('title'),
 			edit = document.getElementById('edit-title');

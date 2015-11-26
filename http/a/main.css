@@ -48,9 +48,9 @@ body {
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
+.umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]) { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, .half, #content, aside.rit, #notifs li { margin-bottom: 6px }
+.bmar, .error, .half, #content, aside.rit, #notifs li, #sidebar { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
 .pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
@@ -110,7 +110,6 @@ li {
 .focused { outline: 3px solid #8bf }
 .ta-cont {
 	width: 100%;
-	margin-bottom: 8px;
 	position: relative;
 	overflow: auto;
 	border: 1px solid #fff;
@@ -489,6 +488,14 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 1.2;
 }
 .starcount[data-count="0"] { display: none }
+html, body, #cont { height: 100% }
+#cont {
+	display: flex;
+	flex-direction: column;
+}
+#cont > * { flex-shrink: 0 }
+#content { flex-grow: 1 }
+#sidebar { flex-shrink: 1 }
 #nav {
 	padding: 0 2px 6px 2px;
 	font-size: 0;
@@ -538,7 +545,7 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 0;
 	max-width: 100%;
 }
-#nav #logo { background: rgba(255, 255, 255, .9) }
+#nav #logo { background: rgba(255, 255, 255, 0.9) }
 #nav form {
 	max-width: 100%;
 	padding: 4px 0;
@@ -720,12 +727,16 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	#content { margin-top: 6px }
 	#content:nth-child(2):nth-last-child(3) {
 		float: left;
-		width: calc(-156px + 66%);
+		width: calc(4px + 56%);
 	}
 	#sidebar {
-		float: right;
-		width: 30%;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: calc(9px + 2em);
+		width: calc(40% - 160px);
 		margin: 6px 0;
+		overflow-x: hidden;
 	}
 	#nav {
 		position: absolute;

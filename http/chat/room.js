@@ -1,5 +1,4 @@
-var noPageOverflow = 420,
-	audio = new Audio('/a/beep.mp3'),
+var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.match(/\d+/)[0],
 	socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
@@ -204,7 +203,6 @@ socket.onmessage = function(e) {
 		}
 		cont.onscroll();
 		if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
-		minHeight();
 	} else if (data.event == 'edit') {
 		source[data.id] = data.body;
 		var msg = document.getElementById(data.id);
