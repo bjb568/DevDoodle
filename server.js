@@ -346,7 +346,10 @@ var serverHandler = o(function*(req, res) {
 		});
 	} else if (req.url.pathname == '/learn/new') {
 		if (req.method == 'GET') {
-			yield respondPage('New Lesson', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'});
+			yield respondPage('New Lesson', user, req, res, yield, {
+				clean: true,
+				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+			});
 			res.write(
 				(yield fs.readFile('./html/learn/newlesson.html', yield)).toString()
 				.replace('$title', html(req.url.query.title || ''))
@@ -406,9 +409,10 @@ var serverHandler = o(function*(req, res) {
 						res.end();
 					}
 				} else if (parseInt(req.url.query.preview)) {
-					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield,
-						{inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'}
-					);
+					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield, {
+						clean: true,
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
+					});
 					res.write(
 						(yield fs.readFile('./html/learn/lessonpreview.html', yield)).toString()
 						.replaceAll(
@@ -418,7 +422,10 @@ var serverHandler = o(function*(req, res) {
 					);
 					res.end(yield fs.readFile('html/a/foot.html', yield));
 				} else {
-					yield respondPage('New Lesson', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'});
+					yield respondPage('New Lesson', user, req, res, yield, {
+						clean: true,
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+					});
 					res.write(
 						(yield fs.readFile('./html/learn/newlesson.html', yield)).toString()
 						.replaceAll(

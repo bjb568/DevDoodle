@@ -1,5 +1,5 @@
 Using a Doctype - Intro to HTML
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
@@ -18,8 +18,10 @@ Using a Doctype - Intro to HTML
 		</div>
 		<div id="cntrls"><a href="../1/" class="lft">Back</a> <a href="../3/" class="rit">Next</a></div>
 	</div>
-	<textarea id="html"></textarea>
-	<iframe id="output"></iframe>
+	<div id="ide">
+		<textarea id="html"></textarea>
+		<iframe id="output"></iframe>
+	</div>
 </div>
 <textarea id="validator" hidden="">function validate(data) {
 	if (data.trim() != '&lt;!DOCTYPE html>') {

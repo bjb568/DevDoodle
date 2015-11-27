@@ -33,7 +33,7 @@ module.exports = o(function*(req, res, user) {
 				if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
 				res.write('</small>');
 				res.write('</div>');
-				res.write('<aside id="sidebar" style="overflow-x: hidden">');
+				res.write('<aside id="sidebar">');
 				res.write('<h2>Recent Posts</h2>');
 				dbcs.chat.find({
 					deleted: {$exists: false},
@@ -115,7 +115,7 @@ module.exports = o(function*(req, res, user) {
 								'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
 								(
 									isInvited ?
-										'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth"></textarea>' +
+										'<div id="pingsug"></div><textarea id="ta" class="umar fullwidth"></textarea>' +
 											'<div id="subta" class="umar"><button id="btn">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
 										'<p>Posting in a non-public room is by invitation only.</p>'
 								)

@@ -35,7 +35,7 @@ module.exports = o(function*(req, res, user) {
 		if (!lesson) return errorNotFound(req, res, user);
 		var post = lesson.content[--i[2]];
 		if (!post) return errorNotFound(req, res, user);
-		yield respondPage(post.title, user, req, res, yield, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+		yield respondPage(post.title, user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 		var isLast = i[2] == lesson.content.length - 1;
 		res.write(
 			(yield fs.readFile('./html/learn/lesson.html', yield)).toString()
@@ -61,7 +61,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) errorNotFound(req, res, user);
 			else {
 				data = data.toString();
-				yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+				yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 				res.write(data.substr(data.indexOf('\n') + 1));
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}

@@ -1,101 +1,74 @@
-*::-webkit-input-placeholder { color: #888 }
+*::-webkit-input-placeholder { color: #999 }
 *::-moz-placeholder { color: #999 }
-html, #content, #output, #footer, #main { background: #000 }
+section { background: transparent }
+#content, #main {
+	display: flex;
+	flex-direction: column;
+}
+#row {
+	display: flex;
+	align-items: stretch;
+}
+#main, #row { flex-grow: 1 }
+#footer {
+	position: absolute;
+	width: 100%;
+}
 #main { padding: 0 }
 #content { padding-bottom: 0 }
 #main a:hover { color: #4ff }
 #main a:active { color: #06f }
-#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
-#main { clear: both }
 #meta {
-	clear: both;
 	padding: 4px;
-	margin-top: 8px;
-	background: rgba(255, 255, 255, .8);
+	margin-bottom: 6px;
+	background: rgba(255, 255, 255, 0.8);
 	color: #000;
+	text-align: left;
+	font-size: 1rem;
 }
-#fullscreen-button {
-	display: inline-block;
-	margin-left: 8px;
-}
+#meta h1, h2, h3, h4, h5, h6 { color: #000 }
+#meta code { background: #fff }
+#meta a { color: #000 }
+#meta a:visited { color: #444 }
+#meta a:hover { color: #15f }
+#meta a:active { color: #02d }
+.comment { background: rgba(255, 255, 255, 0.4) }
 #output { width: 100% }
-#main { height: 500px }
-#row { height: calc(100% - 2rem - 2px) }
+#main { min-height: 600px }
 #edit-title {
 	width: 400px;
 	max-width: 100%;
 }
-#ta-cont, #output { height: calc(50% - 4px) }
-@media (min-width: 720px) {
-	h1 {
-		height: 1.65rem;
-		margin-bottom: .35em;
+@media (max-width: 719px) {
+	#row { flex-direction: column }
+	#ta-cont {
+		height: 400px;
+		flex-grow: 1;
 	}
-	#ta-cont, #output { height: 100% }
-	#ta-cont { width: 60% }
-	body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
 	#output {
-		width: 39%;
-		float: right;
+		height: 560px;
+		margin-top: 6px;
 	}
-	body:not(.fullscreen) #output { max-width: 640px }
+}
+@media (min-width: 720px) {
+	#row { height: 0 }
+	#ta-cont {
+		flex-shrink: 0;
+		width: 60%;
+	}
+	#output { margin-left: 8px }
+	body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
 	.fullscreen #ta-cont { width: calc(20% + 28ch) }
-	.fullscreen #output { width: calc(79% - 28ch) }
 }
 @media (min-width: 850px) {
 	.fullscreen #ta-cont { width: calc(40% + 9ch) }
-	.fullscreen #output { width: calc(59% - 9ch) }
 }
 @media (min-width: 1200px) {
 	.fullscreen #ta-cont { width: calc(20% + 36ch) }
-	.fullscreen #output { width: calc(79% - 36ch) }
 }
 @media (min-width: 1500px) {
 	#ta-cont { margin-bottom: 0 }
 	.fullscreen #ta-cont { width: calc(5% + 70ch) }
-	.fullscreen #output { width: calc(94% - 70ch) }
-}
-.fullscreen #main #output.fullscreen {
-	position: fixed;
-	top: 0; right: 0;
-	width: calc(100% - 32px);
-	height: 100%;
-	z-index: 1;
-}
-#close-fullscreen {
-	position: fixed;
-	z-index: 1;
-	top: 0;
-	left: 0;
-	width: 32px; height: 32px;
-	line-height: 32px;
-	background: #000;
-	text-align: center;
-}
-#close-fullscreen { height: 100% }
-#close-fullscreen a {
-	display: inline-block;
-	width: 100%;
-	text-decoration: none;
-	background: #aaa;
-}
-#close-fullscreen a:hover { background: #fff }
-@media (min-width: 1500px) {
-	#nav { right: calc(96% - 144px) }
-	.fullscreen #nav {
-		top: 0;
-		right: calc(100% - 40px);
-		left: auto;
-		transition: right 0.5s, top 0.2s, opacity 0.3s, z-index 1s;
-	}
-	.fullscreen #nav:hover {
-		right: calc(96% - 144px);
-		z-index: 2;
-		transition: right 0.5s, opacity 0.3s;
-	}
-	.fullscreen #nav:not(:hover) { opacity: 0.3 }
-	.fullscreen #content { margin: 6px 0 6px 46px }
-	.fullscreen.noscrl #nav { display: none }
 }
 #save.progress {
 	cursor: progress;

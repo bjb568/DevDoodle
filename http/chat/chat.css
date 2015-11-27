@@ -1,6 +1,17 @@
 .user, .user:first-child { margin-top: 6px }
 .user span { float: right }
 .rem { opacity: 0.5 }
+#content {
+	height: 0;
+	display: flex;
+	flex-direction: column;
+}
+#chat-div {
+	flex-grow: 1;
+	display: flex;
+	align-items: stretch;
+}
+#chat { flex-grow: 1 }
 #changetypeStat:empty { color: rgba(0, 0, 0, 0) }
 #changetypeStat:not(:empty) {
 	transition: color 0.2s 0.2s;
@@ -38,12 +49,12 @@
 	content: '(no results)';
 	color: #444;
 }
-#chat, #aside {
-	height: 100%;
-	overflow-x: hidden;
-}
+#chat, #aside { overflow-x: hidden }
 #chat-div { height: calc(100% - 120px) }
-textarea { height: 96px }
+textarea {
+	height: 96px;
+	flex-shrink: 0;
+}
 .comment:hover { outline: 1px dotted #000 }
 .ctrls { border: 1px solid #aaa }
 #stars {
@@ -58,9 +69,9 @@ textarea { height: 96px }
 }
 #users li.inactive {
 	opacity: 0.3;
-	transition: opacity 60s, color .2s;
+	transition: opacity 60s, color 0.2s;
 }
-#users li { transition: color .2s }
+#users li { transition: color 0.2s }
 .writing, .writing a { color: green }
 #users a { font-weight: normal }
 #users:empty::after { content: 'No users in room' }
@@ -69,14 +80,13 @@ textarea { height: 96px }
 #aside {
 	float: right;
 	padding-top: 4px;
+	margin-left: 6px;
 }
 @media (max-width: 699px) {
-	#chat { width: 100% }
 	#aside { display: none }
 }
 @media (min-width: 700px) {
-	#chat { width: 80% }
-	#aside { width: 19.5% }
+	#aside { width: calc(17% + 96px) }
 }
 .mention {
 	background: #faa;

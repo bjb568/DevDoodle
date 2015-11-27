@@ -1,6 +1,4 @@
-var footerOff = true,
-	noPageOverflow = 520,
-	htmlTA = document.getElementById('html'),
+var htmlTA = document.getElementById('html'),
 	runTimeout;
 function run() {
 	var outputBlob = new Blob([htmlTA.value], {type: 'application/xhtml+xml'});

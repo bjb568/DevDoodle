@@ -294,36 +294,6 @@ function passStrength(pass) {
 	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2/3) / 10 + pass.length / 8 - 8));
 }
 
-var noPageOverflow = noPageOverflow || false,
-	pageOverflowMobile = pageOverflowMobile || false,
-	footerOff = footerOff || false,
-	mainContentEl = mainContentEl || false,
-	mainBottomPad = mainBottomPad || 0;
-
-function minHeight() {
-	var footer = document.getElementById('footer').offsetHeight,
-		sidebar = document.getElementById('sidebar');
-	if (innerWidth < 1500 && sidebar) footer += sidebar.offsetHeight + 6;
-	if (noPageOverflow && !(innerWidth < pageOverflowMobile)) {
-		mainContentEl.style.minHeight = '';
-		mainContentEl.style.height = Math.max(innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 6, noPageOverflow) - mainBottomPad + 'px';
-		if (sidebar) sidebar.style.height = '';
-	} else {
-		mainContentEl.style.height = '';
-		if (navigator.userAgent.indexOf('Mobile') == -1) mainContentEl.style.minHeight = Math.max(0, innerHeight - (footerOff ? -4 : footer) - mainContentEl.getBoundingClientRect().top + document.body.getBoundingClientRect().top - 6 - mainBottomPad) + 'px';
-		else mainContentEl.style.minHeight = '';
-		if (sidebar) {
-			if (innerWidth >= 1500) sidebar.style.height = mainContentEl.offsetHeight + 'px';
-			else sidebar.style.height = '';
-		}
-	}
-}
-addEventListener('load', minHeight);
-addEventListener('resize', minHeight);
-addEventListener('resize', function() {
-	requestAnimationFrame(minHeight);
-});
-
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
 	i.open('POST', uri, true);
@@ -430,7 +400,6 @@ function textareaHandler(e, s) {
 }
 
 addEventListener('DOMContentLoaded', function() {
-	mainContentEl = mainContentEl || document.getElementById('content');
 	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
 		var span = document.createElement('span');
 		span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
@@ -462,10 +431,6 @@ addEventListener('DOMContentLoaded', function() {
 		], {type: 'application/xhtml+xml'});
 		e[i].src = URL.createObjectURL(outputBlob);
 	}
-	e = document.getElementsByTagName('link');
-	for (i = 0; i < e.length; i++ ) {
-		if (e[i].getAttribute('href') == '/a/clean.css') footerOff = true;
-	}
 	e = document.getElementsByClassName('canvas-program');
 	i = e.length;
 	if (i) {
@@ -481,7 +446,6 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		};
 	}
-	minHeight();
 });
 
 document.addEventListener('visibilitychange', function() {

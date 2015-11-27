@@ -1,11 +1,11 @@
 <section id="main">
 	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" />  <small><a id="save">Save</a></small></h1>
-	<div class="row">
-		<div id="right" class="half">
+	<div id="row">
+		<div id="right">
 			<div id="outputbox" class="scrl"><iframe id="output" sandbox="allow-scripts"></iframe></div>
-			<button id="restart">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span>
+			<div><button id="restart">Restart</button><span class="rit"><input id="autorun" type="checkbox" checked="" /> <label for="autorun">Autorun</label></span></div>
 		</div>
-		<div id="left" class="half">
+		<div id="left" data-view="html">
 			<div id="html-cont" class="ta-cont">
 				<textarea id="html" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">$html</textarea>
 				<code id="html-display" class="code-display"></code>
