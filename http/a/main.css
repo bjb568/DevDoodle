@@ -733,7 +733,7 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 		position: absolute;
 		top: 0;
 		right: 0;
-		bottom: calc(9px + 2em);
+		bottom: calc(8px + 2em);
 		width: calc(40% - 160px);
 		margin: 6px 0;
 		overflow-x: hidden;
