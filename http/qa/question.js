@@ -52,7 +52,6 @@ function langKeyUp() {
 					e.preventDefault();
 					lang.value = this.textContent;
 					this.parentNode.hidden = true;
-					findTags();
 				};
 				langsug.appendChild(span);
 				langsug.appendChild(document.createTextNode(' '));
