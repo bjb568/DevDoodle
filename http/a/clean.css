@@ -635,7 +635,6 @@ aside.rit { background: rgba(255, 255, 100, 0.5) }
 	}
 }
 @media (min-width: 800px) {
-	#cont { margin: 0 auto }
 	#nav {
 		padding: 0;
 		background: #111;
