@@ -1,0 +1,43 @@
+Paragraphs - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+			<div>In this lesson, we're going to start learning about basic content-formatting tags.</div>
+			<h3>"P" is for Paragraph</h3>
+			<p>As we alreadly learned, body text can be put inside paragraph elements (wrapped in <code>&lt;p></code> and <code>&lt;/p></code>). It looks like this: </p>
+			<code class="blk">&lt;p>This is a paragraph.&lt;/p></code>
+			<p>To move on, create a paragraph element inside the document body with any text you like.</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../2/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../../" class="lft">Back</a> <a href="../2/" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>Paragraph excersize&lt;/title>
+	&lt;/head>
+	&lt;body>
+&#9;&#9;
+	&lt;/body>
+&lt;/html></textarea>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	if (!document.getElementsByTagName('p').length) {
+		return {
+			success: false,
+			msg: 'Did you write the tags correctly? They look like this: `&lt;p>` `&lt;/p>`'
+		};
+	}
+}</textarea>
+<script src="/learn/course.js" async=""></script>

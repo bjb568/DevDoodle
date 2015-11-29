@@ -1,6 +1,7 @@
-function html(input, replaceQuoteOff) {
-	if (replaceQuoteOff) return input.toString().replaceAll(['&', '<'], ['&amp;', '&lt;']);
-	return input.toString().replaceAll(['&', '<', '"'], ['&amp;', '&lt;', '&quot;']);
+'use strict'
+function html(input, attribute) {
+	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
 }
 function warning(message) {
 	//console.log(message);
@@ -14,11 +15,11 @@ function spanMarkdown(input) {
 		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
 		.replaceAll('\u0002', '[')
 		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
-		.replace(/!\[([^\]]+)]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/!\[([^\]]+)\]\[([^\]]+)\]\(https?:\/\/([^\s("\\]+\.[^\s"\\]+)\)/g, '<img alt="$1" style="width: $2" src="https://$3" />')
-		.replace(/\[([^\]]+)]\((https?:\/\/[^\s("\\]+\.[^\s"\\]+)\)/g, '$1'.link('$2'))
-		.replace(/([^;["\\]|^)https?:\/\/([^\s("\\]+\.[^\s"\\]+\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\\\/]*)?)/g, '$1<img src="https://$2" />')
-		.replace(/([^;["\\]|^)(https?:\/\/([^\s("\\]+\.[^\s"\\]+))/g, '$1' + '$3'.link('$2'))
+		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
+		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
+		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
+		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
+		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, '$1' + '$3'.link('$2'))
 }
 function inlineMarkdown(input) {
 	var output = '',
@@ -77,11 +78,11 @@ function inlineMarkdown(input) {
 						if (stags[j].start == input.substr(i, l)) {
 							output += spanMarkdown(span) + '<' + j + '>';
 							span = '';
-							current.push(stags[j].end);
+							current.push(j);
 							i += l - 1;
 							continue outer;
 						} else if (stags[j].end == input.substr(i, l)) {
-							if (current[current.length - 1] == stags[j].end) {
+							if (stags[current[current.length - 1]] == stags[j]) {
 								output += spanMarkdown(span) + '</' + j + '>';
 								span = '';
 								current.pop();
@@ -222,10 +223,35 @@ function markdown(input) {
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
 }
+function passStrength(pass) {
+	var uniqueChars = [];
+	for (var i = 0; i < pass.length; i++) {
+		if (uniqueChars.indexOf(pass[i]) == -1) uniqueChars.push(pass[i]);
+	}
+	var penalties = /(.+?)(.*)(\1+)/g,
+		match,
+		deductions = 0;
+	while (match = penalties.exec(pass)) deductions += (4 - match[2].length/2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
+	penalties = /\d+/g;
+	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 3/2);
+	penalties = /\w{2,}/gi;
+	while (match = penalties.exec(pass)) deductions += match[0].length * 1.5;
+	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2/3) / 10 + pass.length / 8 - 8));
+}
 
 module.exports = {
 	html: html,
 	spanMarkdown: spanMarkdown,
 	inlineMarkdown: inlineMarkdown,
-	markdown: markdown
+	markdown: markdown,
+	passStrength: passStrength,
+	mime: {
+		'.html': 'text/html',
+		'.css': 'text/css',
+		'.js': 'text/javascript',
+		'.png': 'image/png',
+		'.svg': 'image/svg+xml',
+		'.mp3': 'audio/mpeg',
+		'.ico': 'image/x-icon'
+	}
 };

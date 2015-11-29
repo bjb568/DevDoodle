@@ -1,5 +1,5 @@
 <h1>draw() loop</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The draw loop is a function that is called repeatedly (by default 30 times per second) to be used for animation or user interaction.
@@ -24,10 +24,5 @@ draw = function() {
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

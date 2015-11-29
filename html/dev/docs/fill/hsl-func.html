@@ -1,11 +1,11 @@
 <h1>hsl(r, g, b[, a])</h1>
-<div id="row" class="row">
+<div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
  * The hsl() function (hue, saturation, lightness) returns a string containing the CSS color that can then be passed to functions like `fill` and `stroke`.
  * You can learn about the HSL colorspace in this wikipedia article: https://en.wikipedia.org/wiki/HSL_and_HSV
  * This function accepts an optional fourth parameter for opacity.
- * 
+ *
  * Usages:
  * hsl(r, g, b)
  * hsl(r, g, b, a)
@@ -28,10 +28,5 @@ rect(230, 25, 90, 90);
 	</div>
 	<iframe id="output" sandbox="allow-scripts"></iframe>
 </div>
-
-<script>
-	var footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('row');
-</script>
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

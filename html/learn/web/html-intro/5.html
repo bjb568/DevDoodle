@@ -1,5 +1,5 @@
 Intro to HTML Recap
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
@@ -12,13 +12,19 @@ Intro to HTML Recap
 				<li>The basic HTML document consists of a doctype, a root html element, and head and body sections. Metadata like the page title goes in the head element, while visible content like paragraphs go in the body element</li>
 			</ul>
 			<p>Next, we'll learn more about tags, and how to format text.</p>
-			<form action="../../basic-tags/">
-				<button id="check" type="submit">Move on</button>
-			</form>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../../basic-elements/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
 		</div>
-		<div id="cntrls"><a href="../4/" class="lft">Back</a> <a href="../../basic-tags/" class="rit">Next ❯</a></div>
+		<div id="cntrls"><a href="../4/" class="lft">Back</a> <a href="../../basic-elements/" class="rit">Next ❯</a></div>
 	</div>
-	<textarea id="html">&lt;!DOCTYPE html>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
 &lt;html xmlns="http://www.w3.org/1999/xhtml">
 	&lt;head>
 		&lt;title>You did it!&lt;/title>
@@ -27,17 +33,13 @@ Intro to HTML Recap
 		&lt;p>Congrats! You did it!&lt;/p>
 	&lt;/body>
 &lt;/html></textarea>
-	<iframe id="output"></iframe>
+		<iframe id="output"></iframe>
+	</div>
 </div>
-<script>
-	var footerOff = true, noPageOverflow = 520;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
-	}
-	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-</script>
+<textarea id="validator" hidden="">function validate() {
+	return {
+		success: true,
+		msg: 'On to the next section!'
+	};
+}</textarea>
+<script src="/learn/course.js" async=""></script>

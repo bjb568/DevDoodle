@@ -1,0 +1,14 @@
+#posts:empty::after { content: 'There are no items for you to review at this time.' }
+blockquote { overflow-x: auto }
+pre { margin: 0 }
+section {
+	background: #222;
+	padding: 4px;
+}
+.op { font-size: 1.3em }
+.actions { font-size: 1.18em }
+.actions span { padding: 12px }
+.bad { color: #e44 }
+.bad:hover { color: #f00 }
+.warn { color: #bb0 }
+.warn:hover { color: #ff0 }

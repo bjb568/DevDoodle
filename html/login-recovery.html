@@ -2,74 +2,16 @@
 <form id="sendmail">
 	<div><input type="text" id="uname" placeholder="Name" required="" autofocus="" /></div>
 	<div><input type="text" id="mail" placeholder="Recovery email" required="" /></div>
-	<div><button type="submit" id="submit1">Submit</button> <button type="reset" onclick="if (uname.disabled) location.reload(); else uname.focus();">Clear form</button></div>
+	<div><button type="submit" id="submit1" disabled="">Submit</button> <button id="reset" type="reset">Clear form</button></div>
 </form>
 <p>You will have 5 minutes after recieving the email to enter the recovery code on this page.</p>
-<form id="part2" method="POST" action="/api/login/recover" class="hide">
+<form id="part2" method="POST" action="/api/login/recover" class="hide" hidden="">
 	<p>If you can not find the email, please check your spam folder and make sure your username and email are written correctly.</p>
 	<div><input type="text" id="code" name="code" placeholder="Recovery Code (16 chars)" /></div>
-	<div><input type="password" id="pass" name="pass" placeholder="New Password" /> <span id="pass-strength"></span></div>
-	<div><input type="password" id="passc" placeholder="Confirm new Password" /> <span id="pass-match" style="color: #f00" hidden="">Doesn't match</span> <small>Please use a password manager to store passwords</small></div>
+	<div><input type="password" id="pass" name="pass" placeholder="New password" required="" /> <span id="pass-bad" class="red" hidden="">too short</span></div>
+	<div id="pass-bar-outer"><div id="pass-bar"></div></div>
+	<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn't match</span></div>
+	<p><small>Please use a password manager to store passwords</small></p>
 	<div><button type="submit" id="submit2" disabled="">Submit</button></div>
 </form>
-<style>
-	form div { margin: 0.2em 0 }
-	#part2 { transition: opacity 0.5s }
-	.hide { opacity: 0 }
-</style>
-<script>
-	var uname = document.getElementById('uname'),
-		mail = document.getElementById('mail'),
-		submit1 = document.getElementById('submit1'),
-		part2 = document.getElementById('part2'),
-		code = document.getElementById('code'),
-		pass = document.getElementById('pass'),
-		passc = document.getElementById('passc'),
-		passStrength = document.getElementById('pass-strength'),
-		passMatch = document.getElementById('pass-match'),
-		submit2 = document.getElementById('submit2');
-	document.getElementById('sendmail').onsubmit = function(e) {
-		e.preventDefault();
-		request('/api/login/recover', function(res) {
-			uname.disabled = mail.disabled = submit1.disabled = true;
-			part2.classList.remove('hide');
-			code.focus();
-		}, 'user=' + encodeURIComponent(uname.value) + '&amp;mail=' + encodeURIComponent(mail.value));
-	};
-	code.oninput = pass.oninput = passc.oninput = function() {
-		var fail = false;
-		var uniqueChars = [];
-		for (var i = 0; i &lt; pass.value.length; i++) {
-			if (uniqueChars.indexOf(pass.value[i]) == -1) uniqueChars.push(pass.value[i]);
-		}
-		var matches = pass.value.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
-			penalty = 0;
-		for (var i = 0; i &lt; matches.length; i++) {
-			penalty += matches[i].length;
-		}
-		var strength = uniqueChars.length - Math.sqrt(penalty) / 3 + pass.value.length / 10;
-		if (!pass.value) {
-			passStrength.textContent = '';
-			fail = true;
-		} else if (strength &lt; 8) {
-			passStrength.style.color = '#f00';
-			passStrength.textContent = 'Weak password';
-			fail = true;
-		} else if (strength &lt; 16) {
-			passStrength.style.color = '#940';
-			passStrength.textContent = 'Ok password, could be better';
-		} else {
-			passStrength.style.color = '#00f';
-			passStrength.textContent = 'Strong password';
-		}
-		if (!passc.value) {
-			fail = true;
-			passMatch.hidden = true;
-		} else if (passc.value != pass.value) {
-			fail = true;
-			passMatch.hidden = false;
-		} else passMatch.hidden = true;
-		if (!code.value) fail = true;
-		submit2.disabled = fail;
-	};
-</script>
+<script src="recover.js" async=""></script>

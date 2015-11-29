@@ -5,21 +5,29 @@
 	"homepage": "https://devdoodle.net",
 	"bugs": "https://github.com/bjb568/DevDoodle/issues",
 	"license": "UNLICENSED",
-	"main": "essentials.js",
+	"main": "server.js",
+	"scripts": {
+		"start": "sudo node server",
+		"start-socket": "sudo node sockets",
+		"test": "node server 8080 --nossl --test"
+	},
 	"author": "DevDoodle",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/bjb568/DevDoodle"
 	},
 	"dependencies": {
-		"cookie": "^0.2.0",
-		"nodemailer": "^1.4.0",
+		"yield-yield": "^1.0.0",
+		"http2": "^3.2.0",
+		"cookie": "^0.2.3",
+		"nodemailer": "^1.10.0",
 		"nodemailer-sendmail-transport": "^1.0.0",
 		"ws": "^0.8.0",
-		"mongodb": "^2.0.39",
+		"mongodb": "^2.0.48",
 		"etag": "^1.7.0",
-		"uglify-js": "^2.4.24",
-		"clean-css": "^3.3.9",
-		"ocsp": "^1.0.1"
+		"uglify-js": "^2.6.0",
+		"clean-css": "^3.4.8",
+		"ocsp": "^1.0.2",
+		"diff": "^2.2.1"
 	}
 }

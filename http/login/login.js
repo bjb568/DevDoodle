@@ -11,47 +11,41 @@ addEventListener('click', function() {
 });
 
 var pass = document.getElementById('pass'),
-	passStrength = document.getElementById('pass-strength'),
 	passc = document.getElementById('passc'),
+	passBar = document.getElementById('pass-bar'),
+	passBarOuter = document.getElementById('pass-bar-outer'),
 	passMatch = document.getElementById('pass-match'),
+	passBad = document.getElementById('pass-bad'),
 	create = document.getElementById('create'),
 	namef = document.getElementById('name'),
 	nameError = document.getElementById('name-error'),
+	mail = document.getElementById('mail'),
 	submit = document.getElementById('submit');
-create.onchange = namef.oninput = pass.oninput = passc.oninput = function() {
+
+create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = mail.oninput = function() {
+	submit.firstChild.nodeValue = create.checked ? 'Create Account' : 'Submit';
 	if (!create.checked) {
 		submit.disabled = false;
 		return;
 	}
 	var fail;
-	if (namef.value.length < 3) {
+	if (namef.value.match(/[^a-zA-Z0-9-]/)) {
 		fail = true;
-		if (document.activeElement != namef && namef.value) nameError.textContent = 'Name must be at least 3 characters long.';
-	} else nameError.textContent = '';
-	var uniqueChars = [];
-	for (var i = 0; i < pass.value.length; i++) {
-		if (uniqueChars.indexOf(pass.value[i]) == -1) uniqueChars.push(pass.value[i]);
-	}
-	var matches = pass.value.match(/\d+|[a-z]{5,}|[A-z]{6,}/g) || [],
-		penalty = 0;
-	for (var i = 0; i < matches.length; i++) {
-		penalty += matches[i].length;
-	}
-	var strength = uniqueChars.length - Math.sqrt(penalty) / 3 + pass.value.length / 10;
-	if (!pass.value) {
-		passStrength.textContent = '';
+		nameError.firstChild.nodeValue = 'Name may only contain alphanumeric characters and dashes.';
+	} else if (namef.value.indexOf(/---/) != -1) {
 		fail = true;
-	} else if (strength < 8) {
-		passStrength.style.color = '#f00';
-		passStrength.textContent = 'Weak password';
+		nameError.firstChild.nodeValue = 'Name may not contain a sequence of 3 dashes.';
+	} else if (namef.value.length < 3) {
 		fail = true;
-	} else if (strength < 16) {
-		passStrength.style.color = '#940';
-		passStrength.textContent = 'Ok password, could be better';
-	} else {
-		passStrength.style.color = '#00f';
-		passStrength.textContent = 'Strong password';
-	}
+		if (document.activeElement != namef && namef.value) nameError.firstChild.nodeValue = 'Name must be at least 3 characters long.';
+		else nameError.firstChild.nodeValue = '';
+	} else nameError.firstChild.nodeValue = '';
+	var strength = passStrength(pass.value);
+	passBad.hidden = !(pass.value && strength < 1/4);
+	fail |= strength < 1/4;
+	passBarOuter.style.opacity = pass.value ? '1' : '';
+	passBar.style.width = strength * 100 + '%';
+	passBar.style.background = 'hsl(' + strength * 130 + ', 100%, 50%)';
 	if (!passc.value) {
 		fail = true;
 		passMatch.hidden = true;
@@ -59,5 +53,8 @@ create.onchange = namef.oninput = pass.oninput = passc.oninput = function() {
 		fail = true;
 		passMatch.hidden = false;
 	} else passMatch.hidden = true;
+	console.log(fail);
+	fail |= !mail.value;
+	console.log(fail);
 	submit.disabled = fail;
 };

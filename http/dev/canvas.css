@@ -1,0 +1,138 @@
+*::-webkit-input-placeholder { color: #999 }
+*::-moz-placeholder { color: #999 }
+section { background: transparent }
+#content, #main {
+	display: flex;
+	flex-direction: column;
+}
+#row {
+	display: flex;
+	align-items: stretch;
+}
+#main, #row { flex-grow: 1 }
+#footer {
+	position: absolute;
+	width: 100%;
+}
+#main { padding: 0 }
+#content { padding-bottom: 0 }
+#main a:hover { color: #4ff }
+#main a:active { color: #06f }
+#meta {
+	padding: 4px;
+	margin-bottom: 6px;
+	background: rgba(255, 255, 255, 0.8);
+	color: #000;
+	text-align: left;
+	font-size: 1rem;
+}
+#meta h1, h2, h3, h4, h5, h6 { color: #000 }
+#meta code { background: #fff }
+#meta a { color: #000 }
+#meta a:visited { color: #444 }
+#meta a:hover { color: #15f }
+#meta a:active { color: #02d }
+.comment { background: rgba(255, 255, 255, 0.4) }
+#output { width: 100% }
+#main { min-height: 600px }
+#edit-title {
+	width: 400px;
+	max-width: 100%;
+}
+@media (max-width: 719px) {
+	#row { flex-direction: column }
+	#ta-cont {
+		height: 400px;
+		flex-grow: 1;
+	}
+	#output {
+		height: 560px;
+		margin-top: 6px;
+	}
+}
+@media (min-width: 720px) {
+	#row { height: 0 }
+	#ta-cont {
+		flex-shrink: 0;
+		width: 60%;
+	}
+	#output { margin-left: 8px }
+	body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
+	.fullscreen #ta-cont { width: calc(20% + 28ch) }
+}
+@media (min-width: 850px) {
+	.fullscreen #ta-cont { width: calc(40% + 9ch) }
+}
+@media (min-width: 1200px) {
+	.fullscreen #ta-cont { width: calc(20% + 36ch) }
+}
+@media (min-width: 1500px) {
+	#ta-cont { margin-bottom: 0 }
+	.fullscreen #ta-cont { width: calc(5% + 70ch) }
+}
+#save.progress {
+	cursor: progress;
+	color: #4ff;
+}
+#up, #dn {
+	width: 22px;
+	height: 24px;
+	fill: #777;
+}
+#up:hover, #dn:hover {
+	fill: #888;
+	transition: fill 0.1s;
+}
+#up:active, #dn:active {
+	fill: #666;
+	transition: none;
+}
+#up.clkd, #dn.clkd {
+	fill: #f90;
+}
+#fl {
+	width: 20px;
+	height: 24px;
+	fill: #f44;
+	margin-left: 12px;
+}
+#fl:hover {
+	fill: #f55;
+	transition: fill 0.2s;
+}
+#fl.clkd {
+	fill: #f00;
+}
+#fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}
+#comment:target + #addcomment { display: none }
+.up {
+	width: 18px;
+	height: 20px;
+	fill: #888;
+}
+.up:hover {
+	fill: #999;
+	transition: fill 0.1s;
+}
+.up:active {
+	fill: #777;
+	transition: none;
+}
+.up.clkd { fill: #f90 }
+.fl {
+	width: 20px;
+	height: 20px;
+	fill: #f88;
+}
+.fl:hover {
+	fill: #f66;
+	transition: fill 0.2s;
+}
+.fl.clkd { fill: #f00 }
+.fl:active {
+	transition: fill 0.1s;
+	fill: #c00;
+}

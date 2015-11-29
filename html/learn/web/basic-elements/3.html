@@ -1,0 +1,42 @@
+Comments - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+			<h2>Comments</h2>
+			<p>What if you wanted to write something in the HTML just for yourself, something that wouldn't get shown by a browser? That's what comments are for. Altho comments don't affect what the end user will see, it helps you, the developer, stay organized. Unlike most HTML tags, comments start with <code>&lt;!--</code> and end with <code>--></code>. You can put anything in a comment (except an end comment tag).</p>
+			<code class="blk">&lt;!-- This is what a comment looks like. It doesn't functionally do anything. --></code>
+			<p>To move on, write a comment containing anything you want!</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../4/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../2/" class="lft">Back</a> <a href="../4/" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>Comment example&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;h1>Hello comments!&lt;/h1>
+	&lt;/body>
+&lt;/html></textarea>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	if (!document.documentElement.outerHTML.match(/&lt;!--.*-->/i)) {
+		return {
+			success: false,
+			msg: 'Did you write the comment correctly? It looks like this: `&lt;!-- -->`'
+		};
+	}
+}</textarea>
+<script src="/learn/course.js" async=""></script>

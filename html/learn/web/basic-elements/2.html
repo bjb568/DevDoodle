@@ -1,0 +1,46 @@
+Headings - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+			<h3>"H" is for Heading</h3>
+			<p>Heading elements outline the structure of a document. HTML provides 6 levels of headings: <code>&lt;h1></code> for the page title, <code>&lt;h2></code> for the section title, <code>&lt;h3></code> for the subsection title, and so on down to <code>&lt;h6></code> for the subsubsubsubsection title. ideally, these headings could be used to create a table of contents.</p>
+			<p>To move on, write all the possible header tags from most to least important and give each of them some text content.</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../3/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../1/" class="lft">Back</a> <a href="../3/" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>&lt;/head>
+	&lt;body>
+&#9;&#9;
+	&lt;/body>
+&lt;/html></textarea>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	if (
+		!(document.body.getElementsByTagName('h1')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h2')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h3')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h4')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h5')[0] || {firstChild: {}}).firstChild.nodeValue ||
+		!(document.body.getElementsByTagName('h6')[0] || {firstChild: {}}).firstChild.nodeValue
+	) {
+		return {
+			success: false,
+			msg: 'Did you write the tags correctly? Remember, there are 6 levels which look like this:\n\t&lt;h1>&lt;/h1>\n\t&lt;h2>&lt;/h2>\n\t&lt;h3>&lt;/h3>\n\t&lt;h4>&lt;/h4>\n\t&lt;h5>&lt;/h5>\n\t&lt;h6>&lt;/h6>\nGive each heading some text content too.'
+		};
+	}
+}</textarea>
+<script src="/learn/course.js" async=""></script>

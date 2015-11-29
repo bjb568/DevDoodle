@@ -1,27 +1,34 @@
-html, #content, #footer {
-	background: #000;
-	color: #fff;
-}
 #content { padding: 0 }
-a { color: inherit }
-#text-inner h1 { margin-top: .2em }
+#content, #row, #text, #ide {
+	display: flex;
+	flex-direction: column;
+}
+#row, #ide { flex-grow: 1 }
+#text-inner h1 { margin-top: 0.2em }
 h2 {
 	margin-top: 0;
 	border-bottom: 1px dashed #aaa;
 }
 #html, #output {
-	width: 100%;
-	height: 50vmax;
 	border: 1px solid #fff;
-	margin-top: 8px;
+	margin-top: 6px;
 }
 #text {
-	background: rgba(255, 255, 255, .85);
+	background: rgba(255, 255, 255, 0.85);
 	color: #000;
-	padding: 4px 6px;
 	position: relative;
 	width: 100%;
+	flex-shrink: 0;
+	padding-bottom: 2px;
 }
+h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
+#text code:not(#validator-display) { background: #fff }
+#text a { color: #000 }
+#text a:visited { color: #444 }
+#text a:hover { color: #15f }
+#text a:active { color: #02d }
+#text-inner, #cntrls { padding: 0 6px }
+#text-inner input { margin: 0 }
 #html {
 	background: #000;
 	color: #fff;
@@ -29,54 +36,57 @@ h2 {
 	resize: none;
 	font: 14px monospace;
 }
+@media (max-width: 800px) {
+	#html { flex-grow: 3 }
+	#output { flex-grow: 2 }
+	#html, #output {
+		flex-basis: 300px;
+		min-height: 400px;
+	}
+}
 @media (min-width: 801px) {
-	#text { margin-right: 8px }
-	#html, #output { width: calc(50% - 4px) }
-	#output { margin-left: 8px }
+	#ide {
+		flex-direction: row;
+		min-height: 500px;
+	}
+	#html { margin-right: 6px }
+	#html, #output { flex: 1 1 0 }
 }
 @media (min-width: 1200px) {
-	.row, #text, #html, #output { height: 100% }
-	#text {
-		width: 40%;
-		margin-right: 0;
-	}
-	#html, #output {
-		width: calc(30% - 4px);
-		margin-top: 0; margin-left: 4px;
-	}
+	#row { flex-direction: row }
+	#text { width: 40% }
+	#ide { margin-left: 6px }
+	#html, #output { margin-top: 0 }
 	#text-inner {
 		overflow: auto;
 		position: absolute;
-		top: 2px;
-		right: 8px;
-		bottom: 24px;
-		left: 6px;
+		top: 0; right: 0; bottom: 26px; left: 0;
 	}
 	#cntrls {
 		position: absolute;
-		bottom: 2px;
-		width: calc(100% - 12px);
+		height: 26px;
+		left: 0; bottom: 0;
+		padding: 4px 6px 2px;
+		width: 100%;
+		background: #ccc;
 	}
-}
-@media (min-width: 1500px) {
-	#text, #html, #output { margin-top: 2px }
 }
 #check {
 	width: 100%;
 	max-width: 400px;
 	font-size: 18px;
 	padding: 4px 8px;
-	background: rgba(0, 220, 0, .6);
+	background: rgba(0, 220, 0, 0.6);
 	box-shadow: none;
-	transition: background-color .4s;
+	transition: background-color 0.4s;
 	border: none;
 	box-shadow: 1px 1px 2px #444;
 	margin-bottom: 12px;
 }
-#check:hover { background: rgba(80, 220, 80, .6) }
+#check:hover { background: rgba(80, 220, 80, 0.6) }
 #check:active {
-	transition: background-color .2s;
-	background: rgba(0, 200, 0, .6);
+	transition: background-color 0.2s;
+	background: rgba(0, 200, 0, 0.6);
 }
 .passed, .failed {
 	margin: 4px 0;
@@ -87,16 +97,16 @@ h2 {
 	-webkit-transform-origin: top;
 	transform: scaleY(0);
 	-webkit-transform: scaleY(0);
-	transition: transform .3s;
-	-webkit-transition: -webkit-transform .3s;
+	transition: transform 0.3s;
+	-webkit-transition: -webkit-transform 0.3s;
 }
 .passed.show, .failed.show {
 	transform: none;
 	-webkit-transform: none;
 	position: static;
 }
-.passed { background: rgba(100, 220, 100, .6) }
-.failed { background: rgba(220, 100, 100, .6) }
+.passed { background: rgba(100, 220, 100, 0.6) }
+.failed { background: rgba(220, 100, 100, 0.6) }
 aside {
 	max-width: 60em;
 	margin: 0.8em 0;

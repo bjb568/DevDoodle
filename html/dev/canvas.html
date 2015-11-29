@@ -1,14 +1,13 @@
 <section id="main">
-	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <a id="fullscreen-button" href="#fullscreen" hidden="">⤢</a> <a id="regular-layout" hidden="">⇲</a> <small><a id="save">Save</a></small></h1>
-	<div id="row" class="row">
-		<div id="ta-cont">
-			<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">$code</textarea>
-			<code id="code-display"></code>
+	<h1><span id="title">$title</span> <input type="text" id="edit-title" hidden="" value="$title" /> <small><a id="save">Save</a></small></h1>
+	<div id="row">
+		<div id="ta-cont" class="ta-cont">
+			<textarea id="code" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="//code">$code</textarea>
+			<code id="code-display" class="code-display"></code>
 		</div>
 		<iframe id="output" sandbox="allow-scripts"></iframe>
 	</div>
 </section>
-<div id="close-fullscreen" class="large" hidden=""><a href="#">✕</a></div>
 <section id="meta">
 	<div class="rit user user-$op-name">
 		<img src="$op-pic" width="40" height="40" />
@@ -17,7 +16,7 @@
 			<small class="rep">$op-rep</small>
 		</div>
 	</div>
-	Created <time datetime="$created">67 days ago</time>, Updated <time id="updated" datetime="$updated">67 days ago</time>.
+	Created <time datetime="$created"></time>, Updated <time id="updated" datetime="$updated"></time>.
 	$forked
 	<div class="umar">
 		<svg id="up" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23" /></svg>
@@ -30,225 +29,13 @@
 		<button type="submit">Post</button>
 		<button type="reset" id="reset">Cancel</button>
 	</form>
-	<a id="addcomment" href="#comment" style="font-weight: normal" class="grey ib umar">Add comment</a>
+	<a id="addcomment" href="#comment" class="grey ib umar">Add comment</a>
 	$forks
 </section>
 <span class="sctrls"><svg class="up" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg><svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>
-<style>
-	*::-webkit-input-placeholder { color: #888 }
-	*::-moz-placeholder { color: #999 }
-	html, #content, #output, #footer, #main { background: #000 }
-	#main { padding: 0 }
-	#content { padding: 0 4px }
-	#main a:hover { color: #4ff }
-	#main a:active { color: #06f }
-	#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
-	#main { clear: both }
-	#meta {
-		clear: both;
-		padding: 4px;
-		margin-top: 8px;
-		background: rgba(255, 255, 255, .8);
-		color: #000;
-	}
-	#fullscreen-button {
-		display: inline-block;
-		margin-left: 8px;
-	}
-	#ta-cont, #output { width: 95% }
-	#main { height: 500px }
-	#row { height: calc(100% - 2rem - 2px) }
-	#edit-title {
-		width: 400px;
-		max-width: 100%;
-	}
-	#ta-cont {
-		margin-bottom: 8px;
-		position: relative;
-		overflow: auto;
-		border: 1px solid #fff;
-	}
-	#code, #code-display {
-		display: block;
-		min-height: 100%;
-		padding: 0;
-		margin: 2px;
-		color: #fff;
-		background: transparent;
-		font-family: monospace;
-		white-space: pre-wrap;
-		word-wrap: break-word;
-		overflow-wrap: break-word;
-		font-size: 1rem;
-		line-height: 1.2;
-		resize: none;
-		outline: none;
-		border: none;
-		padding-left: 4px;
-	}
-	#code {
-		position: absolute;
-		top: 0; right: 0;
-		z-index: 1;
-		color: transparent;
-	}
-	#code-display {
-		width: calc(100% - 4px);
-		border-left: 1px solid #444;
-	}
-	#caret {
-		display: inline-block;
-		position: absolute;
-		background: #fff;
-		width: 1px;
-	}
-	#caret[hidden] { display: none }
-	#ta-cont, #output { height: calc(50% - 4px) }
-	@media (min-width: 600px) {
-		h1 {
-			height: 1.65rem;
-			margin-bottom: .35em;
-		}
-		#ta-cont, #output { height: 100% }
-		#ta-cont { width: 60% }
-		#output {
-			width: 39%;
-			float: right;
-		}
-		.fullscreen #ta-cont:not(:focus) { width: 39% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 60% }
-	}
-	@media (min-width: 600px) and (max-width: 800px) {
-		#ta-cont { width: 55% }
-		#output { width: 44% }
-		.fullscreen #ta-cont:not(:focus) { width: 44% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 55% }
-	}
-	@media (min-width: 1500px) {
-		#ta-cont { margin-bottom: 0 }
-	}
-	@media (min-width: 1600px) {
-		#ta-cont { width: 65% }
-		#output { width: 34% }
-		.fullscreen #ta-cont:not(:focus) { width: 34% }
-		.fullscreen #ta-cont:not(:focus) + #output { width: 65% }
-	}
-	.fullscreen #main #output.fullscreen {
-		position: fixed;
-		top: 0; right: 0;
-		width: calc(100% - 32px);
-		height: 100%;
-		z-index: 1;
-	}
-	#close-fullscreen {
-		position: fixed;
-		z-index: 1;
-		top: 0;
-		left: 0;
-		width: 32px; height: 32px;
-		line-height: 32px;
-		background: #000;
-		text-align: center;
-	}
-	#close-fullscreen { height: 100% }
-	#close-fullscreen a {
-		display: inline-block;
-		width: 100%;
-		text-decoration: none;
-		background: #aaa;
-	}
-	#close-fullscreen a:hover { background: #fff }
-	@media (min-width: 1500px) {
-		#nav { right: calc(96% - 144px) }
-		.fullscreen #nav {
-			top: 0;
-			right: calc(100% - 40px);
-			left: auto;
-			transition: right 0.5s, top 0.2s, opacity 0.3s, z-index 1s;
-		}
-		.fullscreen #nav:hover {
-			right: calc(96% - 144px);
-			z-index: 2;
-			transition: right 0.5s, opacity 0.3s;
-		}
-		.fullscreen #nav:not(:hover) { opacity: 0.3 }
-		.fullscreen #content { margin: 6px 0 6px 46px }
-		.fullscreen.noscrl #nav { display: none }
-	}
-	#save.progress {
-		cursor: progress;
-		color: #4ff;
-	}
-	#up, #dn {
-		width: 22px;
-		height: 24px;
-		fill: #777;
-	}
-	#up:hover, #dn:hover {
-		fill: #888;
-		transition: fill 0.1s;
-	}
-	#up:active, #dn:active {
-		fill: #666;
-		transition: none;
-	}
-	#up.clkd, #dn.clkd {
-		fill: #f90;
-	}
-	#fl {
-		width: 20px;
-		height: 24px;
-		fill: #f44;
-		margin-left: 12px;
-	}
-	#fl:hover {
-		fill: #f55;
-		transition: fill 0.2s;
-	}
-	#fl.clkd {
-		fill: #f00;
-	}
-	#fl:active {
-		transition: fill 0.1s;
-		fill: #c00;
-	}
-	#comment:target + #addcomment { display: none }
-	.up {
-		width: 18px;
-		height: 20px;
-		fill: #888;
-	}
-	.up:hover {
-		fill: #999;
-		transition: fill 0.1s;
-	}
-	.up:active {
-		fill: #777;
-		transition: none;
-	}
-	.up.clkd { fill: #f90 }
-	.fl {
-		width: 20px;
-		height: 20px;
-		fill: #f88;
-	}
-	.fl:hover {
-		fill: #f66;
-		transition: fill 0.2s;
-	}
-	.fl.clkd { fill: #f00 }
-	.fl:active {
-		transition: fill 0.1s;
-		fill: #c00;
-	}
-</style>
-<script>
-	var mine = $mine,
-		id = $id,
-		opName = '$op-name',
-		myRep = $rep,
-		footerOff = true,
-		noPageOverflow = 400,
-		pageOverflowMobile = true,
-		mainContentEl = document.getElementById('main');
-</script>
+<input type="hidden" id="mine" value="$mine" />
+<input type="hidden" id="user" value="$op-name" />
+<input type="hidden" id="id" value="$id" />
+<input type="hidden" id="rep" value="$rep" />
+<textarea hidden="" id="canvas-js">$canvasjs</textarea>
+<script src="/dev/runcanvas.js"></script>

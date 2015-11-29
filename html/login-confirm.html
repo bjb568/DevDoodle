@@ -6,12 +6,4 @@
 	<input type="hidden" id="passinput" value="$pass" />
 	<input type="text" id="mailinput" value="$mail" maxlength="256" required="" /> <button id="submit" type="submit">Resend</button>
 </form>
-<script>
-	document.getElementById('resendform').onsubmit = function(e) {
-		e.preventDefault();
-		request('/api/login/resend', function(res) {
-			document.getElementById('mailinput').disabled = document.getElementById('submit').disabled = true;
-			alert(res);
-		}, 'name=' + encodeURIComponent(document.getElementById('userinput').value) + '&amp;pass=' + encodeURIComponent(document.getElementById('passinput').value) + '&amp;mail=' + encodeURIComponent(document.getElementById('mailinput').value));
-	};
-</script>
+<script src="mail-confirm.js" async=""></script>

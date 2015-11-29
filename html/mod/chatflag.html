@@ -1,0 +1,23 @@
+<section id="$id">
+	<h2><a href="#$id">#</a>$id</h2>
+	<div class="indt">
+		<p class="large red" hidden="">Mod-only; $mod</p>
+		<a href="/user/$user" target="_blank">$user</a> posted <a href="/chat/$room#$id" target="_blank"><time datetime="$time"></time></a>:
+		<blockquote class="op"><pre>$body</pre></blockquote>
+		<form class="submit-edit" hidden="" data-id="$id">
+			<textarea class="edit fullwidth" rows="6">$body</textarea>
+			<div><button type="submit">Submit Edit</button> <button type="reset" class="cancel-edit">Cancel Edit</button></div>
+		</form>
+		$scores
+		<h3>Comments</h3>
+		$comments
+	</div>
+	<div class="actions">
+		<span class="delete"><a class="bad delete-btn" title="Soft-delete this post" data-id="$id">Vote to Delete</a></span>
+		<span><a class="bad edit-btn" title="Publicly edit this post" data-id="$id">Edit</a></span>
+		<span class="mod"><a class="bad mod-btn" title="Push this post to the mod queue with a comment explaining what actions you wish to be performed by moderators" data-id="$id">Request Mod Action</a></span>
+		<span><a class="warn dispute-btn" title="This post looks ok" data-id="$id">Dispute Flag</a></span>
+		<span><a class="comment-btn" title="Add a comment for other reviewers" data-id="$id">Comment</a></span>
+		<span><a class="skip-btn" title="Go to the next post without performing an action on this one" data-id="$id">Skip</a></span>
+	</div>
+</section>

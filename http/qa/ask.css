@@ -1,0 +1,113 @@
+#form {
+	padding: 0 4px;
+	width: 100%;
+}
+aside { clear: right }
+label { display: table }
+#options label { display: inline }
+@media (min-width: 701px) {
+	fieldset {
+		width: calc(90% - 306px);
+		float: left;
+		clear: left;
+	}
+}
+@media (max-width: 909px) {
+	#duplist, aside { font-size: 0.95em }
+}
+@media (max-width: 759px) {
+	#duplist, aside { font-size: 0.9em }
+}
+.ta-cont {
+	position: relative;
+	width: 100%;
+	min-height: 360px;
+}
+.ta-cont pre {
+	padding: 3px;
+	visibility: hidden;
+}
+.ta-cont pre, textarea {
+	position: absolute;
+	top: 0; left: 0;
+	width: 100%;
+	font-size: .9em;
+	font-family: inherit;
+	line-height: 1.2;
+	white-space: pre-wrap;
+}
+textarea {
+	height: 100%;
+	resize: none;
+}
+#step4 h3 { margin-bottom: 4px }
+#types, #tags, #options { padding-left: 32px }
+#langsug {
+	padding: 8px 3px 4px;
+	background: #eee;
+	margin-top: -5px;
+	box-shadow: 1px 3px 3px #444;
+}
+#langsug span {
+	cursor: pointer;
+	background: #afa;
+	padding: 2px 6px;
+	box-shadow: 1px 1px 1px #444;
+}
+fieldset.hide, aside.hide:not(:hover) { opacity: 0.15 }
+fieldset.hide { pointer-events: none }
+fieldset, aside, #preview { transition: opacity 0.5s }
+#preview[hidden] { opacity: 0 }
+.err {
+	position: absolute;
+	padding: 8px;
+	width: 300px;
+	background: #f00;
+	z-index: 1;
+}
+.err:empty { opacity: 0 }
+#duplist { padding-left: 1.5em }
+#duplist:empty { padding: 0 }
+#duplist:empty::after {
+	content: 'Loading possible duplicates…';
+	color: #666;
+	font-size: 0.8em;
+}
+.hide #duplist::after { content: '(Enter a title and language)' }
+#tags:empty::after {
+	content: '(Enter a language)';
+	color: #666;
+	font-size: 0.8em;
+}
+#preview {
+	position: fixed;
+	overflow: hidden;
+	z-index: 1;
+	background: #ddd;
+}
+#preview h1 small { cursor: pointer }
+.tint::after {
+	content: '';
+	display: block; position: fixed;
+	top: 0; right: 0; bottom: 0; left: 0;
+	background: rgba(0, 0, 0, 0.5);
+}
+.tint #nav, .tint #footer, .tint #content > :not(article) { -webkit-filter: blur(2px) }
+#submit {
+	font-size: 1.1em;
+	color: #fff;
+	background: #04f;
+	padding: 6px 24px;
+	border-radius: 4px;
+	transition: background 0.2s;
+	margin-top: 12px;
+	border: 1px solid #000;
+	cursor: pointer;
+}
+#submit:hover {
+	background: #6cf;
+	color: #000;
+	transition: background 0.1s;
+}
+#submit:active, #submit.working { background: #2af }
+#err1.tag-warning { background: #ff0 }

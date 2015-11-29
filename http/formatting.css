@@ -1,0 +1,17 @@
+section { padding: 6px }
+:not(:hover) > a.grey { display: none }
+table {
+	background: rgba(255, 255, 192, 0.5);
+	padding: 4px;
+	margin: 6px 8px 6px 32px;
+}
+table code {
+	display: inline-block;
+	min-width: 5em;
+	text-align: center;
+}
+@media (min-width: 550px) {
+	table { float: left }
+	table ~ div { overflow: hidden }
+}
+img { max-height: 200px }

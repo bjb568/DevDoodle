@@ -1,4 +1,4 @@
-'use strict';
+window.alert = window.confirm = window.prompt = null;
 
 var canvas = document.getElementById('canvas'),
 	ctx = canvas.getContext('2d'),
@@ -106,6 +106,27 @@ function line(x1, y1, x2, y2) {
 	ctx.lineTo(x2, y2);
 	ctx.stroke();
 }
+function curve(x1, y1, x2, y2, x3, y3, x4, y4) {
+	ctx.lineCap = 'round';
+	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	if (x4 !== undefined && y4 !== undefined) ctx.bezierCurveTo(x2, y2, x3, y3, x4, y4);
+	else if (x3 !== undefined && y3 !== undefined) ctx.bezierCurveTo(x2, y2, x2, y2, x3, y3);
+	else ctx.lineTo(x2, y2);
+	ctx.stroke();
+}
+function bcurve(x1, y1, x2, y2, x3, y3, x4, y4) {
+	curve(
+		x2,
+		y2,
+		x2 * 5/4 - x3/4,
+		y2 * 5/4 - y3/4,
+		x1,
+		y1,
+		x1,
+		y1
+	);
+}
 function rect(x, y, w, h) {
 	ctx.fillRect(x, y, w, h);
 	ctx.strokeRect(x, y, w, h);
@@ -170,7 +191,7 @@ function print() {
 	for (var i = 0; i < arguments.length; i++) {
 		pre.appendChild(document.createTextNode(' '));
 		var span = document.createElement('span');
-		span.innerHTML = arguments[i];
+		span.appendChild(document.createTextNode(arguments[i]));
 		pre.appendChild(span);
 	}
 	document.getElementById('console').appendChild(pre);
@@ -191,7 +212,18 @@ function reset(a) {
 	strokeWidth(2);
 }
 function error(e) {
-	document.getElementById('console').insertAdjacentHTML('beforeend', '<pre style="color:#f22">' + ((navigator.userAgent.indexOf('Safari') != -1 && e.line == 1 && e instanceof SyntaxError ? '' : (window.chrome ? e.stack : '<strong>Line ' + (e.line || e.lineNumber) + '</strong> ')) + e) + '</pre>');
+	var pre = document.createElement('pre');
+	pre.style.color = '#f22';
+	if (!(navigator.userAgent.indexOf('Safari') != -1 && e instanceof SyntaxError)) {
+		if (window.chrome) pre.appendChild(document.createTextNode(e.stack));
+		else {
+			var strong = document.createElement('strong');
+			strong.appendChild(document.createTextNode('Line ' + (e.line || e.lineNumber) + ' '));
+			pre.appendChild(strong);
+		}
+	}
+	pre.appendChild(document.createTextNode(e));
+	document.getElementById('console').appendChild(pre);
 }
 var frameRate = 30;
 var draw = function() {};

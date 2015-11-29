@@ -62,34 +62,3 @@
 $lessons
 <hr />
 <a href="new" title="Requires 20 reputation" class="small">Create Lesson</a>
-<style>
-	#courses { max-width: 3200px }
-	#courses h2 { text-align: center }
-	#courses > div {
-		background: rgba(16, 140, 255, .8);
-		transition: background .2s;
-	}
-	#courses ul { margin: 0 }
-	#courses > div:not(:first-child) { margin-top: 8px }
-	#courses > div:hover { background: rgba(24, 160, 255, .8) }
-	#courses a:hover { color: #333 }
-	#courses a:active { color: #100 }
-	#courses img {
-		border-radius: 4px;
-		display: block;
-	}
-	@media (min-width: 700px) {
-		#courses > div { width: calc(50% - 4px) }
-		#courses > div:nth-child(2) { margin-top: 0 }
-		#courses > div:nth-child(2n+1) { margin-right: 6px }
-	}
-	@media (min-width: 700px) and (max-width: 1800px) {
-		#courses > div:nth-child(-1n+2) > div { min-height: 6.4em }
-	}
-	@media (min-width: 1800px) {
-		#courses > div { width: calc(25% - 5px) }
-		#courses > div:nth-child(3) { margin-top: 0 }
-		#courses > div:not(:last-child) { margin-right: 6px }
-		#courses > div:last-child { margin-top: 0 }
-	}
-</style>

@@ -1,5 +1,5 @@
 Using a Doctype - Intro to HTML
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Intro to HTML</h1>
@@ -9,37 +9,26 @@ Using a Doctype - Intro to HTML
 			<p>This tells the browser that the page is in HTML5 (the latest version of HTML). There are other doctypes, but we will just be using this one for this tutorial.</p>
 			<button id="check" class="blk" onclick="submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
-				<h2>You did it! <small class="rit" style="font-size: 14px; top: 6px;"><a href="../3/">Move on →</a></small></h2>
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../3/">Move on →</a></small></h2>
 			</div>
 			<div id="failed" class="failed clearfix">
 				<h2>Try Again</h2>
-				Did you copy the HTML5 doctype correctly?
+				<p id="fail"> </p>
 			</div>
 		</div>
 		<div id="cntrls"><a href="../1/" class="lft">Back</a> <a href="../3/" class="rit">Next</a></div>
 	</div>
-	<textarea id="html"></textarea>
-	<iframe id="output"></iframe>
+	<div id="ide">
+		<textarea id="html"></textarea>
+		<iframe id="output"></iframe>
+	</div>
 </div>
-<script>
-	var footerOff = true, noPageOverflow = 520;
-	function run() {
-		document.getElementById('output').src = 'data:application/xhtml+xml; charset=utf-8,' + document.getElementById('html').value;
+<textarea id="validator" hidden="">function validate(data) {
+	if (data.trim() != '&lt;!DOCTYPE html>') {
+		return {
+			success: false,
+			msg: 'Did you copy the HTML5 doctype correctly?'
+		};
 	}
-	run();
-	document.getElementById('html').addEventListener('keyup', run);
-	document.getElementById('html').addEventListener('keydown', run);
-	document.getElementById('html').addEventListener('keypress', function() {
-		setTimeout(run, 0);
-	});
-	function submit() {
-		if (document.getElementById('html').value.trim().toLowerCase() == '&lt;!doctype html>') {
-			document.getElementById('passed').classList.add('show');
-			document.getElementById('failed').classList.remove('show');
-		} else {
-			document.getElementById('failed').classList.add('show');
-			document.getElementById('passed').classLzist.remove('show');
-		}
-		document.getElementById('text-inner').scrollTop = document.getElementById('text-inner').scrollHeight;
-	}
-</script>
+}</textarea>
+<script src="/learn/course.js" async=""></script>
