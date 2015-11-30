@@ -823,8 +823,7 @@ wss.on('connection', o(function*(tws) {
 			}));
 		}));
 	} else if ((i = tws.upgradeReq.url.match(/\/q\/(\d+)/))) {
-		var question = yield dbcs.questions.findOne({_id: tws.question = parseInt(i[1])}, yield);
-		if (!question) return tws.trysend(JSON.stringify({
+		if (!(yield dbcs.questions.findOne({_id: tws.question = parseInt(i[1])}, yield))) return tws.trysend(JSON.stringify({
 			event: 'err',
 			body: 'Question not found.'
 		}));
@@ -840,6 +839,7 @@ wss.on('connection', o(function*(tws) {
 			}
 			var id;
 			if (message.event == 'q-edit') {
+				var question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 				if (!tws.user.name) return tws.trysend(JSON.stringify({
 					event: 'err',
 					body: 'You must be logged in and have level 3 moderator tools to edit posts.'
