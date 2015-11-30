@@ -186,7 +186,7 @@ socket.onmessage = function(e) {
 			else currentNode = currentNode.lastChild;
 		}
 		document.getElementById('comments').appendChild(div);
-	} else if (data.event == 'scorechange') {
+	} else if (data.event == 'comment-scorechange') {
 		var c = document.getElementById('c' + data.id);
 		if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 	} else if (data.event == 'err') {
