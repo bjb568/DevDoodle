@@ -66,10 +66,7 @@ lang.addEventListener('keyup', function() {
 });
 langKeyUp();
 lang.addEventListener('keydown', function(e) {
-	if (this.value && e.keyCode == 9) {
-		this.value = langsug.firstChild.textContent;
-		form.onsubmit();
-	}
+	if (this.value && e.keyCode == 9) this.value = langsug.firstChild.textContent;
 });
 lang.addEventListener('blur', function() {
 	langsug.hidden = true;
@@ -106,7 +103,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 	var answerBody = document.getElementById('answerta').value,
 		err = document.getElementById('answer-error');
 	if (err.firstChild) err.removeChild(err.firstChild);
-	if (answerBody.length < 144) return err.appendChild(document.createTextNode('Answer body must be 144 characters long.'));
+	if (answerBody.length < 144) return err.appendChild(document.createTextNode('Answer body must be at least 144 characters long.'));
 	request('/api/answer/add', function(res) {
 		if (res.indexOf('Location:') == 0) {
 			location.href = '#' + res.substr(12);
@@ -189,13 +186,13 @@ socket.onmessage = function(e) {
 			else currentNode = currentNode.lastChild;
 		}
 		document.getElementById('comments').appendChild(div);
-	} else if (data.event == 'scorechange') {
+	} else if (data.event == 'comment-scorechange') {
 		var c = document.getElementById('c' + data.id);
 		if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 	} else if (data.event == 'err') {
 		alert('Error: ' + data.body);
 		if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
-	}
+	} else alert(e.data);
 };
 function upvoteComment() {
 	this.classList.toggle('clkd');

@@ -22,7 +22,7 @@ var blinkTimeout;
 function upvoteComment() {
 	this.classList.toggle('clkd');
 	socket.send(JSON.stringify({
-		event: this.classList.contains('clkd') ? 'vote' : 'unvote',
+		event: this.classList.contains('clkd') ? 'c-vote' : 'c-unvote',
 		id: parseInt(this.parentNode.parentNode.id.substr(1))
 	}));
 }
@@ -324,7 +324,7 @@ if (document.getElementById('meta')) {
 			}
 			document.getElementById('comments').appendChild(div);
 			div.scrollIntoView(true);
-		} else if (data.event == 'scorechange') {
+		} else if (data.event == 'comment-scorechange') {
 			var c = document.getElementById('c' + data.id);
 			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
 		} else if (data.event == 'err') {

@@ -184,7 +184,7 @@ form.onsubmit = function(e) {
 		}
 		if (title.value.length > 144) {
 			title.focus();
-			err1.textContent = 'Title must be at most 144 characters long.';
+			err1.textContent = 'Title must no longer than 144 characters.';
 			return;
 		}
 		if (!lang.value) {
@@ -236,7 +236,7 @@ form.onsubmit = function(e) {
 		}
 		if (question.value.length > 144) {
 			question.focus();
-			err3.textContent = 'Core question must be at most 144 characters long.';
+			err3.textContent = 'Core question must be no longer than 144 characters.';
 			return;
 		}
 		err3.hidden = true;
