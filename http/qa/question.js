@@ -66,10 +66,7 @@ lang.addEventListener('keyup', function() {
 });
 langKeyUp();
 lang.addEventListener('keydown', function(e) {
-	if (this.value && e.keyCode == 9) {
-		this.value = langsug.firstChild.textContent;
-		form.onsubmit();
-	}
+	if (this.value && e.keyCode == 9) this.value = langsug.firstChild.textContent;
 });
 lang.addEventListener('blur', function() {
 	langsug.hidden = true;
