@@ -106,7 +106,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 	var answerBody = document.getElementById('answerta').value,
 		err = document.getElementById('answer-error');
 	if (err.firstChild) err.removeChild(err.firstChild);
-	if (answerBody.length < 144) return err.appendChild(document.createTextNode('Answer body must be 144 characters long.'));
+	if (answerBody.length < 144) return err.appendChild(document.createTextNode('Answer body must be at least 144 characters long.'));
 	request('/api/answer/add', function(res) {
 		if (res.indexOf('Location:') == 0) {
 			location.href = '#' + res.substr(12);

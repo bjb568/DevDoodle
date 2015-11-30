@@ -412,7 +412,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (req.url.pathname == '/answer/add') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to answer a question.');
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
-		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be 144 characters long.');
+		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
 		var last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
 			id = last ? last._id + 1 : 1;
