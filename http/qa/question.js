@@ -192,7 +192,7 @@ socket.onmessage = function(e) {
 	} else if (data.event == 'err') {
 		alert('Error: ' + data.body);
 		if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
-	}
+	} else alert(e.data);
 };
 function upvoteComment() {
 	this.classList.toggle('clkd');
