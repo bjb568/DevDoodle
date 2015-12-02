@@ -131,7 +131,6 @@ module.exports = o(function*(req, res, user) {
 								res.write('<h1 class="noumar">');
 								writeDiff(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title);
 								res.write('</h1>');
-								if (revnum) res.write(prev.description);
 								res.write(item.description == prev.description ? '<details>' : '<details open="">');
 								res.write('<summary><h2>Body</h2></summary>');
 								res.write('<code class="blk">');
