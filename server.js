@@ -174,7 +174,9 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	var num = 0;
 	while (!num) num = Math.floor(Math.random() * 25 - 12);
 	yield respondPage('Login', user, req, res, yield, {
-		inhead: '<link rel="stylesheet" href="/login/login.css" />' +
+		inhead:
+			'<meta name="robots" content="noindex" />' +
+			'<link rel="stylesheet" href="/login/login.css" />' +
 			'<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>',
 		'Content-Security-Policy':
 			"default-src 'self'; " +
