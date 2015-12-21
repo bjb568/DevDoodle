@@ -13,10 +13,11 @@ Number.prototype.bound = function(l, h) {
 };
 
 global.o = require('yield-yield');
+global.config = require('./config.js')[process.argv.indexOf('--test') == -1 ? 'normal' : 'test'];
 
-var http = require('http'),
+var colors = require('colors'),
+	http = require('http'),
 	http2 = require('http2'),
-	ocsp = require('ocsp'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
 	etag = require('etag'),
@@ -83,12 +84,12 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (typeof header['Content-Security-Policy'] != 'string') {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
-			"connect-src 'self' wss://" + req.headers.host + ":81;" +
+			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + ";" +
 			" child-src blob:; " +
 			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
 			"img-src https://*";
 	}
-	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
+	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="03Yp9b7zlEaaJUIWosWYHJcdKYxMSa3Z4bZXWf8LXtI="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
@@ -103,7 +104,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				path: '/',
 				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 				httpOnly: true,
-				secure: usingSSL
+				secure: config.secureCookies
 			});
 		}
 	}
@@ -180,7 +181,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 			'<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>',
 		'Content-Security-Policy':
 			"default-src 'self'; " +
-			"connect-src 'self' wss://" + req.headers.host + ":81;" +
+			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + ";" +
 			" child-src blob:; " +
 			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
 			"img-src https://*; " +
@@ -284,11 +285,6 @@ var statics = JSON.parse(fs.readFileSync('./statics.json')),
 
 var cache = {};
 
-var constants = require('constants'),
-	SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
-
-var usingSSL = true;
-
 var serverHandler = o(function*(req, res) {
 	if (!req.headers.host) {
 		res.writeHead(400, {'Content-Type': 'text/html'});
@@ -296,7 +292,7 @@ var serverHandler = o(function*(req, res) {
 	} else if (req.headers.host == '205.186.144.188') {
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('Perhaps you were looking for <a href="https://devdoodle.net">devdoodle.net</a>?');
-	} else if (req.headers.host != 'devdoodle.net' && req.headers.host != 'localhost' && req.headers.host.match(/[^\d.:]/)) {
+	} else if (req.headers.host != 'devdoodle.net' && !req.headers.host.match(/localhost(:\d+)?/) && req.headers.host.match(/[^\d.:]/)) {
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('This is the server for <a href="https://devdoodle.net">devdoodle.net</a>. You must connect to this server from that domain.');
 	}
@@ -568,7 +564,7 @@ var serverHandler = o(function*(req, res) {
 							path: '/',
 							expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 							httpOnly: true,
-							secure: usingSSL
+							secure: config.secureCookies
 						});
 					dbcs.users.update({name: fuser.name}, {
 						$push: {
@@ -678,7 +674,7 @@ var serverHandler = o(function*(req, res) {
 					path: '/',
 					expires: new Date(),
 					httpOnly: true,
-					secure: usingSSL
+					secure: config.secureCookies
 				});
 				res.writeHead(303, {
 					Location: '/login/?r=updated',
@@ -782,7 +778,8 @@ var serverHandler = o(function*(req, res) {
 		}
 	}
 });
-console.log('Connecting to mongodb…');
+console.log('Connecting to mongodb…'.cyan);
+var server;
 mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 	if (err) throw err;
 	db.createCollection('questions', function(err, collection) {
@@ -802,17 +799,40 @@ mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 		if (usedDBCs[i] == 'chatusers') collection.drop();
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
+	console.log('Connected to mongodb.'.cyan);
 	if (process.argv.indexOf('--test') != -1) {
-		var testReq = http.get("http://localhost:8080/", function(testRes) {
+		console.log('Running test, process will terminate when finished.'.yellow);
+		var testReq = http.get({
+			port: config.port,
+			headers: {host: 'localhost'}
+		}, function(testRes) {
 			testRes.on('data', function(d) {
-				console.log('Things seem to work!');
-				process.exit();
+				console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
 			});
+			testRes.on('end', function() {
+				console.log('HTTP test passed, starting socket test.'.green);
+				var WebSocket = require('ws'),
+					wsc = new WebSocket('ws://localhost:' + config.port + '/test');
+				wsc.on('open', function() {
+					console.log('Connected to socket.');
+				})
+				wsc.on('data', function(d) {
+					console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
+				});
+				wsc.on('close', function() {
+					console.log('Things seem to work!'.green);
+					process.exit();
+				})
+			})
 		});
 	}
-	console.log('Connected to mongodb');
-	if (process.argv.indexOf('--nossl') == -1 && !process.env.NO_SSL) {
-		var server = http2.createServer({
+	if (!config.HTTP2) {
+		server = http.createServer(serverHandler).listen(config.port);
+		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
+	} else {
+		var constants = require('constants');
+		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+		server = http2.createServer({
 			key: fs.readFileSync('../Secret/devdoodle.net.key'),
 			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
 			ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
@@ -828,42 +848,17 @@ mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 			honorCipherOrder: true,
 			secureOptions: SSL_ONLY_TLS_1_2
 		}, serverHandler);
-		server.listen(parseInt(process.argv[2]) || 443);
-		var ocspCache = new ocsp.Cache();
-		if (process.argv.indexOf('--no-ocsp-stapling') == -1 && !process.env.NO_OCSP_STAPLING) {
-			server.on('OCSPRequest', function(cert, issuer, callback) {
-				ocsp.getOCSPURI(cert, function(err, uri) {
-					if (err) return callback(err);
-					var req = ocsp.request.generate(cert, issuer);
-					var options = {
-						url: uri,
-						ocsp: req.data
-					};
-					ocspCache.request(req.id, options, callback);
-				});
-			});
-		} else console.log('Notice: OCSP stapling is turned OFF.');
-		var sslSessionCache = {};
-		server.on('newSession', function(sessionId, sessionData, callback) {
-			sslSessionCache[sessionId] = sessionData;
-			callback();
-		});
-		server.on('resumeSession', function (sessionId, callback) {
-			callback(null, sslSessionCache[sessionId]);
-		});
-		console.log('server.js running on port ' + (parseInt(process.argv[2]) || 443));
-		if (!parseInt(process.argv[2])) {
-			http.createServer(function(req, res) {
-				res.writeHead(301, {
-					Location: 'https://' + req.headers.host + (parseInt(process.argv[2]) ? ':' + process.argv[2] : '') + req.url
-				});
-				res.end();
-			}).listen(80);
-			console.log('Notice: HTTP on port 80 will redirect to HTTPS on port ' + (parseInt(process.argv[2]) || 443));
-		}
-	} else {
-		usingSSL = false;
-		http.createServer(serverHandler).listen(process.argv[2] || 80);
-		console.log('server.js running on port ' + (process.argv[2] || 80));
+		server.listen(config.port);
+		console.log(('DevDoodle running on port ' + config.port + ' over HTTP2.').cyan);
 	}
+	if (config.port80redirect) {
+		http.createServer(function(req, res) {
+			res.writeHead(301, {
+				Location: 'https://' + req.headers.host + (config.port == 443 ? '' : ':' + config.port) + req.url
+			});
+			res.end();
+		}).listen(80);
+		console.log(('HTTP on port 80 will redirect to HTTPS on port ' + config.port + '.').cyan);
+	}
+	if (config.sockets) require('./sockets.js').init(server);
 });

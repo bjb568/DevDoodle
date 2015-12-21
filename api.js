@@ -27,7 +27,7 @@ module.exports = o(function*(req, res, user, post) {
 				confirmSentTime: {$gt: new Date() - 300000}
 			}, yield);
 			if (!fuser) return res.writeHead(403) || res.end('Error: Invalid or expired recovery code.');
-			if (!post.pass) return res.writeHead(400) || res.end('Error: No password recieved.');
+			if (!post.pass) return res.writeHead(400) || res.end('Error: No password received.');
 			var salt = crypto.randomBytes(64).toString('base64');
 			res.writeHead(303, {Location: '/login/?r=recovered'});
 			res.end();

@@ -32,9 +32,10 @@ section { background: transparent }
 #meta a:visited { color: #444 }
 #meta a:hover { color: #15f }
 #meta a:active { color: #02d }
+#meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .ta-cont {
-	margin: 6px 0;
+	margin: 3px 0;
 	flex-basis: 0;
 }
 #js-cont { margin-bottom: 0 }

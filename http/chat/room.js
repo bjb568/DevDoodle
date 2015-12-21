@@ -1,7 +1,7 @@
 var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.match(/\d+/)[0],
-	socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.getElementById('user').value,
 	rawdesc = document.getElementById('descedit').value,
 	onBottom = true,
@@ -458,7 +458,7 @@ socket.onclose = function() {
 	warning.appendChild(link);
 	ta.parentNode.insertBefore(warning, ta);
 	setInterval(function() {
-		socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 		socket.onopen = function() {
 			location.reload();
 		};

@@ -41,7 +41,7 @@
 	padding: 2px 6px;
 	box-shadow: 1px 1px 1px #444;
 }
-#comments { margin: 8px 0 }
+#comments { margin: 6px 0 }
 code.blk:empty { display: none }
 .up, .dn {
 	width: 20px;
