@@ -177,15 +177,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	yield respondPage('Login', user, req, res, yield, {
 		inhead:
 			'<meta name="robots" content="noindex" />' +
-			'<link rel="stylesheet" href="/login/login.css" />' +
-			'<style>#sec::before { content: \'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: \' }</style>',
-		'Content-Security-Policy':
-			"default-src 'self'; " +
-			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + ";" +
-			" child-src blob:; " +
-			((req.headers['user-agent'] || '').indexOf('Firefox') != -1 ? ' frame-src blob:;' : '') +
-			"img-src https://*; " +
-			"style-src 'self' 'unsafe-inline'"
+			'<link rel="stylesheet" href="/login/login.css" />'
 	});
 	res.write('<h1>Log in</h1>');
 	var notice = ({
@@ -201,7 +193,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 			'<input type="text" id="name" name="name" placeholder="Name"' +
 				(filln && post.name ? ' value="' + html(post.name, true) + '"' : '') +
 				' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') +
-			' /> ' +
+			' autocapitalize="none" /> ' +
 			'<span id="name-error" class="red"> </span>' +
 		'</div>'
 	);
@@ -213,8 +205,8 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
 	res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn\'t match</span></div>');
 	res.write('<p><small>Please use a password manager to store passwords</small></p>');
-	res.write('<div><input type="text" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail, true) + '"' : '') + ' /></div>');
-	res.write('<p id="sec">[No CSS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" /></p>');
+	res.write('<div><input type="email" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail, true) + '"' : '') + ' /></div>');
+	res.write('<p id="sec" data-num="' + num + '">[No JS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" autocorrect="off" autocapitalize="none" /></p>');
 	res.write('</div>');
 	res.write('<input type="hidden" name="referer" value="' + html(post.referer || '', true) + '" />');
 	res.write('<button type="submit" id="submit" class="umar">Submit</button>');
