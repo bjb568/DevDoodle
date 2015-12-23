@@ -251,7 +251,7 @@ HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 	var preverr = this.previousElementSibling && this.previousElementSibling.classList.contains('md-err') ? this.previousElementSibling : null,
 		err = mdWarnings[i];
 	this.lastErrored = err && correct;
-	if (err && (correct || preverr || this.value.substr(0, this.selectionEnd || Infinity).match(/\s$/))) {
+	if (err && (correct || preverr || /\s$/.test(this.value.substr(0, this.selectionEnd || Infinity)))) {
 		if (preverr) {
 			if (preverr.firstChild.nodeValue == err) {
 				if (this.lastErrored && err && correct) {
@@ -275,7 +275,7 @@ HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 
 function mdValidateBody() {
 	if (document.activeElement.mdValidate && document.activeElement.spellcheck) document.activeElement.mdValidate();
-};
+}
 addEventListener('input', mdValidateBody);
 
 function passStrength(pass) {
@@ -394,6 +394,13 @@ function textareaHandler(e, s) {
 			this.selectionStart = (nS += nS ? 1 : 0);
 			this.selectionEnd = nS + lines.slice(start, ++end).join('\n').length;
 		}
+		if (this.hist[this.hIndex].body == this.value) return;
+		this.hist.push({
+			body: this.value,
+			start: this.selectionStart,
+			end: this.selectionEnd
+		});
+		this.hIndex = this.hist.length - 1;
 		e.preventDefault();
 	} else if (e.keyCode == 90 && e.metaKey && !e.altKey) {
 		e.preventDefault();
@@ -406,7 +413,6 @@ function textareaHandler(e, s) {
 			this.hIndex = this.hist.length - 1;
 		}
 		var data = this.hist[e.shiftKey ? ++this.hIndex : --this.hIndex];
-		console.log(this.hist, this.hIndex);
 		if (data) {
 			this.value = data.body;
 			this.selectionStart = data.start;
@@ -424,7 +430,7 @@ function textareaHandler(e, s) {
 				end: e.selectionEnd
 			});
 			e.hIndex = e.hist.length - 1;
-		}, this.lastKeyCode == e.keyCode || [8, 9, 13].indexOf(e.keyCode) == -1 ? 400 : 0, this);
+		}, this.lastKeyCode == e.keyCode || [8, 13].indexOf(e.keyCode) == -1 ? 200 : e.metaKey || e.shiftKey ? 100 : 0, this);
 	}
 	this.lastKeyCode = e.keyCode;
 }
@@ -506,7 +512,7 @@ function jsKeypressHandler(e) {
 	endChars[125] = '}';
 	if (e.keyCode == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-		var cut = this.value.substr(0, oldSelectionStart).match(/[\n^]\s+$/) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
+		var cut = /[\n^]\s+$/.test(this.value.substr(0, oldSelectionStart)) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
 		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
 		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
 		var tabs = this.value.substr(0, oldSelectionStart)
@@ -545,12 +551,12 @@ function jsKeypressHandler(e) {
 	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode] && this.selectionStart == this.selectionEnd) {
 		this.selectionStart = ++this.selectionEnd;
 		e.preventDefault();
-	} else if (this.id != 'css' && e.keyCode == 61 && this.value.substr(0, this.selectionStart).match(/(draw|refresh) $/)) {
+	} else if (this.id != 'css' && e.keyCode == 61 && /(draw|refresh) $/.test(this.value.substr(0, this.selectionStart))) {
 		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
 		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
 		e.preventDefault();
-	} else if (this.id != 'css' && e.keyCode == 116 && this.value.substr(0, this.selectionStart).match(/func$/)) {
+	} else if (this.id != 'css' && e.keyCode == 116 && /func$/.test(this.value.substr(0, this.selectionStart))) {
 		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
 		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
@@ -571,8 +577,8 @@ function jsKeypressHandler(e) {
 }
 
 function highlightHTML(codeBlock, input) {
-	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
-		chunk = '',
+	input = typeof(input) == 'string' ? input : codeBlock.textContent;
+	var chunk = '',
 		warnings = [],
 		line = 1,
 		fc;

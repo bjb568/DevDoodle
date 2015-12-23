@@ -759,10 +759,9 @@ var serverHandler = o(function*(req, res) {
 		if (!stats.isFile()) return errorNotFound(req, res, user);
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
-				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].data),
-				'Vary': 'Accept-Encoding'
+				'ETag': etag(cache[req.url.pathname].data)
 			});
 			res.end(cache[req.url.pathname].data);
 			if (cache[req.url.pathname].updated < stats.mtime) {
@@ -793,7 +792,7 @@ var serverHandler = o(function*(req, res) {
 				updated: stats.mtime
 			};
 			res.writeHead(200, {
-				'Content-Type': mime[path.extname(req.url.pathname)] || 'text/plain',
+				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
 				'ETag': etag(data)
 			});
