@@ -605,27 +605,315 @@ function highlightHTML(codeBlock, input) {
 }
 
 function highlightCSS(codeBlock, input) {
-	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
-		chunk = '',
+	input = typeof(input) == 'string' ? input : codeBlock.textContent;
+	var chunk = '',
 		warnings = [],
 		line = 1,
+		comment,
+		inSelector = true,
+		inValue = false,
+		inAttr = false,
+		inAttrValue = false,
+		inNth = false,
+		inAt = false,
+		inAtNoNest = false,
 		fc;
 	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
 	var linenum = document.createElement('span');
 	linenum.className = 'line';
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
+	var endSel = function() {
+		console.log('endSel', chunk);
+		var inSub = false,
+			inClass = false,
+			inID = false,
+			inPseudoClass = false,
+			inPseudoElement = false,
+			inRefComb = false,
+			schunk = '';
+		var endSChunk = function() {
+			console.log('endSChunk', schunk);
+			if (inSub) {
+				var span = document.createElement('span');
+				span.className = inClass ? 'class' : inID ? 'id' :
+					inPseudoClass ? (schunk == ':not' || schunk == ':matches' ? 'pseudo-class logical' : 'pseudo-class') :
+					inPseudoElement ? 'pseudo-element' : inRefComb ? 'reference-combinator' : 'element';
+				span.appendChild(document.createTextNode(schunk));
+				codeBlock.appendChild(span);
+				inSub = inClass = inID = inPseudoClass = inPseudoElement = false;
+			} else codeBlock.appendChild(document.createTextNode(schunk));
+			schunk = '';
+		};
+		for (var i = 0; i < chunk.length; i++) {
+			var c = chunk[i];
+			if (c == '\n') {
+				if (schunk) endSChunk();
+				var linenum = document.createElement('span');
+				linenum.className = 'line';
+				linenum.dataset.linenum = ++line;
+				codeBlock.appendChild(linenum);
+			} else if (/\s/.test(c) || ['>', '+', '~', '|', ','].indexOf(c) != -1) {
+				if (inSub) endSChunk();
+				schunk += c;
+			} else if (c == '*') {
+				endSChunk();
+				var star = document.createElement('span');
+				star.className = 'universal';
+				star.appendChild(document.createTextNode('*'));
+				codeBlock.appendChild(star);
+			} else if (inPseudoClass && c == '(') {
+				endSChunk();
+				var paren = document.createElement('span');
+				paren.className = 'punctuation';
+				paren.appendChild(document.createTextNode('('));
+				codeBlock.appendChild(paren);
+			} else if (c == ')' || c == '}') {
+				endSChunk();
+				var punc = document.createElement('span');
+				punc.className = 'punctuation';
+				punc.appendChild(document.createTextNode(c));
+				codeBlock.appendChild(punc);
+			} else if (c == '.') {
+				endSChunk();
+				inSub = inClass = true;
+				schunk = '.';
+			} else if (c == '#') {
+				endSChunk();
+				inSub = inID = true;
+				schunk = '#';
+			} else if (c == '/') {
+				endSChunk();
+				inSub = inRefComb = true;
+				schunk = '/';
+			} else if (c == ':') {
+				endSChunk();
+				inSub = true;
+				if (chunk[i + 1] == ':') {
+					inPseudoElement = true;
+					schunk = '::';
+					i++;
+				} else {
+					inPseudoClass = true;
+					schunk = ':';
+				}
+			} else if (!inSub) {
+				endSChunk();
+				inSub = true;
+				schunk = c;
+			} else schunk += c;
+		}
+		endSChunk();
+		chunk = '';
+	};
+	var endProp = function() {
+		var prop = document.createElement('span');
+		prop.appendChild(document.createTextNode(chunk));
+		prop.className = 'property';
+		codeBlock.appendChild(prop);
+		chunk = '';
+	};
+	var endVal = function() {
+		var val = document.createElement('span');
+		val.appendChild(document.createTextNode(chunk));
+		val.className = 'value';
+		codeBlock.appendChild(val);
+		chunk = '';
+	};
+	var endAttrName = function() {
+		var an = document.createElement('span');
+		an.appendChild(document.createTextNode(chunk));
+		an.className = 'attribute-name';
+		codeBlock.appendChild(an);
+		chunk = '';
+	};
+	var endAttrValue = function() {
+		var av = document.createElement('span');
+		av.appendChild(document.createTextNode(chunk));
+		av.className = 'attribute-value';
+		codeBlock.appendChild(av);
+		chunk = '';
+	};
+	var endNth = function() {
+		inNth.className = 'nth';
+		codeBlock.appendChild(inNth);
+		inNth = false;
+	};
+	var endAt = function() {
+		if (inAtNoNest) {
+			var span = document.createElement('span');
+			span.className = 'no-nest';
+			span.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(span);
+		} else codeBlock.appendChild(document.createTextNode(chunk));
+		chunk = '';
+	};
+	var end = function() {
+		if (inAt) endAt();
+		else if (inSelector) endSel();
+		else if (inAttrValue) endAttrValue();
+		else if (inAttr) endAttrName();
+		else if (inNth) endNth();
+		else if (inValue) endVal();
+		else endProp();
+	};
 	for (var i = 0; i < input.length; i++) {
 		var c = input[i];
 		if (c == '\n') {
-			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
+			end();
+			(comment || inNth || codeBlock).appendChild(document.createTextNode(chunk + '\n'));
 			chunk = '';
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
-			codeBlock.appendChild(linenum);
+			(comment || inNth || codeBlock).appendChild(linenum);
+		} else if (comment && input[i - 1] == '*' && c == '/') {
+			comment.appendChild(document.createTextNode(chunk + c));
+			chunk = '';
+			codeBlock.appendChild(comment);
+			comment = false;
+		} else if (comment) {
+			chunk += c;
+		} else if (c == '/' && input[i + 1] == '*') {
+			end();
+			codeBlock.appendChild(document.createTextNode(chunk));
+			if (chunk) endSel();
+			chunk = c + input[++i];
+			comment = document.createElement('span');
+			comment.className = 'inline-comment';
+		} else if (inSelector) {
+			if (c == '{' || c == '[') {
+				endSel();
+				codeBlock.appendChild(document.createTextNode(c));
+				inSelector = false;
+				if (c == '[') inAttr = true;
+			} else if (c == '@') {
+				endSel();
+				inSelector = false;
+				inAt = true;
+				chunk = '@';
+			} else if (c == '(' && chunk.match(/:nth[\w-]+$/)) {
+				endSel();
+				var paren = document.createElement('span');
+				paren.className = 'punctuation';
+				paren.appendChild(document.createTextNode('('));
+				codeBlock.appendChild(paren);
+				inSelector = false;
+				inNth = document.createElement('span');
+			} else chunk += c;
+		} else if (inAttr) {
+			if (c == '{' || c == ']') {
+				if (inAttrValue) endAttrValue();
+				else endAttrName();
+				codeBlock.appendChild(document.createTextNode(c));
+				inAttr = inAttrValue = false;
+				if (c == ']') inSelector = true;
+			} else if (!inAttrValue && c == '=') {
+				endAttrName();
+				codeBlock.appendChild(document.createTextNode('='));
+				inAttrValue = true;
+			} else if (!inAttrValue && ['~', '^', '$', '*', '|'].indexOf(c) != -1 && input[i + 1] == '=') {
+				endAttrName();
+				codeBlock.appendChild(document.createTextNode(c + '='));
+				inAttrValue = true;
+				i++;
+			} else chunk += c;
+		} else if (inNth) {
+			if (c == '{') {
+				endNth();
+				codeBlock.appendChild(document.createTextNode('{'));
+				inNth = false;
+			} else if (c == ')') {
+				endNth();
+				var paren = document.createElement('span');
+				paren.className = 'punctuation';
+				paren.appendChild(document.createTextNode(')'));
+				codeBlock.appendChild(paren);
+				inNth = false;
+				inSelector = true;
+			} else if (input.substr(i, 4) == 'even') {
+				var n = document.createElement('span');
+				n.className = 'n';
+				n.appendChild(document.createTextNode('even'));
+				inNth.appendChild(n);
+				i += 3;
+			} else if (input.substr(i, 3) == 'odd') {
+				var n = document.createElement('span');
+				n.className = 'n';
+				n.appendChild(document.createTextNode('odd'));
+				inNth.appendChild(n);
+				i += 2;
+			} else if (input.substr(i, 2) == 'of') {
+				var n = document.createElement('span');
+				n.className = 'logical';
+				n.appendChild(document.createTextNode('of'));
+				inNth.appendChild(n);
+				i++;
+				endNth();
+				inSelector = true;
+			} else if (c == 'n') {
+				var n = document.createElement('span');
+				n.className = 'n';
+				n.appendChild(document.createTextNode('n'));
+				inNth.appendChild(n);
+			} else if (/\d/.test(c)) {
+				var num = document.createElement('span');
+				num.className = 'number';
+				num.appendChild(document.createTextNode(input.substring(i, 1 + (i += input.substr(i).match(/\d+/)[0].length - 1))));
+				inNth.appendChild(num);
+			} else inNth.appendChild(document.createTextNode(c));
+		} else if (inAt) {
+			if (c == ';' && inAtNoNest) {
+				endAt();
+				var punc = document.createElement('span');
+				punc.className = 'punctuation';
+				punc.appendChild(document.createTextNode(';'));
+				codeBlock.appendChild(punc);
+				inAt = inAtNoNest = false;
+				inSelector = true;
+			} else if (c == '{') {
+				endAt();
+				codeBlock.appendChild(document.createTextNode('{'));
+				inAt = false;
+				inSelector = true;
+			} else if (chunk == '@') {
+				while ((c = input[i++]) && !/[\s;{]/.test(c)) chunk += c;
+				i -= 2;
+				if (['@namespace', '@charset', '@import'].indexOf(chunk) != -1) inAtNoNest = true;
+				var atName = document.createElement('span');
+				atName.appendChild(document.createTextNode(chunk));
+				atName.className = 'at-rule-name';
+				codeBlock.appendChild(atName);
+				chunk = '';
+			} else chunk += c;
+		} else if (!inValue && c == ':') {
+			endProp();
+			var colon = document.createElement('span');
+			colon.appendChild(document.createTextNode(':'));
+			colon.className = 'colon';
+			codeBlock.appendChild(colon);
+			inValue = true;
+		} else if (inValue && c == ';') {
+			endVal();
+			var semicolon = document.createElement('span');
+			semicolon.appendChild(document.createTextNode(';'));
+			semicolon.className = 'punctuation';
+			codeBlock.appendChild(semicolon);
+			inValue = false;
+		} else if (c == '}') {
+			if (inValue) endVal();
+			else endProp();
+			codeBlock.appendChild(document.createTextNode('}'));
+			inValue = false;
+			inSelector = true;
 		} else chunk += c;
 	}
+	if (comment) {
+		comment.appendChild(document.createTextNode(chunk));
+		codeBlock.appendChild(comment);
+		chunk = '';
+	}
+	end();
 	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
@@ -639,8 +927,8 @@ function highlightCSS(codeBlock, input) {
 }
 
 function highlightJS(codeBlock, input) {
-	var input = typeof(input) == 'string' ? input : codeBlock.textContent,
-		chunk = '',
+	input = typeof(input) == 'string' ? input : codeBlock.textContent;
+	var chunk = '',
 		warnings = [],
 		beforeWord,
 		line = 1,
@@ -738,6 +1026,7 @@ function highlightJS(codeBlock, input) {
 			chunk = '/*';
 			var comment = document.createElement('span');
 			comment.className = 'inline-comment';
+			input = input.substr(0, i) + ' ' + input.substr(i + 1);
 			while ((d = input[++i]) && (d != '/' || input[i - 1] != '*')) {
 				chunk += d;
 				if (d == '\n') {
@@ -764,7 +1053,7 @@ function highlightJS(codeBlock, input) {
 				&& (
 					(
 						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
-						&& input.substr(0, i).match(/(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/)
+						&& /(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/.test(input.substr(0, i))
 					) || (
 						codeBlock.lastElementChild
 						&& codeBlock.lastElementChild.firstChild
@@ -802,8 +1091,8 @@ function highlightJS(codeBlock, input) {
 					if (d == 'c') chunk += d = input[++i];
 					else if (d == 'x' || d == '0') chunk += input[++i] + input[++i];
 					else if (d == 'u') chunk += input[++i] + input[++i] + input[++i] + input[++i];
-					else if (d.match(/\d/)) {
-						while (input[++i].match(/\d/)) chunk += input[i];
+					else if (/\d/.test(d)) {
+						while (/\d/.test(input[++i])) chunk += input[i];
 						i--;
 						escape.className = 'backreference';
 					}
@@ -874,6 +1163,16 @@ function highlightJS(codeBlock, input) {
 						brace.appendChild(document.createTextNode('{'));
 						quantifier.appendChild(brace);
 						while ((d = input[++i]) && d != '}') {
+							if (d == '\n') {
+								warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
+								quantifier.appendChild(document.createTextNode(chunk + '\n'));
+								chunk = '';
+								var linenum = document.createElement('span');
+								linenum.className = 'line';
+								linenum.dataset.linenum = ++line;
+								quantifier.appendChild(linenum);
+								break;
+							}
 							if (d == ',') {
 								quantifier.appendChild(document.createTextNode(chunk));
 								chunk = '';
@@ -907,7 +1206,8 @@ function highlightJS(codeBlock, input) {
 					} else chunk += d;
 				}
 			}
-			regex.appendChild(document.createTextNode(chunk));
+			(charclass || regex).appendChild(document.createTextNode(chunk));
+			if (charclass) regex.appendChild(charclass);
 			chunk = '';
 			if (d && d != '\n') {
 				var regexClose = document.createElement('span');
@@ -937,11 +1237,11 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(proto);
 			i += 9;
 		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && (
-				('NaN' == input.substr(i, 3) && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
-				('true' == input.substr(i, 4) && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
-				('null' == input.substr(i, 4) && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
-				('false' == input.substr(i, 5) && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
-				('Infinity' == input.substr(i, 8) && !(input[i + 8] || '').match(/\w/) && (l = 8))
+				('NaN' == input.substr(i, 3) && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
+				('true' == input.substr(i, 4) && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				('null' == input.substr(i, 4) && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				('false' == input.substr(i, 5) && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
+				('Infinity' == input.substr(i, 8) && !/\w/.test(input[i + 8] || '') && (l = 8))
 			)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -955,20 +1255,20 @@ function highlightJS(codeBlock, input) {
 			chunk = c;
 			var capvar = document.createElement('span');
 			capvar.className = 'capvar';
-			while ((d = input[++i]) && d.match(/[\w\d]/)) chunk += d;
+			while ((d = input[++i]) && /[\w\d]/.test(d)) chunk += d;
 			i--;
 			capvar.appendChild(document.createTextNode(chunk));
 			codeBlock.appendChild(capvar);
 			chunk = '';
 		} else if (beforeWord && (
-				(['do', 'if', 'in'].indexOf(input.substr(i, 2)) != -1 && !(input[i + 2] || '').match(/\w/) && (l = 2)) ||
-				(['for', 'get', 'let', 'new', 'try', 'var'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
-				(['case', 'else', 'this', 'void', 'with'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
-				(['break', 'class', 'catch', 'const', 'super', 'throw', 'while', 'yield'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
-				(['delete', 'export', 'import', 'return', 'static', 'switch', 'typeof'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
-				(['default', 'extends', 'finally'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
-				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
-				(['instanceof'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10))
+				(['do', 'if', 'in'].indexOf(input.substr(i, 2)) != -1 && !/\w/.test(input[i + 2] || '') && (l = 2)) ||
+				(['for', 'get', 'let', 'new', 'try', 'var'].indexOf(input.substr(i, 3)) != -1 && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
+				(['case', 'else', 'this', 'void', 'with'].indexOf(input.substr(i, 4)) != -1 && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				(['break', 'class', 'catch', 'const', 'super', 'throw', 'while', 'yield'].indexOf(input.substr(i, 5)) != -1 && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
+				(['delete', 'export', 'import', 'return', 'static', 'switch', 'typeof'].indexOf(input.substr(i, 6)) != -1 && !/\w/.test(input[i + 6] || '') && (l = 6)) ||
+				(['default', 'extends', 'finally'].indexOf(input.substr(i, 7)) != -1 && !/\w/.test(input[i + 7] || '') && (l = 7)) ||
+				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !/\w/.test(input[i + 8] || '') && (l = 8)) ||
+				(['instanceof'].indexOf(input.substr(i, 10)) != -1 && !/\w/.test(input[i + 10] || '') && (l = 10))
 			)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -985,13 +1285,13 @@ function highlightJS(codeBlock, input) {
 			if (input.substr(i, l) == 'in') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
-				(['enum', 'eval'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
-				(['await'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
-				(['public'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
-				(['package', 'private'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
-				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
-				(['interface', 'protected'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
-				(['implements'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10))
+				(['enum', 'eval'].indexOf(input.substr(i, 4)) != -1 && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				(['await'].indexOf(input.substr(i, 5)) != -1 && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
+				(['public'].indexOf(input.substr(i, 6)) != -1 && !/\w/.test(input[i + 6] || '') && (l = 6)) ||
+				(['package', 'private'].indexOf(input.substr(i, 7)) != -1 && !/\w/.test(input[i + 7] || '') && (l = 7)) ||
+				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !/\w/.test(input[i + 8] || '') && (l = 8)) ||
+				(['interface', 'protected'].indexOf(input.substr(i, 9)) != -1 && !/\w/.test(input[i + 9] || '') && (l = 9)) ||
+				(['implements'].indexOf(input.substr(i, 10)) != -1 && !/\w/.test(input[i + 10] || '') && (l = 10))
 			)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -1008,19 +1308,19 @@ function highlightJS(codeBlock, input) {
 			if (input.substr(i, l) == 'in') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
-				(['top'].indexOf(input.substr(i, 3)) != -1 && !(input[i + 3] || '').match(/\w/) && (l = 3)) ||
-				(['self'].indexOf(input.substr(i, 4)) != -1 && !(input[i + 4] || '').match(/\w/) && (l = 4)) ||
-				(['fetch'].indexOf(input.substr(i, 5)) != -1 && !(input[i + 5] || '').match(/\w/) && (l = 5)) ||
-				(['window', 'screen', 'crypto', 'status', 'frames', 'opener', 'parent'].indexOf(input.substr(i, 6)) != -1 && !(input[i + 6] || '').match(/\w/) && (l = 6)) ||
-				(['console', 'history', 'menubar', 'toolbar'].indexOf(input.substr(i, 7)) != -1 && !(input[i + 7] || '').match(/\w/) && (l = 7)) ||
-				(['document'].indexOf(input.substr(i, 8)) != -1 && !(input[i + 8] || '').match(/\w/) && (l = 8)) ||
-				(['arguments', 'statusbar', 'navigator', 'indexedDB'].indexOf(input.substr(i, 9)) != -1 && !(input[i + 9] || '').match(/\w/) && (l = 9)) ||
-				(['scrollbars', 'styleMedia'].indexOf(input.substr(i, 10)) != -1 && !(input[i + 10] || '').match(/\w/) && (l = 10)) ||
-				(['locationbar', 'personalbar', 'performance'].indexOf(input.substr(i, 11)) != -1 && !(input[i + 11] || '').match(/\w/) && (l = 11)) ||
-				(['frameElement', 'localStorage'].indexOf(input.substr(i, 12)) != -1 && !(input[i + 12] || '').match(/\w/) && (l = 12)) ||
-				(['sessionStorage'].indexOf(input.substr(i, 14)) != -1 && !(input[i + 14] || '').match(/\w/) && (l = 14)) ||
-				(['speechSynthesis'].indexOf(input.substr(i, 15)) != -1 && !(input[i + 15] || '').match(/\w/) && (l = 15)) ||
-				(['devicePixelRatio', 'applicationCache'].indexOf(input.substr(i, 16)) != -1 && !(input[i + 16] || '').match(/\w/) && (l = 16))
+				(['top'].indexOf(input.substr(i, 3)) != -1 && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
+				(['self'].indexOf(input.substr(i, 4)) != -1 && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				(['fetch'].indexOf(input.substr(i, 5)) != -1 && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
+				(['window', 'screen', 'crypto', 'status', 'frames', 'opener', 'parent'].indexOf(input.substr(i, 6)) != -1 && !/\w/.test(input[i + 6] || '') && (l = 6)) ||
+				(['console', 'history', 'menubar', 'toolbar'].indexOf(input.substr(i, 7)) != -1 && !/\w/.test(input[i + 7] || '') && (l = 7)) ||
+				(['document'].indexOf(input.substr(i, 8)) != -1 && !/\w/.test(input[i + 8] || '') && (l = 8)) ||
+				(['arguments', 'statusbar', 'navigator', 'indexedDB'].indexOf(input.substr(i, 9)) != -1 && !/\w/.test(input[i + 9] || '') && (l = 9)) ||
+				(['scrollbars', 'styleMedia'].indexOf(input.substr(i, 10)) != -1 && !/\w/.test(input[i + 10] || '') && (l = 10)) ||
+				(['locationbar', 'personalbar', 'performance'].indexOf(input.substr(i, 11)) != -1 && !/\w/.test(input[i + 11] || '') && (l = 11)) ||
+				(['frameElement', 'localStorage'].indexOf(input.substr(i, 12)) != -1 && !/\w/.test(input[i + 12] || '') && (l = 12)) ||
+				(['sessionStorage'].indexOf(input.substr(i, 14)) != -1 && !/\w/.test(input[i + 14] || '') && (l = 14)) ||
+				(['speechSynthesis'].indexOf(input.substr(i, 15)) != -1 && !/\w/.test(input[i + 15] || '') && (l = 15)) ||
+				(['devicePixelRatio', 'applicationCache'].indexOf(input.substr(i, 16)) != -1 && !/\w/.test(input[i + 16] || '') && (l = 16))
 			)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -1029,25 +1329,24 @@ function highlightJS(codeBlock, input) {
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
-		} else if (input.substr(i, 8) == 'function' && !(input[i - 1] || ' ').match(/\w/)) {
+		} else if (input.substr(i, 8) == 'function' && !/\w/.test(input[i - 1] || ' ')) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var node,
 				nodeNum = codeBlock.childNodes.length,
 				fnameNodes = [],
 				foundEquals = false,
+				foundName = false,
 				endNode = false;
 			prevNodes: while (node = codeBlock.childNodes[--nodeNum]) {
-				if (node.className == 'equals') {
-					foundEquals = true;
-				} else if (foundEquals) {
+				if (foundEquals) {
 					if (!endNode) {
 						if (node.tagName) {
 							endNode = node;
 						} else {
 							var str = node.nodeValue;
 							for (var j = str.length - 1; j >= 0; j--) {
-								if (str[j].match(/[\S]/)) {
+								if (/[\S]/.test(str[j])) {
 									endNode = node.splitText(j + 1);
 									nodeNum++;
 									break;
@@ -1057,9 +1356,11 @@ function highlightJS(codeBlock, input) {
 						continue;
 					}
 					if (node.tagName) {
-						if (node.className == 'inline-comment') continue;
-						if (['capvar', 'dot', 'prototype', 'newvar', 'line'].indexOf(node.className) != -1 && node.dataset.linenum != 1) fnameNodes.push(node);
-						else {
+						if (node.className == 'inline-comment' && !foundName) fnameNodes.push(node);
+						else if (['capvar', 'dot', 'prototype', 'newvar', 'line'].indexOf(node.className) != -1 && node.dataset.linenum != 1) {
+							fnameNodes.push(node);
+							foundName = true;
+						} else {
 							var fname = document.createElement('span');
 							fname.className = 'function-name';
 							for (var j = fnameNodes.length - 1; j >= 0; j--) fname.appendChild(fnameNodes[j]);
@@ -1069,7 +1370,7 @@ function highlightJS(codeBlock, input) {
 					} else {
 						var str = node.nodeValue;
 						for (var j = str.length - 1; j >= 0; j--) {
-							if (str[j].match(/[\s=(]/)) {
+							if (foundName && /[\s=(]/.test(str[j])) {
 								fnameNodes.push(node.splitText(j + 1));
 								var fname = document.createElement('span');
 								fname.className = 'function-name';
@@ -1081,13 +1382,16 @@ function highlightJS(codeBlock, input) {
 						}
 						fnameNodes.push(node);
 					}
-				} else if (node.textContent.match(/\S/)) break;
+				} else if (node.className == 'equals') {
+					foundEquals = true;
+					nodeNum++;
+				} else if (/\S/.test(node.textContent)) break;
 			}
 			var funcKeyword = document.createElement('span');
 			funcKeyword.className = 'keyword';
 			funcKeyword.appendChild(document.createTextNode('function'));
 			i += 7;
-			while ((c = input[++i]) && c.match(/\s/)) {
+			while ((c = input[++i]) && /\s/.test(c)) {
 				chunk += c;
 				if (c == '\n') {
 					funcKeyword.appendChild(document.createTextNode(chunk));
@@ -1109,16 +1413,41 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(funcKeyword);
 			var fname = document.createElement('span');
 			fname.className = 'function-name';
-			while ((c = input[++i]) && c != '(') {
-				chunk += c;
-				if (c == '\n') {
+			var comment = false,
+				lineComment;
+			while ((c = input[++i]) && (c != '(' || comment)) {
+				if (!comment && c == '/' && input[i + 1] == '*') {
 					fname.appendChild(document.createTextNode(chunk));
+					chunk = c + input[++i];
+					comment = document.createElement('span');
+					comment.className = 'inline-comment';
+					lineComment = false;
+				} else if (!comment && c == '/' && input[i + 1] == '/') {
+					fname.appendChild(document.createTextNode(chunk));
+					chunk = c + input[++i];
+					comment = document.createElement('span');
+					comment.className = 'inline-comment';
+					lineComment = true;
+				} else if (!lineComment && c == '\n') {
+					(fname || comment).appendChild(document.createTextNode(chunk + '\n'));
 					chunk = '';
 					var linenum = document.createElement('span');
 					linenum.className = 'line';
 					linenum.dataset.linenum = ++line;
-					fname.appendChild(linenum);
-				}
+					(fname || comment).appendChild(linenum);
+				} else if (comment && !lineComment && input.substr(i, 2) == '*/') {
+					comment.appendChild(document.createTextNode(chunk + '*/'));
+					chunk = '';
+					fname.appendChild(comment);
+					comment = false;
+					i++;
+				} else if (lineComment && c == '\n') {
+					comment.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					fname.appendChild(comment);
+					comment = lineComment = false;
+					i--;
+				} else chunk += c;
 			}
 			fname.appendChild(document.createTextNode(chunk));
 			codeBlock.appendChild(fname);
@@ -1132,6 +1461,7 @@ function highlightJS(codeBlock, input) {
 				paren.appendChild(document.createTextNode('('));
 				codeBlock.appendChild(paren);
 				while ((c = input[++i]) && c != ')') {
+					if (c == '/') break;
 					if (c == ',') {
 						var arg = document.createElement('span');
 						arg.className = 'argument';
@@ -1149,7 +1479,9 @@ function highlightJS(codeBlock, input) {
 				arg.appendChild(document.createTextNode(chunk));
 				codeBlock.appendChild(arg);
 				chunk = '';
-				if (c) {
+				if (c == '/') {
+					i--;
+				} else if (c) {
 					var paren = document.createElement('span');
 					paren.className = 'punctuation';
 					paren.appendChild(document.createTextNode(')'));
@@ -1230,7 +1562,7 @@ function highlightJS(codeBlock, input) {
 			operator.className = 'operator';
 			operator.appendChild(document.createTextNode(c));
 			codeBlock.appendChild(operator);
-		}  else if (beforeWord && c.match(/\d/)) {
+		}  else if (beforeWord && /\d/.test(c)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var start = i;
@@ -1241,7 +1573,7 @@ function highlightJS(codeBlock, input) {
 					while ('01234567'.indexOf(input[++i]) != -1);
 				} else if (c.toLowerCase() == 'x') {
 					while ('0123456789abcdefABCDEF'.indexOf(input[++i]) != -1);
-				} else if (c.match(/[\d\w]/)) warnings.push([i, 'Bad number literal.']);
+				} else if (/[\d\w]/.test(c)) warnings.push([i, 'Bad number literal.']);
 				var num = document.createElement('span');
 				num.className = 'number';
 				num.appendChild(document.createTextNode(input.substring(start, i--)));
@@ -1304,7 +1636,7 @@ function highlightJS(codeBlock, input) {
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
 			codeBlock.appendChild(linenum);
-		} else if (c.match(/\S/) && inVarDec[0] && !inVarDec[0].equals && Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
+		} else if (/\S/.test(c) && inVarDec[0] && !inVarDec[0].equals && Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
 			var newvar;
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
