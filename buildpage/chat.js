@@ -32,8 +32,8 @@ module.exports = o(function*(req, res, user) {
 				res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
 				if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
 				res.write('</small>');
-				res.write('</div>');
-				res.write('<aside id="sidebar" style="overflow-x: hidden">');
+				res.write('</main>');
+				res.write('<aside id="sidebar">');
 				res.write('<h2>Recent Posts</h2>');
 				dbcs.chat.find({
 					deleted: {$exists: false},
@@ -42,7 +42,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (comment) {
 						var commentBody = markdown(comment.body),
-							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code).)+?>)+$/) || [{length: 0}])[0].length;
+							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|>).)+?>)+$/) || [{length: 0}])[0].length;
 						commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 							'<span class="c-sig">' +
 								'-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
@@ -50,7 +50,7 @@ module.exports = o(function*(req, res, user) {
 							'</span>' +
 							commentBody.substring(commentBody.length - endTagsLength);
 						res.write('<div class="comment">' + commentBody + '</div>');
-					} else res.end((yield fs.readFile('html/a/foot.html', yield)).toString().replace('</div>', '</aside>'));
+					} else res.end((yield fs.readFile('html/a/foot.html', yield)).toString().replace('</main>', '</aside>'));
 				}));
 			}
 		}));
@@ -115,7 +115,7 @@ module.exports = o(function*(req, res, user) {
 								'<p id="loginmsg">You must have at least 30 reputation to chat.</p>' :
 								(
 									isInvited ?
-										'<div id="pingsug"></div><textarea autofocus="" id="ta" class="umar fullwidth"></textarea>' +
+										'<div id="pingsug"></div><textarea id="ta" class="umar fullwidth"></textarea>' +
 											'<div id="subta" class="umar"><button id="btn">Post</button> <a href="/formatting" target="_blank">Formatting help</a></div>' :
 										'<p>Posting in a non-public room is by invitation only.</p>'
 								)

@@ -27,7 +27,7 @@ module.exports = o(function*(req, res, user, post) {
 				confirmSentTime: {$gt: new Date() - 300000}
 			}, yield);
 			if (!fuser) return res.writeHead(403) || res.end('Error: Invalid or expired recovery code.');
-			if (!post.pass) return res.writeHead(400) || res.end('Error: No password recieved.');
+			if (!post.pass) return res.writeHead(400) || res.end('Error: No password received.');
 			var salt = crypto.randomBytes(64).toString('base64');
 			res.writeHead(303, {Location: '/login/?r=recovered'});
 			res.end();
@@ -412,7 +412,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (req.url.pathname == '/answer/add') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to answer a question.');
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
-		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be 144 characters long.');
+		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
 		var last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
 			id = last ? last._id + 1 : 1;
@@ -500,7 +500,7 @@ module.exports = o(function*(req, res, user, post) {
 		id = i ? parseInt(i[1]) : 0;
 		var program = yield dbcs.programs.findOne({_id: id}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You can\'t vote for your own post');
+		if (program.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own program.');
 		var current = yield dbcs.votes.findOne({
 			program: id,
 			user: user.name

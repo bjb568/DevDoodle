@@ -131,7 +131,6 @@ module.exports = o(function*(req, res, user) {
 								res.write('<h1 class="noumar">');
 								writeDiff(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title);
 								res.write('</h1>');
-								if (revnum) res.write(prev.description);
 								res.write(item.description == prev.description ? '<details>' : '<details open="">');
 								res.write('<summary><h2>Body</h2></summary>');
 								res.write('<code class="blk">');
@@ -192,7 +191,7 @@ module.exports = o(function*(req, res, user) {
 								voted;
 							for (var i in votes) if (votes[i].user == user.name) voted = true;
 							var commentBody = markdown(comment.body),
-								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code).)+?>)+$/) || [{length: 0}])[0].length;
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
 									'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +

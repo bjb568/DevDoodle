@@ -10,23 +10,22 @@ Before submitting a bug, try hard-reloading.
 
 ## Files
 
-- server.js: runs all HTTPS on port 443 (changeable via command line argument), and by default sets up a redirect from HTTP on port 80 to HTTPS (on port 443)
+- server.js: main server script that itself handles non-API POST requests and requires all other pieces
+- config.js: configuration options for server.js
 - api.js: required by server.js, manages POST requests to /api/*
 - buildpage: (folder) contains serverlets required by server.js that manage GET requests
+- sockets.js: required by server.js, handles socket (`ws:` or `wss:`) connections
 - html: (folder) contains html templates used by server.js and buildpage serverlets
 - http: (folder) content that is accessible thru https requests (via server.js)
-- sockets.js: default port 81 (changeable via command line argument), handles secure web socket connections (`wss://`)
 
 ## Running Locally
 
 - Clone this repository
-- If you want to use HTTPS, create a directory called `Secret` inside DevDoodle's parent directory and add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-geotrust.crt`, which you'll have to self-sign unless you have the real certs.
+- If you want to use HTTP2/TLS, create a directory called `Secret` inside DevDoodle's parent directory and add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-geotrust.crt`, which you'll have to self-sign unless you have the real certs.
 - Install a recent version of node and mongodb (run the mongod process (you must create a data directory, if it doesn't already exist)).
 - `npm install`
-- `node server` with sudo (or change it's port to ≥ 1024 via command line argument (e.g. `node server 1337`))
-    - optional `--nossl` argument to run the server on http, port 80
-    - optional `--no-ocsp-stapling` to turn off OCSP stapling for the SSL server
-- `node sockets.js` with sudo (changing port is not supported since port 81 is hard-coded into client side javascript)
+- Modify `config.js` to your liking
+- `node server` (by default runs on ports 80 and 443 so requires `sudo`)
 - verify everything is working at `https://localhost/status/` (or `https://localhost:1337/status/` for a custom port)
 
 Apparently node processes don't need to run as root if you do this first (on Linux):

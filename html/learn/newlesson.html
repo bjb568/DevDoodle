@@ -1,4 +1,4 @@
-<form action="?preview=1&amp;submit=0" method="POST" class="row">
+<form action="?preview=1&amp;submit=0" method="POST" id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1><input type="text" value="$title" name="title" placeholder="Lesson Title" autofocus="" required="" /></h1>
@@ -33,8 +33,10 @@
 		</div>
 		<div id="cntrls"><button type="submit">Preview Lesson</button></div>
 	</div>
-	<textarea id="html" name="html">$html</textarea>
-	<iframe id="output"></iframe>
+	<div id="ide">
+		<textarea id="html" name="html">$html</textarea>
+		<iframe id="output"></iframe>
+	</div>
 </form>
 <script src="/learn/course.js" async=""></script>
 <script src="/learn/newlesson.js" async=""></script>

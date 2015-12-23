@@ -44,7 +44,7 @@ h1, h2 { border: none }
 	width: 1px;
 }
 #caret[hidden] { display: none }
-textarea, #ta-cont { height: 400px }
+#text textarea, #ta-cont { height: 400px }
 #cntrls {
 	padding: 4px;
 	background: #0ff;

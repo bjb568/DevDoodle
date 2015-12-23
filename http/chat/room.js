@@ -1,8 +1,7 @@
-var noPageOverflow = 420,
-	audio = new Audio('/a/beep.mp3'),
+var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.match(/\d+/)[0],
-	socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.getElementById('user').value,
 	rawdesc = document.getElementById('descedit').value,
 	onBottom = true,
@@ -204,7 +203,6 @@ socket.onmessage = function(e) {
 		}
 		cont.onscroll();
 		if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
-		minHeight();
 	} else if (data.event == 'edit') {
 		source[data.id] = data.body;
 		var msg = document.getElementById(data.id);
@@ -434,6 +432,7 @@ socket.onmessage = function(e) {
 			location.hash = '#' + hash;
 		}
 		if (!document.getElementById('ts').hidden) tsMode = true;
+		if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	} else if (data.event == 'info-update') {
 		document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
 		document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
@@ -459,7 +458,7 @@ socket.onclose = function() {
 	warning.appendChild(link);
 	ta.parentNode.insertBefore(warning, ta);
 	setInterval(function() {
-		socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 		socket.onopen = function() {
 			location.reload();
 		};
@@ -646,6 +645,7 @@ document.getElementById('editform').onsubmit = function() {
 };
 var hashchangeready = !hash;
 addEventListener('hashchange', function(e) {
+	if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	if (hashchangeready) {
 		var hash = parseInt(e.newURL.split('#', 2)[1]);
 		if (hash && !document.getElementById(hash)) {

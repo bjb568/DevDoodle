@@ -20,7 +20,8 @@ var pass = document.getElementById('pass'),
 	namef = document.getElementById('name'),
 	nameError = document.getElementById('name-error'),
 	mail = document.getElementById('mail'),
-	submit = document.getElementById('submit');
+	submit = document.getElementById('submit'),
+	sec = document.getElementById('sec');
 
 create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = mail.oninput = function() {
 	submit.firstChild.nodeValue = create.checked ? 'Create Account' : 'Submit';
@@ -58,3 +59,5 @@ create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = 
 	console.log(fail);
 	submit.disabled = fail;
 };
+var num = sec.dataset.num;
+sec.firstChild.nodeValue = 'Expand (x ' + (num < 0 ? '- ' + Math.abs(num) : '+ ' + num) + ')² to the form ax² + bx + c: ';

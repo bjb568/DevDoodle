@@ -1,5 +1,5 @@
 Comments - Basic Elements
-<div class="row">
+<div id="row">
 	<div id="text">
 		<div id="text-inner">
 			<h1>Basic Elements</h1>
@@ -18,7 +18,8 @@ Comments - Basic Elements
 		</div>
 		<div id="cntrls"><a href="../2/" class="lft">Back</a> <a href="../4/" class="rit">Next</a></div>
 	</div>
-	<textarea id="html">&lt;!DOCTYPE html>
+	<div id="ide">
+		<textarea id="html">&lt;!DOCTYPE html>
 &lt;html xmlns="http://www.w3.org/1999/xhtml">
 	&lt;head>
 		&lt;title>Comment example&lt;/title>
@@ -27,7 +28,8 @@ Comments - Basic Elements
 		&lt;h1>Hello comments!&lt;/h1>
 	&lt;/body>
 &lt;/html></textarea>
-	<iframe id="output"></iframe>
+		<iframe id="output"></iframe>
+	</div>
 </div>
 <textarea id="validator" hidden="">function validate() {
 	if (!document.documentElement.outerHTML.match(/&lt;!--.*-->/i)) {

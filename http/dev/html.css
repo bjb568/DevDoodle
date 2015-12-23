@@ -1,39 +1,71 @@
-*::-webkit-input-placeholder { color: #888 }
+*::-webkit-input-placeholder { color: #999 }
 *::-moz-placeholder { color: #999 }
-html, #content, #footer, #main { background: #000 }
+section { background: transparent }
+#content, #main, #right, #outputbox, #left {
+	display: flex;
+	flex-direction: column;
+}
+#row {
+	display: flex;
+	align-items: stretch;
+}
+#main, #row, #outputbox, #output, .ta-cont, #right { flex-grow: 1 }
+#footer {
+	position: absolute;
+	width: 100%;
+}
 #main { padding: 0 }
 #content { padding-bottom: 0 }
 #main a:hover { color: #4ff }
 #main a:active { color: #06f }
-#main :not(input):not(button):not(.red):not(a):not(textarea):not(span), #main a:not(:hover):not(:active):not(.red), #footer * { color: #fff }
 #meta {
-	clear: both;
 	padding: 4px;
-	margin-top: 8px;
-	background: rgba(255, 255, 255, .8);
+	margin-bottom: 6px;
+	background: rgba(255, 255, 255, 0.8);
 	color: #000;
+	text-align: left;
+	font-size: 1rem;
 }
-.ta-cont { height: calc(33.3% - 4px) }
+#meta h1, h2, h3, h4, h5, h6 { color: #000 }
+#meta code { background: #fff }
+#meta a { color: #000 }
+#meta a:visited { color: #444 }
+#meta a:hover { color: #15f }
+#meta a:active { color: #02d }
+#meta .connection-error a { color: #ffb }
+.comment { background: rgba(255, 255, 255, 0.4) }
+.ta-cont {
+	margin: 3px 0;
+	flex-basis: 0;
+}
+#js-cont { margin-bottom: 0 }
 #edit-title {
 	width: 400px;
 	max-width: 100%;
 }
-#output {
-	width: 100%;
-	height: calc(100% - 5px);
-}
-#outputbox { height: calc(100% - 24px) }
-#left { height: 900px }
-#right { height: 400px }
-@media (min-width: 700px) {
-	.row { height: calc(100% - 2em) }
-	#left, #right {
-		height: 100%;
-		margin-bottom: 0;
-		max-width: 50%;
+#outputbox { margin-bottom: 2px; }
+@media (max-width: 699px) {
+	#row { flex-direction: column }
+	#left {
+		height: 900px;
+		flex-grow: 3;
 	}
-	#left { float: left }
-	#right { float: right }
+	#right {
+		height: 400px; width: 100%;
+		flex-grow: 1;
+		margin-bottom: 8px;
+	}
+}
+@media (min-width: 700px) {
+	#row {
+		flex-direction: row-reverse;
+		height: 0;
+	}
+	#left {
+		flex-shrink: 0;
+		width: 50%;
+	}
+	#right { margin-left: 8px }
 }
 #save.progress {
 	cursor: progress;
