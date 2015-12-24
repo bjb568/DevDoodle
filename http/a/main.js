@@ -595,7 +595,7 @@ function highlightCSS(codeBlock, input) {
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
 	var endSel = function() {
-		console.log('endSel', chunk);
+		if (!chunk) return;
 		var inSub = false,
 			inClass = false,
 			inID = false,
@@ -604,7 +604,7 @@ function highlightCSS(codeBlock, input) {
 			inRefComb = false,
 			schunk = '';
 		var endSChunk = function() {
-			console.log('endSChunk', schunk);
+			if (!schunk) return;
 			if (inSub) {
 				var span = document.createElement('span');
 				span.className = inClass ? 'class' : inID ? 'id' :
@@ -678,6 +678,7 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	};
 	var endProp = function() {
+		if (!chunk) return;
 		var prop = document.createElement('span');
 		prop.appendChild(document.createTextNode(chunk));
 		prop.className = 'property';
@@ -685,6 +686,7 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	};
 	var endVal = function() {
+		if (!chunk) return;
 		var val = document.createElement('span');
 		val.appendChild(document.createTextNode(chunk));
 		val.className = 'value';
@@ -692,6 +694,7 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	};
 	var endAttrName = function() {
+		if (!chunk) return;
 		var an = document.createElement('span');
 		an.appendChild(document.createTextNode(chunk));
 		an.className = 'attribute-name';
@@ -699,6 +702,7 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	};
 	var endAttrValue = function() {
+		if (!chunk) return;
 		var av = document.createElement('span');
 		av.appendChild(document.createTextNode(chunk));
 		av.className = 'attribute-value';
@@ -711,6 +715,7 @@ function highlightCSS(codeBlock, input) {
 		inNth = false;
 	};
 	var endAt = function() {
+		if (!chunk) return;
 		if (inAtNoNest) {
 			var span = document.createElement('span');
 			span.className = 'no-nest';
