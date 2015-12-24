@@ -94,6 +94,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (typeof header['Cache-Control'] != 'string') header['Cache-Control'] = 'no-cache';
 	if (typeof header['X-Frame-Options'] != 'string') header['X-Frame-Options'] = 'DENY';
+	if (typeof header['Vary'] != 'string') header['Vary'] = 'Cookie';
 	if (typeof header['Content-Security-Policy'] != 'string') {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
@@ -192,9 +193,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	var num = 0;
 	while (!num) num = Math.floor(Math.random() * 25 - 12);
 	yield respondPage('Login', user, req, res, yield, {
-		inhead:
-			'<meta name="robots" content="noindex" />' +
-			'<link rel="stylesheet" href="/login/login.css" />'
+		inhead: '<meta name="robots" content="noindex" /><link rel="stylesheet" href="/login/login.css" />'
 	});
 	res.write('<h1>Log in</h1>');
 	var notice = ({
