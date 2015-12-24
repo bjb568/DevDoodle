@@ -72,7 +72,7 @@ htmle.onkeypress = function(e) {
 			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>\s*$/))
+				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>[ \t]*$/))
 				? 0
 				: 1
 			);
@@ -88,7 +88,7 @@ htmle.onkeypress = function(e) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 47) {
+	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
 		var lines = this.value.substr(0, oldSelectionStart).split('\n');
 		if (lines[lines.length - 1].indexOf('\t') == -1) return;
 		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
