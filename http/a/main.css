@@ -181,7 +181,8 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
-code .universal, code .at-rule-name { color: #fc8 }
+code .universal { color: #fd8 }
+code .at-rule-name { color: #dd8 }
 code .element { color: #fb0 }
 code .class { color: #ff0 }
 code .id { color: #e80 }
@@ -193,7 +194,7 @@ code .nth { color: #ffb }
 code .nth .n { color: #f55 }
 code .nth .number { color: #f88 }
 code .reference-combinator { color: #faa }
-code .property, code .logical, code .nth .n { font-style: italic }
+code .property, code .logical, code .nth .n, code .colon { font-style: italic }
 code .no-nest { color: #ddd }
 code .value { color: #aaf }
 code .inline-comment { color: #888 }
