@@ -38,6 +38,10 @@ section { background: transparent }
 	margin: 3px 0;
 	flex-basis: 0;
 }
+.collapsed {
+	flex-basis: 3em;
+	flex-grow: 0;
+}
 #js-cont { margin-bottom: 0 }
 #edit-title {
 	width: 400px;
