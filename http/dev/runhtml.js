@@ -116,12 +116,16 @@ htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
 css.onkeypress = js.onkeypress = jsKeypressHandler;
 run();
 var runTimeout;
+htmlCont.classList.toggle('collapsed', !htmle.value);
+cssCont.classList.toggle('collapsed', !css.value);
+jsCont.classList.toggle('collapsed', !js.value);
 function handleTAInput() {
 	var cursorPos, oldCaret;
 	if (htmle.value != lastValue[0]) {
 		highlightHTML(htmlDisplay, htmle.value);
 		htmlCont.dataset.line = htmlDisplay.dataset.line;
 		htmle.style.height = htmlDisplay.offsetHeight + 'px';
+		htmlCont.classList.toggle('collapsed', !htmle.value);
 	}
 	if (htmle.selectionStart != htmle.lastSelectionStart) {
 		htmle.lastSelectionStart = htmle.selectionStart;
@@ -147,6 +151,7 @@ function handleTAInput() {
 		highlightCSS(cssDisplay, css.value);
 		cssCont.dataset.line = cssDisplay.dataset.line;
 		css.style.height = cssDisplay.offsetHeight + 'px';
+		cssCont.classList.toggle('collapsed', !css.value);
 	}
 	if (css.selectionStart != css.lastSelectionStart) {
 		css.lastSelectionStart = css.selectionStart;
@@ -172,6 +177,7 @@ function handleTAInput() {
 		highlightJS(jsDisplay, js.value);
 		jsCont.dataset.line = jsDisplay.dataset.line;
 		js.style.height = jsDisplay.offsetHeight + 'px';
+		jsCont.classList.toggle('collapsed', !js.value);
 	}
 	if (js.selectionStart != js.lastSelectionStart) {
 		js.lastSelectionStart = js.selectionStart;
