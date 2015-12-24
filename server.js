@@ -65,6 +65,19 @@ global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
+var getVersionNonce = o(function*(pn, file, cb) {
+	console.log('gvn', 'http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file));
+	cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
+});
+var addVersionNonces = o(function*(str, pn, cb) {
+	for (let i = 0; i < str.length; i++) {
+		if (str.substr(i).match(/^\.\w{1,8}"/)) {
+			while (str[i] && str[i] != '"') i++;
+			str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
+		}
+	}
+	cb(null, str);
+});
 global.respondPage = o(function*(title, user, req, res, callback, header, status) {
 	if (title) title = html(title);
 	var query = req.url.query,
@@ -113,34 +126,38 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/">Log in</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
 	var dirs = req.url.pathname.split('/');
 	res.write(
-		data.replace(
-			'$title',
-			(title ? title + ' · ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' · ' : '') + site.name
-		).replaceAll(
-			'"' + req.url.pathname + '"',
-			'"' + req.url.pathname + '" class="active"'
-		).replace(
-			'"/' + dirs[1]+ '/"',
-			'"/' + dirs[1]+ '/" class="active"'
-		).replace(
-			'"/' + dirs[1] + '/' + dirs[2] + '/"',
-			'"/' + dirs[1] + '/' + dirs[2] + '/" class="active"'
-		).replaceAll(
-			'class="active" class="active"',
-			'class="active"'
-		).replace(
-			'$search',
-			html(query.q || '')
-		).replace(
-			'$inhead',
-			inhead
-		).replace(
-			'$notifs',
-			(user && user.unread && !nonotif) ? ' class="unread"' : ''
-		).replace(
-			'<a href="/mod/">Mod</a>',
-			user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
-		).replace('main.css', clean ? 'clean.css' : 'main.css')
+		yield addVersionNonces(
+			data.replace(
+				'$title',
+				(title ? title + ' · ' : '') + (site.titles[dirs[1]] ? site.titles[dirs[1]] + ' · ' : '') + site.name
+			).replaceAll(
+				'"' + req.url.pathname + '"',
+				'"' + req.url.pathname + '" class="active"'
+			).replace(
+				'"/' + dirs[1]+ '/"',
+				'"/' + dirs[1]+ '/" class="active"'
+			).replace(
+				'"/' + dirs[1] + '/' + dirs[2] + '/"',
+				'"/' + dirs[1] + '/' + dirs[2] + '/" class="active"'
+			).replaceAll(
+				'class="active" class="active"',
+				'class="active"'
+			).replace(
+				'$search',
+				html(query.q || '')
+			).replace(
+				'$inhead',
+				inhead
+			).replace(
+				'$notifs',
+				(user && user.unread && !nonotif) ? ' class="unread"' : ''
+			).replace(
+				'<a href="/mod/">Mod</a>',
+				user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
+			).replace('main.css', clean ? 'clean.css' : 'main.css'),
+			req.url.pathname,
+			yield
+		)
 	);
 	callback();
 });
