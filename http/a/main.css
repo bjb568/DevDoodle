@@ -97,6 +97,20 @@ li {
 	display: inline-block;
 	width: 100%;
 }
+.answer-count {
+	display: inline-block;
+	font-style: normal;
+	padding: 3px;
+	background: #6bf;
+	border-radius: 4px;
+	color: #000;
+}
+.limited {
+	max-height: 64px;
+	overflow-x: hidden; overflow-y: auto;
+	transition: max-height 0.5s;
+}
+.limited:hover { max-height: 128px }
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
 .spoiler:not(:hover) *, .spoiler:hover::before { opacity: 0 }
@@ -433,8 +447,8 @@ h3, h2.title, article h2, article article h1 {
 a, .ctrl {
 	color: #000;
 	transition: color 0.1s;
-	cursor: pointer;
 }
+a, .ctrl, .up, .dn, .fl { cursor: pointer }
 a:visited { color: #444 }
 a:hover, .ctrl:hover { color: #15f }
 a:active, .ctrl:active { color: #02d }

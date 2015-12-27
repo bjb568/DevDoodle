@@ -1,4 +1,9 @@
 'use strict';
+const voteMultiplier = {
+	program: 1,
+	question: 2,
+	answer: 5
+};
 var url = require('url'),
 	crypto = require('crypto');
 module.exports = o(function*(req, res, user, post) {
@@ -355,7 +360,9 @@ module.exports = o(function*(req, res, user, post) {
 			gr: post.gr == 'on',
 			user: user.name,
 			time: new Date().getTime(),
-			score: 0
+			score: 0,
+			hotness: 0,
+			upvotes: 0
 		});
 		res.writeHead(200);
 		res.end('Location: /qa/' + id);
@@ -422,7 +429,9 @@ module.exports = o(function*(req, res, user, post) {
 			body: post.body,
 			user: user.name,
 			time: new Date().getTime(),
-			score: 0
+			score: 0,
+			hotness: 0,
+			upvotes: 0
 		});
 		res.writeHead(200);
 		res.end('Location: #a' + id);
@@ -490,62 +499,55 @@ module.exports = o(function*(req, res, user, post) {
 		dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 		res.writeHead(204);
 		res.end();
-	} else if (req.url.pathname == '/program/vote') {
+	} else if (req.url.pathname == '/program/vote' || req.url.pathname == '/question/vote' || req.url.pathname == '/answer/vote') {
 		if (!post.val) return res.writeHead(400) || res.end('Error: Vote value not specified.');
 		post.val = parseInt(post.val);
 		if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.writeHead(400) || res.end('Error: Invalid vote value.');
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in and have 15 reputation to vote.');
 		if (user.rep < 15) return res.writeHead(403) || res.end('Error: You must have 15 reputation to vote.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
-		id = i ? parseInt(i[1]) : 0;
-		var program = yield dbcs.programs.findOne({_id: id}, yield);
-		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own program.');
-		var current = yield dbcs.votes.findOne({
-			program: id,
-			user: user.name
-		}, yield);
+		id = parseInt(post.id);
+		if (!id) {
+			i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/(?:dev|qa)\/(\d+)/);
+			id = i ? parseInt(i[1]) : 0;
+		}
+		var pType = req.url.pathname == '/program/vote' ? 'program' : req.url.pathname == '/question/vote' ? 'question' : 'answer',
+			doc = yield dbcs[pType + 's'].findOne({_id: id}, yield);
+		if (!doc) return res.writeHead(400) || res.end('Error: Invalid post id.');
+		if (doc.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own ' + pType + '.');
+		var vQuery = {user: user.name};
+		vQuery[pType] = id;
+		var current = yield dbcs.votes.findOne(vQuery, yield);
 		if (!current) {
 			current = {val: 0};
-			yield dbcs.votes.insert({
-				user: user.name,
-				program: id,
-				val: post.val,
-				time: new Date().getTime()
-			}, yield);
+			vQuery.val = post.val;
+			vQuery.time = new Date().getTime();
+			yield dbcs.votes.insert(vQuery, yield);
 		} else {
-			yield dbcs.votes.update({
-				program: id,
-				user: user.name
-			}, {
+			yield dbcs.votes.update(vQuery, {
 				$set: {
 					val: post.val,
 					time: new Date().getTime()
 				}
 			}, yield);
 		}
-		dbcs.programs.update({_id: id}, {
+		var posHotness = {
+			time: {$gt: new Date() - 86400000},
+			val: 1
+		};
+		posHotness[pType] = id;
+		var negHotness = {
+			time: {$gt: new Date() - 86400000},
+			val: -1
+		};
+		negHotness[pType] = id;
+		dbcs[pType + 's'].update({_id: id}, {
 			$inc: {
 				score: post.val - current.val,
 				upvotes: post.val == 1 && current.val != 1 ? 1 : (post.val != 1 && current.val == 1 ? -1 : 0)
 			},
-			$set: {
-				hotness: (
-					yield dbcs.votes.find({
-						program: id,
-						time: {$gt: new Date() - 86400000},
-						val: 1
-					}).count(yield)
-				) - (
-					yield dbcs.votes.find({
-						program: id,
-						time: {$gt: new Date() - 86400000},
-						val: -1
-					}).count(yield)
-				)
-			}
+			$set: {hotness: (yield dbcs.votes.find(posHotness).count(yield)) - (yield dbcs.votes.find(negHotness).count(yield))}
 		});
-		dbcs.users.update({name: program.user}, {$inc: {rep: post.val - current.val}});
+		dbcs.users.update({name: doc.user}, {$inc: {rep: (post.val - current.val) * voteMultiplier[pType]}});
 		res.writeHead(204);
 		res.end();
 	} else if (req.url.pathname == '/program/delete') {

@@ -203,7 +203,67 @@ function upvoteComment() {
 }
 var comments = document.getElementsByClassName('comment');
 for (var i = 0; i < comments.length; i++) {
-	comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+	var e = comments[i].getElementsByClassName('sctrls')[0];
+	if (e) e.firstChild.onclick = upvoteComment;
+}
+var up = document.getElementById('q-up');
+up.parentNode.onclick = function() {
+	request('/api/question/vote', function(res) {
+		if (res.indexOf('Error') == 0) alert(res);
+		else if (res == 'Success') {
+			var opName = document.querySelector('#question .rep').previousElementSibling.firstChild.nodeValue,
+				e = document.getElementsByClassName('user-' + opName);
+			for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -2 : 0) - (up.classList.contains('clkd') ? -2 : 2);
+			up.classList.toggle('clkd');
+			dn.classList.remove('clkd');
+		} else alert('Unknown error. Response was: ' + res);
+	}, 'val=' + (this.firstChild.classList.contains('clkd') ? 0 : 1));
+};
+var dn = document.getElementById('q-dn');
+dn.parentNode.onclick = function() {
+	request('/api/question/vote', function(res) {
+		if (res.indexOf('Error') == 0) alert(res);
+		else if (res == 'Success') {
+			var opName = document.querySelector('#question .rep').previousElementSibling.firstChild.nodeValue,
+				e = document.getElementsByClassName('user-' + opName);
+			for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 2 : 0) - (dn.classList.contains('clkd') ? 2 : -2);
+			dn.classList.toggle('clkd');
+			up.classList.remove('clkd');
+		} else alert('Unknown error. Response was: ' + res);
+	}, 'val=' + (this.firstChild.classList.contains('clkd') ? 0 : -1));
+};
+var answers = document.getElementsByClassName('answer');
+for (var i = 0; i < answers.length; i++) {
+	answers[i].getElementsByClassName('up')[0].onclick = function() {
+		var up = this.firstChild,
+			dn = this.nextElementSibling.firstChild,
+			id = parseInt(this.parentNode.parentNode.id.substr(1));
+		request('/api/answer/vote', function(res) {
+			if (res.indexOf('Error') == 0) alert(res);
+			else if (res == 'Success') {
+				var opName = document.querySelector('#a' + id + ' .rep').previousElementSibling.firstChild.nodeValue,
+					e = document.getElementsByClassName('user-' + opName);
+				for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -5 : 0) - (up.classList.contains('clkd') ? -5 : 5);
+				up.classList.toggle('clkd');
+				dn.classList.remove('clkd');
+			} else alert('Unknown error. Response was: ' + res);
+		}, 'id=' + id + '&val=' + (up.classList.contains('clkd') ? 0 : 1));
+	};
+	answers[i].getElementsByClassName('dn')[0].onclick = function() {
+		var up = this.previousElementSibling.firstChild,
+			dn = this.firstChild,
+			id = parseInt(this.parentNode.parentNode.id.substr(1));
+		request('/api/answer/vote', function(res) {
+			if (res.indexOf('Error') == 0) alert(res);
+			else if (res == 'Success') {
+				var opName = document.querySelector('#a' + id + ' .rep').previousElementSibling.firstChild.nodeValue,
+					e = document.getElementsByClassName('user-' + opName);
+				for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 5 : 0) - (dn.classList.contains('clkd') ? 5 : -5);
+				dn.classList.toggle('clkd');
+				up.classList.remove('clkd');
+			} else alert('Unknown error. Response was: ' + res);
+		}, 'id=' + id + '&val=' + (dn.classList.contains('clkd') ? 0 : -1));
+	};
 }
 var e = document.getElementById('edit-tags').getElementsByTagName('label');
 for (var i = 0; i < e.length; i++) {

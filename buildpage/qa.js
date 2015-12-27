@@ -21,11 +21,24 @@ module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/qa/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
-		dbcs.questions.find().each(o(function*(err, doc) {
+		var cursor = dbcs.questions.find().limit(288);
+		var questionSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
-			if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>');
-			else res.end(yield fs.readFile('html/a/foot.html', yield));
-		}));
+			if (question) {
+				res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+				res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
+				var tagstr = '';
+				dbcs.qtags.find({_id: {$in: question.tags}}).each(o(function*(err, tag) {
+					if (err) throw err;
+					if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
+					else {
+						res.write('<p>' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+						cursor.nextObject(questionSummaryHandler);
+					}
+				}));
+			} else res.end(yield fs.readFile('html/a/foot.html', yield));
+		});
+		cursor.nextObject(questionSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield fs.readFile('./html/qa/tags.html', yield));
@@ -96,7 +109,7 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h2>Current Revision</h2>');
 			res.write('<p class="indt">Owned by <strong><a href="/user/' + question.user + '">' + question.user + '</a></strong>.</p>');
 			res.write('<article class="pad indt">');
-			res.write('<h1 class="nomar">' + question.lang + ': ' + question.title + '</h1>');
+			res.write('<h1 class="nomar">' + html(question.lang) + ': ' + html(question.title) + '</h1>');
 			res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
 			res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
 			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + 'Type: ' + question.type + '</code>');
@@ -162,12 +175,19 @@ module.exports = o(function*(req, res, user) {
 								prev = item;
 							} else res.write('<p class="red">Unknown event.</p>');
 							revnum++;
-						} else res.end(yield fs.readFile('html/a/foot.html', yield));
+						} else {
+							res.write('<p>Origionally posted <time datetime="' + new Date(question.time).toISOString() + '"></time>.</p>');
+							res.end(yield fs.readFile('html/a/foot.html', yield));
+						}
 					}));
 				}
 			});
 		} else {
-			var op = yield dbcs.users.findOne({name: question.user}, yield),
+			var vote = (yield dbcs.votes.findOne({
+				user: user.name,
+				question: question._id
+			}, yield)) || {val: 0},
+				op = yield dbcs.users.findOne({name: question.user}, yield),
 				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
 				count = yield cursor.count(yield);
 			var answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
@@ -175,12 +195,19 @@ module.exports = o(function*(req, res, user) {
 			var answerHandler = o(function*(err, answer) {
 				if (err) throw err;
 				if (answer) {
-					var answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
-					answerstr += answerTemplate.replaceAll(
-						['$id', '$user', '$op-rep', '$op-mailhash'],
-						[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.mailhash]
-					).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
-					.replace('$time', new Date(answer.time).toISOString());
+					var answerVote = (yield dbcs.votes.findOne({
+						user: user.name,
+						answer: answer._id
+					}, yield)) || {val: 0},
+						answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
+					answerstr +=
+						answerTemplate
+						.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
+						.replaceAll(
+							['$id', '$user', '$op-rep', '$op-mailhash'],
+							[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.mailhash]
+						).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
+						.replace('$time', new Date(answer.time).toISOString());
 					cursor.nextObject(answerHandler);
 				} else {
 					var commentstr = '';
@@ -244,6 +271,8 @@ module.exports = o(function*(req, res, user) {
 									res.write((yield fs.readFile('./html/qa/question.html', yield)).toString()
 										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
 										.replace(revcount ? '$revcount': ' ($revcount)', revcount || '')
+										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
 										.replaceAll(
 											['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
 											[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.question), html(question.code), question.type]
