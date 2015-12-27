@@ -10,14 +10,14 @@ module.exports = o(function*(req, res, user) {
 	var questionSummaryHandler = o(function*(err, question) {
 		if (err) throw err;
 		if (question) {
-			res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+			res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="qa/' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
 			res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
 			var tagstr = '';
 			dbcs.qtags.find({_id: {$in: question.tags}}).each(o(function*(err, tag) {
 				if (err) throw err;
-				if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
+				if (tag) tagstr += '<a href="qa/search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
 				else {
-					res.write('<p>' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+					res.write('<p>' + tagstr + ' <span class="rit"><a href="qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 					cursor.nextObject(questionSummaryHandler);
 				}
 			}));
