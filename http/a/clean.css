@@ -98,6 +98,14 @@ li {
 	display: inline-block;
 	width: 100%;
 }
+.answer-count {
+	display: inline-block;
+	font-style: normal;
+	padding: 3px;
+	background: #6bf;
+	border-radius: 4px;
+	color: #000;
+}
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
 .spoiler:not(:hover) *, .spoiler:hover::before { opacity: 0 }

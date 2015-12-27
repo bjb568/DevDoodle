@@ -66,7 +66,6 @@ global.mime = essentials.mime;
 global.dbcs = {};
 
 var getVersionNonce = o(function*(pn, file, cb) {
-	console.log('gvn', 'http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file));
 	cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
 });
 var addVersionNonces = o(function*(str, pn, cb) {

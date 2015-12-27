@@ -21,11 +21,24 @@ module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/qa/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
-		dbcs.questions.find().each(o(function*(err, doc) {
+		var cursor = dbcs.questions.find().limit(288);
+		var questionSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
-			if (doc) res.write('<h2 class="title"><a href="' + doc._id + '">' + html(doc.title) + '</a></h2>');
-			else res.end(yield fs.readFile('html/a/foot.html', yield));
-		}));
+			if (question) {
+				res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+				res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
+				var tagstr = '';
+				dbcs.qtags.find({_id: {$in: question.tags}}).each(o(function*(err, tag) {
+					if (err) throw err;
+					if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
+					else {
+						res.write('<p>' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+						cursor.nextObject(questionSummaryHandler);
+					}
+				}));
+			} else res.end(yield fs.readFile('html/a/foot.html', yield));
+		});
+		cursor.nextObject(questionSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield fs.readFile('./html/qa/tags.html', yield));
@@ -96,7 +109,7 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h2>Current Revision</h2>');
 			res.write('<p class="indt">Owned by <strong><a href="/user/' + question.user + '">' + question.user + '</a></strong>.</p>');
 			res.write('<article class="pad indt">');
-			res.write('<h1 class="nomar">' + question.lang + ': ' + question.title + '</h1>');
+			res.write('<h1 class="nomar">' + html(question.lang) + ': ' + html(question.title) + '</h1>');
 			res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
 			res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
 			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + 'Type: ' + question.type + '</code>');
@@ -162,7 +175,10 @@ module.exports = o(function*(req, res, user) {
 								prev = item;
 							} else res.write('<p class="red">Unknown event.</p>');
 							revnum++;
-						} else res.end(yield fs.readFile('html/a/foot.html', yield));
+						} else {
+							res.write('<p>Origionally posted <time datetime="' + new Date(question.time).toISOString() + '"></time>.</p>');
+							res.end(yield fs.readFile('html/a/foot.html', yield));
+						}
 					}));
 				}
 			});
