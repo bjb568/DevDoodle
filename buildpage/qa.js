@@ -183,7 +183,11 @@ module.exports = o(function*(req, res, user) {
 				}
 			});
 		} else {
-			var op = yield dbcs.users.findOne({name: question.user}, yield),
+			var vote = (yield dbcs.votes.findOne({
+				user: user.name,
+				question: question._id
+			}, yield)) || {val: 0},
+				op = yield dbcs.users.findOne({name: question.user}, yield),
 				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
 				count = yield cursor.count(yield);
 			var answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
@@ -260,6 +264,8 @@ module.exports = o(function*(req, res, user) {
 									res.write((yield fs.readFile('./html/qa/question.html', yield)).toString()
 										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
 										.replace(revcount ? '$revcount': ' ($revcount)', revcount || '')
+										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
 										.replaceAll(
 											['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
 											[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.question), html(question.code), question.type]

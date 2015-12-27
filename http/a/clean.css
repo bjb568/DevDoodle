@@ -447,8 +447,8 @@ h3, h2.title, article h2, article article h1 {
 a, .ctrl {
 	color: #fff;
 	transition: color 0.1s;
-	cursor: pointer;
 }
+a, .ctrl, .up, .dn, .fl { cursor: pointer }
 a:visited { color: #ccc; }
 a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }

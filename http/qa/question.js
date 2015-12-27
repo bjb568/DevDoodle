@@ -203,8 +203,35 @@ function upvoteComment() {
 }
 var comments = document.getElementsByClassName('comment');
 for (var i = 0; i < comments.length; i++) {
-	comments[i].getElementsByClassName('sctrls')[0].firstChild.onclick = upvoteComment;
+	var e = comments[i].getElementsByClassName('sctrls')[0];
+	if (e) e.firstChild.onclick = upvoteComment;
 }
+var up = document.getElementById('q-up');
+up.parentNode.onclick = function() {
+	request('/api/question/vote', function(res) {
+		if (res.indexOf('Error') == 0) alert(res);
+		else if (res == 'Success') {
+			var opName = document.querySelector('#question .rep').previousElementSibling.firstChild.nodeValue,
+				e = document.getElementsByClassName('user-' + opName);
+			for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -2 : 0) - (up.classList.contains('clkd') ? -2 : 2);
+			up.classList.toggle('clkd');
+			dn.classList.remove('clkd');
+		} else alert('Unknown error. Response was: ' + res);
+	}, 'val=' + (this.firstChild.classList.contains('clkd') ? 0 : 1));
+};
+var dn = document.getElementById('q-dn');
+dn.parentNode.onclick = function() {
+	request('/api/question/vote', function(res) {
+		if (res.indexOf('Error') == 0) alert(res);
+		else if (res == 'Success') {
+			var opName = document.querySelector('#question .rep').previousElementSibling.firstChild.nodeValue,
+				e = document.getElementsByClassName('user-' + opName);
+			for (var i = 0; i < e.length; i++) e[i].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 2 : 0) - (dn.classList.contains('clkd') ? 2 : -2);
+			dn.classList.toggle('clkd');
+			up.classList.remove('clkd');
+		} else alert('Unknown error. Response was: ' + res);
+	}, 'val=' + (this.firstChild.classList.contains('clkd') ? 0 : -1));
+};
 var e = document.getElementById('edit-tags').getElementsByTagName('label');
 for (var i = 0; i < e.length; i++) {
 	e[i].addEventListener('click', function() {
