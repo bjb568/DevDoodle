@@ -1,7 +1,8 @@
 'use strict';
 const voteMultiplier = {
 	program: 1,
-	question: 2
+	question: 2,
+	answer: 5
 };
 var url = require('url'),
 	crypto = require('crypto');
@@ -428,7 +429,9 @@ module.exports = o(function*(req, res, user, post) {
 			body: post.body,
 			user: user.name,
 			time: new Date().getTime(),
-			score: 0
+			score: 0,
+			hotness: 0,
+			upvotes: 0
 		});
 		res.writeHead(200);
 		res.end('Location: #a' + id);
@@ -496,15 +499,18 @@ module.exports = o(function*(req, res, user, post) {
 		dbcs.programs.update({_id: id}, {$set: {title: post.title.substr(0, 92)}});
 		res.writeHead(204);
 		res.end();
-	} else if (req.url.pathname == '/program/vote' || req.url.pathname == '/question/vote') {
+	} else if (req.url.pathname == '/program/vote' || req.url.pathname == '/question/vote' || req.url.pathname == '/answer/vote') {
 		if (!post.val) return res.writeHead(400) || res.end('Error: Vote value not specified.');
 		post.val = parseInt(post.val);
 		if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.writeHead(400) || res.end('Error: Invalid vote value.');
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in and have 15 reputation to vote.');
 		if (user.rep < 15) return res.writeHead(403) || res.end('Error: You must have 15 reputation to vote.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/(?:dev|qa)\/(\d+)/);
-		id = i ? parseInt(i[1]) : 0;
-		var pType = req.url.pathname == '/program/vote' ? 'program' : 'question',
+		id = parseInt(post.id);
+		if (!id) {
+			i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/(?:dev|qa)\/(\d+)/);
+			id = i ? parseInt(i[1]) : 0;
+		}
+		var pType = req.url.pathname == '/program/vote' ? 'program' : req.url.pathname == '/question/vote' ? 'question' : 'answer',
 			doc = yield dbcs[pType + 's'].findOne({_id: id}, yield);
 		if (!doc) return res.writeHead(400) || res.end('Error: Invalid post id.');
 		if (doc.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own ' + pType + '.');

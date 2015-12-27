@@ -195,12 +195,19 @@ module.exports = o(function*(req, res, user) {
 			var answerHandler = o(function*(err, answer) {
 				if (err) throw err;
 				if (answer) {
-					var answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
-					answerstr += answerTemplate.replaceAll(
-						['$id', '$user', '$op-rep', '$op-mailhash'],
-						[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.mailhash]
-					).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
-					.replace('$time', new Date(answer.time).toISOString());
+					var answerVote = (yield dbcs.votes.findOne({
+						user: user.name,
+						answer: answer._id
+					}, yield)) || {val: 0},
+						answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
+					answerstr +=
+						answerTemplate
+						.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
+						.replaceAll(
+							['$id', '$user', '$op-rep', '$op-mailhash'],
+							[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.mailhash]
+						).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
+						.replace('$time', new Date(answer.time).toISOString());
 					cursor.nextObject(answerHandler);
 				} else {
 					var commentstr = '';
