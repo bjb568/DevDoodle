@@ -32,7 +32,7 @@ module.exports = o(function*(req, res, user) {
 				res.write('<a href="search" title="Search across all rooms." class="grey">Search</a>');
 				if (user.rep >= 200) res.write(' <line /> <a href="newroom" title="Requires 200 reputation" class="grey">Create Room</a>');
 				res.write('</small>');
-				res.write('</div>');
+				res.write('</main>');
 				res.write('<aside id="sidebar">');
 				res.write('<h2>Recent Posts</h2>');
 				dbcs.chat.find({
@@ -50,7 +50,7 @@ module.exports = o(function*(req, res, user) {
 							'</span>' +
 							commentBody.substring(commentBody.length - endTagsLength);
 						res.write('<div class="comment">' + commentBody + '</div>');
-					} else res.end((yield fs.readFile('html/a/foot.html', yield)).toString().replace('</div>', '</aside>'));
+					} else res.end((yield fs.readFile('html/a/foot.html', yield)).toString().replace('</main>', '</aside>'));
 				}));
 			}
 		}));

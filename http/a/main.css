@@ -37,7 +37,7 @@ body {
 [hidden], .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
-.fullwidth, input[type=text].fullwidth, input[type=password].fullwidth { width: 100% }
+.fullwidth, input[type=text].fullwidth, input[type=email].fullwidth, input[type=password].fullwidth { width: 100% }
 .maxwidth, img, input { max-width: 100% }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
@@ -181,10 +181,21 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
-code .element { color: #fa0 }
+code .universal { color: #fd8 }
+code .at-rule-name { color: #dd8 }
+code .element { color: #fb0 }
 code .class { color: #ff0 }
-code .id { color: #b80 }
-code .property { font-style: italic }
+code .id { color: #e80 }
+code .attribute-name { color: #baf }
+code .attribute-value { color: #afb }
+code .pseudo-class { color: #9ff }
+code .pseudo-element { color: #6fa }
+code .nth { color: #ffb }
+code .nth .n { color: #f55 }
+code .nth .number { color: #f88 }
+code .reference-combinator { color: #faa }
+code .property, code .logical, code .nth .n, code .colon { font-style: italic }
+code .no-nest { color: #ddd }
 code .value { color: #aaf }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
@@ -204,7 +215,7 @@ code .regex .charclass .punctuation, code .function-call { color: #f90 }
 code .regex .quantifier { color: #2af }
 code .regex .quantifier .punctuation { color: #8cf }
 code .regex .modifier, code .generator-star, code .newvar { font-weight: bold }
-code .operator, code .generator-star { color: #ff8 }
+code .operator, code .generator-star, code .colon { color: #ff8 }
 code .operator.assigns, code .equals { color: #8ff }
 code .argument, code .number { color: #3df }
 code .function-name { color: #f60 }
@@ -438,8 +449,8 @@ a.blk {
 }
 a.blk:hover, a.blk:active { background: rgba(255, 255, 255, 0.2) }
 a.blk:active { color: #00f }
-input[type=text], input[type=password] { width: 18em }
-input[type=text], input[type=number], input[type=search], input[type=password], textarea {
+input[type=text], input[type=email], input[type=password] { width: 18em }
+input[type=text], input[type=email], input[type=number], input[type=search], input[type=password], textarea {
 	font-family: helvetica;
 	font-size: 1rem;
 }

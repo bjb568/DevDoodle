@@ -32,6 +32,7 @@ section { background: transparent }
 #meta a:visited { color: #444 }
 #meta a:hover { color: #15f }
 #meta a:active { color: #02d }
+#meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
 #output { width: 100% }
 #main { min-height: 600px }

@@ -112,7 +112,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answerBody));
 });
-var socket = new WebSocket('wss://' + location.hostname + ':81/q/' + id);
+var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id);
 document.getElementById('comment').onsubmit = function(e) {
 	socket.send(JSON.stringify({
 		event: 'comment',
@@ -155,7 +155,7 @@ socket.onmessage = function(e) {
 		document.getElementById('q-edit-comment').value = '';
 		var hist = document.getElementById('q-hist').firstChild;
 		hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
-	} else if (data.event == 'add') {
+	} else if (data.event == 'comment-add') {
 		var div = document.createElement('div');
 		div.classList.add('comment');
 		div.innerHTML = ' ' + markdown(data.body);
@@ -197,7 +197,7 @@ socket.onmessage = function(e) {
 function upvoteComment() {
 	this.classList.toggle('clkd');
 	socket.send(JSON.stringify({
-		event: this.classList.contains('clkd') ? 'c-vote' : 'c-unvote',
+		event: this.classList.contains('clkd') ? 'comment-vote' : 'comment-unvote',
 		id: parseInt(this.parentNode.parentNode.id.substr(1))
 	}));
 }

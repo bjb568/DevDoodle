@@ -72,7 +72,7 @@ htmle.onkeypress = function(e) {
 			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>\s*$/))
+				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>[ \t]*$/))
 				? 0
 				: 1
 			);
@@ -88,7 +88,7 @@ htmle.onkeypress = function(e) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 47) {
+	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
 		var lines = this.value.substr(0, oldSelectionStart).split('\n');
 		if (lines[lines.length - 1].indexOf('\t') == -1) return;
 		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
@@ -116,12 +116,16 @@ htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
 css.onkeypress = js.onkeypress = jsKeypressHandler;
 run();
 var runTimeout;
+htmlCont.classList.toggle('collapsed', !htmle.value);
+cssCont.classList.toggle('collapsed', !css.value);
+jsCont.classList.toggle('collapsed', !js.value);
 function handleTAInput() {
 	var cursorPos, oldCaret;
 	if (htmle.value != lastValue[0]) {
 		highlightHTML(htmlDisplay, htmle.value);
 		htmlCont.dataset.line = htmlDisplay.dataset.line;
 		htmle.style.height = htmlDisplay.offsetHeight + 'px';
+		htmlCont.classList.toggle('collapsed', !htmle.value);
 	}
 	if (htmle.selectionStart != htmle.lastSelectionStart) {
 		htmle.lastSelectionStart = htmle.selectionStart;
@@ -147,6 +151,7 @@ function handleTAInput() {
 		highlightCSS(cssDisplay, css.value);
 		cssCont.dataset.line = cssDisplay.dataset.line;
 		css.style.height = cssDisplay.offsetHeight + 'px';
+		cssCont.classList.toggle('collapsed', !css.value);
 	}
 	if (css.selectionStart != css.lastSelectionStart) {
 		css.lastSelectionStart = css.selectionStart;
@@ -172,6 +177,7 @@ function handleTAInput() {
 		highlightJS(jsDisplay, js.value);
 		jsCont.dataset.line = jsDisplay.dataset.line;
 		js.style.height = jsDisplay.offsetHeight + 'px';
+		jsCont.classList.toggle('collapsed', !js.value);
 	}
 	if (js.selectionStart != js.lastSelectionStart) {
 		js.lastSelectionStart = js.selectionStart;
@@ -288,6 +294,13 @@ save.onclick = function() {
 		e.classList.remove('progress');
 	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 };
+function upvoteComment() {
+	this.classList.toggle('clkd');
+	socket.send(JSON.stringify({
+		event: this.classList.contains('clkd') ? 'c-vote' : 'c-unvote',
+		id: parseInt(this.parentNode.parentNode.id.substr(1))
+	}));
+}
 if (document.getElementById('meta')) {
 	addEventListener('DOMContentLoaded', function() {
 		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
@@ -343,10 +356,10 @@ if (document.getElementById('meta')) {
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
+	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
 	document.getElementById('comment').onsubmit = function(e) {
 		socket.send(JSON.stringify({
-			event: 'post',
+			event: 'comment',
 			body: document.getElementById('commentta').value
 		}));
 		document.getElementById('commentta').value = '';
@@ -365,12 +378,12 @@ if (document.getElementById('meta')) {
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
-		if (data.event == 'add') {
+		if (data.event == 'comment-add') {
 			var div = document.createElement('div');
 			div.classList.add('comment');
 			div.innerHTML = ' ' + markdown(data.body);
 			if (myRep >= 50) {
-				div.insertBefore(document.getElementById('meta').nextElementSibling.cloneNode(true), div.firstChild);
+				div.insertBefore(document.getElementById('main').nextElementSibling.cloneNode(true), div.firstChild);
 				div.firstChild.firstChild.onclick = upvoteComment;
 				var score = document.createElement('span');
 				score.classList.add('score');
@@ -400,7 +413,10 @@ if (document.getElementById('meta')) {
 		} else if (data.event == 'comment-scorechange') {
 			var c = document.getElementById('c' + data.id);
 			if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
-		} else if (data.event == 'err') alert('Error: ' + data.body);
+		} else if (data.event == 'err') {
+			alert('Error: ' + data.body);
+			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
+		}
 	};
 	socket.onclose = function() {
 		var ta = document.getElementById('commentta');
@@ -419,7 +435,7 @@ if (document.getElementById('meta')) {
 		addcomment.hidden = true;
 		setInterval(function() {
 			if (socket.readyState == 1) return location.reload(true);
-			socket = new WebSocket('wss://' + location.hostname + ':81/dev/') + id;
+			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/') + id;
 		}, 5000);
 	};
 	var deletebutton = document.getElementById('delete');
@@ -433,13 +449,6 @@ if (document.getElementById('meta')) {
 				});
 			}
 		};
-	}
-	function upvoteComment() {
-		this.classList.toggle('clkd');
-		socket.send(JSON.stringify({
-			event: this.classList.contains('clkd') ? 'c-vote' : 'c-unvote',
-			id: parseInt(this.parentNode.parentNode.id.substr(1))
-		}));
 	}
 	var comments = document.getElementsByClassName('comment');
 	for (var i = 0; i < comments.length; i++) {
