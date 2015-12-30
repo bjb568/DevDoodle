@@ -362,7 +362,8 @@ module.exports = o(function*(req, res, user, post) {
 			time: new Date().getTime(),
 			score: 0,
 			hotness: 0,
-			upvotes: 0
+			upvotes: 0,
+			answers: 0
 		});
 		res.writeHead(200);
 		res.end('Location: /qa/' + id);
@@ -422,10 +423,11 @@ module.exports = o(function*(req, res, user, post) {
 		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
 		var last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
-			id = last ? last._id + 1 : 1;
+			id = last ? last._id + 1 : 1,
+			qid = parseInt(i[1]);
 		dbcs.answers.insert({
 			_id: id,
-			question: parseInt(i[1]),
+			question: qid,
 			body: post.body,
 			user: user.name,
 			time: new Date().getTime(),
@@ -433,6 +435,7 @@ module.exports = o(function*(req, res, user, post) {
 			hotness: 0,
 			upvotes: 0
 		});
+		dbcs.questions.update({_id: qid}, {$inc: {answers: 1}});
 		res.writeHead(200);
 		res.end('Location: #a' + id);
 	} else if (req.url.pathname == '/program/save') {
