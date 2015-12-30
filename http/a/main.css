@@ -40,7 +40,7 @@ body {
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
-.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
+.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child, aside.rit:first-of-type { margin-top: 0 }
 .mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }

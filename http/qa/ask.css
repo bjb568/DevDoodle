@@ -1,6 +1,5 @@
 fieldset { padding: 0 4px }
-#form div { overflow: hidden }
-aside { clear: right }
+#form > div { overflow: hidden }
 label { display: table }
 #options label { display: inline }
 @media (min-width: 701px) {
@@ -17,11 +16,12 @@ label { display: table }
 @media (max-width: 759px) {
 	#duplist, aside { font-size: 0.9em }
 }
-aside.rit { margin: 0 0 0 4px }
 .ta-cont {
 	position: relative;
 	width: 100%;
 	min-height: 360px;
+	border: none;
+	overflow: visible;
 }
 .ta-cont pre {
 	padding: 3px;
