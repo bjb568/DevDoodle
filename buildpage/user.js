@@ -33,7 +33,7 @@ module.exports = o(function*(req, res, user) {
 			if (cUser) {
 				num++;
 				dstr +=
-					'<div class="lft user"><img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+					'<div class="user"><img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
 					'<div><a href="/user/' + cUser.name + '">' + cUser.name + '</a><small class="rep">' + cUser.rep + '</small></div>' +
 					'</div>';
 			} else {
@@ -100,6 +100,7 @@ module.exports = o(function*(req, res, user) {
 						res.write('</div>');
 						res.write('<section class="lim-programs resp-block">');
 						res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>');
+						res.write('<div class="flexcont programs lim-programs">')
 						var programs = 0;
 						dbcs.programs.find({
 							user: dispUser.name,
@@ -117,6 +118,7 @@ module.exports = o(function*(req, res, user) {
 								res.write('</div> ');
 								programs++;
 							} else {
+								res.write('</div>');
 								if (!programs) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any programs.</p>');
 								res.write('</section>');
 								if (me) {

@@ -70,7 +70,7 @@ var getVersionNonce = o(function*(pn, file, cb) {
 });
 var addVersionNonces = o(function*(str, pn, cb) {
 	for (let i = 0; i < str.length; i++) {
-		if (str.substr(i).match(/^\.\w{1,8}"/)) {
+		if (str.substr(i).match(/^\.[A-z]{1,8}"/)) {
 			while (str[i] && str[i] != '"') i++;
 			str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
 		}
@@ -123,8 +123,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	}
 	res.writeHead(status || 200, header);
 	var data = (yield fs.readFile('html/a/head.html', yield)).toString();
-	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/">Log in</a>', '<a$notifs href="/user/' + user.name + '">' + user.name + '</a>');
+	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span>', '<a$notifs href="/user/' + user.name + '"><span>' + user.name + '</span>');
 	var dirs = req.url.pathname.split('/');
+	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"')
 	res.write(
 		yield addVersionNonces(
 			data.replace(
@@ -152,8 +153,8 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				'$notifs',
 				(user && user.unread && !nonotif) ? ' class="unread"' : ''
 			).replace(
-				'<a href="/mod/">Mod</a>',
-				user && user.level > 1 ? '<a href="/mod/">Mod</a>' : ''
+				'<a href="/mod/"><span>Mod</span></a>',
+				user && user.level > 1 ? '<a href="/mod/"><span>Mod</span></a>' : ''
 			).replace('main.css', clean ? 'clean.css' : 'main.css'),
 			req.url.pathname,
 			yield

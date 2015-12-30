@@ -13,8 +13,19 @@
 	padding: 4px;
 	border-radius: 4px;
 }
+#content {
+	display: flex;
+	flex-direction: column;
+	padding-bottom: 4px;
+}
+#main {
+	flex-grow: 1;
+	display: flex;
+	align-items: stretch;
+}
+#output { margin-left: 8px }
 #ta-cont {
-	margin-bottom: 8px;
+	flex: 1 0 0;
 	position: relative;
 	overflow: auto;
 	border: 1px solid #fff;
@@ -56,9 +67,7 @@
 	width: 1px;
 }
 #caret[hidden] { display: none }
-#ta-cont, #output { height: 100% }
 #output { float: right }
-#ta-cont { width: calc(100% - 456px) }
 #output { width: 450px }
 @media (max-width: 1400px) {
 	#ta-cont, #output { zoom: 0.95 }
@@ -70,6 +79,5 @@
 	#ta-cont, #output { zoom: 0.85 }
 }
 @media (max-width: 800px) {
-	#output { width: 44% }
-	#ta-cont { width: 55% }
+	#output { width: 48% }
 }

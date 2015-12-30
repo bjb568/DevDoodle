@@ -1,15 +1,14 @@
-#form {
-	padding: 0 4px;
-	width: 100%;
-}
+fieldset { padding: 0 4px }
+#form div { overflow: hidden }
 aside { clear: right }
 label { display: table }
 #options label { display: inline }
 @media (min-width: 701px) {
-	fieldset {
-		width: calc(90% - 306px);
-		float: left;
-		clear: left;
+	#form > :not(aside) { flex: 1 1 calc(90% - 400px) }
+	#form {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
 	}
 }
 @media (max-width: 909px) {
@@ -18,6 +17,7 @@ label { display: table }
 @media (max-width: 759px) {
 	#duplist, aside { font-size: 0.9em }
 }
+aside.rit { margin: 0 0 0 4px }
 .ta-cont {
 	position: relative;
 	width: 100%;

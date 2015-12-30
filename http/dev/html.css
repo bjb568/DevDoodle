@@ -40,7 +40,7 @@ section { background: transparent }
 }
 .collapsed {
 	flex-basis: 3em;
-	flex-grow: 0;
+	flex-grow: 0.1;
 }
 #js-cont { margin-bottom: 0 }
 #edit-title {
@@ -75,11 +75,7 @@ section { background: transparent }
 	cursor: progress;
 	color: #4ff;
 }
-#up, #dn {
-	width: 22px;
-	height: 24px;
-	fill: #777;
-}
+#up, #dn { fill: #777 }
 #up:hover, #dn:hover {
 	fill: #888;
 	transition: fill 0.1s;
@@ -88,12 +84,8 @@ section { background: transparent }
 	fill: #666;
 	transition: none;
 }
-#up.clkd, #dn.clkd {
-	fill: #f90;
-}
+#up.clkd, #dn.clkd { fill: #f90 }
 #fl {
-	width: 20px;
-	height: 24px;
 	fill: #f44;
 	margin-left: 12px;
 }
@@ -101,19 +93,13 @@ section { background: transparent }
 	fill: #f55;
 	transition: fill 0.2s;
 }
-#fl.clkd {
-	fill: #f00;
-}
+#fl.clkd { fill: #f00 }
 #fl:active {
 	transition: fill 0.1s;
 	fill: #c00;
 }
 #comment:target + #addcomment { display: none }
-.up {
-	width: 18px;
-	height: 20px;
-	fill: #888;
-}
+.up { fill: #888 }
 .up:hover {
 	fill: #999;
 	transition: fill 0.1s;
@@ -123,11 +109,7 @@ section { background: transparent }
 	transition: none;
 }
 .up.clkd { fill: #f90 }
-.fl {
-	width: 20px;
-	height: 20px;
-	fill: #f88;
-}
+.fl { fill: #f88 }
 .fl:hover {
 	fill: #f66;
 	transition: fill 0.2s;

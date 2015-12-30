@@ -7,7 +7,7 @@ socket.onclose = function(e) {
 	socketTest.appendChild(document.createTextNode(
 		e.wasClean ?
 			'\nSocket closed cleanly.' :
-			'\nSocket cleaned uncleanly, error code ' + e.code
+			'\nSocket closed uncleanly, error code ' + e.code
 		)
 	);
 	if (!e.wasClean) socketTest.classList.add('red');
