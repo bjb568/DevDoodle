@@ -556,10 +556,10 @@ body > * { flex-shrink: 0 }
 	margin: 0 auto;
 	font-size: 5vmin;
 }
-@media screen and (min-width: 800px) {
+@media (min-width: 800px) {
 	#logo-big { max-width: 80% }
 }
-@media screen and (min-width: 1500px) {
+@media (min-width: 1500px) {
 	#logo-big {
 		width: 50%;
 		max-width: 900px;
@@ -571,6 +571,14 @@ body > * { flex-shrink: 0 }
 }
 @media (max-width: 400px) {
 	body { font-size: 0.9em }
+}
+@media (min-width: 360px) {
+	line {
+		display: inline-block;
+		width: 1px; height: 1.2em;
+		background: #888;
+		vertical-align: sub;
+	}
 }
 aside.rit { background: rgba(255, 255, 100, 0.5) }
 @media (min-width: 480px) {
