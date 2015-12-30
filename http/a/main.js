@@ -30,7 +30,7 @@ function warning(message) {
 }
 function spanMarkdown(input) {
 	input = html(input);
-	while (input.match(/\^([\w\^]+)/)) input = input.replace(/\^([\w\^]+)/, '<sup>$1</sup>');
+	while (/\^([\w\^]+)/.test(input)) input = input.replace(/\^([\w\^]+)/, '<sup>$1</sup>');
 	return input
 		.replaceAll('\u0001', '^')
 		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
@@ -40,7 +40,7 @@ function spanMarkdown(input) {
 		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
 		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
 		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
-		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, '$1' + '$3'.link('$2'))
+		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, '$1' + '$3'.link('$2'));
 }
 function inlineMarkdown(input) {
 	var output = '',
@@ -134,8 +134,7 @@ function markdown(input) {
 		ul = '',
 		ol = '',
 		li = '',
-		code = '',
-		i;
+		code = '';
 	return input.split('\n').map(function(val, i, arr) {
 		if (!val) return '';
 		var f;
@@ -184,7 +183,7 @@ function markdown(input) {
 				ol += '<li>' + markdown(li) + '</li>';
 				li = '';
 			}
-			if (arr[i + 1] && arr[i + 1].match(/^(\d+|[A-z])[.)] /)) {
+			if (/^(\d+|[A-z])[.)] /.test(arr[i + 1])) {
 				ol += '<li>' + inlineMarkdown(val) + '</li>';
 				return '';
 			} else if (arr[i + 1] && (arr[i + 1][0] == '\t' || arr[i + 1] && arr[i + 1].substr(0, 4) == '    ')) {
@@ -201,7 +200,7 @@ function markdown(input) {
 				var arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
-			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^(\d+|[A-z])[.)] /)))) {
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    '))) {
 				var arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
@@ -213,7 +212,7 @@ function markdown(input) {
 				var arg = ul + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ul>';
-			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    ' && !arr[i + 1].match(/^((\d+|[A-z])|[A-z])[.)] /)))) {
+			} else if (ol && (!arr[i + 1] || (arr[i + 1][0] != '\t' && arr[i + 1].substr(0, 4) != '    '))) {
 				var arg = ol + '<li>' + markdown(li) + '</li>';
 				li = '';
 				return arg + '</ol>';
@@ -237,7 +236,7 @@ function markdown(input) {
 			return '';
 		} else if ((f = val.match(/^#{1,6} /)) && (f = f[0].length - 1)) {
 			return '<h' + f + '>' + inlineMarkdown(val.substr(f + 1)) + '</h' + f + '>';
-		} else if (val.match(/^[-–—]{12,}$/)) {
+		} else if (/^[-–—]{12,}$/.test(val)) {
 			return '<hr />';
 		} else if (i = val.match(/^cite\[(\d+)\]: /)) {
 			return '<div><sup class="reference-list">' + i[1] + '</sup> ' + inlineMarkdown(val.substr(i[0].length)) + '</div>';
@@ -410,8 +409,7 @@ addEventListener('DOMContentLoaded', function() {
 		var span = document.createElement('span');
 		span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
 		document.getElementById('err').appendChild(span);
-		document.getElementById('cont').hidden = true;
-		document.getElementById('cont').style.display = 'none';
+		document.getElementById('content').hidden = true;
 	}
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
@@ -429,9 +427,28 @@ addEventListener('DOMContentLoaded', function() {
 			if (times[i].textContent != t) times[i].textContent = t;
 		}
 	}, 100);
-	e = document.getElementsByClassName('html-program');
-	i = e.length;
+	var navAnchors = document.querySelectorAll('#nav > div > a');
+	for (var i = 0; i < navAnchors.length; i++) {
+		if (navAnchors[i].children.length - 1) navAnchors[i].addEventListener('touchstart', function(e) {
+			if (innerWidth >= 800 && (this.dataset.clicked ^= 1)) {
+				e.preventDefault();
+				e.stopPropagation();
+				for (var i = 0; i < navAnchors.length; i++) if (navAnchors[i] != this) navAnchors[i].dataset.clicked = 0;
+			}
+		});
+	}
+	addEventListener('touchstart', function() {
+		if (innerWidth >= 800) for (var i = 0; i < navAnchors.length; i++) navAnchors[i].dataset.clicked = 0;
+	});
+	applyProgramIframes();
+});
+
+function applyProgramIframes() {
+	var e = document.getElementsByClassName('html-program'),
+		i = e.length;
 	while (i--) {
+		var j = e[i].parentNode.parentNode;
+		if (e[i].src || j.getBoundingClientRect().top - j.parentNode.getBoundingClientRect().top > j.parentNode.offsetHeight) continue;
 		var outputBlob = new Blob([
 			'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + e[i].dataset.html + '<style>html{zoom:0.5}' + html(e[i].dataset.css) + '</style><script>alert=prompt=confirm=null;' + html(e[i].dataset.js) + '</script></body></html>'
 		], {type: 'application/xhtml+xml'});
@@ -445,6 +462,8 @@ addEventListener('DOMContentLoaded', function() {
 		xhr.send();
 		xhr.onload = function() {
 			while (i--) {
+				var j = e[i].parentNode.parentNode;
+				if (e[i].src || j.getBoundingClientRect().top - j.parentNode.getBoundingClientRect().top > j.parentNode.offsetHeight) continue;
 				var outputBlob = new Blob([
 					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch(e){error(e)}</script></body></html>'
 				], {type: 'application/xhtml+xml'});
@@ -452,12 +471,13 @@ addEventListener('DOMContentLoaded', function() {
 			}
 		};
 	}
-});
+}
+addEventListener('resize', applyProgramIframes);
 
 document.addEventListener('visibilitychange', function() {
-	if (!document.hidden && document.querySelector('#nav > a:nth-child(8)').firstChild.nodeValue != 'Log in') {
+	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').firstChild.nodeValue != 'Log in') {
 		request('/api/notif', function(res) {
-			document.getElementById('nav').children[7].classList.toggle('unread', res);
+			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.toggle('unread', res);
 		});
 	}
 });

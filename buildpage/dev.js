@@ -5,6 +5,7 @@ module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/dev/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>');
+		res.write('<div class="flexcont programs">')
 		dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
 			if (err) throw err;
 			if (data) {
@@ -14,6 +15,7 @@ module.exports = o(function*(req, res, user) {
 				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>');
 				res.write('</div> ');
 			} else {
+				res.write('</div>');
 				res.write('<a href="search/" class="center-text blk">See more</a>');
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
@@ -130,8 +132,8 @@ module.exports = o(function*(req, res, user) {
 							user.rep >= 50 ?
 							(
 								'<span class="sctrls">' +
-								'<svg class="up' + (voted ? ' clkd' : '') + '" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-								'<svg class="fl" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+								'<svg class="up' + (voted ? ' clkd' : '') + '" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
+								'<svg class="fl" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
 								'</span>'
 							) :
 							''

@@ -13,7 +13,7 @@ module.exports = o(function*(req, res, user) {
 		res.write(
 			(user.level > 1 ? '<h2><a href="chatflag">' : '<h2 class="grey">') +
 			'Chat flags (' + (yield dbcs.chat.find(query).count(yield)) + ')' +
-			(user.level > 1 ? '</a>' : ' <small class="nofloat">(requires moderator level 2)</small>') +
+			(user.level > 1 ? '</a>' : ' <small class="nofloat">requires moderator level 2</small>') +
 			'</h2>'
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));

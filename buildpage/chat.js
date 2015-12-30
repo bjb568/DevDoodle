@@ -38,7 +38,7 @@ module.exports = o(function*(req, res, user) {
 				dbcs.chat.find({
 					deleted: {$exists: false},
 					room: {$in: publicRooms}
-				}).sort({_id: -1}).limit(12).each(o(function*(err, comment) {
+				}).sort({_id: -1}).limit(18).each(o(function*(err, comment) {
 					if (err) throw err;
 					if (comment) {
 						var commentBody = markdown(comment.body),

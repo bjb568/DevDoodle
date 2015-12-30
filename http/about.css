@@ -17,6 +17,16 @@ em {
 	color: #f96;
 	font-style: normal;
 }
+@media (min-width: 780px) {
+	.half { width: 49% }
+	.half:first-of-type { float: left }
+	.half:last-of-type { float: right }
+	.row::after {
+		content: '';
+		display: table;
+		clear: both;
+	}
+}
 .row { margin-top: 32px }
 .half { padding: 0 1% }
 ul { padding-left: 48px }

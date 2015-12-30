@@ -83,13 +83,13 @@ function findDups() {
 			h3.appendChild(a);
 			li.appendChild(h3);
 			var blockquote = document.createElement('blockquote');
-			blockquote.innerHTML = markdown(res[i].body.replace(/(\S{30})\S*/g, '$1'));
+			blockquote.innerHTML = markdown(res[i].body);
 			li.appendChild(blockquote);
 			duplist.appendChild(li);
 		}
 		if (!res.length) {
 			duplist.appendChild(document.createTextNode('No related questions found.'));
-			form.onsubmit();
+			if (step == 1) form.onsubmit();
 		}
 	}, 'lang=' + encodeURIComponent(lang.value) + '&search=' + encodeURIComponent(title.value));
 }

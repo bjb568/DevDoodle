@@ -35,15 +35,13 @@ body {
 .blk, img.center, textarea { display: block }
 .ib { display: inline-block }
 .inline, summary * { display: inline }
-.flex { display: -webkit-flex; display: flex }
-.flex > * { webkit-flex: 1; flex: 1 }
 [hidden], .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth, input[type=text].fullwidth, input[type=password].fullwidth { width: 100% }
 .maxwidth, img, input { max-width: 100% }
+.lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
-.lft, .row > :not(.rit):not(.sidebar):not(.half):not(.program), .user > * { float: left }
 .nofloat { float: none }
 .noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
 .mar { margin: 6px }
@@ -52,7 +50,7 @@ body {
 .sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
 .umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, .half, aside.rit, #notifs li { margin-bottom: 6px }
+.bmar, .error, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
 .pad, a.center-text.blk, .desc, #content, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
@@ -80,6 +78,11 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 .column-small { column-width: 10em }
 .column-medium { column-width: 16em }
 .column-large { column-width: 24em }
+.flexcont {
+	display: flex;
+	flex-wrap: wrap;
+}
+.flexcont > * { flex-grow: 1 }
 .highlight {
 	color: #fff;
 	background: #000;
@@ -343,6 +346,7 @@ fieldset {
 	 background: #9ef;
 	 color: #000;
 	 min-width: 140px;
+	 max-width: 14em;
 	 display: inline-block;
 	 padding: 4px 8px 4px 4px;
 	 text-align: left;
@@ -416,7 +420,7 @@ ul, ol, p { margin: 0.3em 0 0.2em }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
 .clear, footer, h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * { clear: both }
-.clearfix::after, #content::after, .comment::after, nav::after, .row::after, .user::after {
+.clearfix::after, #content::after, .comment::after, .user::after {
 	content: '';
 	display: block;
 	clear: both;
@@ -430,9 +434,9 @@ h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), 
 	font-weight: normal;
 	font-family: Verdana;
 }
+.underline, h1, aside h2 { border-bottom: 1px solid #aaa }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
 h1 {
-	border-bottom: 1px solid #aaa;
 	font-size: 1.5em;
 	line-height: 1;
 	padding-bottom: 1px;
@@ -451,7 +455,10 @@ a, .ctrl {
 a, .ctrl, .up, .dn, .fl { cursor: pointer }
 a:visited { color: #ccc; }
 a:hover, .ctrl:hover { color: #4ee }
-a:active, .ctrl:active { color: #faa }
+a:active, .ctrl:active {
+	color: #faa;
+	transition: none;
+}
 .user a { color: #000 }
 .user a:hover { color: #15f }
 .user a:active { color: #02d }
@@ -511,205 +518,174 @@ input[type=text], input[type=number], input[type=search], input[type=password], 
 	line-height: 1.2;
 }
 .starcount[data-count="0"] { display: none }
-html, body, #cont { height: 100% }
-#cont {
+html, body { height: 100% }
+body {
 	display: flex;
 	flex-direction: column;
 }
-#cont > * { flex-shrink: 0 }
+body > * { flex-shrink: 0 }
 #content { flex-grow: 1 }
 #footer {
 	position: absolute;
 	width: 100%;
 }
 #nav {
-	padding: 0 2px 6px 2px;
-	font-size: 0;
 	background: #000;
+	font-size: 0;
 }
-#nav * {
-	padding: 0 4px;
+#nav a {
+	display: inline-block;
 	color: #ddd;
-	font-weight: normal;
 	font-size: 0.9rem;
-	line-height: 1.5;
+	line-height: 1.6;
 }
-#logo {
-	display: block;
-	width: 180px;
-	margin: 0 auto 4px;
-	line-height: 0;
-	max-width: 100%;
-}
-#nav #logo { background: rgba(255, 255, 255, 0.9) }
-#nav form {
-	max-width: 100%;
-	padding: 4px 0;
-	line-height: 1;
+#nav span { padding: 0 4px }
+#nav nav {
+	margin: 0 4px;
 	display: inline-block;
 }
-#nav input {
-	width: 160px;
-	max-width: 100%;
-	color: #000;
-	line-height: 1em;
+#nav #logo {
+	padding: 0;
+	line-height: 1;
+	margin-bottom: 2px;
 }
 #logo svg {
-	max-width: 100%; max-height: 100%;
-	padding: 4px 6px;
+	max-width: 100%;
+	width: 180px;
+	padding: 3px 8px;
+	background: #eee;
+	transition: background 0.1s;
 }
-#content { padding-bottom: 4px }
-#nav > .active { position: relative }
+#logo svg:hover { background: #fff }
+#logo svg:active { background: #ddd }
+#nav form {
+	min-width: 8em;
+	width: 100%;
+	font-size: 0.9rem;
+	padding: 0 4px;
+	margin: 2px 0;
+}
+#nav form input {
+	width: 100%;
+	color: #000;
+	font-size: 16px;
+	line-height: 1em;
+	padding: 0 8px;
+}
+#content { padding-bottom: 24px }
 #nav .unread:not(.active) {
 	background: #d00;
 	color: #fff;
 }
+#nav nav > a.active { font-weight: bold }
 #nav .unread:not(.active):hover { background: #f00 }
 #nav .unread:not(.active):active { background: #c00 }
-@media (min-width: 380px) and (max-width: 799px) {
-	#nav > :not(.active) + nav + a:nth-child(5):not(.active) { border-right: 1px solid #aaa }
-}
-@media (max-width: 799px) {
-	#nav > a.active { text-decoration: underline }
-	#nav nav > a.active { font-weight: bold }
-	#nav :not(.active) + nav { display: none }
-	#nav nav {
-		background: #333;
+@media (max-width: 359px) {
+	#nav #logo { width: 100% }
+	#nav div {
+		min-width: 40%;
 		display: inline-block;
 	}
 }
-@media (min-width: 140px) and (max-width: 240px) {
-	#nav > .active + nav + :nth-child(5)::before, #nav > :not(.active) + nav + :nth-child(5)::after,
-	#nav > .active + nav + :nth-child(7)::before, #nav > :not(.active) + nav + :nth-child(5)::after {
-		white-space: pre;
-		content: '\a';
-	}
-}
-@media (min-width: 240px) and (max-width: 380px) {
-	#nav > :nth-child(6)::before {
-		white-space: pre;
-		content: ' ';
-	}
-}
-@media (min-width: 240px) and (max-width: 799px) {
-	#nav a:not(#logo) { margin-top: 4px }
-	#nav nav { margin-right: 6px }
-	#nav form {
-		margin: 0 3px;
-		max-width: calc(100% - 12px);
-	}
-}
-@media (min-width: 280px) and (max-width: 379px) {
-	#nav > .active + nav + :nth-child(5)::after {
-		white-space: pre;
-		content: '\a';
-	}
-}
-@media (max-width: 610px), (min-width: 750px) {
-	#nav input { width: 184px }
-}
-@media (max-width: 700px) {
-	.main { width: 100% }
-	.sidebar.nonvital { display: none }
-	.sidebar { margin-top: 8px }
-}
-@media (max-width: 600px) {
-	body { font-size: 0.95em }
-}
-@media (max-width: 400px) {
-	body { font-size: 0.9em }
-}
-aside.rit { background: rgba(255, 255, 100, 0.5) }
-@media (min-width: 480px) {
-	.resp-flex { display: -webkit-flex; display: flex }
-	.resp-flex > * { webkit-flex: 1; flex: 1 }
-}
-@media (min-width: 550px) {
-	section {
-		padding: 4px;
-		background: rgba(255, 255, 255, 0.4);
-	}
-	.resp-flex > section:not(:first-child) { margin-left: 6px }
-}
-@media (min-width: 750px) {
-	.half { float: left }
-	.half.rit, .half:not(.rit) + .half:last-child { float: right }
-	.half { width: 49.5% }
-	aside.rit {
-		width: calc(10% + 300px);
-		margin-left: 6px;
-	}
-}
-@media (min-width: 380px) {
-	#nav {
-		padding: 0;
-		text-align: right;
-	}
-	#logo {
-		float: left;
-		width: 152px;
-		margin: 0;
-	}
-	#nav nav { display: inline-block }
+@media (max-width: 279px) {
+	#nav.subs div { display: inline }
 }
 @media (min-width: 360px) {
-	line {
-		display: inline-block;
-		width: 1px; height: 1.2em;
-		background: #888;
-		vertical-align: sub;
+	#nav { text-align: right }
+}
+@media (min-width: 360px) and (max-width: 799px) {
+	#logo {
+		float: left;
+		margin-right: 4px;
+	}
+	#logo svg { width: 145px }
+	#nav > div:not(:first-of-type) { margin-left: 4px }
+	#nav div { padding-top: 3px }
+	#nav form { margin: 3px 0 }
+	#nav form input { max-width: 18em }
+}
+@media (min-width: 360px) and (max-width: 499px) {
+	#nav div, #nav a { display: inline }
+	#nav .active nav + spacer::after {
+		content: '\a';
+		white-space: pre;
+	}
+	#nav form {
+		width: calc(100% - 166px - 2em);
+		float: right;
 	}
 }
-@media (min-width: 800px) {
-	#nav {
-		padding: 0;
-		background: #111;
+@media (min-width: 500px) {
+	#nav:not(.sub) {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
-	#nav > a { transition: background 0.15s }
-	#nav a:not(.active):hover {
-		background: #262626;
-		color: #fff;
+	#nav form {
+		flex-basis: 10em;
+		flex-grow: 1;
 	}
-	#nav .active { color: #fff }
-	#nav > a:active:not(.active), #nav > a.active { background: #000 }
-	#nav nav > a {
-		display: inline-block;
-		line-height: 1.5;
-	}
-	#nav nav > a.active { background: #444 }
-	#nav > *, #nav form {
-		display: inline-block;
-		padding: 0 12px;
-		background: #1a1a1a;
-		line-height: 2rem;
-	}
+}
+@media (min-width: 500px) and (max-width: 799px) {
 	#logo {
-		display: inline-block; position: relative;
-		width: auto; height: 2rem;
-		margin: 0;
+		flex-grow: 1;
+		height: 0;
+		text-align: left;
 	}
-	#logo:hover div { background: rgba(255, 255, 255, 0.3) }
-	#logo:active div { background: rgba(0, 0, 0, 0.2) }
-	#logo div {
-		position: absolute;
-		top: 0; left: 0; right: 0; bottom: 0;
-		transition: background 0.1s;
-		content: '';
+}
+@media (min-width: 645px) {
+	#nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
+}
+@media (max-width: 799px) {
+	#nav > div > a.active > span { text-decoration: underline }
+	#nav :not(.active) > nav { display: none }
+	#nav nav { background: #333 }
+}
+@media (min-width: 800px) {
+	#nav { background: #111 }
+	#nav > a { transition: background 0.15s }
+	#nav a:not(.active):hover { background: #333 }
+	#nav a:hover, #nav .active { color: #fff }
+	#nav .active, #nav a:not(.active):active { background: #000 }
 	#logo svg {
-		padding-bottom: 4px;
-		width: 9.4rem;
+		width: 165px;
+		padding: 4px 12px;
 	}
-	#nav > :nth-child(-n+5) { float: left }
-	#nav > :nth-child(7) { border-left: 1px solid #444 }
-	#nav > a:not(#logo) { border-right: 1px solid #444 }
+	#nav #logo {
+		line-height: 0;
+		margin-bottom: 0;
+	}
+	#nav a { line-height: 32px }
+	#nav div > a { border-right: 1px solid #444 }
+	#nav div:not(:first-of-type) { flex-grow: 1 }
+	#nav div:not(:first-of-type) > :first-child { border-left: 1px solid #444 }
+	#nav a, #nav form {
+		padding: 0 10px;
+		background: #222;
+	}
+	#nav nav a { background: #161616 }
+	#nav form {
+		line-height: 32px;
+		margin: 0;
+		max-width: 24em;
+	}
+	#nav .active { background: #000 }
+	#nav a:not(:hover) nav { height: 0 }
+	#nav > div > a { position: relative }
 	#nav nav {
 		position: absolute;
-		z-index: 1;
-		top: 2rem;
-		border-top: 1px solid #888;
+		z-index: 3;
+		top: 100%; left: 0;
+		margin: 0;
+		text-align: left;
+		overflow: hidden;
+		height: 96px;
+		transition: height 0.2s;
+		box-shadow: 1px 1px 8px #000;
 	}
-	#nav nav:nth-child(4) { left: calc(12rem + 43px) }
-	#nav nav:nth-child(6) { left: calc(14.5rem + 72px) }
-	#nav :not(:hover) + nav:not(:hover) { display: none }
+	#nav nav a { width: 100% }
 }

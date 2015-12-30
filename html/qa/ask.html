@@ -1,12 +1,21 @@
 <h1>New Question</h1>
 <form id="form" method="post" action="/api/question/add">
-	<fieldset id="step0">
-		<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
-		<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
-		<div id="langsug" hidden="" class="abs"></div>
-		<button type="submit" id="submit1">Next</button>
-		<div id="err1" class="err"></div>
-	</fieldset>
+	<div>
+		<fieldset id="step0">
+			<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" class="fullwidth" maxlength="144" /></h2>
+			<h2><input type="text" name="lang" placeholder="Language" id="lang" /></h2>
+			<div id="langsug" hidden="" class="abs"></div>
+			<button type="submit" id="submit1">Next</button>
+			<div id="err1" class="err"></div>
+		</fieldset>
+		<fieldset id="step1" class="hide">
+			<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
+			<div class="hglt pad bmar">
+				<ul id="duplist"></ul>
+			</div>
+			<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
+		</fieldset>
+	</div>
 	<aside id="titlehelp" class="rit">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title effectively capture the essence of the question. Try to avoid titles like:</p>
@@ -22,13 +31,6 @@
 		</ul>
 		<p>Remember to keep it as short and concise as possible while still accurately describing the problem.</p>
 	</aside>
-	<fieldset id="step1" class="hide">
-		<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
-		<div class="hglt pad bmar">
-			<ul id="duplist"></ul>
-		</div>
-		<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
-	</fieldset>
 	<fieldset id="step2" class="hide">
 		<h2>Question Body</h2>
 		<div class="ta-cont">

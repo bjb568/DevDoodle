@@ -17,16 +17,17 @@ module.exports = o(function*(req, res, user) {
 				if (err) throw err;
 				if (tag) tagstr += '<a href="qa/search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
 				else {
-					res.write('<p>' + tagstr + ' <span class="rit"><a href="qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+					res.write('<p class="underline qlist-tags">' + tagstr + ' <span class="rit"><a href="qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 					cursor.nextObject(questionSummaryHandler);
 				}
 			}));
 		} else {
 			res.write('</section>');
-			res.write('<section class="lim-programs resp-block">');
+			res.write('<section class="resp-block">');
 			res.write('<h2 class="underline">Hot Programs</h2>');
+			res.write('<div class="flexcont programs lim-programs">')
 			var programstr = '';
-			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(12).each(o(function*(err, data) {
+			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(24).each(o(function*(err, data) {
 				if (err) throw err;
 				if (data) {
 					programstr += '<div class="program">';
@@ -35,7 +36,7 @@ module.exports = o(function*(req, res, user) {
 					else if (data.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>';
 					programstr += '</div> ';
 				} else {
-					res.write(programstr + '</section>');
+					res.write(programstr + '</div></section>');
 					res.end(yield fs.readFile('html/a/foot.html', yield));
 				}
 			}));
