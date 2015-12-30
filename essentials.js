@@ -1,7 +1,6 @@
 'use strict'
-function html(input, attribute) {
-	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
-	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
 }
 function warning(message) {
 	//console.log(message);

@@ -11,8 +11,8 @@ module.exports = o(function*(req, res, user) {
 			if (data) {
 				res.write('<div class="program">');
 				res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
-				if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code, true) + '"></iframe></div>');
-				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>');
+				if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>');
+				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>');
 				res.write('</div> ');
 			} else {
 				res.write('</div>');

@@ -32,8 +32,8 @@ module.exports = o(function*(req, res, user) {
 				if (data) {
 					programstr += '<div class="program">';
 					programstr += '<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>';
-					if (data.type == 1) programstr += '<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code, true) + '"></iframe></div>';
-					else if (data.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html, true) + '" data-css="' + html(data.css, true) + '" data-js="' + html(data.js, true) + '"></iframe></div>';
+					if (data.type == 1) programstr += '<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>';
+					else if (data.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>';
 					programstr += '</div> ';
 				} else {
 					res.write(programstr + '</div></section>');

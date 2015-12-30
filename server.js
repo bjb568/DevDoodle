@@ -207,7 +207,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	res.write(
 		'<div>' +
 			'<input type="text" id="name" name="name" placeholder="Name"' +
-				(filln && post.name ? ' value="' + html(post.name, true) + '"' : '') +
+				(filln && post.name ? ' value="' + html(post.name) + '"' : '') +
 				' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') +
 			' autocapitalize="none" /> ' +
 			'<span id="name-error" class="red"> </span>' +
@@ -221,10 +221,10 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
 	res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn\'t match</span></div>');
 	res.write('<p><small>Please use a password manager to store passwords</small></p>');
-	res.write('<div><input type="email" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail, true) + '"' : '') + ' /></div>');
+	res.write('<div><input type="email" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
 	res.write('<p id="sec" data-num="' + num + '">[No JS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" autocorrect="off" autocapitalize="none" /></p>');
 	res.write('</div>');
-	res.write('<input type="hidden" name="referer" value="' + html(post.referer || '', true) + '" />');
+	res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />');
 	res.write('<button type="submit" id="submit" class="umar">Submit</button>');
 	res.write('</form>');
 	res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
@@ -253,7 +253,7 @@ var respondCreateRoomPage = o(function*(errs, user, req, res, post) {
 	res.write('<h1>Create Room</h1>');
 	res.write(errorsHTML(errs));
 	res.write('<form method="post">');
-	res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '', true) + '" /></div>');
+	res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
 	res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80" style="max-width: 100%">' + html(post.desc || '') + '</textarea></div>');
 	res.write('<div>Type: <select name="type">');
 	res.write('\t<option value="P">Public</option>');

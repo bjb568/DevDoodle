@@ -18,9 +18,8 @@ HTMLElement.prototype.insertAfter = function(newEl, refEl) {
 	else refEl.parentNode.appendChild(newEl);
 };
 
-function html(input, attribute) {
-	if (attribute) return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
-	return input.toString().replaceAll(['&', '<', '\b'], ['&amp;', '&lt;', '']);
+function html(input) {
+	return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
 }
 
 var mdWarnings = [];
