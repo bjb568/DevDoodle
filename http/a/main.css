@@ -388,6 +388,7 @@ fieldset {
 }
 @media (min-width: 1200px) {
 	.programs { max-height: 1500px }
+	.lim-programs { max-height: 750px }
 }
 @media (min-width: 1410px) {
 	.program { width: 340px }
@@ -397,6 +398,7 @@ fieldset {
 }
 @media (min-width: 2900px) {
 	.programs { max-height: 1800px }
+	.lim-programs { max-height: 750px }
 }
 .comment { margin-top: 3px }
 .comment #up, .comment #dn { width: 18px }
