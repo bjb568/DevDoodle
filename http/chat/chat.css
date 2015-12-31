@@ -48,7 +48,7 @@ textarea {
 	height: 96px;
 	flex-shrink: 0;
 }
-.comment:hover { outline: 1px dotted #000 }
+#chat .comment:hover { outline: 1px dotted #000 }
 .ctrls { border: 1px solid #aaa }
 #stars {
 	list-style-type: none;
@@ -107,4 +107,4 @@ textarea {
 	z-index: 1;
 }
 #chat { background: #ddd }
-.comment { background: #eee }
+#chat .comment { background: #eee }
