@@ -38,13 +38,6 @@
 	border-top: none;
 }
 #roomlist .selected { background: #6df }
-.deleted { position: relative }
-.deleted::before {
-	content: '';
-	position: absolute;
-	top: 0; right: 0; bottom: 0; left: 0;
-	background: rgba(255, 128, 128, 0.95);
-}
 #results:empty::after {
 	content: '(no results)';
 	color: #444;
@@ -76,7 +69,7 @@ textarea {
 #users a { font-weight: normal }
 #users:empty::after { content: 'No users in room' }
 #stars:empty::after { content: 'No multistarred messages' }
-.comment:not(:hover) .ctrls:not(:hover) { display: none }
+.comment:not(:hover) .ctrls:not(:hover) { z-index: -1 }
 #aside {
 	float: right;
 	padding-top: 4px;
@@ -113,3 +106,5 @@ textarea {
 	position: absolute;
 	z-index: 1;
 }
+#chat { background: #ddd }
+.comment { background: #eee }

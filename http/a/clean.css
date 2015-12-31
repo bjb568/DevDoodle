@@ -47,9 +47,9 @@ body {
 .mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
-.sumar:not(:first-child), :not(img) + .desc, .blk { margin-top: 4px }
-.umar:not(:first-child), :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
-.bumar:not(:first-child), h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
+.sumar, :not(img) + .desc, .blk { margin-top: 4px }
+.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
+.bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
 .bmar, .error, aside.rit, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
@@ -452,7 +452,7 @@ a, .ctrl {
 	color: #fff;
 	transition: color 0.1s;
 }
-a, .ctrl, .up, .dn, .fl { cursor: pointer }
+a, button, .ctrl, .up, .dn, .fl { cursor: pointer }
 a:visited { color: #ccc; }
 a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active {
