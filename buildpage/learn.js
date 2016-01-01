@@ -17,7 +17,7 @@ module.exports = o(function*(req, res, user) {
 		var post = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
 		if (!post) return errorNotFound(req, res, user);
 		yield respondPage(post.title, user, req, res, yield);
-		res.write('<h1><span id="title">' + html(post.title) + '</span> <input type="text" id="edit-title" hidden="" value="' + html(post.title) + '" />  <small><a id="save">Save</a></small></h1>');
+		res.write('<h1><span id="title">' + html(post.title) + '</span> <input type="text" id="edit-title" hidden="" value="' + html(post.title) + '" /> <small><a id="save">Save</a></small></h1>');
 		res.write(
 			'<ul>' +
 			post.content.map(function(val, i) {

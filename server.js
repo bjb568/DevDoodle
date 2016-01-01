@@ -106,7 +106,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="03Yp9b7zlEaaJUIWosWYHJcdKYxMSa3Z4bZXWf8LXtI="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
-		if (!header['Set-Cookie'] && new Date() -  user.seen > 3600000) {
+		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
 			var tokens = user.cookie,
 				idToken = crypto.randomBytes(128).toString('base64');
 			for (var i in tokens) {
@@ -320,7 +320,7 @@ var serverHandler = o(function*(req, res) {
 		cookie: {
 			$elemMatch: {
 				token: cookies.id || 'nomatch',
-				created: {$gt: new Date() -  2592000000}
+				created: {$gt: new Date() - 2592000000}
 			}
 		}
 	}, yield);

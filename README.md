@@ -37,14 +37,14 @@ To make Safari/OS X like the cert (and allow connecting with sockets), add the c
 
 For reference, to update Node:
 
-    sudo npm cache clean -f
-    sudo npm install -g n
-    sudo n stable
+	sudo npm cache clean -f
+	sudo npm install -g n
+	sudo n stable
 
 npm:
 
-    sudo npm update -g npm
+	sudo npm update -g npm
 
 dependancies:
 
-    npm update
+	npm update
