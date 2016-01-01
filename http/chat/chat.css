@@ -66,7 +66,10 @@ textarea {
 #users a:visited:not(:hover) { color: #000 }
 #users:empty::after { content: 'No users in room' }
 #stars:empty::after { content: 'No multistarred messages' }
-.comment:not(:hover) .ctrls:not(:hover) { z-index: -1 }
+.comment:not(:hover) .ctrls:not(:hover) {
+	z-index: -1;
+	transform: scale(0);
+}
 #aside {
 	float: right;
 	padding-top: 4px;
