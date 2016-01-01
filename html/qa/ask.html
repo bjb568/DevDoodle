@@ -1,22 +1,28 @@
 <h1>New Question</h1>
 <form id="form" method="post" action="/api/question/add">
-	<div>
-		<fieldset id="step0">
-			<h2><input type="text" name="title" placeholder="Title" id="title" autofocus="" autocomplete="off" class="fullwidth" maxlength="144" /></h2>
-			<h2><input type="text" name="lang" placeholder="Language" id="lang" autocomplete="off" /></h2>
-			<div id="langsug" hidden="" class="abs"></div>
-			<button type="submit" id="submit1">Next</button>
-			<div id="err1" class="err"></div>
-		</fieldset>
-		<fieldset id="step1" class="hide">
-			<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
-			<div class="hglt pad bmar">
-				<ul id="duplist"></ul>
-			</div>
-			<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
-		</fieldset>
-	</div>
-	<aside id="titlehelp" class="rit">
+	<aside>
+		<h2>How to ask</h2>
+		<ul>
+			<li>Make sure your question can be answered, not just discussed.</li>
+			<li>Try to learn something new, don't just ask others to solve your problems.</li>
+			<li>Ask <em>how</em> to do something, not for a library or other pre-existing code that can do it.</li>
+			<li>Be deatiled when explaining your problem, also include what you tried to solve it.</li>
+			<li><strong>Is your question specifically about programming?</strong><br />Ask about the site itself on meta.</li>
+		</ul>
+	</aside>
+	<fieldset>
+		<h2>My question is about…</h2>
+		<div id="types">
+			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" /> fixing non-working code</label>
+			<label for="type-bug"><input type="radio" name="type" value="bug" id="type-bug" /> unexpected behavior in working code</label>
+			<label for="type-imp"><input type="radio" name="type" value="imp" id="type-imp" /> improving working code</label>
+			<label for="type-how"><input type="radio" name="type" value="how" id="type-how" /> how to achieve an end result</label>
+			<label for="type-alg"><input type="radio" name="type" value="alg" id="type-alg" /> algorithms and data structures</label>
+			<label for="type-pra"><input type="radio" name="type" value="pra" id="type-pra" /> techniques and best practices</label>
+			<label for="type-the"><input type="radio" name="type" value="the" id="type-the" /> a theoretical scenario</label>
+		</div>
+	</fieldset>
+	<aside id="titlehelp" class="hide">
 		<h2>Writing a good title</h2>
 		<p>Your question's title is the first thing seen by readers skimming thru questions both here and on search engines. A title effectively capture the essence of the question. Try to avoid titles like:</p>
 		<ul>
@@ -31,44 +37,51 @@
 		</ul>
 		<p>Remember to keep it as short and concise as possible while still accurately describing the problem.</p>
 	</aside>
+	<div>
+		<fieldset id="step0" class="hide">
+			<h2><label class="fullwidth">Title: <input type="text" name="title" id="title" autocomplete="off" maxlength="144" /></label></h2>
+			<h2><label>Language: <input type="text" name="lang" id="lang" autocomplete="off" /></label></h2>
+			<div id="langsug" hidden="" class="abs"></div>
+			<button type="submit" id="submit1">Next</button>
+			<div id="err1" class="err"></div>
+		</fieldset>
+		<fieldset id="step1" class="hide">
+			<h2>Has your question already been asked before? <small><button id="reload-dups">↻</button></small></h2>
+			<div class="hglt pad bmar">
+				<ul id="duplist"></ul>
+			</div>
+			<button type="submit" id="submit2" disabled="" hidden="">None of these are the same as my question</button>
+		</fieldset>
+	</div>
+	<aside id="explainhelp" class="hide">
+		<h2>Explaining your problem</h2>
+		<p>In the description box, you want to describe your problem in detail. <em>Include any information needed to setup the environment, replicate the bug, or observe the problematic behavior.</em> Be <strong>clear</strong> about what exactly you did, struggled with, and would like us to help with. The core question box is for your specific request <em>in one well-written sentence</em>, for example "How can I flow foo thru bar?".</p>
+	</aside>
 	<fieldset id="step2" class="hide">
 		<h2>Question Body</h2>
 		<div class="ta-cont">
-			<textarea name="description" id="description" placeholder="Description"></textarea>
+			<textarea name="description" id="description" placeholder="What's the problem? What have you tried to solve it?"></textarea>
 			<pre></pre>
 		</div>
-		<h2><input type="text" name="question" id="question" placeholder="Core Question" class="fullwidth" maxlength="144" autocomplete="off" /></h2>
+		<h3>Core Question</h3>
+		<h2><input type="text" name="question" id="question" placeholder="Summarize your problem in one well-written sentencce" class="fullwidth" maxlength="144" autocomplete="off" /></h2>
 		<button type="submit" id="submit3" hidden="">Next</button>
 		<div id="err3" class="err"></div>
 	</fieldset>
-	<aside id="explainhelp" class="hide rit">
-		<h2>Explaining your problem</h2>
-		<p>In the description box, you want to describe your problem in detail. <em>Include any information needed to setup the environment, replicate the bug, or observe the problematic behavior.</em> Be <strong>clear</strong> about what exactly you did, struggled with, and would like us to help with. The core question box is for your specific request <em>in one well-written sentence</em>, for example "How can I flow foo thru bar?".</p>
+	<aside id="codehelp" class="hide">
+		<h2>Adding relevant code</h2>
+		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (whatever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>After isolating the problem, you should have a small code snippit that reproduces the issue, generally under 48 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
 	</aside>
 	<fieldset id="step3" class="hide">
 		<h2>Code</h2>
 		<div class="ta-cont" autocapitalize="none" autocomplete="off" spellcheck="false">
-			<textarea name="code" id="code" placeholder="//code (optional)"></textarea>
+			<textarea name="code" id="code" placeholder="(Optional) code that reproduces the problem or that you want help with"></textarea>
 			<pre></pre>
 		</div>
 		<button type="submit" id="submit4" hidden="">Almost done!</button>
 	</fieldset>
-	<aside id="codehelp" class="hide rit">
-		<h2>Adding relevant code</h2>
-		<p>What code showcases the problem you're asking about? You'll want to make it easy to run the code and locate the issue (whatever it might be), but too much code can be hard to debug and understand. A good way of finding out what's going on in your code is to comment out a few lines at a time until you either have very little code or the problem has gone away. If you can fix it by yourself this way, that's great! But even if you can't, you've narrowed down the code that may contain the culprit and now have a succinct snippet of code to share with us. <strong>After isolating the problem, you should have a small code snippit that reproduces the issue, generally under 48 lines.</strong> Make sure you take out sensitive information and clean up the code before posting it here.</p>
-	</aside>
 	<fieldset id="step4" class="hide">
 		<h2>Categorization</h2>
-		<h3>My question is about…</h3>
-		<div id="types">
-			<label for="type-err"><input type="radio" name="type" value="err" id="type-err" /> fixing non-working code</label>
-			<label for="type-bug"><input type="radio" name="type" value="bug" id="type-bug" /> unexpected behavior in working code</label>
-			<label for="type-imp"><input type="radio" name="type" value="imp" id="type-imp" /> improving working code</label>
-			<label for="type-how"><input type="radio" name="type" value="how" id="type-how" /> how to achieve an end result</label>
-			<label for="type-alg"><input type="radio" name="type" value="alg" id="type-alg" /> algorithms and data structures</label>
-			<label for="type-pra"><input type="radio" name="type" value="pra" id="type-pra" /> techniques and best practices</label>
-			<label for="type-the"><input type="radio" name="type" value="the" id="type-the" /> a theoretical scenario</label>
-		</div>
 		<h3>This question is specific to…</h3>
 		<input type="hidden" name="tags" id="tags-input" />
 		<div id="tags"></div>

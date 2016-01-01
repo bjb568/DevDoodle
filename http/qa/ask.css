@@ -1,19 +1,32 @@
 fieldset { padding: 0 4px }
 #form > div { overflow: hidden }
-label { display: table }
-#options label { display: inline }
-@media (min-width: 701px) {
+#types label, #tags label { display: table }
+h2 label {
+	display: inline-flex;
+}
+h2 label input { flex-grow: 1 }
+aside {
+	background: rgba(255, 255, 100, 0.5);
+	padding: 4px;
+	border-radius: 4px;
+}
+aside, fieldset:not(:first-of-type), #form > div { margin-top: 24px }
+@media (min-width: 900px) {
 	#form > :not(aside) { flex: 1 1 calc(90% - 400px) }
 	#form {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
 	}
+	aside {
+		width: calc(10% + 300px);
+		margin-right: 6px;
+	}
 }
-@media (max-width: 909px) {
+@media (max-width: 1200px) {
 	#duplist, aside { font-size: 0.95em }
 }
-@media (max-width: 759px) {
+@media (max-width: 750px) {
 	#duplist, aside { font-size: 0.9em }
 }
 .ta-cont {

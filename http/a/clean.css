@@ -50,16 +50,16 @@ body {
 .sumar, :not(img) + .desc, .blk { margin-top: 4px }
 .umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer { margin-top: 6px }
 .bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, aside.rit, #notifs li { margin-bottom: 6px }
+.bmar, .error, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
-.pad, a.center-text.blk, .desc, #content, #footer, .error, .popup, code.blk, .comment, aside.rit { padding: 4px }
+.pad, a.center-text.blk, .desc, #content, #footer, .error, .popup, code.blk, .comment { padding: 4px }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
 .noscrl, .comment > :last-child, blockquote { overflow: hidden }
-.br, .desc, aside.rit { border-radius: 4px }
+.br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, article { background: #333 }
 .shglt { background: #444 }
 iframe:not([seamless]) { background: #fff }

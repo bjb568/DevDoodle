@@ -30,6 +30,13 @@ addEventListener('input', function() {
 var step = 0,
 	langs = JSON.parse(document.getElementById('langs').value),
 	waiting = false;
+document.getElementById('types').onchange = function() {
+	if (this.querySelector(':checked')) {
+		document.getElementById('titlehelp').classList.remove('hide');
+		document.getElementById('step0').classList.remove('hide');
+		title.focus();
+	}
+};
 lang.addEventListener('keyup', function() {
 	if (!(langsug.hidden = !this.value)) {
 		var firstChild;
@@ -270,7 +277,7 @@ tags.onchange = function() {
 	}, 0);
 };
 document.getElementById('step4').onchange = function() {
-	document.getElementById('showpreview').disabled = !document.getElementById('types').querySelector(':checked') || !tags.querySelector(':checked');
+	document.getElementById('showpreview').disabled = !tags.querySelector(':checked');
 };
 document.getElementById('showpreview').onclick = function(e) {
 	e.preventDefault();
