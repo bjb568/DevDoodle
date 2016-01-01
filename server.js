@@ -473,7 +473,7 @@ var serverHandler = o(function*(req, res) {
 						if (!str) continue;
 						secAnswered = true;
 						fail |= str.match(/[a-wyz]/i);
-						str = str.replace(/x\s*\*\s*x|x\s*\*\*\s*2|x²/, 'x^2').replace(/\s/g, '');
+						str = str.replace(/\s/g, '').replace(/1?\*?(x\^2|x\s*\*\s*x|x\s*\*\*\s*2|x²)/, 'x^2');
 						fail |= str.match(/[^\d\+-^x]/);
 						var arr = [],
 							lstart = 0;
