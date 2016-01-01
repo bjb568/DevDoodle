@@ -44,8 +44,6 @@
 #comments { margin: 6px 0 }
 code.blk:empty { display: none }
 .up, .dn {
-	width: 20px;
-	height: 20px;
 	fill: #999;
 	margin-bottom: 4px;
 }
@@ -59,11 +57,7 @@ code.blk:empty { display: none }
 }
 .up.clkd, .dn.clkd { fill: #f90 }
 .ctrl .fl { margin-bottom: 12px }
-.fl {
-	width: 20px;
-	height: 24px;
-	fill: #f66;
-}
+.fl { fill: #f66 }
 .fl:hover {
 	fill: #f44;
 	transition: fill 0.2s;

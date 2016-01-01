@@ -109,11 +109,7 @@ section { background: transparent }
 	fill: #c00;
 }
 #comment:target + #addcomment { display: none }
-.up {
-	width: 18px;
-	height: 20px;
-	fill: #888;
-}
+.up { fill: #888 }
 .up:hover {
 	fill: #999;
 	transition: fill 0.1s;
@@ -123,11 +119,7 @@ section { background: transparent }
 	transition: none;
 }
 .up.clkd { fill: #f90 }
-.fl {
-	width: 20px;
-	height: 20px;
-	fill: #f88;
-}
+.fl { fill: #f88 }
 .fl:hover {
 	fill: #f66;
 	transition: fill 0.2s;
