@@ -28,7 +28,7 @@ function blink() {
 	blinkTimeout = setTimeout(blink, 500);
 }
 function insertNodeAtPosition(node, refNode, pos) {
-	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.splitText(pos));
+	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
 	else {
 		for (var i = 0; i < refNode.childNodes.length; i++) {
 			var chNode = refNode.childNodes[i];
@@ -64,7 +64,8 @@ function run() {
 }
 restart.onclick = run;
 htmle.onkeypress = function(e) {
-	var oldSelectionStart = this.selectionStart;
+	var oldSelectionStart = this.selectionStart,
+		el = (document.getElementById('caret') || {}).previousElementSibling;
 	if (e.keyCode == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 		var toSelection = this.value.substr(0, oldSelectionStart),
@@ -72,7 +73,7 @@ htmle.onkeypress = function(e) {
 			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>[ \t]*$/))
+				el.className == 'xml-tag end-start-tag'
 				? 0
 				: 1
 			);
@@ -80,12 +81,16 @@ htmle.onkeypress = function(e) {
 		this.selectionStart = ++oldSelectionStart + tabs;
 		this.selectionEnd = this.selectionStart;
 		e.preventDefault();
+	} else if (e.keyCode == 62 && el.className == 'xml-tag end-start-tag') {
+		this.value = this.value.substr(0, this.selectionStart) + '></' + el.dataset.tagname + '>' + this.value.substr(this.selectionStart);
+		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
+		e.preventDefault();
 	} else if (e.keyCode == 34) {
-		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? '""' : '"') + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
 	} else if (e.keyCode == 39) {
-		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? "''" : "'") + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
 	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {

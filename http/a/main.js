@@ -19,7 +19,7 @@ HTMLElement.prototype.insertAfter = function(newEl, refEl) {
 };
 
 function html(input) {
-	return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '>', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&gt;', '&quot;', '&#9;', '&#10;', '']);
 }
 
 var mdWarnings = [];
@@ -564,25 +564,195 @@ function highlightHTML(codeBlock, input) {
 	var chunk = '',
 		warnings = [],
 		line = 1,
+		inCD = false,
+		inComment = false,
+		inEntity = false,
+		inPI = false,
+		inTag = false,
+		inCloseTag = false,
+		inAttr = false,
+		inAttrValue = false,
+		tagName = '',
 		fc;
 	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
 	var linenum = document.createElement('span');
 	linenum.className = 'line';
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
+	function endCD() {
+		if (!chunk) return;
+		var cd = document.createElement('span');
+		cd.appendChild(document.createTextNode(chunk));
+		cd.className = 'cdata';
+		codeBlock.appendChild(cd);
+		chunk = '';
+	}
+	function endComment() {
+		if (!chunk) return;
+		var comment = document.createElement('span');
+		comment.appendChild(document.createTextNode(chunk));
+		comment.className = 'inline-comment';
+		codeBlock.appendChild(comment);
+		chunk = '';
+	}
+	function endEntity() {
+		if (!chunk) return;
+		var ent = document.createElement('span');
+		ent.appendChild(document.createTextNode(chunk));
+		ent.className = 'entity';
+		codeBlock.appendChild(ent);
+		chunk = '';
+	}
+	function endPI() {
+		if (!chunk) return;
+		var pi = document.createElement('span');
+		pi.appendChild(document.createTextNode(chunk));
+		pi.className = 'processing-instruction';
+		codeBlock.appendChild(pi);
+		chunk = '';
+	}
+	function endTag() {
+		if (!chunk) return;
+		var tag = document.createElement('span');
+		tag.appendChild(document.createTextNode(chunk));
+		if (!inCloseTag && (chunk[chunk.length - 1] == '>' || /\n|\s*($|<[^/])/.test(chunk.substr(i))) && (chunk.length == 1 || chunk[chunk.length - 2] != '/')) {
+			tag.dataset.tagname = tagName;
+			tagName = '';
+			tag.className = 'xml-tag end-start-tag';
+		} else tag.className = 'xml-tag';
+		codeBlock.appendChild(tag);
+		chunk = '';
+	}
+	function endAttr() {
+		if (!chunk) return;
+		var i;
+		if ((i = chunk.indexOf(':')) != -1) {
+			var attrns = document.createElement('span');
+			attrns.appendChild(document.createTextNode(chunk.substr(0, i)));
+			attrns.className = 'xml-attr-ns';
+			codeBlock.appendChild(attrns);
+			var colon = document.createElement('span');
+			colon.appendChild(document.createTextNode(':'));
+			colon.className = 'punctuation';
+			codeBlock.appendChild(colon);
+			chunk = chunk.substr(i + 1);
+		}
+		var attr = document.createElement('span');
+		attr.appendChild(document.createTextNode(chunk));
+		attr.className = 'xml-attr';
+		codeBlock.appendChild(attr);
+		chunk = '';
+	}
+	function endAttrValue() {
+		if (!chunk) return;
+		var val = document.createElement('span');
+		val.appendChild(document.createTextNode(chunk));
+		val.className = 'xml-attr-value';
+		codeBlock.appendChild(val);
+		chunk = '';
+	}
+	function end() {
+		if (inCD) endCD();
+		else if (inPI) endPI();
+		else if (inComment) endComment();
+		else if (inAttrValue) endAttrValue();
+		else if (inAttr) endAttr();
+		else if (inTag) endTag();
+		else {
+			codeBlock.appendChild(document.createTextNode(chunk));
+			chunk = '';
+		}
+	}
 	for (var i = 0; i < input.length; i++) {
 		if (input.substr(i - 9, 9).toLowerCase() == '<!doctype') warnings.push([i, 'No need for doctype, you\'re writing inside the body.']);
 		var c = input[i];
 		if (c == '\n') {
-			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
-			chunk = '';
+			end();
+			codeBlock.appendChild(document.createTextNode('\n'));
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
 			codeBlock.appendChild(linenum);
+		} else if (inCD) {
+			chunk += c;
+			if (input.substr(i - 2, 3) == ']]>') {
+				endCD();
+				inCD = false;
+			}
+		} else if (inComment) {
+			chunk += c;
+			if (input.substr(i - 2, 3) == '-->') {
+				endComment();
+				inComment = false;
+			}
+			if (input.substr(i, 2) == '--' && input[i + 2] != '>') warnings.push([i, 'Invalid double-dash inside comment.']);
+		} else if (inEntity) {
+			chunk += c;
+			if (c == ';') {
+				endEntity();
+				inEntity = false;
+			}
+		} else if (c == '&') {
+			end();
+			chunk = '&';
+			inEntity = true;
+		} else if (inPI) {
+			chunk += c;
+			if (input.substr(i - 1, 2) == '?>') {
+				endPI();
+				inPI = false;
+			}
+		} else if (inTag) {
+			if (c == '<') {
+				endTag();
+				chunk = '<';
+				if (input[i + 1] == '/') inCloseTag = true;
+			} else if (c == '>') {
+				chunk += '>';
+				endTag();
+				inTag = inCloseTag = inAttr = inAttrValue = false;
+			} else if (!inAttr && !inAttrValue && /\s/.test(c)) {
+				endTag();
+				chunk = c;
+				inAttr = true;
+			} else if (inAttr && (c == '"' || c == "'")) {
+				endAttr();
+				chunk = c;
+				inAttr = false;
+				inAttrValue = c;
+			} else if (inAttrValue == c) {
+				chunk += c;
+				endAttrValue();
+				inAttr = true;
+				inAttrValue = false;
+			} else if (!inAttr && !inAttrValue) {
+				chunk += c;
+				tagName += c;
+			} else chunk += c;
+		} else if (input.substr(i, 9) == '<![CDATA[') {
+			end();
+			chunk = '<![CDATA[';
+			i += 8;
+			inCD = true;
+		} else if (input.substr(i, 4) == '<!--') {
+			end();
+			chunk = '<!--';
+			i += 3;
+			inComment = true;
+		} else if (input.substr(i, 2) == '<?') {
+			end();
+			chunk = '<?';
+			i++;
+			inPI = true;
+		} else if (c == '<') {
+			end();
+			chunk = '<';
+			inTag = true;
+			if (input[i + 1] == '/') inCloseTag = true;
 		} else chunk += c;
 	}
-	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	end();
+	codeBlock.appendChild(document.createTextNode('\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
@@ -613,7 +783,7 @@ function highlightCSS(codeBlock, input) {
 	linenum.className = 'line';
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
-	var endSel = function() {
+	function endSel() {
 		if (!chunk) return;
 		var inSub = false,
 			inClass = false,
@@ -622,7 +792,7 @@ function highlightCSS(codeBlock, input) {
 			inPseudoElement = false,
 			inRefComb = false,
 			schunk = '';
-		var endSChunk = function() {
+		function endSChunk() {
 			if (!schunk) return;
 			if (inSub) {
 				var span = document.createElement('span');
@@ -634,7 +804,7 @@ function highlightCSS(codeBlock, input) {
 				inSub = inClass = inID = inPseudoClass = inPseudoElement = false;
 			} else codeBlock.appendChild(document.createTextNode(schunk));
 			schunk = '';
-		};
+		}
 		for (var i = 0; i < chunk.length; i++) {
 			var c = chunk[i];
 			if (c == '\n') {
@@ -695,45 +865,45 @@ function highlightCSS(codeBlock, input) {
 		}
 		endSChunk();
 		chunk = '';
-	};
-	var endProp = function() {
+	}
+	function endProp() {
 		if (!chunk) return;
 		var prop = document.createElement('span');
 		prop.appendChild(document.createTextNode(chunk));
 		prop.className = 'property';
 		codeBlock.appendChild(prop);
 		chunk = '';
-	};
-	var endVal = function() {
+	}
+	function endVal() {
 		if (!chunk) return;
 		var val = document.createElement('span');
 		val.appendChild(document.createTextNode(chunk));
 		val.className = 'value';
 		codeBlock.appendChild(val);
 		chunk = '';
-	};
-	var endAttrName = function() {
+	}
+	function endAttrName() {
 		if (!chunk) return;
 		var an = document.createElement('span');
 		an.appendChild(document.createTextNode(chunk));
 		an.className = 'attribute-name';
 		codeBlock.appendChild(an);
 		chunk = '';
-	};
-	var endAttrValue = function() {
+	}
+	function endAttrValue() {
 		if (!chunk) return;
 		var av = document.createElement('span');
 		av.appendChild(document.createTextNode(chunk));
 		av.className = 'attribute-value';
 		codeBlock.appendChild(av);
 		chunk = '';
-	};
-	var endNth = function() {
+	}
+	function endNth() {
 		inNth.className = 'nth';
 		codeBlock.appendChild(inNth);
 		inNth = false;
-	};
-	var endAt = function() {
+	}
+	function endAt() {
 		if (!chunk) return;
 		if (inAtNoNest) {
 			var span = document.createElement('span');
@@ -742,8 +912,8 @@ function highlightCSS(codeBlock, input) {
 			codeBlock.appendChild(span);
 		} else codeBlock.appendChild(document.createTextNode(chunk));
 		chunk = '';
-	};
-	var end = function() {
+	}
+	function end() {
 		if (inAt) endAt();
 		else if (inSelector) endSel();
 		else if (inAttrValue) endAttrValue();
@@ -751,13 +921,12 @@ function highlightCSS(codeBlock, input) {
 		else if (inNth) endNth();
 		else if (inValue) endVal();
 		else endProp();
-	};
+	}
 	for (var i = 0; i < input.length; i++) {
 		var c = input[i];
 		if (c == '\n') {
 			end();
-			(comment || inNth || codeBlock).appendChild(document.createTextNode(chunk + '\n'));
-			chunk = '';
+			(comment || inNth || codeBlock).appendChild(document.createTextNode('\n'));
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
@@ -909,7 +1078,7 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	}
 	end();
-	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	codeBlock.appendChild(document.createTextNode('\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
@@ -1534,7 +1703,7 @@ function highlightJS(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
-		}else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input.charAt(i + 3) != '=')) {
+		}else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input[i + 3] != '=')) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
@@ -1542,7 +1711,7 @@ function highlightJS(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
-		} else if (['<=', '>=', '==', '!=', '<<', '>>', '&&', '||'].indexOf(input.substr(i, 2)) != -1 && ['=', '<', '>'].indexOf(input.charAt(i + 2)) == -1) {
+		} else if (['<=', '>=', '==', '!=', '<<', '>>', '&&', '||'].indexOf(input.substr(i, 2)) != -1 && ['=', '<', '>'].indexOf(input[i + 2]) == -1) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
