@@ -613,7 +613,7 @@ function highlightCSS(codeBlock, input) {
 	linenum.className = 'line';
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
-	var endSel = function() {
+	function endSel() {
 		if (!chunk) return;
 		var inSub = false,
 			inClass = false,
@@ -622,7 +622,7 @@ function highlightCSS(codeBlock, input) {
 			inPseudoElement = false,
 			inRefComb = false,
 			schunk = '';
-		var endSChunk = function() {
+		function endSChunk() {
 			if (!schunk) return;
 			if (inSub) {
 				var span = document.createElement('span');
@@ -634,7 +634,7 @@ function highlightCSS(codeBlock, input) {
 				inSub = inClass = inID = inPseudoClass = inPseudoElement = false;
 			} else codeBlock.appendChild(document.createTextNode(schunk));
 			schunk = '';
-		};
+		}
 		for (var i = 0; i < chunk.length; i++) {
 			var c = chunk[i];
 			if (c == '\n') {
@@ -695,45 +695,45 @@ function highlightCSS(codeBlock, input) {
 		}
 		endSChunk();
 		chunk = '';
-	};
-	var endProp = function() {
+	}
+	function endProp() {
 		if (!chunk) return;
 		var prop = document.createElement('span');
 		prop.appendChild(document.createTextNode(chunk));
 		prop.className = 'property';
 		codeBlock.appendChild(prop);
 		chunk = '';
-	};
-	var endVal = function() {
+	}
+	function endVal() {
 		if (!chunk) return;
 		var val = document.createElement('span');
 		val.appendChild(document.createTextNode(chunk));
 		val.className = 'value';
 		codeBlock.appendChild(val);
 		chunk = '';
-	};
-	var endAttrName = function() {
+	}
+	function endAttrName() {
 		if (!chunk) return;
 		var an = document.createElement('span');
 		an.appendChild(document.createTextNode(chunk));
 		an.className = 'attribute-name';
 		codeBlock.appendChild(an);
 		chunk = '';
-	};
-	var endAttrValue = function() {
+	}
+	function endAttrValue() {
 		if (!chunk) return;
 		var av = document.createElement('span');
 		av.appendChild(document.createTextNode(chunk));
 		av.className = 'attribute-value';
 		codeBlock.appendChild(av);
 		chunk = '';
-	};
-	var endNth = function() {
+	}
+	function endNth() {
 		inNth.className = 'nth';
 		codeBlock.appendChild(inNth);
 		inNth = false;
-	};
-	var endAt = function() {
+	}
+	function endAt() {
 		if (!chunk) return;
 		if (inAtNoNest) {
 			var span = document.createElement('span');
@@ -742,8 +742,8 @@ function highlightCSS(codeBlock, input) {
 			codeBlock.appendChild(span);
 		} else codeBlock.appendChild(document.createTextNode(chunk));
 		chunk = '';
-	};
-	var end = function() {
+	}
+	function end() {
 		if (inAt) endAt();
 		else if (inSelector) endSel();
 		else if (inAttrValue) endAttrValue();
@@ -751,7 +751,7 @@ function highlightCSS(codeBlock, input) {
 		else if (inNth) endNth();
 		else if (inValue) endVal();
 		else endProp();
-	};
+	}
 	for (var i = 0; i < input.length; i++) {
 		var c = input[i];
 		if (c == '\n') {
