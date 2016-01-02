@@ -72,7 +72,7 @@ htmle.onkeypress = function(e) {
 			.split('\n')[toSelection.split('\n').length - 1]
 			.split('\t').length
 			- (
-				(toSelection.match(/<\s*([^/\s<][^<]*[^/]|.)>[ \t]*$/))
+				((document.getElementById('caret') || {}).previousElementSibling || {}).className == 'xml-tag end-start-tag'
 				? 0
 				: 1
 			);
@@ -81,11 +81,11 @@ htmle.onkeypress = function(e) {
 		this.selectionEnd = this.selectionStart;
 		e.preventDefault();
 	} else if (e.keyCode == 34) {
-		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionStart);
+		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? '""' : '"') + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
 	} else if (e.keyCode == 39) {
-		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionStart);
+		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? "''" : "'") + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
 	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {

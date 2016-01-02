@@ -200,6 +200,13 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
+code .xml-tag { color: #adf }
+code .xml-attr { color: #ff7 }
+code .xml-attr-ns { color: #fa8 }
+code .xml-attr-value { color: #9f9 }
+code .processing-instruction { color: #cd8 }
+code .cdata { color: #ec8 }
+code .entity { color: #f99 }
 code .universal { color: #fd8 }
 code .at-rule-name { color: #dd8 }
 code .element { color: #fb0 }
