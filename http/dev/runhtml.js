@@ -28,7 +28,7 @@ function blink() {
 	blinkTimeout = setTimeout(blink, 500);
 }
 function insertNodeAtPosition(node, refNode, pos) {
-	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.splitText(pos));
+	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
 	else {
 		for (var i = 0; i < refNode.childNodes.length; i++) {
 			var chNode = refNode.childNodes[i];
