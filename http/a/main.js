@@ -19,7 +19,7 @@ HTMLElement.prototype.insertAfter = function(newEl, refEl) {
 };
 
 function html(input) {
-	return input.toString().replaceAll(['&', '<', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&quot;', '&#9;', '&#10;', '']);
+	return input.toString().replaceAll(['&', '<', '>', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&gt;', '&quot;', '&#9;', '&#10;', '']);
 }
 
 var mdWarnings = [];
