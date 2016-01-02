@@ -41,7 +41,7 @@ module.exports = o(function*(req, res, user) {
 		cursor.nextObject(questionSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
-		res.write(yield fs.readFile('./html/qa/tags.html', yield));
+		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
 		var tlang = [],
 			clang = '';
 		dbcs.qtags.find().sort({lang: 1}).each(o(function*(err, tag) {
@@ -86,7 +86,7 @@ module.exports = o(function*(req, res, user) {
 		if (!user.name) return res.writeHead('303', {Location: '/login/?r=ask'}) || res.end();
 		yield respondPage('New Question', user, req, res, yield, {inhead: '<link rel="stylesheet" href="ask.css" />'});
 		res.write(
-			(yield fs.readFile('./html/qa/ask.html', yield)).toString()
+			(yield addVersionNonces((yield fs.readFile('./html/qa/ask.html', yield)).toString(), req.url.pathname, yield))
 			.replace(
 				'$langs', html(JSON.stringify(
 					yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)
@@ -204,8 +204,8 @@ module.exports = o(function*(req, res, user) {
 						answerTemplate
 						.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 						.replaceAll(
-							['$id', '$user', '$op-rep', '$op-mailhash'],
-							[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.mailhash]
+							['$id', '$user', '$op-rep', '$op-pic'],
+							[answer._id.toString(), answer.user, answerPoster.rep.toString(), answerPoster.pic]
 						).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
 						.replace('$time', new Date(answer.time).toISOString());
 					cursor.nextObject(answerHandler);
@@ -268,7 +268,8 @@ module.exports = o(function*(req, res, user) {
 											i = -1;
 										}
 									}
-									res.write((yield fs.readFile('./html/qa/question.html', yield)).toString()
+									res.write(
+										(yield addVersionNonces((yield fs.readFile('./html/qa/question.html', yield)).toString(), req.url.pathname, yield))
 										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
 										.replace(revcount ? '$revcount': ' ($revcount)', revcount || '')
 										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
@@ -287,7 +288,7 @@ module.exports = o(function*(req, res, user) {
 											[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
 										).replaceAll(
 											['$askdate', '$op-name', '$op-rep', '$op-pic'],
-											[new Date(question.time).toISOString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+											[new Date(question.time).toISOString(), op.name, op.rep.toString(), op.pic]
 										).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
 									);
 									res.end(yield fs.readFile('html/a/foot.html', yield));

@@ -4,7 +4,10 @@ fieldset { padding: 0 4px }
 h2 label {
 	display: inline-flex;
 }
-h2 label input { flex-grow: 1 }
+h2 label input {
+	flex-grow: 1;
+	margin-left: 0.5ch;
+}
 aside {
 	background: rgba(255, 255, 100, 0.5);
 	padding: 4px;

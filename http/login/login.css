@@ -11,10 +11,10 @@ form div { margin: 0.2em 0 }
 	width: 18em;
 	max-width: 100%;
 }
-#submit {
+#submit, #github-button {
 	display: block;
 	margin: 8px 0;
-	font-size: 16px;
+	font-size: 1rem;
 	padding: 4px 8px;
 	background: #6cf;
 	border-radius: 4px;
@@ -22,11 +22,21 @@ form div { margin: 0.2em 0 }
 	transition: background-color 0.2s;
 	box-shadow: 1px 1px 3px #666;
 }
-#submit:hover { background: #7df }
-#submit:active { background: #0bf }
+#submit:hover, #github-button:hover { background: #7df }
+#submit:active, #github-button:active { background: #0bf }
 #submit:disabled {
 	background: #fff;
 	transition: none;
 }
+#github-button {
+	font-size: 1.4rem;
+	text-decoration: none;
+	display: inline-block;
+}
+#github-button svg {
+	margin-right: 6px;
+	vertical-align: middle;
+}
 #sec::before, #sec input { font-size: 1rem }
 #sec input { width: 10em }
+.bumar { margin-top: 24px }

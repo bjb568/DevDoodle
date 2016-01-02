@@ -17,6 +17,7 @@ global.config = require('./config.js')[process.argv.indexOf('--test') == -1 ? 'n
 
 var colors = require('colors'),
 	http = require('http'),
+	https = require('https'),
 	http2 = require('http2'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
@@ -65,10 +66,19 @@ global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
-var getVersionNonce = o(function*(pn, file, cb) {
+global.githubAuth = '{}';
+try {
+	githubAuth = fs.readFileSync('../Secret/github-auth.json');
+} catch(e) {
+	console.log(e.toString());
+	console.log('We won\'t be able to log users in with GitHub.'.yellow);
+}
+githubAuth = JSON.parse(githubAuth);
+
+global.getVersionNonce = o(function*(pn, file, cb) {
 	cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
 });
-var addVersionNonces = o(function*(str, pn, cb) {
+global.addVersionNonces = o(function*(str, pn, cb) {
 	for (let i = 0; i < str.length; i++) {
 		if (str.substr(i).match(/^\.[A-z]{1,8}"/)) {
 			while (str[i] && str[i] != '"') i++;
@@ -125,7 +135,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	var data = (yield fs.readFile('html/a/head.html', yield)).toString();
 	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span>', '<a$notifs href="/user/' + user.name + '"><span>' + user.name + '</span>');
 	var dirs = req.url.pathname.split('/');
-	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"')
+	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"');
 	res.write(
 		yield addVersionNonces(
 			data.replace(
@@ -202,13 +212,15 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 		updated: 'Your password has been updated. You may now login with your new password.'
 	})[post.r];
 	res.write(errorsHTML(errs) || (notice ? '<div class="notice">' + notice + '</div>' : ''));
+	res.write('<a href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.headers.referer) + '" id="github-button"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 120 120"><path d="M60 1.103C26.653 1.103-0.388 28.138-0.388 61.491 -0.388 88.171 16.915 110.807 40.909 118.792 43.927 119.351 45.035 117.482 45.035 115.887 45.035 114.448 44.979 109.69 44.953 104.644 28.153 108.297 24.608 97.519 24.608 97.519 21.861 90.54 17.903 88.683 17.903 88.683 12.424 84.935 18.316 85.012 18.316 85.012 24.38 85.438 27.573 91.236 27.573 91.236 32.959 100.467 41.7 97.798 45.146 96.255 45.689 92.353 47.253 89.688 48.98 88.18 35.567 86.654 21.467 81.475 21.467 58.336 21.467 51.744 23.826 46.356 27.689 42.127 27.062 40.606 24.995 34.464 28.275 26.146 28.275 26.146 33.346 24.524 44.885 32.337 49.702 30.999 54.868 30.328 60 30.304 65.132 30.328 70.302 30.999 75.128 32.337 86.654 24.524 91.718 26.146 91.718 26.146 95.005 34.464 92.938 40.606 92.311 42.127 96.183 46.356 98.525 51.744 98.525 58.336 98.525 81.531 84.398 86.637 70.951 88.132 73.117 90.006 75.047 93.681 75.047 99.315 75.047 107.395 74.978 113.898 74.978 115.887 74.978 117.495 76.064 119.377 79.125 118.785 103.107 110.791 120.388 88.163 120.388 61.491 120.388 28.138 93.351 1.103 60 1.103" fill="#161514" /></svg> Log in with GitHub</a>');
+	res.write('<p class="bumar">Or on DevDoodle:</p>');
 	res.write('<form method="post">');
 	res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>');
 	res.write(
 		'<div>' +
 			'<input type="text" id="name" name="name" placeholder="Name"' +
 				(filln && post.name ? ' value="' + html(post.name) + '"' : '') +
-				' required="" maxlength="16"' + (fpass ? '' : ' autofocus=""') +
+				' required="" maxlength="16"' +
 			' autocapitalize="none" /> ' +
 			'<span id="name-error" class="red"> </span>' +
 		'</div>'
@@ -228,7 +240,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	res.write('<button type="submit" id="submit" class="umar">Submit</button>');
 	res.write('</form>');
 	res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
-	res.write('<script src="login.js"></script>');
+	res.write(yield addVersionNonces('<script src="login.js"></script>', req.url.pathname, yield));
 	res.end(yield fs.readFile('html/a/foot.html', yield));
 });
 var respondChangePassPage = o(function*(errs, user, req, res, post) {
@@ -244,7 +256,7 @@ var respondChangePassPage = o(function*(errs, user, req, res, post) {
 	res.write('<p><small>Please use a password manager to store passwords</small></p>');
 	res.write('<button type="submit" id="submit" disabled="">Submit</button>');
 	res.write('</form>');
-	res.write('<script src="/login/changepass.js"></script>');
+	res.write(yield addVersionNonces('<script src="/login/changepass.js"></script>', req.url.pathname, yield));
 	res.end(yield fs.readFile('html/a/foot.html', yield));
 });
 var respondCreateRoomPage = o(function*(errs, user, req, res, post) {
@@ -291,7 +303,8 @@ var statics = JSON.parse(fs.readFileSync('./statics.json')),
 	apiServer = require('./api.js'),
 	canvasJS = fs.readFileSync('./http/dev/canvas.js');
 
-var cache = {};
+var cache = {},
+	tempVerificationTokens = {};
 
 var serverHandler = o(function*(req, res) {
 	if (!req.headers.host) {
@@ -329,7 +342,10 @@ var serverHandler = o(function*(req, res) {
 			clean: i.clean,
 			inhead: i.inhead
 		});
-		res.write((yield fs.readFile(i.path || './html/' + req.url.pathname, yield)).toString().replace('$canvasjs', html(canvasJS)));
+		res.write(
+			(yield addVersionNonces((yield fs.readFile(i.path, yield)).toString(), req.url.pathname, yield))
+			.replace('$canvasjs', html(canvasJS))
+		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname.substr(0, 5) == '/api/') {
 		req.url.pathname = req.url.pathname.substr(4);
@@ -357,7 +373,7 @@ var serverHandler = o(function*(req, res) {
 				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
 			});
 			res.write(
-				(yield fs.readFile('./html/learn/newlesson.html', yield)).toString()
+				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
 				.replace('$title', html(req.url.query.title || ''))
 				.replace(/\$[^\/\s"<]+/g, '')
 			);
@@ -420,7 +436,7 @@ var serverHandler = o(function*(req, res) {
 						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
 					});
 					res.write(
-						(yield fs.readFile('./html/learn/lessonpreview.html', yield)).toString()
+						(yield addVersionNonces((yield fs.readFile('html/learn/lessonpreview.html', yield)).toString(), req.url.pathname, yield))
 						.replaceAll(
 							['$title', '$stitle', '$sbody', '$validate', '$html', '$md-sbody'],
 							[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || ''), markdown(post.sbody || '')]
@@ -433,7 +449,7 @@ var serverHandler = o(function*(req, res) {
 						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
 					});
 					res.write(
-						(yield fs.readFile('./html/learn/newlesson.html', yield)).toString()
+						(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
 						.replaceAll(
 							['$title', '$stitle', '$sbody', '$html'],
 							[html(post.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.html || '')]
@@ -447,7 +463,7 @@ var serverHandler = o(function*(req, res) {
 			res.end('Method not allowed. Use GET or POST.');
 		}
 	} else if (req.url.pathname == '/login/') {
-		if (req.method == 'GET') respondLoginPage([], user, req, res, {referer: req.headers.referer, r: (req.url.query || {}).r});
+		if (req.method == 'GET') respondLoginPage([], user, req, res, {referer: req.headers.referer, r: req.url.query.r});
 		else if (req.method == 'POST') {
 			post = '';
 			req.on('data', function(data) {
@@ -535,7 +551,7 @@ var serverHandler = o(function*(req, res) {
 						name: post.name,
 						pass: pass,
 						mail: post.mail,
-						mailhash: crypto.createHash('md5').update(post.mail).digest('hex'),
+						pic: 'https://gravatar.com/avatar/' + crypto.createHash('md5').update(post.mail).digest('hex') + '?s=576&amp;d=identicon',
 						confirm: confirmToken,
 						salt: salt,
 						joined: new Date().getTime(),
@@ -561,7 +577,10 @@ var serverHandler = o(function*(req, res) {
 					if (fuser.confirm) {
 						if (fuser.seen) return respondLoginPage(['This account has been disabled by a user-initiated password reset. It can be <a href="recover">recovered with email verification</a>.'], user, req, res, post);
 						yield respondPage('Confirm Account', user, req, res, yield);
-						res.write((yield fs.readFile('./html/login-confirm.html', yield)).toString().replaceAll(['$user', '$pass', '$mail'], [fuser.name, html(post.pass), html(fuser.mail)]));
+						res.write(
+							(yield addVersionNonces((yield fs.readFile('html/login/login-confirm.html', yield)).toString(), req.url.pathname, yield))
+							.replaceAll(['$user', '$pass', '$mail'], [fuser.name, html(post.pass), html(fuser.mail)])
+						);
 						return res.end(yield fs.readFile('html/a/foot.html', yield));
 					}
 					if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
@@ -591,25 +610,191 @@ var serverHandler = o(function*(req, res) {
 						return res.end();
 					}
 					var referer = url.parse(post.referer);
-					if (!r && referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/') {
-						res.writeHead(303, {
-							Location: referer.pathname,
-							'Set-Cookie': idCookie
-						});
-						return res.end();
-					}
-					yield respondPage('Login Success', user, req, res, yield, {
-						'Set-Cookie': idCookie,
-						user: fuser
+					res.writeHead(303, {
+						Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/' ? referer.pathname : '/',
+						'Set-Cookie': idCookie
 					});
-					res.write('<p>Welcome back, ' + fuser.name + '. You have ' + fuser.rep + ' reputation.</p>');
-					res.end(yield fs.readFile('html/a/foot.html', yield));
+					return res.end();
 				}
 			}));
 		} else {
-		   res.writeHead(405);
-		   res.end('Method not allowed. Use GET or POST.');
-	   }
+			res.writeHead(405);
+			res.end('Method not allowed. Use GET or POST.');
+		}
+	} else if (req.url.pathname == '/login/github') {
+		var tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
+		var ghReq = https.request({
+			hostname: 'github.com',
+			path: '/login/oauth/access_token',
+			method: 'POST',
+			headers: {Accept: 'application/json'}
+		}, o(function*(ghRes) {
+			var data = '';
+			ghRes.on('data', function(d) {
+				data += d;
+			});
+			yield ghRes.on('end', yield);
+			try {
+				data = JSON.parse(data);
+				console.log(data);
+				if (data.error) {
+					yield respondPage('Login Error', user, req, res, yield, {}, 500);
+					res.write('<h1>Login Error</h1>');
+					res.write('<p>An error was recieved from GitHub. ' + tryagain + '</p>');
+					res.write(errorsHTML([data.error + ': ' + data.error_description]));
+					return res.end(yield fs.readFile('html/a/foot.html', yield));
+				}
+				var apiReq = https.get({
+					hostname: 'api.github.com',
+					path: '/user',
+					headers: {
+						'Authorization': 'token ' + data.access_token,
+						'User-Agent': 'DevDoodle'
+					}
+				}, o(function*(apiRes) {
+					var apiData = '';
+					apiRes.on('data', function(d) {
+						apiData += d;
+					});
+					yield apiRes.on('end', yield);
+					try {
+						apiData = JSON.parse(apiData);
+						if (apiData.error) {
+							yield respondPage('Login Error', user, req, res, yield, {}, 500);
+							res.write('<h1>Login Error</h1>');
+							res.write('<p>An error was recieved from the GitHub API. ' + tryagain + '</p>');
+							res.write(errorsHTML([apiData.error + ': ' + apiData.error_description]));
+							return res.end(yield fs.readFile('html/a/foot.html', yield));
+						}
+						console.log(apiData);
+						var matchUser = yield dbcs.users.findOne({githubID: apiData.id}, yield);
+						if (matchUser) {
+							var idToken = crypto.randomBytes(128).toString('base64'),
+								idCookie = cookie.serialize('id', idToken, {
+									path: '/',
+									expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+									httpOnly: true,
+									secure: config.secureCookies
+								});
+							dbcs.users.update({githubID: apiData.id}, {
+								$push: {
+									cookie: {
+										token: idToken,
+										created: new Date().getTime()
+									}
+								}
+							});
+							var referer = url.parse(req.url.query.state);
+							res.writeHead(303, {
+								Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 ? referer.pathname : '/',
+								'Set-Cookie': idCookie
+							});
+							return res.end();
+						} else {
+							yield respondPage('Create Login', user, req, res, yield);
+							var verificationToken = crypto.randomBytes(128).toString('base64');
+							res.write(
+								(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
+								.replace('$errors', '')
+								.replace('$verification-token', verificationToken)
+								.replace('$name', (yield dbcs.users.findOne({name: apiData.login}, yield)) ? '' : html(apiData.login))
+								.replace('$mail', apiData.email || '')
+							);
+							tempVerificationTokens[verificationToken] = {
+								githubID: apiData.id,
+								pic: apiData.avatar_url
+							};
+							res.end(yield fs.readFile('html/a/foot.html', yield));
+						}
+					} catch(e) {console.log(e);
+						yield respondPage('Login Error', user, req, res, yield, {}, 500);
+						res.write('<h1>Login Error</h1>');
+						res.write('<p>An invalid response was recieved from the GitHub API. ' + tryagain + '</p>');
+						res.end(yield fs.readFile('html/a/foot.html', yield));
+					}
+				}));
+				apiReq.on('error', o(function*(e) {
+					yield respondPage('Login Error', user, req, res, yield, {}, 500);
+					res.write('<h1>Login Error</h1>');
+					res.write('<p>HTTP error when connecting to the GitHub API: ' + e + ' ' + tryagain + '</p>');
+					res.end(yield fs.readFile('html/a/foot.html', yield));
+				}));
+			} catch(e) {
+				yield respondPage('Login Error', user, req, res, yield, {}, 500);
+				res.write('<h1>Login Error</h1>');
+				res.write('<p>An invalid response was recieved from GitHub. ' + tryagain + '</p>');
+				res.end(yield fs.readFile('html/a/foot.html', yield));
+			}
+		}));
+		ghReq.end('client_id=' + githubAuth.client_id + '&client_secret=' + githubAuth.client_secret + '&code=' + encodeURIComponent(req.url.query.code));
+		ghReq.on('error', o(function*(e) {
+			yield respondPage('Login Error', user, req, res, yield, {}, 500);
+			res.write('<h1>Login Error</h1>');
+			res.write('<p>HTTP error when connecting to GitHub: ' + e + ' ' + tryagain + '</p>');
+			res.end(yield fs.readFile('html/a/foot.html', yield));
+		}));
+	} else if (req.url.pathname == '/login/new') {
+		if (req.method != 'POST') return res.writeHead(405) || res.end('Method not allowed. Use POST.');
+		post = '';
+		req.on('data', function(data) {
+			if (req.abort) return;
+			post += data;
+			if (post.length > 1e4) {
+				res.writeHead(413);
+				res.end('Error: Request entity too large.');
+				req.abort = true;
+			}
+		});
+		req.on('end', o(function*() {
+			if (req.abort) return;
+			post = querystring.parse(post);
+			if (!tempVerificationTokens[post.token]) return errorForbidden(req, res, user, 'Invalid verification token.');
+			var errors = [];
+			if (!post.name) errors.push('Name is a required field.');
+			if (!post.mail) errors.push('Email address is a required field.');
+			if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
+			if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
+			if (!post.name.match(/^[a-zA-Z0-9-]+$/)) errors.push('Name may only contain alphanumeric characters and dashes.');
+			if (post.name.indexOf(/---/) != -1) errors.push('Name may not contain a sequence of 3 dashes.');
+			if (post.mail.length > 4096) errors.push('Email address must be no longer than 4096 characters.');
+			if (yield dbcs.users.findOne({name: post.name}, yield)) errors.push('Name has already been taken.');
+			if (errors.length) {
+				yield respondPage('Create Login', user, req, res, yield);
+				var verificationToken = crypto.randomBytes(128).toString('base64');
+				res.write(
+					(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
+					.replace('$errors', errorsHTML(errors))
+					.replace('$verification-token', post.token || '')
+					.replace('$name', post.name || '')
+					.replace('$mail', post.mail || '')
+				);
+				return res.end(yield fs.readFile('html/a/foot.html', yield));
+			}
+			var idToken = crypto.randomBytes(128).toString('base64'),
+				idCookie = cookie.serialize('id', idToken, {
+					path: '/',
+					expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+					httpOnly: true,
+					secure: config.secureCookies
+				}),
+				user = {
+					name: post.name,
+					mail: post.mail,
+					pic: tempVerificationTokens[post.token].pic,
+					githubID: tempVerificationTokens[post.token].githubID,
+					joined: new Date().getTime(),
+					rep: 0,
+					level: 1,
+					cookie: [{
+						token: idToken,
+						created: new Date().getTime()
+					}]
+				};
+			dbcs.users.insert(user);
+			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
+			res.write('An account for you has been created. You are now logged in.');
+			res.end(yield fs.readFile('html/a/foot.html', yield));
+		}));
 	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
 		user = yield dbcs.users.findOne({confirm: i[1]}, yield);
 		if (user) {
@@ -629,7 +814,7 @@ var serverHandler = o(function*(req, res) {
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
 	} else if (req.url.pathname == '/notifs') {
-		if (!user.name) return errorsHTML[403](req, res, 'You must be logged in to view your notifications.');
+		if (!user.name) return errorForbidden(req, res, 'You must be logged in to view your notifications.');
 		yield respondPage('Notifications', user, req, res, yield);
 		res.write('<h1>Notifications</h1>');
 		res.write('<ul id="notifs">');
@@ -747,10 +932,14 @@ var serverHandler = o(function*(req, res) {
 			res.end(cache[req.url.pathname].data);
 			if (cache[req.url.pathname].updated < stats.mtime) {
 				try {
-					var data = yield fs.readFile('./http' + req.url.pathname, yield);
+					var data = yield fs.readFile('http' + req.url.pathname, yield);
 				} catch(e) { return; }
-				if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
-				if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
+				switch (path.extname(req.url.pathname)) {
+					case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+					break;
+					case '.css': data = new cleanCSS().minify(data).styles;
+					break;
+				}
 				cache[req.url.pathname] = {
 					data: data,
 					updated: stats.mtime
@@ -758,14 +947,12 @@ var serverHandler = o(function*(req, res) {
 			}
 		} else {
 			try {
-				var data = yield fs.readFile('./http' + req.url.pathname, yield);
+				var data = yield fs.readFile('http' + req.url.pathname, yield);
 			} catch(e) { return errorNotFound(req, res, user); }
 			switch (path.extname(req.url.pathname)) {
-				case '.js':
-					data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+				case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 				break;
-				case '.css':
-					data = new cleanCSS().minify(data).styles;
+				case '.css': data = new cleanCSS().minify(data).styles;
 				break;
 			}
 			cache[req.url.pathname] = {
@@ -809,7 +996,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 	console.log('Connected to mongodb.'.cyan);
 	if (process.argv.indexOf('--test') != -1) {
 		console.log('Running test, process will terminate when finished.'.yellow);
-		var testReq = http.get({
+		http.get({
 			port: config.port,
 			headers: {host: 'localhost'}
 		}, function(testRes) {

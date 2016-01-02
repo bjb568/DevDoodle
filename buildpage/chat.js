@@ -56,7 +56,7 @@ module.exports = o(function*(req, res, user) {
 		}));
 	} else if (req.url.pathname == '/chat/search') {
 		yield respondPage('Search', user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
-		var template = yield fs.readFile('./html/chat/search.html', yield),
+		var template = yield addVersionNonces((yield fs.readFile('./html/chat/search.html', yield)).toString(), req.url.pathname, yield),
 			rooms = [];
 		dbcs.chatrooms.find().each(o(function*(err, doc) {
 			if (err) throw err;
@@ -66,7 +66,7 @@ module.exports = o(function*(req, res, user) {
 				rooms.push({id: doc._id, name: doc.name});
 			} else {
 				res.write(
-					template.toString()
+					template
 					.replace('$user', user.name)
 					.replace('$rooms', html(JSON.stringify(rooms), true))
 					.replace('$qroom', req.url.query && req.url.query.room ? req.url.query.room : '')
@@ -84,12 +84,12 @@ module.exports = o(function*(req, res, user) {
 			dbcs.users.find({name: {$in: doc.invited}}).each(o(function*(err, invUser) {
 				if (err) throw err;
 				if (invUser) userstr +=
-					'<div class="lft user"><img src="//gravatar.com/avatar/' + invUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+					'<div class="lft user"><img src="' + invUser.pic + '" width="40" height="40" />' +
 					'<div><a href="/user/' + invUser.name + '">' + invUser.name + '</a><small class="rep">' + invUser.rep + '</small></div><span>✕</span>' +
 					'</div>';
 				else {
 					res.write(
-						(yield fs.readFile('./html/chat/access.html', yield)).toString()
+						(yield addVersionNonces((yield fs.readFile('./html/chat/access.html', yield)).toString(), req.url.pathname, yield))
 						.replaceAll(['$id', '$name', '$type', '$users'], [doc._id.toString(), doc.name, doc.type, userstr])
 						.replace('value="' + doc.type + '"', 'value="' + doc.type + '" selected=""')
 					);
@@ -102,7 +102,7 @@ module.exports = o(function*(req, res, user) {
 			yield respondPage(doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
 			var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
 			res.write(
-				(yield fs.readFile('./html/chat/room.html', yield)).toString()
+				(yield addVersionNonces((yield fs.readFile('./html/chat/room.html', yield)).toString(), req.url.pathname, yield))
 				.replaceAll('$id', doc._id)
 				.replaceAll('$name', html(doc.name))
 				.replaceAll('$rawdesc', html(doc.desc))

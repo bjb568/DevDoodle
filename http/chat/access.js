@@ -42,7 +42,7 @@ document.getElementById('adduser').onsubmit = function(e) {
 				img = document.createElement('img');
 			div.classList.add('user');
 			div.classList.add('lft');
-			img.src = '//gravatar.com/avatar/' + res.mailhash + '?s=576&d=identicon"';
+			img.src = res.pic;
 			img.width = img.height = 40;
 			div.appendChild(img);
 			var onrit = document.createElement('div'),

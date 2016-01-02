@@ -36,7 +36,7 @@ module.exports = o(function*(req, res, user) {
 			if (data) liststr += '<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>';
 			else {
 				res.write(
-					(yield fs.readFile('./html/dev/search.html', yield)).toString()
+					(yield addVersionNonces((yield fs.readFile('./html/dev/search.html', yield)).toString(), req.url.pathname, yield))
 					.replace('$list', liststr)
 					.replace('"' + sort + '"', '"' + sort + '" selected=""')
 				);
@@ -47,6 +47,7 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+			.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
 			.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
 			.replace(/<section id="meta">[^]+<\/section>/, '')
 			.replaceAll(
@@ -59,6 +60,7 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/html.html', yield)).toString()
+			.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
 			.replace(/<section id="meta">[^]+<\/section>/, '')
 			.replaceAll(
 				['$id', '$title', '$html', '$css', '$js'],
@@ -148,6 +150,7 @@ module.exports = o(function*(req, res, user) {
 							res.write(
 								program.type == 1 ?
 									(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+									.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
 									.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
 									.replaceAll(
 										['$id', '$title', '$code'],
@@ -157,7 +160,7 @@ module.exports = o(function*(req, res, user) {
 										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 									).replace('$comments', commentstr).replaceAll(
 										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
 									).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
 									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
@@ -171,6 +174,7 @@ module.exports = o(function*(req, res, user) {
 									).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 								:
 									(yield fs.readFile('./html/dev/html.html', yield)).toString()
+									.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
 									.replaceAll(
 										['$id', '$title', '$html', '$css', '$js'],
 										[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js)]
@@ -179,7 +183,7 @@ module.exports = o(function*(req, res, user) {
 										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 									).replace('$comments', commentstr).replaceAll(
 										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), '//gravatar.com/avatar/' + op.mailhash + '?s=576&amp;d=identicon']
+										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
 									).replace('Save</a>', 'Save</a>' + (program.user == user.name ? ' <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>' : ''))
 									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')

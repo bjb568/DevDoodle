@@ -56,6 +56,7 @@ textarea {
 }
 #stars li { margin: 4px 0 }
 #editform { margin: 0 }
+#users .lft { float: left }
 #users a { text-decoration: none }
 #users li.inactive {
 	opacity: 0.3;
