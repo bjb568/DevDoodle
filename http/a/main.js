@@ -572,6 +572,7 @@ function highlightHTML(codeBlock, input) {
 		inCloseTag = false,
 		inAttr = false,
 		inAttrValue = false,
+		tagName = '',
 		fc;
 	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
 	var linenum = document.createElement('span');
@@ -614,7 +615,11 @@ function highlightHTML(codeBlock, input) {
 		if (!chunk) return;
 		var tag = document.createElement('span');
 		tag.appendChild(document.createTextNode(chunk));
-		tag.className = !inCloseTag && chunk[chunk.length - 1] == '>' && (chunk.length == 1 || chunk[chunk.length - 2] != '/') ? 'xml-tag end-start-tag' : 'xml-tag';
+		if (!inCloseTag && (chunk[chunk.length - 1] == '>' || /\n|\s*($|<[^/])/.test(chunk.substr(i))) && (chunk.length == 1 || chunk[chunk.length - 2] != '/')) {
+			tag.dataset.tagname = tagName;
+			tagName = '';
+			tag.className = 'xml-tag end-start-tag';
+		} else tag.className = 'xml-tag';
 		codeBlock.appendChild(tag);
 		chunk = '';
 	}
@@ -698,7 +703,11 @@ function highlightHTML(codeBlock, input) {
 				inPI = false;
 			}
 		} else if (inTag) {
-			if (c == '>') {
+			if (c == '<') {
+				endTag();
+				chunk = '<';
+				if (input[i + 1] == '/') inCloseTag = true;
+			} else if (c == '>') {
 				chunk += '>';
 				endTag();
 				inTag = inCloseTag = inAttr = inAttrValue = false;
@@ -716,6 +725,9 @@ function highlightHTML(codeBlock, input) {
 				endAttrValue();
 				inAttr = true;
 				inAttrValue = false;
+			} else if (!inAttr && !inAttrValue) {
+				chunk += c;
+				tagName += c;
 			} else chunk += c;
 		} else if (input.substr(i, 9) == '<![CDATA[') {
 			end();
