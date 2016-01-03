@@ -21,7 +21,7 @@ Before submitting a bug, try hard-reloading.
 ## Running Locally
 
 - Clone this repository
-- If you want to use HTTP2/TLS, create a directory called `Secret` inside DevDoodle's parent directory and add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-geotrust.crt`, which you'll have to self-sign unless you have the real certs.
+- If you want to use HTTP2/TLS, create a directory called `Secret` inside DevDoodle's parent directory and add the files: `devdoodle.net.key`, `devdoodle.net.crt`, and `devdoodle.net-chain.crt`, which you'll have to self-sign unless you have the real certs.
 - Install a recent version of node and mongodb (run the mongod process (you must create a data directory, if it doesn't already exist)).
 - `npm install`
 - Modify `config.js` to your liking
