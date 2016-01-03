@@ -769,7 +769,7 @@ function highlightCSS(codeBlock, input) {
 	var chunk = '',
 		warnings = [],
 		line = 1,
-		comment,
+		inComment = false,
 		inSelector = true,
 		inValue = false,
 		inAttr = false,
@@ -783,6 +783,13 @@ function highlightCSS(codeBlock, input) {
 	linenum.className = 'line';
 	linenum.dataset.linenum = line;
 	codeBlock.appendChild(linenum);
+	function endComment() {
+		var comment = document.createElement('span');
+		comment.className = 'inline-comment';
+		comment.appendChild(document.createTextNode(chunk));
+		codeBlock.appendChild(comment);
+		chunk = '';
+	}
 	function endSel() {
 		if (!chunk) return;
 		var inSub = false,
@@ -901,7 +908,7 @@ function highlightCSS(codeBlock, input) {
 	function endNth() {
 		inNth.className = 'nth';
 		codeBlock.appendChild(inNth);
-		inNth = false;
+		inNth = document.createElement('span');
 	}
 	function endAt() {
 		if (!chunk) return;
@@ -914,7 +921,8 @@ function highlightCSS(codeBlock, input) {
 		chunk = '';
 	}
 	function end() {
-		if (inAt) endAt();
+		if (inComment) endComment();
+		else if (inAt) endAt();
 		else if (inSelector) endSel();
 		else if (inAttrValue) endAttrValue();
 		else if (inAttr) endAttrName();
@@ -926,25 +934,21 @@ function highlightCSS(codeBlock, input) {
 		var c = input[i];
 		if (c == '\n') {
 			end();
-			(comment || inNth || codeBlock).appendChild(document.createTextNode('\n'));
+			(inNth || codeBlock).appendChild(document.createTextNode('\n'));
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
-			(comment || inNth || codeBlock).appendChild(linenum);
-		} else if (comment && input[i - 1] == '*' && c == '/') {
-			comment.appendChild(document.createTextNode(chunk + c));
-			chunk = '';
-			codeBlock.appendChild(comment);
-			comment = false;
-		} else if (comment) {
+			(inNth || codeBlock).appendChild(linenum);
+		} else if (inComment) {
 			chunk += c;
+			if (input[i - 1] == '*' && c == '/') {
+				endComment();
+				inComment = false;
+			}
 		} else if (c == '/' && input[i + 1] == '*') {
 			end();
-			codeBlock.appendChild(document.createTextNode(chunk));
-			if (chunk) endSel();
 			chunk = c + input[++i];
-			comment = document.createElement('span');
-			comment.className = 'inline-comment';
+			inComment = true;
 		} else if (inSelector) {
 			if (c == '{' || c == '[') {
 				endSel();
@@ -1014,6 +1018,7 @@ function highlightCSS(codeBlock, input) {
 				inNth.appendChild(n);
 				i++;
 				endNth();
+				inNth = false;
 				inSelector = true;
 			} else if (c == 'n') {
 				var n = document.createElement('span');
@@ -1071,11 +1076,6 @@ function highlightCSS(codeBlock, input) {
 			inValue = false;
 			inSelector = true;
 		} else chunk += c;
-	}
-	if (comment) {
-		comment.appendChild(document.createTextNode(chunk));
-		codeBlock.appendChild(comment);
-		chunk = '';
 	}
 	end();
 	codeBlock.appendChild(document.createTextNode('\xa0'));
