@@ -474,7 +474,7 @@ function applyProgramIframes() {
 addEventListener('resize', applyProgramIframes);
 
 document.addEventListener('visibilitychange', function() {
-	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').firstChild.nodeValue != 'Log in') {
+	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue != 'Log in') {
 		request('/api/notif', function(res) {
 			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.toggle('unread', res);
 		});
