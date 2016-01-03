@@ -362,42 +362,52 @@ fieldset {
 	margin-left: 4px;
 }
 .user a { display: block }
+.programs { overflow: hidden }
 .program {
-	display: inline-block;
-	vertical-align: top;
+	display: flex;
+	flex-direction: column;
 	max-width: 95%;
+	width: 250px;
+	max-width: 512px;
+	height: 250px;
+	margin: 0 6px 6px 0;
 }
+.lim-programs .program { height: 200px }
+.program .title { flex-shrink: 0 }
 .program div {
-	width: 600px;
-	max-width: 100%;
-	max-height: 400px;
-	height: 28vw;
-	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
 	overflow: auto;
 }
-.program iframe {
-	width: 100%;
-	height: calc(100% - 5px);
+.program iframe { flex-grow: 1 }
+.programs { max-height: 1000px }
+.lim-programs { max-height: 600px }
+@media (min-width: 650px) {
+	.program { width: 300px }
 }
-.program:nth-child(n+6) { display: none }
-.lim-programs .program:nth-child(n+4) { display: none }
-@media (min-width: 500px) {
-	.program { max-width: 49% }
-	.program:nth-child(-n+7) { display: inline-block }
+@media (min-width: 1100px) {
+	.program { width: 320px }
 }
-@media (min-width: 900px) {
-	.program { max-width: 33% }
-	.program:nth-child(-n+10) { display: inline-block }
+@media (min-width: 800px) {
+	.program { height: 300px }
+	.lim-programs .program { height: 250px }
+	.programs { max-height: 1200px }
+	.lim-programs { max-height: 750px }
 }
-@media (min-width: 1300px) {
-	.program { max-width: calc(25% - 4px) }
-	.program div { height: 20vw }
-	.program:nth-child(-n+13) { display: inline-block }
+@media (min-width: 1200px) {
+	.programs { max-height: 1500px }
+	.lim-programs { max-height: 750px }
 }
-@media (min-width: 1700px) {
-	.program { max-width: calc(20% - 4px) }
-	.program div { height: 16vw }
-	.program:nth-child(-n+16) { display: inline-block }
+@media (min-width: 1410px) {
+	.program { width: 340px }
+}
+@media (min-width: 1850px) {
+	.program { width: 360px }
+}
+@media (min-width: 2900px) {
+	.programs { max-height: 1800px }
+	.lim-programs { max-height: 750px }
 }
 .comment { margin-top: 3px }
 .comment #up, .comment #dn { width: 18px }

@@ -372,6 +372,7 @@ fieldset {
 	margin: 0 6px 6px 0;
 }
 .lim-programs .program { height: 200px }
+.program .title { flex-shrink: 0 }
 .program div {
 	display: flex;
 	flex-direction: column;
