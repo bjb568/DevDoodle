@@ -108,7 +108,7 @@ module.exports = o(function*(req, res, user) {
 						}).sort({
 							score: -1,
 							updated: -1
-						}).limit(6).each(o(function*(err, program) {
+						}).limit(24).each(o(function*(err, program) {
 							if (err) throw err;
 							if (program) {
 								res.write('<div class="program">');

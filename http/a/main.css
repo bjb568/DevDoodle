@@ -200,6 +200,13 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
+code .xml-tag { color: #adf }
+code .xml-attr { color: #ff7 }
+code .xml-attr-ns { color: #fa8 }
+code .xml-attr-value { color: #9f9 }
+code .processing-instruction { color: #cd8 }
+code .cdata { color: #ec8 }
+code .entity { color: #f99 }
 code .universal { color: #fd8 }
 code .at-rule-name { color: #dd8 }
 code .element { color: #fb0 }
@@ -216,14 +223,15 @@ code .reference-combinator { color: #faa }
 code .property, code .logical, code .nth .n, code .colon { font-style: italic }
 code .no-nest { color: #ddd }
 code .value { color: #aaf }
+code .unit { color: #bcf }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
-code .reserved { color: #f00 }
+code .reserved, code .bad { color: #f00 }
 code .constant, code .string .escape { color: #df0 }
 code .string { color: #6C3 }
 code .regex { color: #ffa }
 code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
-code .regex .escape { color: #afa }
+code .regex .escape, code .color { color: #afa }
 code .regex .backreference { color: #0f0 }
 code .regex .special { color: #faa }
 code .regex .grouper { color: #fff }
@@ -234,7 +242,7 @@ code .regex .charclass .punctuation, code .function-call { color: #f90 }
 code .regex .quantifier { color: #2af }
 code .regex .quantifier .punctuation { color: #8cf }
 code .regex .modifier, code .generator-star, code .newvar { font-weight: bold }
-code .operator, code .generator-star, code .colon { color: #ff8 }
+code .operator, code .generator-star, code .colon, code .value.string { color: #ff8 }
 code .operator.assigns, code .equals { color: #8ff }
 code .argument, code .number { color: #3df }
 code .function-name { color: #f60 }
@@ -365,6 +373,7 @@ fieldset {
 	margin: 0 6px 6px 0;
 }
 .lim-programs .program { height: 200px }
+.program .title { flex-shrink: 0 }
 .program div {
 	display: flex;
 	flex-direction: column;

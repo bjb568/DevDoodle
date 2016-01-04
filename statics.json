@@ -1,4 +1,8 @@
 {
+	"/legal/tos": {
+		"path": "./html/legal/tos.html",
+		"title": "Terms of Use"
+	},
 	"/login/recover": {
 		"path": "./html/login/recovery.html",
 		"title": "Recover Account",

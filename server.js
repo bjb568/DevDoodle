@@ -21,6 +21,7 @@ var colors = require('colors'),
 	http2 = require('http2'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
+	zlib = require('zlib'),
 	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
@@ -113,7 +114,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"img-src https://*";
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="03Yp9b7zlEaaJUIWosWYHJcdKYxMSa3Z4bZXWf8LXtI="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="B9Zw6fj5NucVKxVjhJX27HOBvnV+IyFbFwEMmYQ5Y5g="; pin-sha256="Gug+FC9PsilgbCb/VyBoLmXBNzizAL2VpCXDAEhuVOY="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
@@ -923,13 +924,16 @@ var serverHandler = o(function*(req, res) {
 			var stats = yield fs.stat('./http/' + req.url.pathname, yield);
 		} catch(e) { return errorNotFound(req, res, user); }
 		if (!stats.isFile()) return errorNotFound(req, res, user);
+		var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
+				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].data)
+				'ETag': etag(cache[req.url.pathname].data),
+				'Vary': 'Accept-Encoding'
 			});
-			res.end(cache[req.url.pathname].data);
+			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
 				try {
 					var data = yield fs.readFile('http' + req.url.pathname, yield);
@@ -941,7 +945,8 @@ var serverHandler = o(function*(req, res) {
 					break;
 				}
 				cache[req.url.pathname] = {
-					data: data,
+					raw: data,
+					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
 					updated: stats.mtime
 				};
 			}
@@ -957,14 +962,17 @@ var serverHandler = o(function*(req, res) {
 			}
 			cache[req.url.pathname] = {
 				data: data,
+				gzip: yield zlib.gzip(data, yield),
 				updated: stats.mtime
 			};
 			res.writeHead(200, {
+				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(data)
+				'ETag': etag(data),
+				'Vary': 'Accept-Encoding'
 			});
-			res.end(data);
+			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 		}
 	} else {
 		for (i = 0; i < buildpageServers.length; i++) {
@@ -1029,7 +1037,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
 		server = http2.createServer({
 			key: fs.readFileSync('../Secret/devdoodle.net.key'),
 			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-			ca: [fs.readFileSync('../Secret/devdoodle.net-geotrust.crt')],
+			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
 			ecdhCurve: 'secp384r1',
 			ciphers: [
 				'ECDHE-ECDSA-AES256-GCM-SHA384',

@@ -21,7 +21,7 @@ module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/qa/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
-		var cursor = dbcs.questions.find().limit(288);
+		var cursor = dbcs.questions.find().sort({hotness: -1, time: -1}).limit(288);
 		var questionSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
 			if (question) {

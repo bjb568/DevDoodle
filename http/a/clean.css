@@ -193,6 +193,13 @@ code .line.warning::before {
 .ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
 .ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
 .ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
+code .xml-tag { color: #adf }
+code .xml-attr { color: #ff7 }
+code .xml-attr-ns { color: #fa8 }
+code .xml-attr-value { color: #9f9 }
+code .processing-instruction { color: #cd8 }
+code .cdata { color: #ec8 }
+code .entity { color: #f99 }
 code .universal { color: #fd8 }
 code .at-rule-name { color: #dd8 }
 code .element { color: #fb0 }
@@ -209,14 +216,15 @@ code .reference-combinator { color: #faa }
 code .property, code .logical, code .nth .n, code .colon { font-style: italic }
 code .no-nest { color: #ddd }
 code .value { color: #aaf }
+code .unit { color: #bcf }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
-code .reserved { color: #f00 }
+code .reserved, code .bad { color: #f00 }
 code .constant, code .string .escape { color: #df0 }
 code .string { color: #6C3 }
 code .regex { color: #ffa }
 code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
-code .regex .escape { color: #afa }
+code .regex .escape, code .color { color: #afa }
 code .regex .backreference { color: #0f0 }
 code .regex .special { color: #faa }
 code .regex .grouper { color: #fff }
@@ -227,7 +235,7 @@ code .regex .charclass .punctuation, code .function-call { color: #f90 }
 code .regex .quantifier { color: #2af }
 code .regex .quantifier .punctuation { color: #8cf }
 code .regex .modifier, code .generator-star, code .newvar { font-weight: bold }
-code .operator, code .generator-star, code .colon { color: #ff8 }
+code .operator, code .generator-star, code .colon, code .value.string { color: #ff8 }
 code .operator.assigns, code .equals { color: #8ff }
 code .argument, code .number { color: #3df }
 code .function-name { color: #f60 }
@@ -355,42 +363,52 @@ fieldset {
 	margin-left: 4px;
 }
 .user a { display: block }
+.programs { overflow: hidden }
 .program {
-	display: inline-block;
-	vertical-align: top;
+	display: flex;
+	flex-direction: column;
 	max-width: 95%;
+	width: 250px;
+	max-width: 512px;
+	height: 250px;
+	margin: 0 6px 6px 0;
 }
+.lim-programs .program { height: 200px }
+.program .title { flex-shrink: 0 }
 .program div {
-	width: 600px;
-	max-width: 100%;
-	max-height: 400px;
-	height: 28vw;
-	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
 	overflow: auto;
 }
-.program iframe {
-	width: 100%;
-	height: calc(100% - 5px);
+.program iframe { flex-grow: 1 }
+.programs { max-height: 1000px }
+.lim-programs { max-height: 600px }
+@media (min-width: 650px) {
+	.program { width: 300px }
 }
-.program:nth-child(n+6) { display: none }
-.lim-programs .program:nth-child(n+4) { display: none }
-@media (min-width: 500px) {
-	.program { max-width: 49% }
-	.program:nth-child(-n+7) { display: inline-block }
+@media (min-width: 1100px) {
+	.program { width: 320px }
 }
-@media (min-width: 900px) {
-	.program { max-width: 33% }
-	.program:nth-child(-n+10) { display: inline-block }
+@media (min-width: 800px) {
+	.program { height: 300px }
+	.lim-programs .program { height: 250px }
+	.programs { max-height: 1200px }
+	.lim-programs { max-height: 750px }
 }
-@media (min-width: 1300px) {
-	.program { max-width: calc(25% - 4px) }
-	.program div { height: 20vw }
-	.program:nth-child(-n+13) { display: inline-block }
+@media (min-width: 1200px) {
+	.programs { max-height: 1500px }
+	.lim-programs { max-height: 750px }
 }
-@media (min-width: 1700px) {
-	.program { max-width: calc(20% - 4px) }
-	.program div { height: 16vw }
-	.program:nth-child(-n+16) { display: inline-block }
+@media (min-width: 1410px) {
+	.program { width: 340px }
+}
+@media (min-width: 1850px) {
+	.program { width: 360px }
+}
+@media (min-width: 2900px) {
+	.programs { max-height: 1800px }
+	.lim-programs { max-height: 750px }
 }
 .comment { margin-top: 3px }
 .comment #up, .comment #dn { width: 18px }

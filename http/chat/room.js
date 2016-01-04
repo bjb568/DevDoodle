@@ -151,7 +151,7 @@ socket.onmessage = function(e) {
 			var imgs = div.getElementsByTagName('img'),
 				i = imgs.length;
 			while (i--) imgs[i].onload = function() {
-				cont.scrollTop = cont.scrollHeight;
+				if (onBottom) cont.scrollTop = cont.scrollHeight;
 			};
 		}
 		var sig = document.createElement('span');
