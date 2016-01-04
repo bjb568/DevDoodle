@@ -1,5 +1,6 @@
 'use strict';
-var fs = require('fs');
+var fs = require('fs'),
+	crypto = require('crypto');
 module.exports = o(function*(req, res, user) {
 	var i;
 	if (req.url.pathname == '/user/') {
