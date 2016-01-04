@@ -772,6 +772,7 @@ function highlightCSS(codeBlock, input) {
 		inComment = false,
 		inSelector = true,
 		inValue = false,
+		inValueString = false,
 		inAttr = false,
 		inAttrValue = false,
 		inNth = false,
@@ -881,10 +882,120 @@ function highlightCSS(codeBlock, input) {
 		codeBlock.appendChild(prop);
 		chunk = '';
 	}
+	function endValueString() {
+		if (!chunk) return;
+		var vs = document.createElement('span'),
+			schunk = '';
+		function endSChunk() {
+			if (!schunk) return;
+			vs.appendChild(document.createTextNode(schunk));
+			schunk = '';
+		}
+		for (var i = 0; i < chunk.length; i++) {
+			var c = chunk[i];
+			if (c == '\\') {
+				endSChunk();
+				var esc = document.createElement('span');
+				esc.className = 'escape';
+				esc.appendChild(document.createTextNode(c + (chunk[i + 1] ? chunk[++i] : '')));
+				vs.appendChild(esc);
+			} else schunk += c;
+		}
+		endSChunk();
+		vs.className = 'value string';
+		codeBlock.appendChild(vs);
+		chunk = '';
+	}
 	function endVal() {
 		if (!chunk) return;
-		var val = document.createElement('span');
-		val.appendChild(document.createTextNode(chunk));
+		var val = document.createElement('span'),
+			schunk = '',
+			keywords = ['inherit', 'initial', 'unset', 'default', 'revert', '!important', 'left', 'center', 'right', 'top', 'bottom'],
+			units = ['%', 'em', 'ex', 'ch', 'rem', 'vw', 'vh', 'vmin', 'vmax', 'cm', 'mm', 'q', 'in', 'qc', 'qt', 'px', 'deg', 'grad', 'rad', 'turn', 's', 'ms', 'Hz', 'kHz', 'dpi', 'dpcm', 'dppx'],
+			colors = ['transparent', 'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkgrey', 'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray', 'darkslategrey', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dimgrey', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'grey', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey', 'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen'];
+		function endSChunk(className) {
+			if (className) {
+				var span = document.createElement('span');
+				span.className = className;
+				span.appendChild(document.createTextNode(schunk));
+				val.appendChild(span);
+			} else val.appendChild(document.createTextNode(schunk));
+			schunk = '';
+		}
+		outer: for (var i = 0; i < chunk.length; i++) {
+			var c = chunk[i];
+			for (var j = 0; j < keywords.length; j++) {
+				if (chunk.substr(i, keywords[j].length) == keywords[j]) {
+					endSChunk();
+					var keyword = document.createElement('span');
+					keyword.className = keywords[j] == '!important' ? 'bad keyword' : 'keyword';
+					keyword.appendChild(document.createTextNode(keywords[j]));
+					val.appendChild(keyword);
+					i += keywords[j].length - 1;
+					continue outer;
+				}
+			}
+			for (var j = 0; j < colors.length; j++) {
+				if (chunk.substr(i, colors[j].length) == colors[j]) {
+					endSChunk();
+					var color = document.createElement('span');
+					color.className = 'color';
+					color.appendChild(document.createTextNode(colors[j]));
+					val.appendChild(color);
+					i += colors[j].length - 1;
+					continue outer;
+				}
+			}
+			if (c == '(' || c == ')' || c == ',') {
+				endSChunk(c == '(' ? 'function-call' : '');
+				var punc = document.createElement('span');
+				punc.className = 'punctuation';
+				punc.appendChild(document.createTextNode(c));
+				val.appendChild(punc);
+			} else if (c == '+' || (c == '-' && !/\w/.test(input[i - 1])) || c == '*' || c == '/') {
+				endSChunk();
+				var op = document.createElement('span');
+				op.className = 'operator';
+				op.appendChild(document.createTextNode(c));
+				val.appendChild(op);
+			} else if (c == '#') {
+				endSChunk();
+				var start = i;
+				i++;
+				while (/[\da-fA-F]/.test(chunk[i] || '')) i++;
+				schunk = chunk.substring(start, i);
+				endSChunk('color');
+				i--;
+			} else if (/\d/.test(c)) {
+				endSChunk();
+				var start = i;
+				i++;
+				while (/\d/.test(chunk[i])) i++;
+				if (chunk[i] == '.' && /\d/.test(chunk[i + 1])) i += 2;
+				while (/\d/.test(chunk[i])) i++;
+				if ((chunk[i] || '').toLowerCase() == 'e' && /\d/.test(chunk[i + 1])) i += 2;
+				while (/\d/.test(chunk[i])) i++;
+				var tchunk = chunk.substring(start, i);
+				schunk = tchunk;
+				endSChunk('number');
+				for (var j = 0; j < units.length; j++) {
+					if (chunk.substr(i, units[j].length) == units[j]) {
+						endSChunk();
+						var unit = document.createElement('span');
+						unit.className = parseFloat(tchunk) ? 'unit' : 'unit bad';
+						unit.appendChild(document.createTextNode(units[j]));
+						val.appendChild(unit);
+						i += units[j].length - 1;
+						continue outer;
+					}
+				}
+				i--;
+			} else if (/\s/.test(c)) {
+				schunk += c;
+				endSChunk();
+			} else schunk += c;
+		}
+		endSChunk();
 		val.className = 'value';
 		codeBlock.appendChild(val);
 		chunk = '';
@@ -927,6 +1038,7 @@ function highlightCSS(codeBlock, input) {
 		else if (inAttrValue) endAttrValue();
 		else if (inAttr) endAttrName();
 		else if (inNth) endNth();
+		else if (inValueString) endValueString();
 		else if (inValue) endVal();
 		else endProp();
 	}
@@ -1062,7 +1174,19 @@ function highlightCSS(codeBlock, input) {
 			colon.className = 'colon';
 			codeBlock.appendChild(colon);
 			inValue = true;
+		} else if (inValue && !inValueString && (c == '"' || c == "'")) {
+			endVal();
+			inValueString = chunk = c;
+		} else if (c === inValueString && (chunk.match(/\\+$/) || '').length % 2 == 0) {
+			chunk += c;
+			endValueString();
+			inValueString = false;
 		} else if (inValue && c == ';') {
+			if (inValueString) {
+				endValueString();
+				inValueString = false;
+				warnings.push([i, 'Unexpected end of value with unterminated string.'])
+			}
 			endVal();
 			var semicolon = document.createElement('span');
 			semicolon.appendChild(document.createTextNode(';'));
