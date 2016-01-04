@@ -33,12 +33,12 @@ module.exports = o(function*(req, res, user) {
 			if (cUser) {
 				num++;
 				dstr +=
-					'<div class="user"><img src="//gravatar.com/avatar/' + cUser.mailhash + '?s=576&amp;d=identicon" width="40" height="40" />' +
+					'<div class="user"><img src="' + cUser.pic + '" width="40" height="40" />' +
 					'<div><a href="/user/' + cUser.name + '">' + cUser.name + '</a><small class="rep">' + cUser.rep + '</small></div>' +
 					'</div>';
 			} else {
 				res.write(
-					(yield fs.readFile('./html/user/userlist.html', yield)).toString()
+					(yield addVersionNonces((yield fs.readFile('./html/user/userlist.html', yield)).toString(), req.url.pathname, yield))
 					.replace('$num', num ? (num == 1 ? '1 user found' : num + ' users found') : '<span class="red">0 users found</span>')
 					.replace('$users', dstr)
 					.replace('"' + orderBy + '"', '"' + orderBy + '" selected=""')
@@ -55,14 +55,14 @@ module.exports = o(function*(req, res, user) {
 		var me = user.name == dispUser.name,
 			questions = 0;
 		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
-		res.write('<img id="profpic" class="lft" src="//gravatar.com/avatar/' + dispUser.mailhash + '?s=576&amp;d=identicon" />');
+		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
 		res.write('<div>');
 		res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 		if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 		res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
-		if (me) {
+		if (me && !dispUser.githubID) {
 			res.write(
-				'<a href="//gravatar.com/' + dispUser.mailhash + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
+				'<a href="//gravatar.com/' + crypto.createHash('md5').update(dispUser.mail).digest('hex') + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
 				'(you must <a href="http://gravatar.com/login" target="_blank">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
 			);
 		}
@@ -123,7 +123,7 @@ module.exports = o(function*(req, res, user) {
 								res.write('</section>');
 								if (me) {
 									res.write('<h2 class="underline">Private</h2>');
-									res.write((yield fs.readFile('./html/user/mailform.html', yield)).toString().replaceAll('$mail', html(user.mail)));
+									res.write((yield addVersionNonces((yield fs.readFile('./html/user/mailform.html', yield)).toString(), req.url.pathname, yield)).replaceAll('$mail', html(user.mail)));
 									if (user.notifs) {
 										var notifs = [];
 										i = user.notifs.length;

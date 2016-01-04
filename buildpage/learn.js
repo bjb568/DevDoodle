@@ -27,7 +27,7 @@ module.exports = o(function*(req, res, user) {
 		);
 		if (post.user == user.name) {
 			res.write('<a href="../../new?title=' + html(encodeURIComponent(post.title)) + '" class="grey">+ Add a slide</a>');
-			res.write('<script src="/learn/my-course-slides.js" async=""></script>');
+			res.write(yield addVersionNonces('<script src="/learn/my-course-slides.js" async=""></script>', req.url.pathname, yield));
 		}
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
@@ -38,7 +38,7 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage(post.title, user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 		var isLast = i[2] == lesson.content.length - 1;
 		res.write(
-			(yield fs.readFile('./html/learn/lesson.html', yield)).toString()
+			(yield addVersionNonces((yield fs.readFile('./html/learn/lesson.html', yield)).toString(), req.url.pathname, yield))
 			.replaceAll(
 				['$title', '$stitle', '$sbody', '$validate', '$html', '$md-sbody'],
 				[html(lesson.title || ''), html(post.stitle || ''), html(post.sbody || ''), html(post.validate || ''), html(post.html || ''), markdown(post.sbody || '')]
@@ -57,14 +57,13 @@ module.exports = o(function*(req, res, user) {
 		});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
-		fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', o(function*(err, data) {
-			if (err) errorNotFound(req, res, user);
-			else {
-				data = data.toString();
-				yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
-				res.write(data.substr(data.indexOf('\n') + 1));
-				res.end(yield fs.readFile('html/a/foot.html', yield));
-			}
-		}));
+		try {
+			var data = yield addVersionNonces((yield fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', yield)).toString(), req.url.pathname, yield);
+		} catch(e) {
+			errorNotFound(req, res, user);
+		}
+		yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+		res.write(data.substr(data.indexOf('\n') + 1));
+		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else errorNotFound(req, res, user);
 });

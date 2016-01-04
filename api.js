@@ -16,15 +16,8 @@ module.exports = o(function*(req, res, user, post) {
 		var newmail = post.newmail;
 		if (!newmail) return res.writeHead(400) || res.end('Error: No email specified.');
 		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address must be no longer than 256 characters.');
-		var mailhash = crypto.createHash('md5').update(newmail).digest('hex');
-		dbcs.users.update({name: user.name}, {
-			$set: {
-				mail: newmail,
-				mailhash: mailhash
-			}
-		});
+		dbcs.users.update({name: user.name}, {$set: {mail: newmail}});
 		res.writeHead(200);
-		res.end(mailhash);
 	} else if (req.url.pathname == '/login/recover') {
 		if (post.code) {
 			var fuser = yield dbcs.users.findOne({
@@ -172,7 +165,7 @@ module.exports = o(function*(req, res, user, post) {
 		dbcs.chatrooms.update({_id: id}, {$push: {invited: invUser.name}});
 		res.writeHead(200);
 		res.end(JSON.stringify({
-			mailhash: invUser.mailhash,
+			pic: invUser.pic,
 			rep: invUser.rep
 		}));
 	} else if (req.url.pathname == '/chat/uninviteuser') {

@@ -4,7 +4,7 @@
 		"title": "Terms of Use"
 	},
 	"/login/recover": {
-		"path": "./html/login-recovery.html",
+		"path": "./html/login/recovery.html",
 		"title": "Recover Account",
 		"inhead": "<link rel=\"stylesheet\" href=\"login.css\" />"
 	},

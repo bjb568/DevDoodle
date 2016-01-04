@@ -1,0 +1,9 @@
+<h1>Create New Account</h1>
+<form action="new" method="POST">
+	$errors
+	<p><label>Name: <input type="text" name="name" id="name" placeholder="Name" value="$name" required="" autofocus="" /></label> <span class="red" id="nameerr"></span></p>
+	<p><label>Email: <input type="email" name="mail" id="mail" placeholder="Email" value="$mail" required="" /></label></p>
+	<input type="hidden" name="token" value="$verification-token" required="" />
+	<div><button type="submit" id="submit" disabled="">Submit</button></div>
+</form>
+<script src="new-from-github.js" async=""></script>

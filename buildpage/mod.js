@@ -76,7 +76,7 @@ module.exports = o(function*(req, res, user) {
 				);
 			} else {
 				res.write('</div>');
-				res.write('<script src="mod.js" async=""></script>');
+				res.write(yield addVersionNonces('<script src="mod.js" async=""></script>', req.url.pathname, yield));
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));

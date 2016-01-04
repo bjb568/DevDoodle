@@ -16,7 +16,7 @@ module.exports = o(function*(req, res, user) {
 		else res.write('<p>You are not logged in</p>');
 		res.write('<p>Current host header is <strong>' + req.headers.host + '</strong></p>');
 		res.write('<code class="blk" id="socket-test">Connecting to socket…</code>');
-		res.write('<script src="/a/sockettest.js"></script>');
+		res.write(yield addVersionNonces('<script src="/a/sockettest.js"></script>', req.url.pathname, yield));
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	}));
 });

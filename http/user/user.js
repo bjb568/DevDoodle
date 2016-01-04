@@ -7,7 +7,6 @@ document.getElementById('mailform').onsubmit = function(e) {
 		document.getElementById('mailinput').hidden = document.getElementById('mailsave').hidden = document.getElementById('mailcancel').hidden = true;
 		mail.removeChild(mail.firstChild);
 		mail.appendChild(document.createTextNode('Mail: ' + document.getElementById('mailinput').value));
-		document.getElementById('profpic').src = '//gravatar.com/avatar/' + res + '?s=576&amp;d=identicon';
 	}, 'newmail=' + encodeURIComponent(document.getElementById('mailinput').value));
 };
 document.getElementById('mailcancel').onclick = function() {
