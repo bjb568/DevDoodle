@@ -683,7 +683,8 @@ var serverHandler = o(function*(req, res) {
 										token: idToken,
 										created: new Date().getTime()
 									}
-								}
+								},
+								$set: {githubName: apiData.login}
 							});
 							var referer = url.parse(req.url.query.state);
 							res.writeHead(303, {
@@ -703,6 +704,7 @@ var serverHandler = o(function*(req, res) {
 							);
 							tempVerificationTokens[verificationToken] = {
 								githubID: apiData.id,
+								githubName: apiData.login,
 								pic: apiData.avatar_url
 							};
 							res.end(yield fs.readFile('html/a/foot.html', yield));
@@ -783,6 +785,7 @@ var serverHandler = o(function*(req, res) {
 					mail: post.mail,
 					pic: tempVerificationTokens[post.token].pic,
 					githubID: tempVerificationTokens[post.token].githubID,
+					githubName: tempVerificationTokens[post.token].githubName,
 					joined: new Date().getTime(),
 					rep: 0,
 					level: 1,
@@ -792,6 +795,7 @@ var serverHandler = o(function*(req, res) {
 					}]
 				};
 			dbcs.users.insert(user);
+			delete tempVerificationTokens[post.token];
 			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
 			res.write('An account for you has been created. You are now logged in.');
 			res.end(yield fs.readFile('html/a/foot.html', yield));

@@ -61,6 +61,7 @@ module.exports = o(function*(req, res, user) {
 		res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 		if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 		res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
+		if (dispUser.githubName) res.write('<a href="https://github.com/' + dispUser.githubName + '/">' + dispUser.githubName + ' on GitHub</a>');
 		if (me && !dispUser.githubID) {
 			res.write(
 				'<a href="//gravatar.com/' + crypto.createHash('md5').update(dispUser.mail).digest('hex') + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
