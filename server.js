@@ -20,6 +20,7 @@ var colors = require('colors'),
 	http2 = require('http2'),
 	uglifyJS = require('uglify-js'),
 	cleanCSS = require('clean-css'),
+	zlib = require('zlib'),
 	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
@@ -738,21 +739,29 @@ var serverHandler = o(function*(req, res) {
 			var stats = yield fs.stat('./http/' + req.url.pathname, yield);
 		} catch(e) { return errorNotFound(req, res, user); }
 		if (!stats.isFile()) return errorNotFound(req, res, user);
+		var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
+				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].data)
+				'ETag': etag(cache[req.url.pathname].data),
+				'Vary': 'Accept-Encoding'
 			});
-			res.end(cache[req.url.pathname].data);
+			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
 				try {
 					var data = yield fs.readFile('./http' + req.url.pathname, yield);
 				} catch(e) { return; }
-				if (path.extname(req.url.pathname) == '.js') data = uglifyJS.minify(data.toString(), {fromString: true}).code;
-				if (path.extname(req.url.pathname) == '.css') data = new cleanCSS().minify(data).styles;
+				switch (path.extname(req.url.pathname)) {
+					case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+					break;
+					case '.css': data = new cleanCSS().minify(data).styles;
+					break;
+				}
 				cache[req.url.pathname] = {
-					data: data,
+					raw: data,
+					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
 					updated: stats.mtime
 				};
 			}
@@ -761,23 +770,24 @@ var serverHandler = o(function*(req, res) {
 				var data = yield fs.readFile('./http' + req.url.pathname, yield);
 			} catch(e) { return errorNotFound(req, res, user); }
 			switch (path.extname(req.url.pathname)) {
-				case '.js':
-					data = uglifyJS.minify(data.toString(), {fromString: true}).code;
+				case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 				break;
-				case '.css':
-					data = new cleanCSS().minify(data).styles;
+				case '.css': data = new cleanCSS().minify(data).styles;
 				break;
 			}
 			cache[req.url.pathname] = {
 				data: data,
+				gzip: yield zlib.gzip(data, yield),
 				updated: stats.mtime
 			};
 			res.writeHead(200, {
+				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(data)
+				'ETag': etag(data),
+				'Vary': 'Accept-Encoding'
 			});
-			res.end(data);
+			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 		}
 	} else {
 		for (i = 0; i < buildpageServers.length; i++) {
