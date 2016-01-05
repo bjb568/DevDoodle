@@ -934,7 +934,7 @@ var serverHandler = o(function*(req, res) {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].data),
+				'ETag': etag(cache[req.url.pathname].raw),
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
@@ -965,7 +965,7 @@ var serverHandler = o(function*(req, res) {
 				break;
 			}
 			cache[req.url.pathname] = {
-				data: data,
+				raw: data,
 				gzip: yield zlib.gzip(data, yield),
 				updated: stats.mtime
 			};

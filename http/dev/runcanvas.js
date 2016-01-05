@@ -319,8 +319,8 @@ if (document.getElementById('meta')) {
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
-				else currentNode = currentNode.lastChild;
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				else currentNode = currentNode.lastElementChild;
 			}
 			document.getElementById('comments').appendChild(div);
 			div.scrollIntoView(true);

@@ -218,7 +218,7 @@ module.exports = o(function*(req, res, user) {
 								voted;
 							for (var i in votes) if (votes[i].user == user.name) voted = true;
 							var commentBody = markdown(comment.body),
-								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|>).)+?>)+$/) || [{length: 0}])[0].length;
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
 									'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +
