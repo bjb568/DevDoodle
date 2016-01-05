@@ -174,8 +174,8 @@ socket.onmessage = function(e) {
 		sig.appendChild(permalink);
 		var currentNode = div;
 		while (!sig.parentNode) {
-			if (!currentNode.lastChild.lastChild || currentNode.lastChild.tagName == 'blockquote' || currentNode.lastChild.tagName == 'code') currentNode.appendChild(sig);
-			else currentNode = currentNode.lastChild;
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			else currentNode = currentNode.lastElementChild;
 		}
 		var tCtrls = ctrls.cloneNode(true);
 		tCtrls.children[0].onclick = ctrlsStar.onclick;
@@ -209,12 +209,12 @@ socket.onmessage = function(e) {
 		if (!msg) return;
 		var sig = msg.getElementsByClassName('c-sig')[0],
 			msgCtrls = msg.getElementsByClassName('ctrls')[0];
+		sig.parentNode.removeChild(sig);
 		msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body)).replaceAll('<a', '<a target="_blank"');
 		var currentNode = msg;
-		sig.parentNode.removeChild(sig);
 		while (!sig.parentNode) {
-			if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
-			else currentNode = currentNode.lastChild;
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			else currentNode = currentNode.lastElementChild;
 		}
 		msg.appendChild(msgCtrls);
 		if (onBottom) {
@@ -275,8 +275,8 @@ socket.onmessage = function(e) {
 			sig.appendChild(permalink);
 			var currentNode = msg;
 			while (!sig.parentNode) {
-				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
-				else currentNode = currentNode.lastChild;
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				else currentNode = currentNode.lastElementChild;
 			}
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
@@ -342,8 +342,8 @@ socket.onmessage = function(e) {
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (!currentNode.lastChild.lastChild || currentNode.lastChild.lastChild.tagName == 'blockquote' || currentNode.lastChild.lastChild.tagName == 'code') currentNode.appendChild(sig);
-				else currentNode = currentNode.lastChild;
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				else currentNode = currentNode.lastElementChild;
 			}
 			li.appendChild(div);
 			if (starwall.firstChild) starwall.insertBefore(li, starwall.firstChild);
