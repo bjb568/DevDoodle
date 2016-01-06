@@ -67,7 +67,6 @@ module.exports = o(function*(req, res, user) {
 			} else {
 				res.write(
 					template
-					.replace('$user', user.name)
 					.replace('$rooms', html(JSON.stringify(rooms), true))
 					.replace('$qroom', req.url.query && req.url.query.room ? req.url.query.room : '')
 				);
@@ -107,7 +106,6 @@ module.exports = o(function*(req, res, user) {
 				.replaceAll('$name', html(doc.name))
 				.replaceAll('$rawdesc', html(doc.desc))
 				.replace('$desc', markdown(doc.desc))
-				.replace('$user', user.name || '')
 				.replace('$textarea',
 					user.name ?
 						(

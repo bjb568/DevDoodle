@@ -43,10 +43,17 @@
 }
 #comments { margin: 6px 0 }
 code.blk:empty { display: none }
-.up, .dn {
-	fill: #999;
-	margin-bottom: 4px;
+.comment .sctrls { padding-right: 0.3em }
+.comment .ctrl {
+	vertical-align: top;
+	font-size: 1.2em;
+	line-height: 0.8em;
 }
+.comment .ctrl { color: #006 }
+.comment:not(:hover) .ctrl { color: #15f }
+.ctrl:active { color: #02d }
+:not(.sctrls) > .up, :not(.sctrls) > .dn { margin-bottom: 4px }
+.up, .dn { fill: #999 }
 .up:hover, .dn:hover {
 	fill: #aaa;
 	transition: fill 0.1s;
@@ -82,7 +89,6 @@ code.blk:empty { display: none }
 .editbtn, .editbtn:hover { color: #0b0 }
 .editbtn:visited { color: #090 }
 .delbtn, .delbtn:hover { color: #f00 }
-.comment .up, .comment .dn { width: 18px }
 #comment:target + #addcomment { display: none }
 #answer, #answerta { z-index: 1 }
 #answerta:focus + #answertips, #answertips:hover {

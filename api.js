@@ -95,6 +95,12 @@ module.exports = o(function*(req, res, user, post) {
 		});
 		res.writeHead(200);
 		res.end('Confirmation email sent.');
+	} else if (i = req.url.pathname.match(/^\/comment\/(\d+)\/body$/)) {
+		var doc = yield dbcs.comments.findOne({_id: parseInt(i[1])}, {body: true}, yield);
+		if (!doc) return res.writeHead(404) || res.end('Error: Invalid comment id.');
+		if (doc.deleted) return res.writeHead(403) || res.end('Error: Comment has been deleted.');
+		res.writeHead(200);
+		res.end(doc.body);
 	} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)$/)) {
 		var doc = yield dbcs.chat.findOne({_id: parseInt(i[1])}, yield);
 		if (!doc) return res.writeHead(404) || res.end('Error: Invalid message id.');
