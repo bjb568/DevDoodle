@@ -45,6 +45,7 @@ var colors = require('colors'),
 		'chatrooms',
 		'programs',
 		'comments',
+		'commenthistory',
 		'votes',
 		'lessons'
 	];

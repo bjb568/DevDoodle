@@ -277,8 +277,28 @@ code {
 	padding: 2px 2px 0 0;
 	height: 16px;
 }
-.comment:not(:hover) .sctrls svg:not(.clkd) { opacity: 0.4 }
+.comment:not(:hover) .sctrls > :not(.clkd) { opacity: 0.4 }
 .comment img { max-height: 200px }
+.comment .mention {
+	background: #faa;
+	border-radius: 4px;
+}
+.comment.editing { background: #8cf }
+.comment.deleted::before {
+	content: '';
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+}
+.comment.deleted::before { background: rgba(255, 128, 128, 0.95) }
+#pingsug {
+	position: absolute;
+	margin-top: -18px;
+}
+#pingsug span {
+	background: #ffa;
+	padding: 2px;
+	margin: 0 2px;
+}
 .c-sig { padding: 2px 0 0 4px }
 .c-sig, .c-sig > * { color: #ccc }
 .ctrls :hover { color: #000 }

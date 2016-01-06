@@ -121,7 +121,7 @@ module.exports = o(function*(req, res, user) {
 					var votes = comment.votes || [],
 						voted;
 					for (var i in votes) if (votes[i].user == user.name) voted = true;
-					var commentBody = markdown(comment.body),
+					var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
 						endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|>).)+?>)+$/) || [{length: 0}])[0].length;
 					commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 						'<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
@@ -135,7 +135,8 @@ module.exports = o(function*(req, res, user) {
 							(
 								'<span class="sctrls">' +
 								'<svg class="up' + (voted ? ' clkd' : '') + '" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-								'<svg class="fl" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+								'<svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
+								(user.name == op.name ? '<span class="ctrl">✎</span>' : '') +
 								'</span>'
 							) :
 							''

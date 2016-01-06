@@ -29,11 +29,19 @@ section { background: transparent }
 #meta h1, h2, h3, h4, h5, h6 { color: #000 }
 #meta code { background: #fff }
 #meta a { color: #000 }
+#meta .ctrl { color: #006 }
 #meta a:visited { color: #444 }
-#meta a:hover { color: #15f }
-#meta a:active { color: #02d }
+#meta a:hover, #meta .comment:not(:hover) .ctrl { color: #15f }
+#meta a:active, #meta .ctrl:active { color: #02d }
 #meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
+.comment .sctrls { padding-right: 0.3em }
+.comment .ctrl {
+	vertical-align: top;
+	font-size: 1.2em;
+	line-height: 0.8em;
+}
+.c-sig, .c-sig > * { color: #666 }
 #output { width: 100% }
 #main { min-height: 600px }
 #edit-title {

@@ -1,9 +1,10 @@
-var user = document.getElementById('user').value,
+var username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
 	rooms = JSON.parse(document.getElementById('rooms').value),
 	form = document.getElementById('form'),
 	room = document.getElementById('room'),
 	roomlist = document.getElementById('roomlist'),
 	results = document.getElementById('results');
+if (username == 'Log\xa0in') username = false;
 room.addEventListener('keyup', function(e) {
 	var sel = roomlist.getElementsByClassName('selected');
 	if (e.keyCode == 40) {
@@ -83,7 +84,7 @@ form.onsubmit = form.onchange = function(e) {
 				div = document.createElement('div');
 			div.classList.add('comment');
 			if (data.deleted) div.classList.add('deleted');
-			div.innerHTML = (user ? markdown(data.body + ' ').replace(new RegExp('@' + user + '(\\W)', 'g'), '<span class="mention">@' + user + '</span>$1') : markdown(data.body)).replaceAll('<a', '<a target="_blank"');
+			div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body)).replaceAll('<a', '<a target="_blank"');
 			var sig = document.createElement('span');
 			sig.classList.add('c-sig');
 			var starcount = document.createElement('span');

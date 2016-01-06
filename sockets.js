@@ -650,6 +650,32 @@ module.exports.init = function(server) {
 							});
 						});
 					}
+				} else if (message.event == 'comment-edit') {
+					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					if (!post) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Message not found.'
+					}));
+					if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You may edit only your own messages.'
+					}));
+					if (post.body == message.body) return;
+					dbcs.commenthistory.insert({
+						message: post._id,
+						event: 'edit',
+						time: new Date().getTime(),
+						body: post.body
+					});
+					dbcs.comments.update({_id: post._id}, {$set: {body: message.body}});
+					toSend = JSON.stringify({
+						event: 'comment-edit',
+						id: post._id,
+						body: message.body
+					});
+					for (i in wss.clients) {
+						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
+					}
 				} else if (message.event == 'comment-vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
@@ -911,6 +937,32 @@ module.exports.init = function(server) {
 								$inc: {unread: 1}
 							});
 						});
+					}
+				} else if (message.event == 'comment-edit') {
+					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					if (!post) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Message not found.'
+					}));
+					if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'You may edit only your own messages.'
+					}));
+					if (post.body == message.body) return;
+					dbcs.commenthistory.insert({
+						message: post._id,
+						event: 'edit',
+						time: new Date().getTime(),
+						body: post.body
+					});
+					dbcs.comments.update({_id: post._id}, {$set: {body: message.body}});
+					toSend = JSON.stringify({
+						event: 'comment-edit',
+						id: post._id,
+						body: message.body
+					});
+					for (i in wss.clients) {
+						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
 					}
 				} else if (message.event == 'comment-vote') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({

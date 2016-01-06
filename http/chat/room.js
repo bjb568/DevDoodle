@@ -2,7 +2,7 @@ var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.match(/\d+/)[0],
 	socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
-	username = document.getElementById('user').value,
+	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
 	rawdesc = document.getElementById('descedit').value,
 	onBottom = true,
 	state = 1,
@@ -26,6 +26,7 @@ var audio = new Audio('/a/beep.mp3'),
 	unread = 0,
 	tsMode = false,
 	e;
+if (username == 'Log\xa0in') username = false;
 ctrls.classList.add('ctrls');
 ctrlsStar.textContent = '★';
 ctrlsStar.onclick = function() {
