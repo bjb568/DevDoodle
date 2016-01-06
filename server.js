@@ -77,13 +77,21 @@ try {
 githubAuth = JSON.parse(githubAuth);
 
 global.getVersionNonce = o(function*(pn, file, cb) {
-	cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
+	try {
+		cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
+	} catch(e) {
+		cb(e);
+	}
 });
 global.addVersionNonces = o(function*(str, pn, cb) {
 	for (let i = 0; i < str.length; i++) {
 		if (str.substr(i).match(/^\.[A-z]{1,8}"/)) {
 			while (str[i] && str[i] != '"') i++;
-			str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
+			try {
+				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
+			} catch(e) {
+				console.log(e);
+			}
 		}
 	}
 	cb(null, str);
