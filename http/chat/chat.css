@@ -50,6 +50,11 @@ textarea {
 }
 #chat .comment:hover { outline: 1px dotted #000 }
 .ctrls { border: 1px solid #aaa }
+.mobile .ctrls {
+	transform: scale(1.5);
+	transform-origin: top right;
+}
+.mobile .comment:last-child:not(:first-child) .ctrls { transform-origin: bottom right }
 #stars {
 	list-style-type: none;
 	padding: 0;

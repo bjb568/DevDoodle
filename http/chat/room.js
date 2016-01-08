@@ -665,3 +665,4 @@ document.addEventListener('visibilitychange', function() {
 		unread = 0;
 	}
 });
+if (navigator.userAgent.indexOf('Mobile') != -1) document.body.classList.add('mobile');
