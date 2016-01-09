@@ -8,9 +8,27 @@ var url = require('url'),
 	crypto = require('crypto');
 module.exports = o(function*(req, res, user, post) {
 	var i, id;
-	if (req.url.pathname == '/notif') {
+	if (req.url.pathname == '/me/clearnotifs') {
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to clear your notifications.');
+		i = user.notifs.length;
+		while (i--) user.notifs[i].unread = false;
+		dbcs.users.update({name: user.name}, {$set: {
+			notifs: user.notifs,
+			unread: 0
+		}});
+		res.writeHead(204);
+		res.end();
+	} else if (req.url.pathname == '/me/notif') {
 		res.writeHead(200);
-		res.end(user && user.unread ? '1' : '');
+		res.end(user && user.unread ?
+			'<ul>' +
+			user.notifs.map(function(tNotif){
+				if (!tNotif.unread) return '';
+				return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
+				'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>'
+			}).join('') +
+			'<li><a id="markread">Mark all as read</a></li></ul>'
+		: '');
 	} else if (req.url.pathname == '/me/changemail') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change your email.');
 		var newmail = post.newmail;

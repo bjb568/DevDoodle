@@ -410,6 +410,14 @@ addEventListener('DOMContentLoaded', function() {
 		document.getElementById('err').appendChild(span);
 		document.getElementById('content').hidden = true;
 	}
+	var markread = document.getElementById('markread');
+	if (markread) markread.onclick = function() {
+		request('/api/me/clearnotifs', function(res) {
+			if (res != 'Success') return alert(res);
+			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.remove('unread');
+			document.getElementById('notifs').innerHTML = '';
+		});
+	}
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {
@@ -475,8 +483,9 @@ addEventListener('resize', applyProgramIframes);
 
 document.addEventListener('visibilitychange', function() {
 	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue != 'Log in') {
-		request('/api/notif', function(res) {
+		request('/api/me/notif', function(res) {
 			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.toggle('unread', res);
+			document.getElementById('notifs').innerHTML = res;
 		});
 	}
 });

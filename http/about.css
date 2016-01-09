@@ -1,5 +1,5 @@
 body { line-height: 1.4 }
-#nav, #footer { transition: opacity 0.5s 0.2s }
+#nav, #footer { transition: opacity 0.2s 0.2s }
 #nav:not(:hover), #footer:not(:hover) { opacity: 0.5 }
 h1 {
 	border-bottom: none;
