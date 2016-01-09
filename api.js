@@ -435,6 +435,19 @@ module.exports = o(function*(req, res, user, post) {
 			upvotes: 0
 		});
 		dbcs.questions.update({_id: qid}, {$inc: {answers: 1}});
+		dbcs.users.update({name: user.name}, {
+			$push: {
+				notifs: {
+					type: 'Answer',
+					on: (yield dbcs.questions.findOne({_id: qid}, yield)).title.link('/qa/' + qid + '#a' + id),
+					body: post.body,
+					from: user.name,
+					unread: true,
+					time: new Date().getTime()
+				}
+			},
+			$inc: {unread: 1}
+		});
 		res.writeHead(200);
 		res.end('Location: #a' + id);
 	} else if (req.url.pathname == '/program/save') {
