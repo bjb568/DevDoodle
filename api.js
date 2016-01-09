@@ -421,9 +421,10 @@ module.exports = o(function*(req, res, user, post) {
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
 		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
-		var last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
-			id = last ? last._id + 1 : 1,
-			qid = parseInt(i[1]);
+		var qid = parseInt(i[1]),
+			question = yield dbcs.questions.findOne({_id: qid}, yield),
+			last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
+			id = last ? last._id + 1 : 1;
 		dbcs.answers.insert({
 			_id: id,
 			question: qid,
@@ -435,19 +436,21 @@ module.exports = o(function*(req, res, user, post) {
 			upvotes: 0
 		});
 		dbcs.questions.update({_id: qid}, {$inc: {answers: 1}});
-		dbcs.users.update({name: user.name}, {
-			$push: {
-				notifs: {
-					type: 'Answer',
-					on: (yield dbcs.questions.findOne({_id: qid}, yield)).title.link('/qa/' + qid + '#a' + id),
-					body: post.body,
-					from: user.name,
-					unread: true,
-					time: new Date().getTime()
-				}
-			},
-			$inc: {unread: 1}
-		});
+		if (user.name != question.user) {
+			dbcs.users.update({name: user.name}, {
+				$push: {
+					notifs: {
+						type: 'Answer',
+						on: question.title.link('/qa/' + qid + '#a' + id),
+						body: post.body,
+						from: user.name,
+						unread: true,
+						time: new Date().getTime()
+					}
+				},
+				$inc: {unread: 1}
+			});
+		}
 		res.writeHead(200);
 		res.end('Location: #a' + id);
 	} else if (req.url.pathname == '/program/save') {
