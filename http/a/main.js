@@ -403,6 +403,14 @@ function textareaHandler(e, s) {
 	this.lastKeyCode = e.keyCode;
 }
 
+function updateTimes() {
+	var times = document.getElementsByTagName('time');
+	for (var i = 0; i < times.length; i++) {
+		var t = ago(Date.parse(times[i].getAttribute('datetime')));
+		if (times[i].textContent != t) times[i].textContent = t;
+	}
+}
+
 addEventListener('DOMContentLoaded', function() {
 	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
 		var span = document.createElement('span');
@@ -419,13 +427,8 @@ addEventListener('DOMContentLoaded', function() {
 		e[i].addEventListener('keydown', textareaHandler);
 		e[i].addEventListener('keypress', textareaHandler);
 	}
-	setInterval(function() {
-		var times = document.getElementsByTagName('time');
-		for (var i = 0; i < times.length; i++) {
-			var t = ago(Date.parse(times[i].getAttribute('datetime')));
-			if (times[i].textContent != t) times[i].textContent = t;
-		}
-	}, 100);
+	updateTimes();
+	setInterval(updateTimes, 100);
 	var navAnchors = document.querySelectorAll('#nav > div > a');
 	for (var i = 0; i < navAnchors.length; i++) {
 		if (navAnchors[i].children.length - 1) navAnchors[i].addEventListener('touchstart', function(e) {
