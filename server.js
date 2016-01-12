@@ -995,7 +995,7 @@ var serverHandler = o(function*(req, res) {
 });
 console.log('Connecting to mongodb…'.cyan);
 var server;
-mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
+mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	if (err) throw err;
 	db.createCollection('questions', function(err, collection) {
 		if (err) throw err;
