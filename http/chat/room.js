@@ -196,7 +196,7 @@ socket.onmessage = function(e) {
 			var after = 0;
 			while (e = cont.children[after] && e.id < data.id) after++;
 			cont.insertBefore(div, cont.children[after]);
-			if (!lock || !document.getElementById(hash)) cont.scrollTop += div.offsetHeight + 3;
+			cont.scrollTop += div.offsetHeight + 3;
 		} else cont.appendChild(div);
 		if (data.event == 'add') {
 			if (username != data.user) audio.play();
@@ -431,6 +431,7 @@ socket.onmessage = function(e) {
 		if (!isNaN(hash)) {
 			location.hash = '';
 			location.hash = '#' + hash;
+			document.body.scrollTop = 0;
 		}
 		if (!document.getElementById('ts').hidden) tsMode = true;
 		if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
@@ -665,3 +666,4 @@ document.addEventListener('visibilitychange', function() {
 		unread = 0;
 	}
 });
+if (navigator.userAgent.indexOf('Mobile') != -1) document.body.classList.add('mobile');

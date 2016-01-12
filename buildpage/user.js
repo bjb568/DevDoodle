@@ -52,9 +52,35 @@ module.exports = o(function*(req, res, user) {
 	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
 		var dispUser = yield dbcs.users.findOne({name: i[1]}, yield);
 		if (!dispUser) return errorNotFound(req, res, user);
-		yield respondPage(dispUser.name, user, req, res, yield, {nonotif: true});
 		var me = user.name == dispUser.name,
-			questions = 0;
+			notifstr = '';
+		if (me && user.notifs) {
+			var notifs = [];
+			i = user.notifs.length;
+			while (i--) {
+				if (user.notifs[i].unread) notifs.push(user.notifs[i]);
+				user.notifs[i].unread = false;
+			}
+			if (notifs.length) {
+				notifstr += '<h2>Notifications</h2>';
+				notifstr += '<ul id="notifs">';
+				i = notifs.length;
+				while (i--) notifstr +=
+					'<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
+					'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>';
+				notifstr += '</ul>';
+				dbcs.users.update({name: user.name}, {
+					$set: {
+						unread: 0,
+						notifs: user.notifs
+					}
+				});
+				user.unread = 0;
+			}
+			notifstr += '<p><a href="/notifs">Read old notifications</a></p>';
+		}
+		yield respondPage(dispUser.name, user, req, res, yield);
+		var questions = 0;
 		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
 		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
 		res.write('<div>');
@@ -70,7 +96,8 @@ module.exports = o(function*(req, res, user) {
 		}
 		res.write('</div>');
 		res.write('<div class="clear"><span class="big-rep">' + dispUser.rep + '</span> reputation</div>');
-		res.write('<div class="resp-flex">');
+		res.write(notifstr);
+		res.write('<div class="resp-flex umar">');
 		res.write('<section>');
 		res.write('<h2>Questions</h2>');
 		res.write('<div class="column-medium"><ul>');
@@ -100,7 +127,7 @@ module.exports = o(function*(req, res, user) {
 						if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
 						res.write('</section>');
 						res.write('</div>');
-						res.write('<section class="lim-programs resp-block">');
+						res.write('<section class="resp-block">');
 						res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>');
 						res.write('<div class="flexcont programs lim-programs">')
 						var programs = 0;
@@ -126,30 +153,6 @@ module.exports = o(function*(req, res, user) {
 								if (me) {
 									res.write('<h2 class="underline">Private</h2>');
 									res.write((yield addVersionNonces((yield fs.readFile('./html/user/mailform.html', yield)).toString(), req.url.pathname, yield)).replaceAll('$mail', html(user.mail)));
-									if (user.notifs) {
-										var notifs = [];
-										i = user.notifs.length;
-										while (i--) {
-											if (user.notifs[i].unread) notifs.push(user.notifs[i]);
-											user.notifs[i].unread = false;
-										}
-										if (notifs.length) {
-											res.write('<h2>Notifications</h2>');
-											res.write('<ul id="notifs">');
-											i = notifs.length;
-											while (i--) res.write(
-												'<li class="hglt pad"><em>' + notifs[i].type + ' on ' + notifs[i].on + '</em><blockquote>' + markdown(notifs[i].body) + '</blockquote>' +
-												'-' + notifs[i].from.link('/user/' + notifs[i].from) + ', <time datetime="' + new Date(notifs[i].time).toISOString() + '"></time></li>'
-											);
-											res.write('</ul>');
-											dbcs.users.update({name: user.name}, {
-												$set: {
-													unread: 0,
-													notifs: user.notifs
-												}
-											});
-										} else res.write('<p><a href="/notifs">Read old notifications</a></p>');
-									}
 								}
 								res.end(yield fs.readFile('html/a/foot.html', yield));
 							}

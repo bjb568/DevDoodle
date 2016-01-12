@@ -8,9 +8,27 @@ var url = require('url'),
 	crypto = require('crypto');
 module.exports = o(function*(req, res, user, post) {
 	var i, id;
-	if (req.url.pathname == '/notif') {
+	if (req.url.pathname == '/me/clearnotifs') {
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to clear your notifications.');
+		i = user.notifs.length;
+		while (i--) user.notifs[i].unread = false;
+		dbcs.users.update({name: user.name}, {$set: {
+			notifs: user.notifs,
+			unread: 0
+		}});
+		res.writeHead(204);
+		res.end();
+	} else if (req.url.pathname == '/me/notif') {
 		res.writeHead(200);
-		res.end(user && user.unread ? '1' : '');
+		res.end(user && user.unread ?
+			'<ul>' +
+			user.notifs.map(function(tNotif){
+				if (!tNotif.unread) return '';
+				return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
+				'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>'
+			}).join('') +
+			'<li><a id="markread">Mark all as read</a></li></ul>'
+		: '');
 	} else if (req.url.pathname == '/me/changemail') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change your email.');
 		var newmail = post.newmail;
@@ -421,9 +439,10 @@ module.exports = o(function*(req, res, user, post) {
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
 		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
-		var last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
-			id = last ? last._id + 1 : 1,
-			qid = parseInt(i[1]);
+		var qid = parseInt(i[1]),
+			question = yield dbcs.questions.findOne({_id: qid}, yield),
+			last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
+			id = last ? last._id + 1 : 1;
 		dbcs.answers.insert({
 			_id: id,
 			question: qid,
@@ -435,6 +454,21 @@ module.exports = o(function*(req, res, user, post) {
 			upvotes: 0
 		});
 		dbcs.questions.update({_id: qid}, {$inc: {answers: 1}});
+		if (user.name != question.user) {
+			dbcs.users.update({name: user.name}, {
+				$push: {
+					notifs: {
+						type: 'Answer',
+						on: question.title.link('/qa/' + qid + '#a' + id),
+						body: post.body,
+						from: user.name,
+						unread: true,
+						time: new Date().getTime()
+					}
+				},
+				$inc: {unread: 1}
+			});
+		}
 		res.writeHead(200);
 		res.end('Location: #a' + id);
 	} else if (req.url.pathname == '/program/save') {
