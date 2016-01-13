@@ -30,3 +30,17 @@
 		</div>
 	</form>
 </div>
+<div class="indt umar">
+	<div id="comments">$commentstr</div>
+	<form id="editcomment-$id" class="umar" hidden="">
+		<textarea id="comment-edit-ta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+		<button type="submit">Edit</button>
+		<button type="reset" id="c-edit-reset-$id">Cancel</button>
+	</form>
+	<form id="comment-$id" class="commentform target umar">
+		<textarea id="commentta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+		<button type="submit">Post</button>
+		<button type="reset" class="c-reset" id="c-reset-$id">Cancel</button>
+	</form>
+	<a class="addcomment small" href="#comment-$id">Add comment</a>
+</div>

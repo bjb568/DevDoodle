@@ -35,11 +35,14 @@ document.getElementById('cancel-edit').onclick = function() {
 	document.getElementById('q-content').hidden = 0;
 	document.getElementById('med').href = '#edit';
 };
-document.getElementById('addcomment').onclick = function() {
-	setTimeout(function() {
-		document.getElementById('commentta').focus();
-	}, 0);
-};
+var addCommentBtns = document.getElementsByClassName('addcomment');
+for (var i = 0; i < addCommentBtns.length; i++) {
+	addCommentBtns[i].onclick = function() {
+		setTimeout(function(e) {
+			e.previousElementSibling.firstElementChild.focus();
+		}, 0, this);
+	};
+}
 var waiting = false;
 function langKeyUp() {
 	var firstChild;
@@ -116,20 +119,29 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answerBody));
 });
-var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id);
-document.getElementById('comment').onsubmit = function(e) {
-	socket.send(JSON.stringify({
-		event: 'comment',
-		body: document.getElementById('commentta').value
-	}));
-	document.getElementById('commentta').value = '';
-	document.getElementById('c-reset').onclick();
-	e.preventDefault();
-};
-document.getElementById('c-reset').onclick = function() {
-	location.hash = '';
-	history.replaceState('', document.title, window.location.pathname);
-};
+var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id),
+	commentForms = document.getElementsByClassName('commentform');
+for (var i = 0; i < commentForms.length; i++) {
+	commentForms[i].onsubmit = function(e) {
+		var el = this;
+		socket.send(JSON.stringify({
+			event: 'comment',
+			body: el.firstChild.value
+		}));
+		this.firstChild.value = '';
+		this.lastChild.onclick();
+		e.preventDefault();
+	};
+}
+var cResetBtns = document.getElementsByClassName('c-reset');
+for (var i = 0; i < cResetBtns.length; i++) {
+	cResetBtns[i].onclick = function() {
+		var scrlTop = document.body.scrollTop;
+		location.hash = '';
+		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
+	};
+}
 document.getElementById('c-edit-reset').onclick = function() {
 	editCommentForm.hidden = true;
 	document.getElementById('c' + editingComment).classList.remove('editing');
