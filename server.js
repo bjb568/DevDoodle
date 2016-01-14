@@ -104,11 +104,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (!header) header = {};
 	var inhead = header.inhead || '',
 		huser = header.user,
-		nonotif = header.nonotif,
 		clean = header.clean;
 	delete header.inhead;
 	delete header.user;
-	delete header.nonotif;
 	delete header.clean;
 	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (typeof header['Cache-Control'] != 'string') header['Cache-Control'] = 'no-cache';
@@ -143,7 +141,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	}
 	res.writeHead(status || 200, header);
 	var data = (yield fs.readFile('html/a/head.html', yield)).toString();
-	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span>', '<a$notifs href="/user/' + user.name + '"><span>' + user.name + '</span>');
+	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span></a>', '<a href="/user/' + user.name + '"$bnotifs><span>' + user.name + '</span></a>');
 	var dirs = req.url.pathname.split('/');
 	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"');
 	res.write(
@@ -170,8 +168,22 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				'$inhead',
 				inhead
 			).replace(
+				'$bnotifs',
+				(user && user.unread) ? ' class="unread"' : ''
+			).replace(
+				'class="active" class="unread"',
+				'class="active unread"'
+			).replace(
 				'$notifs',
-				(user && user.unread && !nonotif) ? ' class="unread"' : ''
+				user && user.unread ?
+					'<ul>' +
+					user.notifs.map(function(tNotif){
+						if (!tNotif.unread) return '';
+						return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
+						'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>'
+					}).join('') +
+					'<li><a id="markread">Mark all as read</a></li></ul>'
+				: ''
 			).replace(
 				'<a href="/mod/"><span>Mod</span></a>',
 				user && user.level > 1 ? '<a href="/mod/"><span>Mod</span></a>' : ''
@@ -995,7 +1007,7 @@ var serverHandler = o(function*(req, res) {
 });
 console.log('Connecting to mongodb…'.cyan);
 var server;
-mongo.connect('mongodb://localhost:27017/DevDoodle/', function(err, db) {
+mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	if (err) throw err;
 	db.createCollection('questions', function(err, collection) {
 		if (err) throw err;

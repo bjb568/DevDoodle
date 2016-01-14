@@ -105,3 +105,4 @@ code.blk:empty { display: none }
 	opacity: 0;
 	transition: opacity 0.2s ease-out;
 }
+.answer:not(:first-of-type) { margin-top: 8px }

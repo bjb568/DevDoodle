@@ -257,7 +257,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		mousePressed = false;
 	});
 } else {
-	var times = 0;
 	addEventListener('touchstart', function(e) {
 		if (e.touches.length == 1) {
 			mousePressed = true;
@@ -268,7 +267,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 					mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
 				}
 			} catch(e) {}
-			times = 0;
 		} else mousePressed = false;
 	});
 	addEventListener('touchmove', function(e) {
@@ -279,10 +277,7 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 				mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
 				mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
 				if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
-					times++;
-					if (times > 2) {
-						e.preventDefault();
-					}
+					e.preventDefault();
 					return false;
 				}
 				mouseX = mouseX.bound(0, width);

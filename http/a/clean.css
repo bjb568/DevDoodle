@@ -36,7 +36,7 @@ body {
 .ib { display: inline-block }
 .inline, summary * { display: inline }
 [hidden], .target:not(:target), #content > .sctrls { display: none }
-.rel, .comment { position: relative }
+.rel, .comment, .spoiler { position: relative }
 .abs, .ctrls { position: absolute }
 .fullwidth, input[type=text].fullwidth, input[type=password].fullwidth { width: 100% }
 .maxwidth, img, input { max-width: 100% }
@@ -109,6 +109,12 @@ li {
 	border-radius: 4px;
 	color: #000;
 }
+.limited, .large-limited {
+	max-height: 72px;
+	overflow-x: hidden; overflow-y: auto;
+	transition: max-height 0.5s;
+}
+.large-limited { max-height: 144px }
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
 .spoiler:not(:hover) *, .spoiler:hover::before { opacity: 0 }
@@ -628,14 +634,9 @@ body > * { flex-shrink: 0 }
 	line-height: 1em;
 	padding: 0 8px;
 }
+#notifs:empty { display: none }
 #content { padding-bottom: 24px }
-#nav .unread:not(.active) {
-	background: #d00;
-	color: #fff;
-}
 #nav nav > a.active { font-weight: bold }
-#nav .unread:not(.active):hover { background: #f00 }
-#nav .unread:not(.active):active { background: #c00 }
 @media (max-width: 359px) {
 	#nav #logo { width: 100% }
 	#nav div {
@@ -704,9 +705,9 @@ body > * { flex-shrink: 0 }
 @media (min-width: 800px) {
 	#nav { background: #111 }
 	#nav > a { transition: background 0.15s }
-	#nav a:not(.active):hover { background: #333 }
+	#nav a:not(.active):not(.unread):hover { background: #333 }
 	#nav a:hover, #nav .active { color: #fff }
-	#nav .active, #nav a:not(.active):active { background: #000 }
+	#nav .active, #nav a:not(.active):not(.unread):active { background: #000 }
 	#logo svg {
 		width: 165px;
 		padding: 4px 12px;
@@ -723,15 +724,17 @@ body > * { flex-shrink: 0 }
 		padding: 0 10px;
 		background: #222;
 	}
-	#nav nav a { background: #161616 }
+	#nav nav > a, #nav nav li {
+		background: #161616;
+		width: 100%;
+	}
 	#nav form {
 		line-height: 32px;
 		margin: 0;
 		max-width: 24em;
 	}
 	#nav .active { background: #000 }
-	#nav a:not(:hover) nav { height: 0 }
-	#nav > div > a { position: relative }
+	#nav > div > a, #nav div { position: relative }
 	#nav nav {
 		position: absolute;
 		z-index: 3;
@@ -739,9 +742,49 @@ body > * { flex-shrink: 0 }
 		margin: 0;
 		text-align: left;
 		overflow: hidden;
-		height: 96px;
-		transition: height 0.2s;
+		max-height: 96px;
+		transition: max-height 0.2s;
 		box-shadow: 1px 1px 8px #000;
 	}
-	#nav nav a { width: 100% }
+	nav#notifs {
+		font-size: 1rem;
+		left: auto; right: -8em;
+		max-width: 40vw;
+		box-shadow: none;
+		overflow: visible;
+		transition: opacity 0.3s;
+	}
+	a:not(:hover) + #notifs:not(:hover) {
+		opacity: 0;
+		visibility: hidden;
+	}
+	#notifs ul {
+		background: #000;
+		color: #ccc;
+		padding-left: 2em;
+		margin: 0;
+		line-height: initial;
+		box-shadow: 1px 1px 8px #000;
+		max-height: 60vh;
+		overflow-y: auto;
+	}
+	#nav #notifs a {
+		padding: 0;
+		color: #fff;
+		line-height: initial;
+		background: transparent;
+		text-decoration: underline;
+		font-size: 1em;
+	}
+	#nav #notifs #markread { color: #8f8 }
+	#nav #notifs #markread:hover { color: #cfc }
+	#nav #notifs #markread:active { color: #0f0 }
+	#nav a:not(:hover) nav { max-height: 0 }
 }
+#nav > div:nth-of-type(2) > a:nth-child(2) { transition: color 0.1s, background-color 0.5s }
+#nav .unread {
+	background: #d00;
+	color: #fff;
+}
+#nav .unread:hover { background: #f00 }
+#nav .unread:active { background: #c00 }
