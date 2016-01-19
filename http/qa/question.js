@@ -35,11 +35,14 @@ document.getElementById('cancel-edit').onclick = function() {
 	document.getElementById('q-content').hidden = 0;
 	document.getElementById('med').href = '#edit';
 };
-document.getElementById('addcomment').onclick = function() {
-	setTimeout(function() {
-		document.getElementById('commentta').focus();
-	}, 0);
-};
+var addCommentBtns = document.getElementsByClassName('addcomment');
+for (var i = 0; i < addCommentBtns.length; i++) {
+	addCommentBtns[i].onclick = function() {
+		setTimeout(function(e) {
+			e.previousElementSibling.firstElementChild.focus();
+		}, 0, this);
+	};
+}
 var waiting = false;
 function langKeyUp() {
 	var firstChild;
@@ -116,36 +119,52 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answerBody));
 });
-var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id);
-document.getElementById('comment').onsubmit = function(e) {
-	socket.send(JSON.stringify({
-		event: 'comment',
-		body: document.getElementById('commentta').value
-	}));
-	document.getElementById('commentta').value = '';
-	document.getElementById('c-reset').onclick();
-	e.preventDefault();
-};
-document.getElementById('c-reset').onclick = function() {
-	location.hash = '';
-	history.replaceState('', document.title, window.location.pathname);
-};
-document.getElementById('c-edit-reset').onclick = function() {
-	editCommentForm.hidden = true;
-	document.getElementById('c' + editingComment).classList.remove('editing');
-	editingComment = null;
-};
-editCommentForm.onsubmit = function(e) {
-	socket.send(JSON.stringify({
-		event: 'comment-edit',
-		id: editingComment,
-		body: editCommentTA.value
-	}));
-	editCommentForm.hidden = true;
-	document.getElementById('c' + editingComment).classList.remove('editing');
-	editingComment = null;
-	e.preventDefault();
-};
+var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id),
+	commentForms = document.getElementsByClassName('commentform');
+for (var i = 0; i < commentForms.length; i++) {
+	commentForms[i].onsubmit = function(e) {
+		var el = this;
+		socket.send(JSON.stringify({
+			event: 'comment',
+			body: el.firstElementChild.value,
+			answer: parseInt(el.dataset.answer)
+		}));
+		this.firstElementChild.value = '';
+		this.lastElementChild.onclick();
+		e.preventDefault();
+	};
+}
+var cResetBtns = document.getElementsByClassName('c-reset');
+for (var i = 0; i < cResetBtns.length; i++) {
+	cResetBtns[i].onclick = function() {
+		var scrlTop = document.body.scrollTop;
+		location.hash = '';
+		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
+	};
+}
+var cEditResetBtns = document.getElementsByClassName('c-edit-reset');
+for (var i = 0; i < cEditResetBtns.length; i++) {
+	cEditResetBtns[i].onclick = function() {
+		editCommentForm.hidden = true;
+		document.getElementById('c' + editingComment).classList.remove('editing');
+		editingComment = null;
+	};
+}
+var cEditForm = document.getElementsByClassName('editcommentform');
+for (var i = 0; i < cEditForm.length; i++) {
+	cEditForm[i].onsubmit = function(e) {
+		socket.send(JSON.stringify({
+			event: 'comment-edit',
+			id: editingComment,
+			body: editCommentTA.value
+		}));
+		this.hidden = true;
+		document.getElementById('c' + editingComment).classList.remove('editing');
+		editingComment = null;
+		e.preventDefault();
+	};
+}
 socket.onmessage = function(e) {
 	console.log(e.data);
 	try {
@@ -206,7 +225,7 @@ socket.onmessage = function(e) {
 			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
-		document.getElementById('comments').appendChild(div);
+		document.getElementById(data.answer ? 'comments-' + data.answer : 'comments').appendChild(div);
 	} else if (data.event == 'comment-scorechange') {
 		var c = document.getElementById('c' + data.id);
 		if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
@@ -240,12 +259,14 @@ function upvoteComment() {
 }
 function editComment() {
 	var s = this.parentNode.parentNode.classList.contains('editing'),
-		existing = document.getElementById('c' + editingComment);
+		existing = document.getElementById('c' + editingComment),
+		idSuffix = this.parentNode.parentNode.parentNode.id == 'comments' ? '' : '-' + this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.id.substr(1);
 	if (existing) existing.classList.remove('editing');
-	if (editCommentForm.hidden = s) editingComment = false;
+	if ((editCommentForm = document.getElementById('editcomment' + idSuffix)).hidden = s) editingComment = false;
 	else {
 		this.parentNode.parentNode.classList.add('editing');
 		editingComment = parseInt(this.parentNode.parentNode.id.substr(1));
+		editCommentTA = document.getElementById('comment-edit-ta' + idSuffix);
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
 		request('/api/comment/' + editingComment + '/body', function(res) {

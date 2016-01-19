@@ -41,7 +41,7 @@
 	padding: 2px 6px;
 	box-shadow: 1px 1px 1px #444;
 }
-#comments { margin: 6px 0 }
+.comments { margin: 6px 0 }
 code.blk:empty { display: none }
 .comment .sctrls { padding-right: 0.3em }
 .comment .ctrl {
@@ -89,7 +89,7 @@ code.blk:empty { display: none }
 .editbtn, .editbtn:hover { color: #0b0 }
 .editbtn:visited { color: #090 }
 .delbtn, .delbtn:hover { color: #f00 }
-#comment:target + #addcomment { display: none }
+.commentform:target + .addcomment { display: none }
 #answer, #answerta { z-index: 1 }
 #answerta:focus + #answertips, #answertips:hover {
 	z-index: 1;
