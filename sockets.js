@@ -897,19 +897,22 @@ module.exports.init = function(server) {
 						body: 'Comment length may not exceed 720 characters.'
 					}));
 					id = (yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield) || {_id: 0})._id + 1;
-					dbcs.comments.insert({
+					var tcomment = {
 						_id: id,
 						body: message.body,
 						user: tws.user.name,
 						time: new Date().getTime(),
 						question: tws.question
-					});
+					};
+					if (!isNaN(message.answer)) tcomment.answer = parseInt(message.answer);
+					dbcs.comments.insert(tcomment);
 					for (i in wss.clients) {
 						if (wss.clients[i].question == tws.question) {
 							wss.clients[i].trysend(JSON.stringify({
 								event: 'comment-add',
 								body: message.body,
 								user: tws.user.name,
+								answer: tcomment.answer,
 								id: id
 							}));
 						}
@@ -917,7 +920,10 @@ module.exports.init = function(server) {
 					var matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 					for (i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 					var question = yield dbcs.questions.findOne({_id: tws.question}, yield);
-					if (matches.indexOf(question.user) == -1) matches.push(question.user);
+					if (tcomment.answer) {
+						var answer = yield dbcs.answers.findOne({_id: tcomment.answer}, yield);
+						if (matches.indexOf(answer.user) == -1) matches.push(answer.user);
+					} else if (matches.indexOf(question.user) == -1) matches.push(question.user);
 					for (i = 0; i < matches.length; i++) {
 						if (matches[i] == tws.user.name) continue;
 						dbcs.users.findOne({name: matches[i]}, function(err, user) {

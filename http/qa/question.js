@@ -126,10 +126,11 @@ for (var i = 0; i < commentForms.length; i++) {
 		var el = this;
 		socket.send(JSON.stringify({
 			event: 'comment',
-			body: el.firstChild.value
+			body: el.firstElementChild.value,
+			answer: parseInt(el.dataset.answer)
 		}));
-		this.firstChild.value = '';
-		this.lastChild.onclick();
+		this.firstElementChild.value = '';
+		this.lastElementChild.onclick();
 		e.preventDefault();
 	};
 }
@@ -142,22 +143,28 @@ for (var i = 0; i < cResetBtns.length; i++) {
 		document.body.scrollTop = scrlTop;
 	};
 }
-document.getElementById('c-edit-reset').onclick = function() {
-	editCommentForm.hidden = true;
-	document.getElementById('c' + editingComment).classList.remove('editing');
-	editingComment = null;
-};
-editCommentForm.onsubmit = function(e) {
-	socket.send(JSON.stringify({
-		event: 'comment-edit',
-		id: editingComment,
-		body: editCommentTA.value
-	}));
-	editCommentForm.hidden = true;
-	document.getElementById('c' + editingComment).classList.remove('editing');
-	editingComment = null;
-	e.preventDefault();
-};
+var cEditResetBtns = document.getElementsByClassName('c-edit-reset');
+for (var i = 0; i < cEditResetBtns.length; i++) {
+	cEditResetBtns[i].onclick = function() {
+		editCommentForm.hidden = true;
+		document.getElementById('c' + editingComment).classList.remove('editing');
+		editingComment = null;
+	};
+}
+var cEditForm = document.getElementsByClassName('editcommentform');
+for (var i = 0; i < cEditForm.length; i++) {
+	cEditForm[i].onsubmit = function(e) {
+		socket.send(JSON.stringify({
+			event: 'comment-edit',
+			id: editingComment,
+			body: editCommentTA.value
+		}));
+		this.hidden = true;
+		document.getElementById('c' + editingComment).classList.remove('editing');
+		editingComment = null;
+		e.preventDefault();
+	};
+}
 socket.onmessage = function(e) {
 	console.log(e.data);
 	try {
@@ -218,7 +225,7 @@ socket.onmessage = function(e) {
 			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
-		document.getElementById('comments').appendChild(div);
+		document.getElementById(data.answer ? 'comments-' + data.answer : 'comments').appendChild(div);
 	} else if (data.event == 'comment-scorechange') {
 		var c = document.getElementById('c' + data.id);
 		if (c) c.getElementsByClassName('score')[0].dataset.score = c.getElementsByClassName('score')[0].textContent = data.score;
@@ -252,12 +259,14 @@ function upvoteComment() {
 }
 function editComment() {
 	var s = this.parentNode.parentNode.classList.contains('editing'),
-		existing = document.getElementById('c' + editingComment);
+		existing = document.getElementById('c' + editingComment),
+		idSuffix = this.parentNode.parentNode.parentNode.id == 'comments' ? '' : '-' + this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.id.substr(1);
 	if (existing) existing.classList.remove('editing');
-	if (editCommentForm.hidden = s) editingComment = false;
+	if ((editCommentForm = document.getElementById('editcomment' + idSuffix)).hidden = s) editingComment = false;
 	else {
 		this.parentNode.parentNode.classList.add('editing');
 		editingComment = parseInt(this.parentNode.parentNode.id.substr(1));
+		editCommentTA = document.getElementById('comment-edit-ta' + idSuffix);
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
 		request('/api/comment/' + editingComment + '/body', function(res) {
