@@ -41,11 +41,10 @@ body {
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
 .noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
-.mar { margin: 6px }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar, :not(img) + .desc, .blk { margin-top: 4px }
-.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer, #sidebar { margin-top: 6px }
+.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer, #sidebar { margin-top: 4px }
 .bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
 .bmar, .error, .half, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
@@ -671,7 +670,7 @@ body > * { flex-shrink: 0 }
 	padding: 0 8px;
 }
 #notifs:empty { display: none }
-#content { padding-bottom: 24px }
+#content { padding-bottom: 1rem }
 #nav nav > a.active { font-weight: bold }
 @media (max-width: 359px) {
 	#nav #logo { width: 100% }
