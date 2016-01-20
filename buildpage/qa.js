@@ -161,12 +161,12 @@ module.exports = o(function*(req, res, user) {
 								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
-								var d = diff.diffWords(item.tags.join(' '), prev.tags.join(' '));
+								var d = diff.diffWords(item.tags.join(), prev.tags.join());
 								for (var i = 0; i < d.length; i++) {
 									var t = d[i].value.split(',');
 									for (var j = 0; j < t.length; j++) {
-										if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins>');
-										else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del>');
+										if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins> ');
+										else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del> ');
 										else res.write(tagify(t[j]));
 									}
 								}
