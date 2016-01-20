@@ -106,3 +106,6 @@ code.blk:empty { display: none }
 	transition: opacity 0.2s ease-out;
 }
 .answer:not(:first-of-type) { margin-top: 8px }
+.tag-diff .tag { background: #aaa }
+.tag-diff del .tag { background: #faa }
+.tag-diff ins .tag { background: #afa }

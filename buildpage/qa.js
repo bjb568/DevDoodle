@@ -158,10 +158,10 @@ module.exports = o(function*(req, res, user) {
 								res.write('</details>');
 								res.write('<h2>Core Question:</h2>');
 								res.write('<code class="blk">');
-								writeDiff(item.question + 'Type: ' + item.type, prev.question + 'Type: ' + prev.type);
+								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
 								res.write('</code>');
-								res.write('<div class="bumar">');
-								var d = diff.diffWords(item.tags.join(), prev.tags.join());
+								res.write('<div class="bumar tag-diff">');
+								var d = diff.diffWords(item.tags.join(' '), prev.tags.join(' '));
 								for (var i = 0; i < d.length; i++) {
 									var t = d[i].value.split(',');
 									for (var j = 0; j < t.length; j++) {
