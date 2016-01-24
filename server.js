@@ -707,9 +707,9 @@ var serverHandler = o(function*(req, res) {
 								},
 								$set: {githubName: apiData.login}
 							});
-							var referer = url.parse(req.url.query.state);
+							var referer = url.parse(req.url.query.state || '');
 							res.writeHead(303, {
-								Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 ? referer.pathname : '/',
+								Location: req.url.query.state && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 ? referer.pathname : '/',
 								'Set-Cookie': idCookie
 							});
 							return res.end();
