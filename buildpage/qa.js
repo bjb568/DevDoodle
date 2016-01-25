@@ -99,7 +99,7 @@ module.exports = o(function*(req, res, user) {
 		if (!question) return errorNotFound[404](req, res, user);
 		var history = typeof req.url.query.history == 'string';
 		yield respondPage(
-			(history ? 'History of "' : html(question.lang) + ': ') + html(question.title) + (history ? '"' : ''),
+			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
 		);
 		var revcursor = dbcs.posthistory.find({q: question._id}),
