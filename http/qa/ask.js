@@ -252,7 +252,6 @@ form.onsubmit = function(e) {
 		document.getElementById('submit4').hidden = false;
 		document.getElementById('step3').classList.remove('hide');
 		smoothScroll(document.getElementById('step3'));
-		code.required = true;
 		setTimeout(function() {
 			code.focus();
 		}, 400);
