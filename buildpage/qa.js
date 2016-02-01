@@ -208,7 +208,7 @@ module.exports = o(function*(req, res, user) {
 								voted;
 							for (var i in votes) if (votes[i].user == user.name) voted = true;
 							var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
-								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|>).)+?>)+$/) || [{length: 0}])[0].length;
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
 									'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +
@@ -254,7 +254,7 @@ module.exports = o(function*(req, res, user) {
 								voted;
 							for (var i in votes) if (votes[i].user == user.name) voted = true;
 							var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
-								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|>).)+?>)+$/) || [{length: 0}])[0].length;
+								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
 									'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +

@@ -106,7 +106,7 @@ form.onsubmit = form.onchange = function(e) {
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 				else currentNode = currentNode.lastElementChild;
 			}
 			results.appendChild(div);

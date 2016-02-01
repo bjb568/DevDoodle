@@ -222,7 +222,7 @@ socket.onmessage = function(e) {
 		sig.appendChild(permalink);
 		var currentNode = div;
 		while (!sig.parentNode) {
-			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
 		document.getElementById(data.answer ? 'comments-' + data.answer : 'comments').appendChild(div);
@@ -240,7 +240,7 @@ socket.onmessage = function(e) {
 		msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body));
 		var currentNode = msg;
 		while (!sig.parentNode) {
-			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
 		if (msgCtrls) msg.insertBefore(msgCtrls, msg.firstChild);

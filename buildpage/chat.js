@@ -42,7 +42,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (comment) {
 						var commentBody = markdown(comment.body),
-							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|>).)+?>)+$/) || [{length: 0}])[0].length;
+							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 						commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 							'<span class="c-sig">' +
 								'-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
