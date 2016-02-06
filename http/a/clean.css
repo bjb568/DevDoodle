@@ -736,7 +736,7 @@ body > * { flex-shrink: 0 }
 	#nav > div > a, #nav div { position: relative }
 	#nav nav {
 		position: absolute;
-		z-index: 3;
+		z-index: 4;
 		top: 100%; left: 0;
 		margin: 0;
 		text-align: left;
