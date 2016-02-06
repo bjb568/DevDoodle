@@ -29,13 +29,6 @@ h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
 #text a:active { color: #02d }
 #text-inner, #cntrls { padding: 0 6px }
 #text-inner input { margin: 0 }
-#html {
-	background: #000;
-	color: #fff;
-	line-height: 125%;
-	resize: none;
-	font: 14px monospace;
-}
 @media (max-width: 800px) {
 	#html { flex-grow: 3 }
 	#output { flex-grow: 2 }

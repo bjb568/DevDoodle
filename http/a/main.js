@@ -571,7 +571,7 @@ function jsKeypressHandler(e) {
 	}
 }
 
-function highlightHTML(codeBlock, input) {
+function highlightHTML(codeBlock, input, fullHTML) {
 	input = typeof(input) == 'string' ? input : codeBlock.textContent;
 	var chunk = '',
 		warnings = [],
@@ -676,7 +676,7 @@ function highlightHTML(codeBlock, input) {
 		}
 	}
 	for (var i = 0; i < input.length; i++) {
-		if (input.substr(i - 9, 9).toLowerCase() == '<!doctype') warnings.push([i, 'No need for doctype, you\'re writing inside the body.']);
+		if (input.substr(i - 9, 9).toLowerCase() == '<!doctype' && !fullHTML) warnings.push([i, 'No need for doctype, you\'re writing inside the body.']);
 		var c = input[i];
 		if (c == '\n') {
 			end();
