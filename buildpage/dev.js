@@ -1,11 +1,11 @@
 'use strict';
-var fs = require('fs');
+let fs = require('fs');
 module.exports = o(function*(req, res, user) {
-	var i;
+	let i;
 	if (req.url.pathname == '/dev/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>');
-		res.write('<div class="flexcont programs">')
+		res.write('<div class="flexcont programs">');
 		dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
 			if (err) throw err;
 			if (data) {
@@ -22,7 +22,7 @@ module.exports = o(function*(req, res, user) {
 		}));
 	} else if (req.url.pathname == '/dev/search/') {
 		yield respondPage('Search', user, req, res, yield);
-		var liststr = '',
+		let liststr = '',
 			sort = (req.url.query || {}).sort || 'hot',
 			sortDict = {
 				default: {hotness: -1, recent: -1},
@@ -69,7 +69,7 @@ module.exports = o(function*(req, res, user) {
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
-		var program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
+		let program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
 		if (!program) return errorNotFound(req, res, user);
 		if (program.deleted) {
 			yield respondPage('[Deleted]', user, req, res, yield, {inhead: '<script src="deleted-program.js"></script>'}, 404);
@@ -78,7 +78,7 @@ module.exports = o(function*(req, res, user) {
 				res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. ');
 				res.write('<a class="red" id="undelete">[undelete]</a>');
 			} else if (user.level >= 4) {
-				var deletersstr = '',
+				let deletersstr = '',
 					i = program.deleted.by.length;
 				while (i--) {
 					deletersstr += '<a href="/user/' + program.deleted.by[i] + '">' + program.deleted.by[i] + '</a>';
@@ -104,12 +104,12 @@ module.exports = o(function*(req, res, user) {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield,
 				{
 					clean: true,
-					inhead: '<link rel="stylesheet" href="/dev/'
-						+ (program.type == 1 ? 'canvas' : 'html')
-						+ '.css" />'
+					inhead: '<link rel="stylesheet" href="/dev/' +
+						(program.type == 1 ? 'canvas' : 'html') +
+						'.css" />'
 				}
 			);
-			var vote = (yield dbcs.votes.findOne({
+			let vote = (yield dbcs.votes.findOne({
 				user: user.name,
 				program: program._id
 			}, yield)) || {val: 0},
@@ -118,10 +118,10 @@ module.exports = o(function*(req, res, user) {
 			dbcs.comments.find({program: program._id}).sort({_id: 1}).each(o(function*(err, comment) {
 				if (err) throw err;
 				if (comment) {
-					var votes = comment.votes || [],
+					let votes = comment.votes || [],
 						voted;
-					for (var i in votes) if (votes[i].user == user.name) voted = true;
-					var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
+					for (let i in votes) if (votes[i].user == user.name) voted = true;
+					let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
 						endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 					commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 						'<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
@@ -142,7 +142,7 @@ module.exports = o(function*(req, res, user) {
 							''
 						) + commentBody + '</div>';
 				} else {
-					var forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield),
+					let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield),
 						forks = [];
 					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
 						if (err) throw err;

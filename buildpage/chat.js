@@ -1,5 +1,5 @@
 'use strict';
-var fs = require('fs'),
+let fs = require('fs'),
 	typeIcons = {
 	P: '',
 	R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16">' +
@@ -11,13 +11,13 @@ var fs = require('fs'),
 	M: ' <span class="diamond">♦</span>'
 };
 module.exports = o(function*(req, res, user) {
-	var i;
+	let i;
 	if (req.url.pathname == '/chat/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Chat Rooms</h1>');
-		var roomnames = [],
+		let roomnames = [],
 			publicRooms = [];
-		dbcs.chatrooms.find().each(o(function*(err, doc) {
+		dbcs.chatrooms.find().each(function(err, doc) {
 			if (err) throw err;
 			if (doc) {
 				if (doc.type == 'M' && (!user || user.level < 5)) return;
@@ -41,7 +41,7 @@ module.exports = o(function*(req, res, user) {
 				}).sort({_id: -1}).limit(18).each(o(function*(err, comment) {
 					if (err) throw err;
 					if (comment) {
-						var commentBody = markdown(comment.body),
+						let commentBody = markdown(comment.body),
 							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 						commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 							'<span class="c-sig">' +
@@ -53,10 +53,10 @@ module.exports = o(function*(req, res, user) {
 					} else res.end((yield fs.readFile('html/a/foot.html', yield)).toString().replace('</main>', '</aside>'));
 				}));
 			}
-		}));
+		});
 	} else if (req.url.pathname == '/chat/search') {
 		yield respondPage('Search', user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
-		var template = yield addVersionNonces((yield fs.readFile('./html/chat/search.html', yield)).toString(), req.url.pathname, yield),
+		let template = yield addVersionNonces((yield fs.readFile('./html/chat/search.html', yield)).toString(), req.url.pathname, yield),
 			rooms = [];
 		dbcs.chatrooms.find().each(o(function*(err, doc) {
 			if (err) throw err;
@@ -74,12 +74,12 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
-		var doc = yield dbcs.chatrooms.findOne({_id: parseInt(i[1])}, yield);
+		let doc = yield dbcs.chatrooms.findOne({_id: parseInt(i[1])}, yield);
 		if (!doc) return errorNotFound(req, res, user);
 		if (req.url.query && typeof(req.url.query.access) == 'string') {
 			if (doc.invited.indexOf(user.name) == -1) return errorForbidden(req, res, user, 'You don\'t have permission to control access to this room.');
 			yield respondPage('Access for ' + doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
-			var userstr = '';
+			let userstr = '';
 			dbcs.users.find({name: {$in: doc.invited}}).each(o(function*(err, invUser) {
 				if (err) throw err;
 				if (invUser) userstr +=
@@ -99,7 +99,7 @@ module.exports = o(function*(req, res, user) {
 			if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorForbidden(req, res, user, 'You have not been invited to this private room.');
 			if (doc.type == 'M' && (!user || user.level < 5)) return errorForbidden(req, res, user, 'You must be a moderator to join this room.');
 			yield respondPage(doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
-			var isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
+			let isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('./html/chat/room.html', yield)).toString(), req.url.pathname, yield))
 				.replaceAll('$id', doc._id)
@@ -125,11 +125,11 @@ module.exports = o(function*(req, res, user) {
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
 	} else if (i = req.url.pathname.match(/^\/chat\/message\/(\d+)$/)) {
-		var doc = yield dbcs.chat.findOne({_id: parseInt(i[1])}, yield);
+		let doc = yield dbcs.chat.findOne({_id: parseInt(i[1])}, yield);
 		if (!doc) return errorNotFound(req, res, user);
 		yield respondPage('Message #' + doc._id, user, req, res, yield);
 		if (doc.deleted && doc.user != user.name && !(user.level < 4)) return res.write('This message has been deleted.') && res.end(yield fs.readFile('html/a/foot.html', yield));
-		var revisions = 0,
+		let revisions = 0,
 			events;
 		res.write('<h1>Message #' + doc._id + '</h1>');
 		res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>');
@@ -149,7 +149,7 @@ module.exports = o(function*(req, res, user) {
 					res.write('Revision ' + revisions + ', <time datetime="' + new Date(data.time).toISOString() + '"></time>' + (data.note ? ' ' + data.note : '') + ':');
 					res.write('<blockquote><pre class="nomar">' + html(data.body) + '</pre></blockquote>');
 				} else if (data.event == 'delete' || data.event == 'undelete') {
-					var deletersstr = '',
+					let deletersstr = '',
 						i = data.by.length;
 					while (i--) {
 						deletersstr += '<a href="/user/' + data.by[i] + '">' + data.by[i] + '</a>';

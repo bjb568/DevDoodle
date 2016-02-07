@@ -1,7 +1,7 @@
 'use strict';
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
-	var t = this, i, j;
+	let t = this, i, j;
 	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
 	return t;
 };
@@ -15,8 +15,8 @@ Number.prototype.bound = function(l, h) {
 global.o = require('yield-yield');
 global.config = require('./config.js')[process.argv.indexOf('--test') == -1 ? 'normal' : 'test'];
 
-var colors = require('colors'),
-	http = require('http'),
+require('colors');
+let http = require('http'),
 	https = require('https'),
 	http2 = require('http2'),
 	uglifyJS = require('uglify-js'),
@@ -99,10 +99,10 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 });
 global.respondPage = o(function*(title, user, req, res, callback, header, status) {
 	if (title) title = html(title);
-	var query = req.url.query,
+	let query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	var inhead = header.inhead || '',
+	let inhead = header.inhead || '',
 		huser = header.user,
 		clean = header.clean;
 	delete header.inhead;
@@ -126,9 +126,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
-			var tokens = user.cookie,
+			let tokens = user.cookie,
 				idToken = crypto.randomBytes(128).toString('base64');
-			for (var i in tokens) {
+			for (let i in tokens) {
 				if (tokens[i].token == cookies.id) tokens[i].token = idToken;
 			}
 			dbcs.users.update({name: user.name}, {$set: {cookie: tokens}});
@@ -141,9 +141,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 		}
 	}
 	res.writeHead(status || 200, header);
-	var data = (yield fs.readFile('html/a/head.html', yield)).toString();
+	let data = (yield fs.readFile('html/a/head.html', yield)).toString();
 	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span></a>', '<a href="/user/' + user.name + '"$bnotifs><span>' + user.name + '</span></a>');
-	var dirs = req.url.pathname.split('/');
+	let dirs = req.url.pathname.split('/');
 	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"');
 	res.write(
 		yield addVersionNonces(
@@ -181,7 +181,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 					user.notifs.map(function(tNotif){
 						if (!tNotif.unread) return '';
 						return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
-						'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>'
+							'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>';
 					}).join('') +
 					'<li><a id="markread">Mark all as read</a></li></ul>'
 				: ''
@@ -221,15 +221,15 @@ global.errorsHTML = function(errs) {
 		'';
 };
 
-var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpass) {
+let respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpass) {
 	if (!post) post = {};
-	var num = 0;
+	let num = 0;
 	while (!num) num = Math.floor(Math.random() * 25 - 12);
 	yield respondPage('Login', user, req, res, yield, {
 		inhead: '<meta name="robots" content="noindex" /><link rel="stylesheet" href="/login/login.css" />'
 	});
 	res.write('<h1>Log in</h1>');
-	var notice = ({
+	let notice = ({
 		ask: 'You must be logged in to ask a question.',
 		recovered: 'Your password has been reset. You may now login.',
 		updated: 'Your password has been updated. You may now login with your new password.'
@@ -266,7 +266,7 @@ var respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpa
 	res.write(yield addVersionNonces('<script src="login.js"></script>', req.url.pathname, yield));
 	res.end(yield fs.readFile('html/a/foot.html', yield));
 });
-var respondChangePassPage = o(function*(errs, user, req, res, post) {
+let respondChangePassPage = o(function*(errs, user, req, res, post) {
 	if (!post) post = {};
 	yield respondPage('Change Password', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/login/login.css" />'});
 	res.write('<h1>Change Password for ' + user.name + '</h1>');
@@ -282,7 +282,7 @@ var respondChangePassPage = o(function*(errs, user, req, res, post) {
 	res.write(yield addVersionNonces('<script src="/login/changepass.js"></script>', req.url.pathname, yield));
 	res.end(yield fs.readFile('html/a/foot.html', yield));
 });
-var respondCreateRoomPage = o(function*(errs, user, req, res, post) {
+let respondCreateRoomPage = o(function*(errs, user, req, res, post) {
 	if (!post) post = {};
 	yield respondPage('Create Room', user, req, res, yield);
 	res.write('<h1>Create Room</h1>');
@@ -312,7 +312,7 @@ global.questionTypes = {
 	the: 'a theoretical scenario'
 };
 
-var statics = JSON.parse(fs.readFileSync('./statics.json')),
+let statics = JSON.parse(fs.readFileSync('./statics.json')),
 	buildpageServers = [
 		['/status/', require('./buildpage/status.js')],
 		['/user/', require('./buildpage/user.js')],
@@ -326,10 +326,10 @@ var statics = JSON.parse(fs.readFileSync('./statics.json')),
 	apiServer = require('./api.js'),
 	canvasJS = fs.readFileSync('./http/dev/canvas.js');
 
-var cache = {},
+let cache = {},
 	tempVerificationTokens = {};
 
-var serverHandler = o(function*(req, res) {
+let serverHandler = o(function*(req, res) {
 	if (!req.headers.host) {
 		res.writeHead(400, {'Content-Type': 'text/html'});
 		return res.end('Please send the host HTTP header.');
@@ -340,7 +340,6 @@ var serverHandler = o(function*(req, res) {
 		res.writeHead(400, {'Content-type': 'text/html'});
 		return res.end('This is the server for <a href="https://devdoodle.net">devdoodle.net</a>. You must connect to this server from that domain.');
 	}
-	var i, post;
 	if (req.url.length > 1000) {
 		req.url = url.parse(req.url, true);
 		yield respondPage('414', {}, req, res, yield, {}, 414);
@@ -349,10 +348,10 @@ var serverHandler = o(function*(req, res) {
 		res.write('<p><a href="javascript:history.go(-1)">Go back</a>.</p>');
 		return res.end(yield fs.readFile('html/a/foot.html', yield));
 	}
-	var cookies = cookie.parse(req.headers.cookie || '');
+	let cookies = cookie.parse(req.headers.cookie || '');
 	req.url = url.parse(req.url, true);
 	console.log(req.method, req.url.pathname);
-	var user = yield dbcs.users.findOne({
+	let user = yield dbcs.users.findOne({
 		cookie: {
 			$elemMatch: {
 				token: cookies.id || 'nomatch',
@@ -360,6 +359,7 @@ var serverHandler = o(function*(req, res) {
 			}
 		}
 	}, yield);
+	let i;
 	if (i = statics[req.url.pathname]) {
 		yield respondPage(i.title, user, req, res, yield, {
 			clean: i.clean,
@@ -374,7 +374,7 @@ var serverHandler = o(function*(req, res) {
 		req.url.pathname = req.url.pathname.substr(4);
 		if (req.method != 'POST') return res.writeHead(405) || res.end('Error: Method not allowed. Use POST.');
 		if (url.parse(req.headers.referer).host != req.headers.host) return res.writeHead(409) || res.end('Error: Suspicious request.');
-		post = '';
+		let post = '';
 		req.on('data', function(data) {
 			if (req.abort) return;
 			post += data;
@@ -402,7 +402,7 @@ var serverHandler = o(function*(req, res) {
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else if (req.method == 'POST') {
-			post = '';
+			let post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
 				post += data;
@@ -417,7 +417,7 @@ var serverHandler = o(function*(req, res) {
 				post = querystring.parse(post);
 				if (parseInt(req.url.query.submit)) {
 					if (!user) return errorForbidden(req, res, user, 'You must be logged in to submit a lesson.');
-					var lesson = yield dbcs.lessons.findOne({
+					let lesson = yield dbcs.lessons.findOne({
 						user: user.name,
 						title: post.title || 'Untitled'
 					}, yield);
@@ -435,7 +435,7 @@ var serverHandler = o(function*(req, res) {
 						res.writeHead(303, {'Location': 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						var last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
+						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
 							id = last ? last._id + 1 : 1;
 						dbcs.lessons.insert({
 							_id: id,
@@ -488,7 +488,7 @@ var serverHandler = o(function*(req, res) {
 	} else if (req.url.pathname == '/login/') {
 		if (req.method == 'GET') respondLoginPage([], user, req, res, {referer: req.headers.referer, r: req.url.query.r});
 		else if (req.method == 'POST') {
-			post = '';
+			let post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
 				post += data;
@@ -504,34 +504,34 @@ var serverHandler = o(function*(req, res) {
 				if (!post.referer) post.referer = req.headers.referer;
 				if (post.create) {
 					if (post.check != 'JS-confirm') return errorForbidden(req, res, user, 'Suspicious request.');
-					var secAnswered = false;
-					for (i = -12; i <= 12; i++) {
+					let secAnswered = false;
+					for (let i = -12; i <= 12; i++) {
 						if (!i) continue;
-						var str = post['sec' + i],
+						let str = post['sec' + i],
 							fail;
 						if (!str) continue;
 						secAnswered = true;
 						fail |= str.match(/[a-wyz]/i);
 						str = str.replace(/\s/g, '').replace(/1?\*?(x\^2|x\s*\*\s*x|x\s*\*\*\s*2|x²)/, 'x^2');
 						fail |= str.match(/[^\d\+-^x]/);
-						var arr = [],
+						let arr = [],
 							lstart = 0;
-						for (var j = 0; j < str.length; j++) {
+						for (let j = 0; j < str.length; j++) {
 							if (str[j] == '+' || str[j] == '-') {
 								arr.push(str.substring(lstart, j));
 								lstart = j;
 							}
 						}
 						arr.push(str.substr(lstart));
-						var cA, cB, cC;
-						for (j = 0; j < arr.length; j++) {
+						let cA, cB, cC;
+						for (let j = 0; j < arr.length; j++) {
 							if (arr[j].length == 1) fail = true;
 							if (arr[j][0] == '+') arr[j] = (arr[j].match(/\d/) ? '' : '1') + arr[j].substr(1);
 							fail |= arr[j].match(/\d\D+\d/);
 							fail |= arr[j].match(/x.*x/);
 							fail |= arr[j].match(/^.*^/);
 							fail |= arr[j].indexOf('+') != -1;
-							var n = parseInt(arr[j].replace(/[^\d-]/g, ''));
+							let n = parseInt(arr[j].replace(/[^\d-]/g, ''));
 							if (arr[j].substring(arr[j].length - 3, arr[j].length) == 'x^2') {
 								fail |= n != 1 && arr[j].length != 3;
 								cA = true;
@@ -549,7 +549,7 @@ var serverHandler = o(function*(req, res) {
 					}
 					if (!secAnswered) return errorForbidden(req, res, user, 'Suspicious request.');
 					if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], user, req, res, post, false, true, true);
-					var errors = [],
+					let errors = [],
 						nfillm,
 						nfilln,
 						fpass;
@@ -564,15 +564,13 @@ var serverHandler = o(function*(req, res) {
 						if (!nfillm && !nfilln) fpass = true;
 					}
 					if (errors.length) return respondLoginPage(errors, user, req, res, post, !nfillm, !nfilln, fpass);
-					var existingUser = yield dbcs.users.findOne({name: post.name}, yield);
+					let existingUser = yield dbcs.users.findOne({name: post.name}, yield);
 					if (existingUser) return respondLoginPage(['Username already taken.'], user, req, res, post, true);
-					var salt = crypto.randomBytes(64).toString('base64'),
-						key = yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield),
-						pass = new Buffer(key).toString('base64'),
+					let salt = crypto.randomBytes(64).toString('base64'),
 						confirmToken = crypto.randomBytes(128).toString('base64');
 					dbcs.users.insert({
 						name: post.name,
-						pass: pass,
+						pass: new Buffer(yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
 						mail: post.mail,
 						pic: 'https://gravatar.com/avatar/' + crypto.createHash('md5').update(post.mail).digest('hex') + '?s=576&amp;d=identicon',
 						confirm: confirmToken,
@@ -595,7 +593,7 @@ var serverHandler = o(function*(req, res) {
 					res.end(yield fs.readFile('html/a/foot.html', yield));
 				} else {
 					if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], user, req, res, post, true, true, post.name && !post.pass);
-					var fuser = yield dbcs.users.findOne({name: post.name}, yield);
+					let fuser = yield dbcs.users.findOne({name: post.name}, yield);
 					if (!fuser) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
 					if (fuser.confirm) {
 						if (fuser.seen) return respondLoginPage(['This account has been disabled by a user-initiated password reset. It can be <a href="recover">recovered with email verification</a>.'], user, req, res, post);
@@ -607,9 +605,10 @@ var serverHandler = o(function*(req, res) {
 						return res.end(yield fs.readFile('html/a/foot.html', yield));
 					}
 					if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
-					var key = yield crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield);
-					if (key.toString('base64') != fuser.pass) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-					var idToken = crypto.randomBytes(128).toString('base64'),
+					if ((yield crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != fuser.pass) {
+						return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
+					}
+					let idToken = crypto.randomBytes(128).toString('base64'),
 						idCookie = cookie.serialize('id', idToken, {
 							path: '/',
 							expires: new Date(new Date().setDate(new Date().getDate() + 30)),
@@ -624,15 +623,14 @@ var serverHandler = o(function*(req, res) {
 							}
 						}
 					});
-					var r = (url.parse(req.headers.referer, true).query || {}).r;
-					if (r == 'ask') {
+					if ((url.parse(req.headers.referer, true).query || {}).r == 'ask') {
 						res.writeHead(303, {
 							Location: '/qa/ask',
 							'Set-Cookie': idCookie
 						});
 						return res.end();
 					}
-					var referer = url.parse(post.referer);
+					let referer = url.parse(post.referer);
 					res.writeHead(303, {
 						Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/' ? referer.pathname : '/',
 						'Set-Cookie': idCookie
@@ -645,14 +643,14 @@ var serverHandler = o(function*(req, res) {
 			res.end('Method not allowed. Use GET or POST.');
 		}
 	} else if (req.url.pathname == '/login/github') {
-		var tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
-		var ghReq = https.request({
+		let tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
+		let ghReq = https.request({
 			hostname: 'github.com',
 			path: '/login/oauth/access_token',
 			method: 'POST',
 			headers: {Accept: 'application/json'}
 		}, o(function*(ghRes) {
-			var data = '';
+			let data = '';
 			ghRes.on('data', function(d) {
 				data += d;
 			});
@@ -667,7 +665,7 @@ var serverHandler = o(function*(req, res) {
 					res.write(errorsHTML([data.error + ': ' + data.error_description]));
 					return res.end(yield fs.readFile('html/a/foot.html', yield));
 				}
-				var apiReq = https.get({
+				let apiReq = https.get({
 					hostname: 'api.github.com',
 					path: '/user',
 					headers: {
@@ -675,7 +673,7 @@ var serverHandler = o(function*(req, res) {
 						'User-Agent': 'DevDoodle'
 					}
 				}, o(function*(apiRes) {
-					var apiData = '';
+					let apiData = '';
 					apiRes.on('data', function(d) {
 						apiData += d;
 					});
@@ -690,9 +688,9 @@ var serverHandler = o(function*(req, res) {
 							return res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
 						console.log(apiData);
-						var matchUser = yield dbcs.users.findOne({githubID: apiData.id}, yield);
+						let matchUser = yield dbcs.users.findOne({githubID: apiData.id}, yield);
 						if (matchUser) {
-							var idToken = crypto.randomBytes(128).toString('base64'),
+							let idToken = crypto.randomBytes(128).toString('base64'),
 								idCookie = cookie.serialize('id', idToken, {
 									path: '/',
 									expires: new Date(new Date().setDate(new Date().getDate() + 30)),
@@ -708,7 +706,7 @@ var serverHandler = o(function*(req, res) {
 								},
 								$set: {githubName: apiData.login}
 							});
-							var referer = url.parse(req.url.query.state || '');
+							let referer = url.parse(req.url.query.state || '');
 							res.writeHead(303, {
 								Location: req.url.query.state && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 ? referer.pathname : '/',
 								'Set-Cookie': idCookie
@@ -716,7 +714,7 @@ var serverHandler = o(function*(req, res) {
 							return res.end();
 						} else {
 							yield respondPage('Create Login', user, req, res, yield);
-							var verificationToken = crypto.randomBytes(128).toString('base64');
+							let verificationToken = crypto.randomBytes(128).toString('base64');
 							res.write(
 								(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
 								.replace('$errors', '')
@@ -760,7 +758,7 @@ var serverHandler = o(function*(req, res) {
 		}));
 	} else if (req.url.pathname == '/login/new') {
 		if (req.method != 'POST') return res.writeHead(405) || res.end('Method not allowed. Use POST.');
-		post = '';
+		let post = '';
 		req.on('data', function(data) {
 			if (req.abort) return;
 			post += data;
@@ -774,7 +772,7 @@ var serverHandler = o(function*(req, res) {
 			if (req.abort) return;
 			post = querystring.parse(post);
 			if (!tempVerificationTokens[post.token]) return errorForbidden(req, res, user, 'Invalid verification token.');
-			var errors = [];
+			let errors = [];
 			if (!post.name) errors.push('Name is a required field.');
 			if (!post.mail) errors.push('Email address is a required field.');
 			if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
@@ -785,7 +783,6 @@ var serverHandler = o(function*(req, res) {
 			if (yield dbcs.users.findOne({name: post.name}, yield)) errors.push('Name has already been taken.');
 			if (errors.length) {
 				yield respondPage('Create Login', user, req, res, yield);
-				var verificationToken = crypto.randomBytes(128).toString('base64');
 				res.write(
 					(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
 					.replace('$errors', errorsHTML(errors))
@@ -795,27 +792,27 @@ var serverHandler = o(function*(req, res) {
 				);
 				return res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
-			var idToken = crypto.randomBytes(128).toString('base64'),
+			let idToken = crypto.randomBytes(128).toString('base64'),
 				idCookie = cookie.serialize('id', idToken, {
 					path: '/',
 					expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 					httpOnly: true,
 					secure: config.secureCookies
-				}),
-				user = {
-					name: post.name,
-					mail: post.mail,
-					pic: tempVerificationTokens[post.token].pic,
-					githubID: tempVerificationTokens[post.token].githubID,
-					githubName: tempVerificationTokens[post.token].githubName,
-					joined: new Date().getTime(),
-					rep: 0,
-					level: 1,
-					cookie: [{
-						token: idToken,
-						created: new Date().getTime()
-					}]
-				};
+				});
+			user = {
+				name: post.name,
+				mail: post.mail,
+				pic: tempVerificationTokens[post.token].pic,
+				githubID: tempVerificationTokens[post.token].githubID,
+				githubName: tempVerificationTokens[post.token].githubName,
+				joined: new Date().getTime(),
+				rep: 0,
+				level: 1,
+				cookie: [{
+					token: idToken,
+					created: new Date().getTime()
+				}]
+			};
 			dbcs.users.insert(user);
 			delete tempVerificationTokens[post.token];
 			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
@@ -845,7 +842,7 @@ var serverHandler = o(function*(req, res) {
 		yield respondPage('Notifications', user, req, res, yield);
 		res.write('<h1>Notifications</h1>');
 		res.write('<ul id="notifs">');
-		for (var i = user.notifs.length - 1; i >= 0; i--) res.write(
+		for (let i = user.notifs.length - 1; i >= 0; i--) res.write(
 			'<li class="hglt pad"><em>' + user.notifs[i].type + ' on ' + user.notifs[i].on + '</em><blockquote>' + markdown(user.notifs[i].body) + '</blockquote>' +
 			'-' + user.notifs[i].from.link('/user/' + user.notifs[i].from) + ', <time datetime="' + new Date(user.notifs[i].time).toISOString() + '"></time></li>'
 		);
@@ -862,7 +859,7 @@ var serverHandler = o(function*(req, res) {
 		if (!user) return errorForbidden(req, res, user, 'You must be <a href="/login/">logged in</a> to change your password.');
 		if (req.method == 'GET') respondChangePassPage([], user, req, res, {});
 		else if (req.method == 'POST') {
-			post = '';
+			let post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
 				post += data;
@@ -879,18 +876,18 @@ var serverHandler = o(function*(req, res) {
 				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
 				if (passStrength(post.pass) < 1/4) return respondChangePassPage(['Password is too short.'], user, req, res, {});
-				var key = yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield);
-				if (new Buffer(key).toString('base64') != user.pass) return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
-				var salt = crypto.randomBytes(64).toString('base64'),
-					key = yield crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield);
+				if (new Buffer(yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != user.pass) {
+					return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
+				}
+				let salt = crypto.randomBytes(64).toString('base64');
 				dbcs.users.update({name: user.name}, {
 					$set: {
-						pass: new Buffer(key).toString('base64'),
+						pass: new Buffer(yield crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
 						salt: salt,
 						cookie: []
 					}
 				});
-				var idCookie = cookie.serialize('id', '', {
+				let idCookie = cookie.serialize('id', '', {
 					path: '/',
 					expires: new Date(),
 					httpOnly: true,
@@ -909,9 +906,9 @@ var serverHandler = o(function*(req, res) {
 	} else if (req.url.pathname == '/chat/newroom') {
 		if (!user) return errorForbidden(req, res, user, 'You must be logged in and have 200 reputation to create a room.');
 		if (user.rep < 200) return errorForbidden(req, res, user, 'You must have 200 reputation to create a room.');
-		if (req.method == 'GET') respondCreateRoomPage([], user, req, res, post);
+		if (req.method == 'GET') respondCreateRoomPage([], user, req, res);
 		else if (req.method == 'POST') {
-			post = '';
+			let post = '';
 			req.on('data', function(data) {
 				if (req.abort) return;
 				post += data;
@@ -924,12 +921,12 @@ var serverHandler = o(function*(req, res) {
 			req.on('end', o(function*() {
 				if (req.abort) return;
 				post = querystring.parse(post);
-				var errors = [];
+				let errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
 				if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) errors.push('Invalid room type.');
 				if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
-				var last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
+				let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
 					i = last ? last._id + 1 : 1;
 				dbcs.chatrooms.insert({
 					name: post.name,
@@ -946,11 +943,12 @@ var serverHandler = o(function*(req, res) {
 			res.end('Method not allowed. Use GET or POST.');
 		}
 	} else if (req.url.pathname.indexOf('.') != -1) {
+		let stats;
 		try {
-			var stats = yield fs.stat('./http/' + req.url.pathname, yield);
+			stats = yield fs.stat('./http/' + req.url.pathname, yield);
 		} catch(e) { return errorNotFound(req, res, user); }
 		if (!stats.isFile()) return errorNotFound(req, res, user);
-		var raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
+		let raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
@@ -961,8 +959,9 @@ var serverHandler = o(function*(req, res) {
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
+				let data;
 				try {
-					var data = yield fs.readFile('http' + req.url.pathname, yield);
+					data = yield fs.readFile('http' + req.url.pathname, yield);
 				} catch(e) { return; }
 				switch (path.extname(req.url.pathname)) {
 					case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
@@ -977,8 +976,9 @@ var serverHandler = o(function*(req, res) {
 				};
 			}
 		} else {
+			let data;
 			try {
-				var data = yield fs.readFile('http' + req.url.pathname, yield);
+				data = yield fs.readFile('http' + req.url.pathname, yield);
 			} catch(e) { return errorNotFound(req, res, user); }
 			switch (path.extname(req.url.pathname)) {
 				case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
@@ -1001,13 +1001,13 @@ var serverHandler = o(function*(req, res) {
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 		}
 	} else {
-		for (i = 0; i < buildpageServers.length; i++) {
+		for (let i = 0; i < buildpageServers.length; i++) {
 			if (!req.url.pathname.indexOf(buildpageServers[i][0])) return buildpageServers[i][1](req, res, user || {});
 		}
 	}
 });
 console.log('Connecting to mongodb…'.cyan);
-var server;
+let server;
 mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	if (err) throw err;
 	db.createCollection('questions', function(err, collection) {
@@ -1020,7 +1020,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 		db.createIndex('chat', {body: 'text'}, {}, function() {});
 		dbcs.chat = collection;
 	});
-	var i = usedDBCs.length;
+	let i = usedDBCs.length;
 	function handleCollection(err, collection) {
 		if (err) throw err;
 		dbcs[usedDBCs[i]] = collection;
@@ -1039,26 +1039,26 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 			});
 			testRes.on('end', function() {
 				console.log('HTTP test passed, starting socket test.'.green);
-				var WebSocket = require('ws'),
+				let WebSocket = require('ws'),
 					wsc = new WebSocket('ws://localhost:' + config.port + '/test');
 				wsc.on('open', function() {
 					console.log('Connected to socket.');
-				})
+				});
 				wsc.on('data', function(d) {
 					console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
 				});
 				wsc.on('close', function() {
 					console.log('Things seem to work!'.green);
 					process.exit();
-				})
-			})
+				});
+			});
 		});
 	}
 	if (!config.HTTP2) {
 		server = http.createServer(serverHandler).listen(config.port);
 		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
 	} else {
-		var constants = require('constants');
+		let constants = require('constants');
 		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
 		server = http2.createServer({
 			key: fs.readFileSync('../Secret/devdoodle.net.key'),

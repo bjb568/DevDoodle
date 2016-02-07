@@ -1,11 +1,11 @@
 'use strict';
-var spawn = require('child_process').spawn,
+let spawn = require('child_process').spawn,
 	fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname != '/status/') return errorNotFound(req, res, user);
 	yield respondPage('Status', user, req, res, yield);
 	res.write('<h1>DevDoodle Status</h1>');
-	var child = spawn('git', ['rev-parse', '--short', 'HEAD']);
+	let child = spawn('git', ['rev-parse', '--short', 'HEAD']);
 	res.write('<p class="green"><strong>Running</strong>, commit #');
 	child.stdout.on('data', function(data) {
 		res.write(data);

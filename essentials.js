@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 function html(input) {
 	return input.toString().replaceAll(['&', '<', '>', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&gt;', '&quot;', '&#9;', '&#10;', '']);
 }

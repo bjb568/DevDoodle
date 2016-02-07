@@ -1,12 +1,12 @@
 'use strict';
-var fs = require('fs'),
+let fs = require('fs'),
 	diff = require('diff');
 function writeTagRecursive(tlang, tag, res) {
 	res.write('<li id="' + tag._id + '">');
 	res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
 	tlang.splice(tlang.indexOf(tag), 1);
 	res.write('<ul>');
-	var i = -1;
+	let i = -1;
 	while (++i < tlang.length) {
 		if (tlang[i].parentID == tag._id) {
 			writeTagRecursive(tlang, tlang[i], res);
@@ -17,32 +17,32 @@ function writeTagRecursive(tlang, tag, res) {
 	res.write('</li>');
 }
 module.exports = o(function*(req, res, user) {
-	var i;
+	let i;
 	if (req.url.pathname == '/qa/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
-		var cursor = dbcs.questions.find().sort({hotness: -1, time: -1}).limit(288);
-		var questionSummaryHandler = o(function*(err, question) {
+		let cursor = dbcs.questions.find().sort({hotness: -1, time: -1}).limit(288);
+		let questionSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
 			if (question) {
 				res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
 				res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
-				var tagstr = '';
-				dbcs.qtags.find({_id: {$in: question.tags}}).each(o(function*(err, tag) {
+				let tagstr = '';
+				dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
 					if (err) throw err;
 					if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
 					else {
 						res.write('<p class="underline qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						cursor.nextObject(questionSummaryHandler);
 					}
-				}));
+				});
 			} else res.end(yield fs.readFile('html/a/foot.html', yield));
 		});
 		cursor.nextObject(questionSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
-		var tlang = [],
+		let tlang = [],
 			clang = '';
 		dbcs.qtags.find().sort({lang: 1}).each(o(function*(err, tag) {
 			if (err) throw err;
@@ -95,14 +95,14 @@ module.exports = o(function*(req, res, user) {
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
-		var question = yield dbcs.questions.findOne({_id: parseInt(i[1])}, yield);
+		let question = yield dbcs.questions.findOne({_id: parseInt(i[1])}, yield);
 		if (!question) return errorNotFound[404](req, res, user);
-		var history = typeof req.url.query.history == 'string';
+		let history = typeof req.url.query.history == 'string';
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
 		);
-		var revcursor = dbcs.posthistory.find({q: question._id}),
+		let revcursor = dbcs.posthistory.find({q: question._id}),
 			revcount = yield revcursor.sort({time: -1}).count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
@@ -114,16 +114,16 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
 			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + 'Type: ' + question.type + '</code>');
 			res.write('<div class="umar">');
-			var langTags = [];
+			let langTags = [];
 			dbcs.qtags.find().each(function(err, tag) {
 				if (err) throw err;
 				if (tag) langTags[tag._id] = tag.name;
 				else {
-					var tagify = tag => '<a href="search?q=[[' + tag + ']]" class="tag">' + langTags[tag] + '</a>';
-					for (var i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]));
+					let tagify = tag => '<a href="search?q=[[' + tag + ']]" class="tag">' + langTags[tag] + '</a>';
+					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]));
 					res.write('</div>');
 					res.write('</article>');
-					var revnum = 0,
+					let revnum = 0,
 						prev = question;
 					revcursor.each(o(function*(err, item) {
 						if (err) throw err;
@@ -131,9 +131,9 @@ module.exports = o(function*(req, res, user) {
 							res.write('<h2>Revision ' + (revcount - revnum) + ': ' + item.event + '</h2>');
 							res.write('<p class="indt">Replaced <time datetime="' + new Date(item.time).toISOString() + '"></time> by <a href="/user/' + item.user + '" target="_blank">' + item.user + '</a></p>');
 							if (item.event == 'edit') {
-								var writeDiff = function(o, n) {
-									var d = diff.diffWordsWithSpace(o, n);
-									for (var i = 0; i < d.length; i++) {
+								let writeDiff = function(o, n) {
+									let d = diff.diffWordsWithSpace(o, n);
+									for (let i = 0; i < d.length; i++) {
 										if (d[i].added) res.write('<ins>' + html(d[i].value) + '</ins>');
 										else if (d[i].removed) res.write('<del>' + html(d[i].value) + '</del>');
 										else res.write(html(d[i].value));
@@ -161,10 +161,10 @@ module.exports = o(function*(req, res, user) {
 								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
-								var d = diff.diffWords(item.tags.join(), prev.tags.join());
-								for (var i = 0; i < d.length; i++) {
-									var t = d[i].value.split(',');
-									for (var j = 0; j < t.length; j++) {
+								let d = diff.diffWords(item.tags.join(), prev.tags.join());
+								for (let i = 0; i < d.length; i++) {
+									let t = d[i].value.split(',');
+									for (let j = 0; j < t.length; j++) {
 										if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins> ');
 										else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del> ');
 										else res.write(tagify(t[j]));
@@ -183,31 +183,31 @@ module.exports = o(function*(req, res, user) {
 				}
 			});
 		} else {
-			var vote = (yield dbcs.votes.findOne({
+			let vote = (yield dbcs.votes.findOne({
 				user: user.name,
 				question: question._id
 			}, yield)) || {val: 0},
 				op = yield dbcs.users.findOne({name: question.user}, yield),
 				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
 				count = yield cursor.count(yield);
-			var answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
+			let answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
 				answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
-			var answerHandler = o(function*(err, answer) {
+			let answerHandler = o(function*(err, answer) {
 				if (err) throw err;
 				if (answer) {
-					var answerVote = (yield dbcs.votes.findOne({
+					let answerVote = (yield dbcs.votes.findOne({
 						user: user.name,
 						answer: answer._id
 					}, yield)) || {val: 0},
 						answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
-					var acstring = '';
+					let acstring = '';
 					dbcs.comments.find({answer: answer._id}).sort({_id: 1}).each(function(err, comment) {
 						if (err) throw err;
 						if (comment) {
-							var votes = comment.votes || [],
+							let votes = comment.votes || [],
 								voted;
-							for (var i in votes) if (votes[i].user == user.name) voted = true;
-							var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
+							for (let i in votes) if (votes[i].user == user.name) voted = true;
+							let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
 								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
@@ -243,17 +243,17 @@ module.exports = o(function*(req, res, user) {
 						}
 					});
 				} else {
-					var commentstr = '';
+					let commentstr = '';
 					dbcs.comments.find({
 						question: question._id,
 						answer: {$exists: false}
 					}).sort({_id: 1}).each(function(err, comment) {
 						if (err) throw err;
 						if (comment) {
-							var votes = comment.votes || [],
+							let votes = comment.votes || [],
 								voted;
-							for (var i in votes) if (votes[i].user == user.name) voted = true;
-							var commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
+							for (let i in votes) if (votes[i].user == user.name) voted = true;
+							let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
 								endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|>).)+?>)+$/) || [{length: 0}])[0].length;
 							commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 								'<span class="c-sig">' +
@@ -276,7 +276,7 @@ module.exports = o(function*(req, res, user) {
 									''
 								) + commentBody + '</div>';
 						} else {
-							var tagstr = '',
+							let tagstr = '',
 								tlang = [],
 								tageditstr = '';
 							dbcs.qtags.find({lang: question.lang}).each(o(function*(err, tag) {
@@ -285,11 +285,11 @@ module.exports = o(function*(req, res, user) {
 									tlang.push(tag);
 									if (question.tags.indexOf(tag._id) != -1) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
 								} else {
-									var writeFormTagRecursive = function(tag) {
+									let writeFormTagRecursive = function(tag) {
 										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
 										tlang.splice(tlang.indexOf(tag), 1);
 										tageditstr += '<div class="indt">';
-										var i = -1;
+										let i = -1;
 										while (++i < tlang.length) {
 											if (tlang[i].parentID == tag._id) {
 												writeFormTagRecursive(tlang[i]);
@@ -298,7 +298,7 @@ module.exports = o(function*(req, res, user) {
 										}
 										tageditstr += '</div>';
 									};
-									var i = -1;
+									let i = -1;
 									while (++i < tlang.length) {
 										if (!tlang[i].parentID) {
 											writeFormTagRecursive(tlang[i]);

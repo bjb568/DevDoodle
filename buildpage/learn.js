@@ -1,10 +1,10 @@
 'use strict';
-var fs = require('fs');
+let fs = require('fs');
 module.exports = o(function*(req, res, user) {
-	var i;
+	let i;
 	if (req.url.pathname == '/learn/') {
 		yield respondPage('', user, req, res, yield, {inhead: '<link rel="stylesheet" href="learn.css" />'});
-		var lessonstr = '';
+		let lessonstr = '';
 		dbcs.lessons.find().each(o(function*(err, lesson) {
 			if (err) throw err;
 			if (lesson) lessonstr += '<li><a href="unoff/' + lesson._id + '/">' + html(lesson.title) + '</a></li>';
@@ -14,7 +14,7 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/$/)) {
-		var post = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
+		let post = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
 		if (!post) return errorNotFound(req, res, user);
 		yield respondPage(post.title, user, req, res, yield);
 		res.write('<h1><span id="title">' + html(post.title) + '</span> <input type="text" id="edit-title" hidden="" value="' + html(post.title) + '" /> <small><a id="save">Save</a></small></h1>');
@@ -31,12 +31,12 @@ module.exports = o(function*(req, res, user) {
 		}
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
-		var lesson = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
+		let lesson = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
 		if (!lesson) return errorNotFound(req, res, user);
-		var post = lesson.content[--i[2]];
+		let post = lesson.content[--i[2]];
 		if (!post) return errorNotFound(req, res, user);
 		yield respondPage(post.title, user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
-		var isLast = i[2] == lesson.content.length - 1;
+		let isLast = i[2] == lesson.content.length - 1;
 		res.write(
 			(yield addVersionNonces((yield fs.readFile('./html/learn/lesson.html', yield)).toString(), req.url.pathname, yield))
 			.replaceAll(
@@ -57,11 +57,10 @@ module.exports = o(function*(req, res, user) {
 		});
 		res.end();
 	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+		let data;
 		try {
-			var data = yield addVersionNonces((yield fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', yield)).toString(), req.url.pathname, yield);
-		} catch(e) {
-			errorNotFound(req, res, user);
-		}
+			data = yield addVersionNonces((yield fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', yield)).toString(), req.url.pathname, yield);
+		} catch(e) { errorNotFound(req, res, user); }
 		yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 		res.write(data.substr(data.indexOf('\n') + 1));
 		res.end(yield fs.readFile('html/a/foot.html', yield));

@@ -1,11 +1,11 @@
 'use strict';
-var fs = require('fs'),
+let fs = require('fs'),
 	crypto = require('crypto');
 module.exports = o(function*(req, res, user) {
-	var i;
+	let i;
 	if (req.url.pathname == '/user/') {
 		yield respondPage('Users', user, req, res, yield);
-		var dstr = '',
+		let dstr = '',
 			orderBy = (req.url.query || {}).orderby || 'rep',
 			orderByDict = {
 				default: 'rep',
@@ -26,9 +26,9 @@ module.exports = o(function*(req, res, user) {
 				lowrep: {rep: {$lt: 10}},
 				trusted: {rep: {$gte: 200}}
 			};
-		var order = {};
+		let order = {};
 		order[orderByDict[orderBy] || orderByDict.default] = orderDirDict[orderDir] || orderDirDict.default;
-		var num = 0;
+		let num = 0;
 		dbcs.users.find(whereDict[where] || whereDict.default).sort(order).each(o(function*(err, cUser) {
 			if (err) throw err;
 			if (cUser) {
@@ -50,12 +50,12 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})$/)) {
-		var dispUser = yield dbcs.users.findOne({name: i[1]}, yield);
+		let dispUser = yield dbcs.users.findOne({name: i[1]}, yield);
 		if (!dispUser) return errorNotFound(req, res, user);
-		var me = user.name == dispUser.name,
+		let me = user.name == dispUser.name,
 			notifstr = '';
 		if (me && user.notifs) {
-			var notifs = [];
+			let notifs = [];
 			i = user.notifs.length;
 			while (i--) {
 				if (user.notifs[i].unread) notifs.push(user.notifs[i]);
@@ -80,7 +80,7 @@ module.exports = o(function*(req, res, user) {
 			notifstr += '<p><a href="/notifs">Read old notifications</a></p>';
 		}
 		yield respondPage(dispUser.name, user, req, res, yield);
-		var questions = 0;
+		let questions = 0;
 		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
 		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
 		res.write('<div>');
@@ -113,12 +113,12 @@ module.exports = o(function*(req, res, user) {
 				res.write('<section>');
 				res.write('<h2>Answers</h2>');
 				res.write('<div class="column-medium"><ul>');
-				var cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
+				let cursor = dbcs.answers.find({user: dispUser.name}).sort({score: -1, _id: -1}).limit(16),
 					answers = 0;
-				var answerHandler = o(function*(err, answer) {
+				let answerHandler = o(function*(err, answer) {
 					if (err) throw err;
 					if (answer) {
-						var question = yield dbcs.questions.findOne({_id: answer.question}, yield);
+						let question = yield dbcs.questions.findOne({_id: answer.question}, yield);
 						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
 						answers++;
 						cursor.nextObject(answerHandler);
@@ -129,8 +129,8 @@ module.exports = o(function*(req, res, user) {
 						res.write('</div>');
 						res.write('<section class="resp-block">');
 						res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>');
-						res.write('<div class="flexcont programs lim-programs">')
-						var programs = 0;
+						res.write('<div class="flexcont programs lim-programs">');
+						let programs = 0;
 						dbcs.programs.find({
 							user: dispUser.name,
 							deleted: {$exists: false}

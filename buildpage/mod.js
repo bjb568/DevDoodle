@@ -1,10 +1,10 @@
 'use strict';
-var fs = require('fs');
+let fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/mod/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Moderation Queues</h1>');
-		var query = {reviewing: {$exists: true}};
+		let query = {reviewing: {$exists: true}};
 		if (user) {
 			query.reviewers = {$ne: user.name};
 			query.user = {$ne: user.name};
@@ -25,19 +25,19 @@ module.exports = o(function*(req, res, user) {
 		res.write('<h1>Chat Flags</h1>');
 		if (!user.name) return res.write('<p>You must be logged in and have level 2 moderator tools to access this queue.</p>') && res.end(yield fs.readFile('html/a/foot.html', yield));
 		if (user.level < 2) return res.write('<p>You must have level 2 moderator tools to access this queue.</p>') && res.end(yield fs.readFile('html/a/foot.html', yield));
-		var query = {
+		let query = {
 			reviewing: {$exists: true},
 			reviewers: {$ne: user.name},
 			user: {$ne: user.name}
 		};
 		if (user.level < 4) query.mod = {$exists: false};
 		res.write('<div id="posts">');
-		var chatflagHTML = (yield fs.readFile('./html/mod/chatflag.html', yield)).toString();
+		let chatflagHTML = (yield fs.readFile('./html/mod/chatflag.html', yield)).toString();
 		dbcs.chat.find(query).sort({mod: -1, lastFlag: -1}).each(o(function*(err, message) {
 			if (err) throw err;
 			if (message) {
-				var commentstr = '';
-				for (var i = 0; i < message.flags.length; i++) {
+				let commentstr = '';
+				for (let i = 0; i < message.flags.length; i++) {
 					commentstr += '<div>';
 					commentstr += '<a href="/user/' + message.flags[i].user + '" target="_blank">' + message.flags[i].user + '</a>, ';
 					commentstr += '<time datetime="' + new Date(message.flags[i].time).toISOString() + '"></time>:';
