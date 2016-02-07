@@ -6,7 +6,7 @@ module.exports = o(function*(req, res, user) {
 	res.write(yield fs.readFile('./html/home.html', yield));
 	res.write('<section class="resp-block">');
 	res.write('<h2 class="underline">Questions</h2>');
-	var cursor = dbcs.questions.find({deleted: {$exists: false}}).sort({hotness: -1, time: -1}).limit(12);
+	var cursor = dbcs.questions.find({deleted: {$exists: false}}).sort({hotness: -1, time: -1}).limit(6);
 	var questionSummaryHandler = o(function*(err, question) {
 		if (err) throw err;
 		if (question) {
