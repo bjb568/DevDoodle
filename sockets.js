@@ -249,6 +249,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'Message not found.'
 					}));
+					console.log(post.user, tws.user.name);
 					if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'You may edit only your own messages.'

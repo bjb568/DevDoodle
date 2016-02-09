@@ -107,22 +107,25 @@ document.getElementById('edit-tags').onchange = function() {
 };
 document.getElementById('answerform').addEventListener('submit', function(e) {
 	e.preventDefault();
-	var answerBody = document.getElementById('answerta').value,
+	var answer = document.getElementById('answerta'),
 		err = document.getElementById('answer-error');
+	if (answer.mdValidate(true)) return;
 	if (err.firstChild) err.removeChild(err.firstChild);
-	if (answerBody.length < 144) return err.appendChild(document.createTextNode('Answer body must be at least 144 characters long.'));
+	if (answer.value.length < 144) return err.appendChild(document.createTextNode('Answer body must be at least 144 characters long.'));
 	request('/api/answer/add', function(res) {
 		if (res.indexOf('Location:') == 0) {
 			location.href = '#' + res.substr(12);
 			location.reload();
 		} else if (res.indexOf('Error:') == 0) alert(res);
 		else alert('Unknown error. Response was: ' + res);
-	}, 'body=' + encodeURIComponent(answerBody));
+	}, 'body=' + encodeURIComponent(answer.value));
 });
 var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id),
 	commentForms = document.getElementsByClassName('commentform');
 for (var i = 0; i < commentForms.length; i++) {
 	commentForms[i].onsubmit = function(e) {
+		e.preventDefault();
+		if (this.firstElementChild.mdValidate(true)) return;
 		var el = this;
 		socket.send(JSON.stringify({
 			event: 'comment',
@@ -131,7 +134,6 @@ for (var i = 0; i < commentForms.length; i++) {
 		}));
 		this.firstElementChild.value = '';
 		this.lastElementChild.onclick();
-		e.preventDefault();
 	};
 }
 var cResetBtns = document.getElementsByClassName('c-reset');
@@ -154,6 +156,8 @@ for (var i = 0; i < cEditResetBtns.length; i++) {
 var cEditForm = document.getElementsByClassName('editcommentform');
 for (var i = 0; i < cEditForm.length; i++) {
 	cEditForm[i].onsubmit = function(e) {
+		e.preventDefault();
+		if (this.firstElementChild.mdValidate(true)) return;
 		socket.send(JSON.stringify({
 			event: 'comment-edit',
 			id: editingComment,
@@ -162,7 +166,6 @@ for (var i = 0; i < cEditForm.length; i++) {
 		this.hidden = true;
 		document.getElementById('c' + editingComment).classList.remove('editing');
 		editingComment = null;
-		e.preventDefault();
 	};
 }
 socket.onmessage = function(e) {

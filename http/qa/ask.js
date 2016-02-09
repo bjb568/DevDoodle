@@ -171,11 +171,13 @@ function findTags() {
 	}, 'lang=' + encodeURIComponent(lang.value));
 };
 lang.onblur = findTags;
+question.mdValidate = mdValidate;
 form.onsubmit = function(e) {
 	if (e) {
 		e.preventDefault();
 		if (waiting) return;
 	}
+	if (description.mdValidate(true) || question.mdValidate(true)) return;
 	if (step == 0) {
 		if (!tags.children.length) {
 			lang.focus();

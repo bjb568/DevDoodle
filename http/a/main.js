@@ -243,7 +243,7 @@ function markdown(input) {
 	}).join('');
 }
 
-HTMLTextAreaElement.prototype.mdValidate = function(correct) {
+function mdValidate(correct) {
 	var i = mdWarnings.length;
 	markdown(this.value);
 	var preverr = this.previousElementSibling && this.previousElementSibling.classList.contains('md-err') ? this.previousElementSibling : null,
@@ -270,6 +270,7 @@ HTMLTextAreaElement.prototype.mdValidate = function(correct) {
 	} else if (preverr) preverr.parentNode.removeChild(preverr);
 	return err;
 };
+HTMLTextAreaElement.prototype.mdValidate = mdValidate;
 
 function mdValidateBody() {
 	if (document.activeElement.mdValidate && document.activeElement.spellcheck) document.activeElement.mdValidate();

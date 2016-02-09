@@ -296,13 +296,14 @@ if (document.getElementById('meta')) {
 	};
 	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
 	document.getElementById('comment').onsubmit = function(e) {
+		e.preventDefault();
+		if (this.firstElementChild.mdValidate(true)) return;
 		socket.send(JSON.stringify({
 			event: 'comment',
 			body: document.getElementById('commentta').value
 		}));
 		document.getElementById('commentta').value = '';
 		document.getElementById('c-reset').onclick();
-		e.preventDefault();
 	};
 	document.getElementById('c-reset').onclick = function() {
 		location.hash = '';
@@ -314,6 +315,8 @@ if (document.getElementById('meta')) {
 		editingComment = null;
 	};
 	editCommentForm.onsubmit = function(e) {
+		e.preventDefault();
+		if (this.firstElementChild.mdValidate(true)) return;
 		socket.send(JSON.stringify({
 			event: 'comment-edit',
 			id: editingComment,
@@ -322,7 +325,6 @@ if (document.getElementById('meta')) {
 		editCommentForm.hidden = true;
 		document.getElementById('c' + editingComment).classList.remove('editing');
 		editingComment = null;
-		e.preventDefault();
 	};
 	socket.onmessage = function(e) {
 		console.log(e.data);
