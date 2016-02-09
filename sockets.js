@@ -905,7 +905,7 @@ module.exports.init = function(server) {
 						time: new Date().getTime(),
 						question: tws.question
 					};
-					if (!isNaN(message.answer)) tcomment.answer = parseInt(message.answer);
+					if (!isNaN(parseInt(message.answer))) tcomment.answer = parseInt(message.answer);
 					dbcs.comments.insert(tcomment);
 					for (let i in wss.clients) {
 						if (wss.clients[i].question == tws.question) {
