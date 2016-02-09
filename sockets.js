@@ -655,11 +655,11 @@ module.exports.init = function(server) {
 					post = yield dbcs.comment.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'Message not found.'
+						body: 'Comment not found.'
 					}));
 					if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You may edit only your own messages.'
+						body: 'You may edit only your own comments.'
 					}));
 					if (post.body == message.body) return;
 					dbcs.commenthistory.insert({
@@ -949,11 +949,11 @@ module.exports.init = function(server) {
 					post = yield dbcs.comment.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'Message not found.'
+						body: 'Comment not found.'
 					}));
 					if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
-						body: 'You may edit only your own messages.'
+						body: 'You may edit only your own comments.'
 					}));
 					if (post.body == message.body) return;
 					dbcs.commenthistory.insert({
