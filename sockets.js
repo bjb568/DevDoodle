@@ -652,7 +652,7 @@ module.exports.init = function(server) {
 						});
 					}
 				} else if (message.event == 'comment-edit') {
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					post = yield dbcs.comment.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
@@ -946,7 +946,7 @@ module.exports.init = function(server) {
 						});
 					}
 				} else if (message.event == 'comment-edit') {
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					post = yield dbcs.comment.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
