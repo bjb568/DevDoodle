@@ -373,7 +373,7 @@ let serverHandler = o(function*(req, res) {
 	} else if (req.url.pathname.substr(0, 5) == '/api/') {
 		req.url.pathname = req.url.pathname.substr(4);
 		if (req.method != 'POST') return res.writeHead(405) || res.end('Error: Method not allowed. Use POST.');
-		if (url.parse(req.headers.referer).host != req.headers.host) return res.writeHead(409) || res.end('Error: Suspicious request.');
+		if (url.parse(req.headers.referer || '').host != req.headers.host) return res.writeHead(409) || res.end('Error: Suspicious request.');
 		let post = '';
 		req.on('data', function(data) {
 			if (req.abort) return;
