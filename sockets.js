@@ -14,9 +14,7 @@ module.exports.init = function(server) {
 		wss = new ws.Server({server: server});
 	wss.on('connection', o(function*(tws) {
 		console.log('SOCKET CONNECT ' + tws.upgradeReq.url);
-		let i,
-			post,
-			toSend;
+		let i;
 		let user = yield dbcs.users.findOne({
 			cookie: {
 				$elemMatch: {
@@ -150,7 +148,7 @@ module.exports.init = function(server) {
 							state: 1
 						}));
 					} else {
-						toSend = JSON.stringify({
+						let toSend = JSON.stringify({
 							event: 'adduser',
 							name: user.name,
 							state: 1
@@ -207,7 +205,7 @@ module.exports.init = function(server) {
 						time: new Date().getTime(),
 						room: tws.room
 					});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'add',
 						body: message.body,
 						user: tws.user.name,
@@ -244,7 +242,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'You may not edit messages in a non-public room unless you are invited.'
 					}));
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					let post = yield dbcs.chat.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
@@ -262,7 +260,7 @@ module.exports.init = function(server) {
 						body: post.body
 					});
 					dbcs.chat.update({_id: post._id}, {$set: {body: message.body}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'edit',
 						id: post._id,
 						body: message.body
@@ -271,7 +269,7 @@ module.exports.init = function(server) {
 						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
 					}
 				} else if (message.event == 'flag') {
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					let post = yield dbcs.chat.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
@@ -305,7 +303,7 @@ module.exports.init = function(server) {
 						body: 'Post #' + message.id + ' flagged.'
 					}));
 				} else if (message.event == 'delete') {
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					let post = yield dbcs.chat.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
@@ -325,7 +323,7 @@ module.exports.init = function(server) {
 						by: [tws.user.name]
 					});
 					dbcs.chat.update({_id: post._id}, {$set: {deleted: 1}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'delete',
 						id: post._id
 					});
@@ -333,7 +331,7 @@ module.exports.init = function(server) {
 						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
 					}
 				} else if (message.event == 'undelete') {
-					post = yield dbcs.chat.findOne({_id: message.id}, yield);
+					let post = yield dbcs.chat.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Message not found.'
@@ -357,7 +355,7 @@ module.exports.init = function(server) {
 						by: [tws.user.name]
 					});
 					dbcs.chat.update({_id: post._id}, {$unset: {deleted: 1}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'undelete',
 						id: post._id,
 						body: post.body,
@@ -374,7 +372,7 @@ module.exports.init = function(server) {
 							name: tws.user.name,
 							room: tws.room
 						}, {$set: {state: message.state}}, {upsert: 1});
-						toSend = JSON.stringify({
+						let toSend = JSON.stringify({
 							event: 'statechange',
 							state: message.state,
 							name: tws.user.name
@@ -427,7 +425,7 @@ module.exports.init = function(server) {
 						body: 'You must have 30 reputation to star messages.'
 					}));
 					id = parseInt(message.id);
-					post = yield dbcs.chat.findOne({
+					let post = yield dbcs.chat.findOne({
 						_id: id,
 						deleted: {$exists: false}
 					}, yield);
@@ -475,7 +473,7 @@ module.exports.init = function(server) {
 						postowner: post.user
 					});
 					dbcs.chat.update({_id: id}, {$inc: {stars: 1}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'star',
 						id: post._id,
 						body: post.body,
@@ -511,7 +509,7 @@ module.exports.init = function(server) {
 						pid: id
 					});
 					dbcs.chat.update({_id: id}, {$inc: {stars: -1}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'unstar',
 						id: id
 					});
@@ -563,7 +561,7 @@ module.exports.init = function(server) {
 				}));
 			}));
 			tws.on('close', function() {
-				toSend = JSON.stringify({
+				let toSend = JSON.stringify({
 					event: 'deluser',
 					name: tws.user.name
 				});
@@ -618,7 +616,7 @@ module.exports.init = function(server) {
 						time: new Date().getTime(),
 						program: tws.program
 					});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-add',
 						body: message.body,
 						user: tws.user.name,
@@ -652,7 +650,7 @@ module.exports.init = function(server) {
 						});
 					}
 				} else if (message.event == 'comment-edit') {
-					post = yield dbcs.comment.findOne({_id: message.id}, yield);
+					let post = yield dbcs.comments.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Comment not found.'
@@ -669,7 +667,7 @@ module.exports.init = function(server) {
 						body: post.body
 					});
 					dbcs.comments.update({_id: post._id}, {$set: {body: message.body}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-edit',
 						id: post._id,
 						body: message.body
@@ -687,7 +685,7 @@ module.exports.init = function(server) {
 						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					id = parseInt(message.id);
-					post = yield dbcs.comments.findOne({
+					let post = yield dbcs.comments.findOne({
 						_id: id,
 						deleted: {$exists: false}
 					}, yield);
@@ -714,7 +712,7 @@ module.exports.init = function(server) {
 							}
 						}
 					});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-scorechange',
 						id: post._id,
 						score: post.votes ? post.votes.length + 1 : 1
@@ -728,7 +726,7 @@ module.exports.init = function(server) {
 						body: 'You must be logged in to vote on comments.'
 					}));
 					id = parseInt(message.id);
-					post = yield dbcs.comments.findOne({
+					let post = yield dbcs.comments.findOne({
 						_id: id,
 						deleted: {$exists: false}
 					}, yield);
@@ -745,7 +743,7 @@ module.exports.init = function(server) {
 						body: 'You haven\'t voted on this comment.'
 					}));
 					dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-scorechange',
 						id: post._id,
 						score: post.votes.length - 1
@@ -860,7 +858,7 @@ module.exports.init = function(server) {
 											i = -1;
 										}
 									}
-									toSend = JSON.stringify({
+									let toSend = JSON.stringify({
 										event: 'q-edit',
 										title: message.title.substr(0, 144),
 										lang: message.lang,
@@ -946,7 +944,7 @@ module.exports.init = function(server) {
 						});
 					}
 				} else if (message.event == 'comment-edit') {
-					post = yield dbcs.comment.findOne({_id: message.id}, yield);
+					let post = yield dbcs.comments.findOne({_id: message.id}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Comment not found.'
@@ -963,7 +961,7 @@ module.exports.init = function(server) {
 						body: post.body
 					});
 					dbcs.comments.update({_id: post._id}, {$set: {body: message.body}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-edit',
 						id: post._id,
 						body: message.body
@@ -981,7 +979,7 @@ module.exports.init = function(server) {
 						body: 'You must have 20 reputation to vote on comments.'
 					}));
 					id = parseInt(message.id);
-					post = yield dbcs.comments.findOne({
+					let post = yield dbcs.comments.findOne({
 						_id: id,
 						deleted: {$exists: false}
 					}, yield);
@@ -1008,7 +1006,7 @@ module.exports.init = function(server) {
 							}
 						}
 					});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-scorechange',
 						id: post._id,
 						score: post.votes ? post.votes.length + 1 : 1
@@ -1022,7 +1020,7 @@ module.exports.init = function(server) {
 						body: 'You must be logged in to vote on comments.'
 					}));
 					id = parseInt(message.id);
-					post = yield dbcs.comments.findOne({
+					let post = yield dbcs.comments.findOne({
 						_id: id,
 						deleted: {$exists: false}
 					}, yield);
@@ -1037,7 +1035,7 @@ module.exports.init = function(server) {
 						body: 'You haven\'t voted on this comment.'
 					}));
 					dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
-					toSend = JSON.stringify({
+					let toSend = JSON.stringify({
 						event: 'comment-scorechange',
 						id: post._id,
 						score: post.votes.length - 1
