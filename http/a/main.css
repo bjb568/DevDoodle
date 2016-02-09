@@ -826,7 +826,7 @@ body > * { flex-shrink: 0 }
 		position: absolute;
 		top: 0; right: 0; bottom: 0;
 		margin-top: 32px;
-		width: calc(45% - 252px);
+		width: calc(45% - 250px);
 		min-width: 430px;
 		overflow-x: hidden;
 	}
