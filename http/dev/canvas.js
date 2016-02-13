@@ -189,7 +189,7 @@ function removeLog() {
 function print() {
 	var pre = document.createElement('pre');
 	for (var i = 0; i < arguments.length; i++) {
-		pre.appendChild(document.createTextNode(' '));
+		if (i) pre.appendChild(document.createTextNode(' '));
 		var span = document.createElement('span');
 		span.appendChild(document.createTextNode(arguments[i]));
 		pre.appendChild(span);
