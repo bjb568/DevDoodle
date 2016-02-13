@@ -290,6 +290,7 @@ document.getElementById('showpreview').onclick = function(e) {
 	close.appendChild(document.createTextNode('✕'));
 	close.onclick = function() {
 		preview.hidden = true;
+		document.body.classList.remove('tint');
 	};
 	h1.appendChild(close);
 	preview.appendChild(h1);
