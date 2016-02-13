@@ -141,6 +141,7 @@ li {
 	white-space: pre-wrap;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+	word-break: break-all;
 	font-size: 1rem;
 	line-height: 1.2;
 	resize: none;
@@ -161,11 +162,11 @@ li {
 }
 #caret {
 	display: inline-block;
-	position: absolute;
 	background: #fff;
 	width: 1px;
+	margin-right: -1px;
 }
-#caret[hidden] { display: none }
+#caret[hidden] { background: #000 }
 code .line::before {
 	left: 0;
 	content: attr(data-linenum);

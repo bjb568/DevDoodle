@@ -476,7 +476,7 @@ function applyProgramIframes() {
 				var j = e[i].parentNode.parentNode;
 				if (e[i].src || j.getBoundingClientRect().top - j.parentNode.getBoundingClientRect().top > j.parentNode.offsetHeight) continue;
 				var outputBlob = new Blob([
-					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch(e){error(e)}</script></body></html>'
+					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch(e){error(e)}</script></body></html>'
 				], {type: 'application/xhtml+xml'});
 				e[i].src = URL.createObjectURL(outputBlob);
 			}
