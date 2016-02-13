@@ -112,7 +112,7 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h1 class="nomar">' + html(question.lang) + ': ' + html(question.title) + '</h1>');
 			res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
 			res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
-			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + 'Type: ' + question.type + '</code>');
+			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + '\nType: ' + question.type + '</code>');
 			res.write('<div class="umar">');
 			let langTags = [];
 			dbcs.qtags.find().each(function(err, tag) {
