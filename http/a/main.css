@@ -111,8 +111,7 @@ li {
 }
 .limited, .large-limited {
 	max-height: 72px;
-	overflow-x: hidden; overflow-y: auto;
-	transition: max-height 0.5s;
+	overflow: hidden;
 }
 .large-limited { max-height: 144px }
 .spoiler { transition: color 0.2s }
