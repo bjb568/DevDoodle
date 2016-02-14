@@ -225,7 +225,7 @@ code .unit { color: #bcf }
 code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .reserved, code .bad { color: #f00 }
-code .constant, code .string .escape { color: #df0 }
+code .constant, code .string .escape, .template.punctuation { color: #df0 }
 code .string { color: #6C3 }
 code .regex { color: #ffa }
 code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }

@@ -1235,6 +1235,7 @@ function highlightJS(codeBlock, input) {
 		line = 1,
 		inVarDec = [],
 		d,
+		inTemplate = 0,
 		fc;
 	while (fc = codeBlock.firstChild) codeBlock.removeChild(fc);
 	var linenum = document.createElement('span');
@@ -1244,9 +1245,18 @@ function highlightJS(codeBlock, input) {
 	for (var i = 0; i < input.length; i++) {
 		var c = input[i],
 			l;
-		if (c == '"' || c == "'" || c == '`') {
+		if (c == '"' || c == "'" || c == '`' || (inTemplate && c == '}')) {
 			codeBlock.appendChild(document.createTextNode(chunk));
-			chunk = c;
+			var enteringTemplate = false;
+			if (c == '}') {
+				inTemplate--;
+				var punc = document.createElement('span');
+				punc.className = 'template punctuation';
+				punc.appendChild(document.createTextNode('}'));
+				codeBlock.appendChild(punc);
+				chunk = '';
+				c = '`';
+			} else chunk = c;
 			var string = document.createElement('span');
 			string.className = 'string';
 			while ((d = input[++i]) && d != c) {
@@ -1292,9 +1302,13 @@ function highlightJS(codeBlock, input) {
 						linenum.dataset.linenum = ++line;
 						string.appendChild(linenum);
 					}
+				} else if (d == '$' && input[i + 1] == '{') {
+					inTemplate++;
+					enteringTemplate = true;
+					break;
 				} else chunk += d;
 			}
-			if (d) chunk += d;
+			if (d && !enteringTemplate) chunk += d;
 			string.appendChild(document.createTextNode(chunk));
 			codeBlock.appendChild(string);
 			chunk = '';
@@ -1303,6 +1317,13 @@ function highlightJS(codeBlock, input) {
 				linenum.className = 'line';
 				linenum.dataset.linenum = ++line;
 				codeBlock.appendChild(linenum);
+			}
+			if (enteringTemplate) {
+				var punc = document.createElement('span');
+				punc.className = 'template punctuation';
+				punc.appendChild(document.createTextNode('${'));
+				codeBlock.appendChild(punc);
+				i++;
 			}
 		} else if (c == '/' && input[i + 1] == '/') {
 			i++;
