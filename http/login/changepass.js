@@ -6,7 +6,7 @@ var old = document.getElementById('old'),
 	passMatch = document.getElementById('pass-match'),
 	passBad = document.getElementById('pass-bad'),
 	submit = document.getElementById('submit');
-old.oninput = pass.oninput = passc.oninput = function() {
+(old || {}).oninput = pass.oninput = passc.oninput = function() {
 	var fail = false;
 	var strength = passStrength(pass.value);
 	passBad.hidden = !(pass.value && strength < 1/4);
@@ -21,6 +21,6 @@ old.oninput = pass.oninput = passc.oninput = function() {
 		fail = true;
 		passMatch.hidden = false;
 	} else passMatch.hidden = true;
-	if (!old.value) fail = true;
+	if (old && !old.value) fail = true;
 	submit.disabled = fail;
 };

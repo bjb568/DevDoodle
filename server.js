@@ -272,7 +272,7 @@ let respondChangePassPage = o(function*(errs, user, req, res, post) {
 	res.write('<h1>Change Password for ' + user.name + '</h1>');
 	res.write(errorsHTML(errs));
 	res.write('<form method="post">');
-	res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
+	if (user.pass) res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
 	res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-bad" class="red" hidden="">too short</span></div>');
 	res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
 	res.write('<div><input type="password" id="conf" name="conf" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn\'t match</span></div>');
@@ -623,7 +623,8 @@ let serverHandler = o(function*(req, res) {
 							}
 						}
 					});
-					if ((url.parse(req.headers.referer, true).query || {}).r == 'ask') {
+					var r = (url.parse(req.headers.referer, true).query || {}).r;
+					if (r == 'ask') {
 						res.writeHead(303, {
 							Location: '/qa/ask',
 							'Set-Cookie': idCookie
@@ -632,7 +633,7 @@ let serverHandler = o(function*(req, res) {
 					}
 					let referer = url.parse(post.referer);
 					res.writeHead(303, {
-						Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 && referer.pathname != '/' ? referer.pathname : '/',
+						Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('/login') != 0 && r != 'updated' ? referer.pathname : '/',
 						'Set-Cookie': idCookie
 					});
 					return res.end();
@@ -873,10 +874,10 @@ let serverHandler = o(function*(req, res) {
 				if (req.abort) return;
 				post = querystring.parse(post);
 				if (!user || user.name != i[1]) return errorForbidden(req, res, user);
-				if (!post.old || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
+				if ((!post.old && user.pass) || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
-				if (passStrength(post.pass) < 1/4) return respondChangePassPage(['Password is too short.'], user, req, res, {});
-				if (new Buffer(yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != user.pass) {
+				if (passStrength(post.new) < 1/4) return respondChangePassPage(['Password is too short.'], user, req, res, {});
+				if (user.pass && new Buffer(yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != user.pass) {
 					return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
 				}
 				let salt = crypto.randomBytes(64).toString('base64');
