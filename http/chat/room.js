@@ -628,7 +628,7 @@ function edit() {
 	ta.value = '';
 	cont.scrollTop = cont.scrollHeight;
 }
-btn.addEventListener('click', function() {
+if (btn) btn.addEventListener('click', function() {
 	if (editing) edit();
 	else send();
 });
