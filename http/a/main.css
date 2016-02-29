@@ -46,7 +46,7 @@ body {
 .sumar, :not(img) + .desc, .blk { margin-top: 4px }
 .umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer, #sidebar { margin-top: 4px }
 .bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
-.bmar, .error, .half, #notifs li { margin-bottom: 6px }
+.bmar, .max-width, .error, .half, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
 .pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 4px }
