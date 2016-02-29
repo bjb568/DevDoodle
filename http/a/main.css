@@ -77,6 +77,17 @@ abbr { border-bottom: 1px dashed #222 }
 .column-small { -webkit-column-width: 10em; -moz-column-width: 10em; column-width: 10em }
 .column-medium { -webkit-column-width: 16em; -moz-column-width: 16em; column-width: 16em }
 .column-large { -webkit-column-width: 24em; -moz-column-width: 24em; column-width: 24em }
+.max-width { max-width: 448px }
+.iframe-16-9 {
+	position: relative;
+	width: 100%;
+	height: 0;
+	padding-bottom: 56.25%;
+}
+.iframe-16-9 iframe {
+	width: 100%;
+	height: 100%;
+}
 .flexcont {
 	display: flex;
 	flex-wrap: wrap;

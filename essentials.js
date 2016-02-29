@@ -33,7 +33,7 @@ function spanMarkdown(input) {
 			var i;
 			if (
 				/(^|.+\.)youtube\.com$/.test(parsed.host) && (i = parsed.query.match(/^\?(.+?&)?v=([^&]+)/))
-			) return '<iframe width="560" height="315" src="https://www.youtube.com/embed/' + i[2] + '" frameborder="0" allowfullscreen=""></iframe>';
+			) return '<div class="max-width"><div class="iframe-16-9"><iframe src="https://www.youtube.com/embed/' + i[2] + '" frameborder="0" allowfullscreen=""></iframe></div></div>';
 			return p1 + p3.link(p2);
 		});
 }

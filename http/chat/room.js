@@ -175,7 +175,7 @@ socket.onmessage = function(e) {
 		sig.appendChild(permalink);
 		var currentNode = div;
 		while (!sig.parentNode) {
-			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
 		var tCtrls = ctrls.cloneNode(true);
@@ -214,7 +214,7 @@ socket.onmessage = function(e) {
 		msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body)).replaceAll('<a', '<a target="_blank"');
 		var currentNode = msg;
 		while (!sig.parentNode) {
-			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
 		msg.appendChild(msgCtrls);
@@ -276,7 +276,7 @@ socket.onmessage = function(e) {
 			sig.appendChild(permalink);
 			var currentNode = msg;
 			while (!sig.parentNode) {
-				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 				else currentNode = currentNode.lastElementChild;
 			}
 			var tCtrls = ctrls.cloneNode(true);
@@ -343,7 +343,7 @@ socket.onmessage = function(e) {
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
-				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 				else currentNode = currentNode.lastElementChild;
 			}
 			li.appendChild(div);
