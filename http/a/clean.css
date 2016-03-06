@@ -139,7 +139,7 @@ li {
 .ta-cont {
 	width: 100%;
 	position: relative;
-	overflow: auto;
+	overflow-x: hidden; overflow-y: auto;
 	border: 1px solid #fff;
 }
 .code, .code-display {
@@ -151,9 +151,6 @@ li {
 	background: transparent;
 	font-family: monospace;
 	white-space: pre-wrap;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	word-break: break-all;
 	font-size: 1rem;
 	line-height: 1.2;
 	resize: none;
@@ -173,12 +170,11 @@ li {
 	padding-right: 1px;
 }
 #caret {
-	display: inline-block;
+	position: absolute;
 	background: #fff;
 	width: 1px;
 	margin-right: -1px;
 }
-#caret[hidden] { background: #000 }
 code .line::before {
 	left: 0;
 	content: attr(data-linenum);
