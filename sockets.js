@@ -164,7 +164,7 @@ module.exports.init = function(server) {
 					});
 				}
 			}));
-			tws.on('message', o(function*(message) {
+			tws.on('message', o(function*(message, raw) {
 				console.log(message);
 				try {
 					message = JSON.parse(message);
