@@ -112,7 +112,7 @@ function handleTAInput() {
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
-	if (document.getElementById('autorun').checked && lastValue != htmle.value) {
+	if (lastValue != htmle.value) {
 		clearTimeout(runTimeout);
 		runTimeout = setTimeout(run, 150);
 	}
