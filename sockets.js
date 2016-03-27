@@ -579,7 +579,7 @@ module.exports.init = function(server) {
 				event: 'err',
 				body: 'Program not found.'
 			}));
-			tws.on('message', o(function*(message) {
+			tws.on('message', o(function*(message, raw) {
 				console.log(message);
 				try {
 					message = JSON.parse(message);
@@ -761,7 +761,7 @@ module.exports.init = function(server) {
 				event: 'err',
 				body: 'Question not found.'
 			}));
-			tws.on('message', o(function*(message) {
+			tws.on('message', o(function*(message, raw) {
 				console.log(message);
 				try {
 					message = JSON.parse(message);
