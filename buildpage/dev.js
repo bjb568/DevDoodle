@@ -127,53 +127,39 @@ module.exports = o(function*(req, res, user) {
 						if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
 						else {
 							res.write(
-								program.type == 1 ?
-									(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-									.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-									.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-									.replaceAll(
-										['$id', '$title', '$code'],
-										[program._id.toString(), html(program.title || 'Untitled'), html(program.code)]
-									).replaceAll(
-										['$created', '$updated'],
-										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-									).replace('$comments', commentstr).replaceAll(
-										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
-									).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
-									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-									.replace(
-										'$forked',
-										forkedFrom ?
-											' Forked from <a href="' + forkedFrom._id + '">' +
-												html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-												'</a>' :
-											''
-									).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-								:
-									(yield fs.readFile('./html/dev/html.html', yield)).toString()
-									.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-									.replaceAll(
-										['$id', '$title', '$html', '$css', '$js'],
-										[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js)]
-									).replaceAll(
-										['$created', '$updated'],
-										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-									).replace('$comments', commentstr).replaceAll(
-										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
-									).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
-									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-									.replace(
-										'$forked',
-										forkedFrom ?
-											' Forked from <a href="' + forkedFrom._id + '">' +
-												html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-												'</a>' :
-											''
-									).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+								(
+									program.type == 1 ?
+										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+										.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+										.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
+										.replaceAll(
+											'$code',
+											html(program.code)
+										)
+									:
+										(yield fs.readFile('./html/dev/html.html', yield)).toString()
+										.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+										.replaceAll(
+											['$html', '$css', '$js'],
+											[html(program.html), html(program.css), html(program.js)]
+										)
+								).replaceAll(
+									['$id', '$title', '$created', '$updated'],
+									[program._id.toString(), html(program.title || 'Untitled'), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
+								).replace('$comments', commentstr).replaceAll(
+									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+									[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
+								).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
+								.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+								.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+								.replace(
+									'$forked',
+									forkedFrom ?
+										' Forked from <a href="' + forkedFrom._id + '">' +
+											html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
+											'</a>' :
+										''
+								).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
