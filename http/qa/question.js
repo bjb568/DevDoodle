@@ -20,9 +20,7 @@ function handleLocationUpdate() {
 		document.getElementById('q-content').hidden = 1;
 		document.getElementById('q-desc-edit').focus();
 		document.getElementById('med').href = '#';
-	} else {
-		if (!document.getElementById('q-edit').hidden) document.getElementById('cancel-edit').onclick();
-	}
+	} else if (!document.getElementById('q-edit').hidden) document.getElementById('cancel-edit').onclick();
 }
 addEventListener('load', handleLocationUpdate);
 addEventListener('hashchange', handleLocationUpdate);
@@ -38,9 +36,10 @@ document.getElementById('cancel-edit').onclick = function() {
 var addCommentBtns = document.getElementsByClassName('addcomment');
 for (var i = 0; i < addCommentBtns.length; i++) {
 	addCommentBtns[i].onclick = function() {
-		setTimeout(function(e) {
+		var e = this;
+		requestAnimationFrame(function() {
 			e.previousElementSibling.firstElementChild.focus();
-		}, 0, this);
+		});
 	};
 }
 var waiting = false;
@@ -203,7 +202,7 @@ socket.onmessage = function(e) {
 		if (myRep >= 50) {
 			div.insertBefore(document.getElementById('content').children[2].cloneNode(true), div.firstChild);
 			div.firstChild.firstChild.onclick = upvoteComment;
-			if (username == data.user) div.firstChild.lastChild.onclick = editComment;
+			if (username == data.user) div.firstChild.children[2].onclick = editComment;
 			else div.firstChild.removeChild(div.firstChild.lastChild);
 			var score = document.createElement('span');
 			score.classList.add('score');
@@ -286,7 +285,7 @@ var comments = document.getElementsByClassName('comment');
 for (var i = 0; i < comments.length; i++) {
 	var sctrls = comments[i].getElementsByClassName('sctrls')[0];
 	sctrls.firstChild.onclick = upvoteComment;
-	if (sctrls.children.length == 3) sctrls.lastChild.onclick = editComment;
+	if (sctrls.children.length == 4) sctrls.children[2].onclick = editComment;
 }
 var up = document.getElementById('q-up');
 up.parentNode.onclick = function() {

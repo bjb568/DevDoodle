@@ -18,9 +18,9 @@ function commentToString(comment, user) {
 			user.rep >= 50 ?
 			(
 				'<span class="sctrls">' +
-				'<svg class="up' + (voted ? ' clkd' : '') + '" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-				'<svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-				(user.name == comment.user ? '<span class="ctrl">✎</span>' : '') +
+				'<span title="This comment is useful."><svg class="up' + (voted ? ' clkd' : '') + '" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></span>' +
+				'<span title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></span>' +
+				(user.name == comment.user ? '<span title="Edit" class="ctrl">✎</span><span title="Delete…" class="ctrl red">✕</span>' : '') +
 				'</span>'
 			) :
 			''

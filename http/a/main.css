@@ -283,9 +283,22 @@ code .browser { color: #9bd }
 }
 .comment .sctrls {
 	float: left;
-	padding: 2px 2px 0 0;
+	padding-top: 2px;
 	height: 16px;
 }
+.comment .ctrl {
+	display: inline-block;
+	width: 19px;
+	vertical-align: top;
+	font-size: 1.2em;
+	line-height: 0.8em;
+}
+.comment svg { vertical-align: top }
+.comment .ctrl { color: #15f }
+.comment .ctrl.red { color: #f00 }
+.comment .ctrl:hover { color: #00f }
+.comment .ctrl.red:hover { color: #d00 }
+.comment .ctrl:active { color: #02d }
 .comment:not(:hover) .sctrls > :not(.clkd) { opacity: 0.4 }
 .comment img { max-height: 200px }
 .comment .mention {
@@ -308,9 +321,12 @@ code .browser { color: #9bd }
 	padding: 2px;
 	margin: 0 2px;
 }
+.diamond { color: #000 }
 .c-sig { padding: 2px 0 0 4px }
 .c-sig > * { color: #666 }
-.ctrls :hover, .diamond { color: #000 }
+.ctrls :hover { color: #00f }
+.ctrls .star:hover { color: #880 }
+.ctrls .red:hover { color: #f00 }
 .ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }

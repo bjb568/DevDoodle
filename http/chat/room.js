@@ -29,15 +29,19 @@ var audio = new Audio('/a/beep.mp3'),
 if (username == 'Log\xa0in') username = false;
 ctrls.classList.add('ctrls');
 ctrlsStar.textContent = '★';
+ctrlsStar.title = 'This message is interesting.';
+ctrlsStar.className = 'star';
 ctrlsStar.onclick = function() {
 	socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id)}));
 	this.classList.toggle('clkd');
 };
 ctrlsLink.textContent = '#';
+ctrlsLink.title = 'Open message history';
 ctrlsLink.onclick = function() {
 	open('message/' + this.parentNode.parentNode.id);
 };
 ctrlsEdit.textContent = '✎';
+ctrlsEdit.title = 'Edit';
 ctrlsEdit.onclick = function() {
 	ta.hists = ta.hists || {};
 	ta.hists[editing] = ta.hist;
@@ -70,14 +74,19 @@ ctrlsEdit.onclick = function() {
 	btn.textContent = 'Edit';
 };
 ctrlsDelete.textContent = '✕';
+ctrlsDelete.title = 'Delete…';
+ctrlsDelete.className = 'red';
 ctrlsDelete.onclick = function() {
 	socket.send(JSON.stringify({event: 'delete', id: parseInt(this.parentNode.parentNode.id)}));
 };
 ctrlsUndelete.textContent = '↑';
+ctrlsUndelete.title = 'Undelete…';
 ctrlsUndelete.onclick = function() {
 	socket.send(JSON.stringify({event: 'undelete', id: parseInt(this.parentNode.parentNode.id)}));
 };
 ctrlsFlag.textContent = '⚑';
+ctrlsFlag.title = 'This message is inappropriate.';
+ctrlsFlag.className = 'red';
 ctrlsFlag.onclick = function() {
 	var body = prompt('Describe what exactly is wrong');
 	if (!body) return;

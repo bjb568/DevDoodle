@@ -16,7 +16,7 @@
 	overflow-wrap: break-word;
 }
 #q-body, .a-body { margin-bottom: 8px }
-.ctrl + * { margin-left: 32px }
+#question .ctrl + *, .answer .ctrl + * { margin-left: 32px }
 #q-edit, .a-edit { padding-left: 2px}
 #q-edit textarea, .a-edit textarea, #answerta {
 	width: 100%;
@@ -43,15 +43,6 @@
 }
 .comments { margin: 6px 0 }
 code.blk:empty { display: none }
-.comment .sctrls { padding-right: 0.3em }
-.comment .ctrl {
-	vertical-align: top;
-	font-size: 1.2em;
-	line-height: 0.8em;
-}
-.comment .ctrl { color: #006 }
-.comment:not(:hover) .ctrl { color: #15f }
-.ctrl:active { color: #02d }
 :not(.sctrls) > .up, :not(.sctrls) > .dn { margin-bottom: 4px }
 .up, .dn { fill: #999 }
 .up:hover, .dn:hover {
