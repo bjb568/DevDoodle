@@ -47,27 +47,8 @@ module.exports = o(function*(req, res, user) {
 			clang = '';
 		dbcs.qtags.find().sort({lang: 1}).each(o(function*(err, tag) {
 			if (err) throw err;
-			if (tag) {
-				if (tag.lang == clang) tlang.push(tag);
-				else {
-					if (clang) {
-						res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">');
-						res.write('<h2>' + html(clang) + '</h2>');
-						res.write('<ul>');
-						i = -1;
-						while (++i < tlang.length) {
-							if (!tlang[i].parentID) {
-								writeTagRecursive(tlang, tlang[i], res);
-								i = -1;
-							}
-						}
-						res.write('</ul>');
-						res.write('</section>');
-					}
-					clang = tag.lang;
-					tlang = [tag];
-				}
-			} else {
+			if (tag && tag.lang == clang) return tlang.push(tag);
+			if (!tag || clang) {
 				res.write('<section id="lang-' + html(encodeURIComponent(clang)) + '">');
 				res.write('<h2>' + html(clang) + '</h2>');
 				res.write('<ul>');
@@ -80,8 +61,12 @@ module.exports = o(function*(req, res, user) {
 				}
 				res.write('</ul>');
 				res.write('</section>');
-				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
+			if (tag) {
+				clang = tag.lang;
+				tlang = [tag];
+			}
+			else res.end(yield fs.readFile('html/a/foot.html', yield));
 		}));
 	} else if (req.url.pathname == '/qa/ask') {
 		if (!user.name) return res.writeHead('303', {Location: '/login/?r=ask'}) || res.end();
