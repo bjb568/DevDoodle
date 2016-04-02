@@ -20,7 +20,7 @@ function smoothScroll(el, t, p, s) {
 			smoothScroll(el, p, t, s);
 		});
 	}
-};
+}
 addEventListener('input', function() {
 	if (document.activeElement.parentNode.classList.contains('ta-cont')) {
 		document.activeElement.nextElementSibling.textContent = document.activeElement.value + '\n';

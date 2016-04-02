@@ -1,5 +1,6 @@
 'use strict';
-let fs = require('fs');
+let fs = require('fs'),
+	Comment = require('../utility/comment.js');
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/dev/') {
@@ -117,31 +118,8 @@ module.exports = o(function*(req, res, user) {
 				commentstr = '';
 			dbcs.comments.find({program: program._id}).sort({_id: 1}).each(o(function*(err, comment) {
 				if (err) throw err;
-				if (comment) {
-					let votes = comment.votes || [],
-						voted;
-					for (let i in votes) if (votes[i].user == user.name) voted = true;
-					let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
-						endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|div|>).)+?>)+$/) || [{length: 0}])[0].length;
-					commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
-						'<span class="c-sig">-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
-						'<a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a></span>' +
-						commentBody.substring(commentBody.length - endTagsLength);
-					commentstr +=
-						'<div id="c' + comment._id + '" class="comment">' +
-						'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span> ' +
-						(
-							user.rep >= 50 ?
-							(
-								'<span class="sctrls">' +
-								'<svg class="up' + (voted ? ' clkd' : '') + '" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg>' +
-								'<svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg>' +
-								(user.name == op.name ? '<span class="ctrl">✎</span>' : '') +
-								'</span>'
-							) :
-							''
-						) + commentBody + '</div>';
-				} else {
+				if (comment) commentstr += new Comment(comment).toString(user);
+				else {
 					let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield),
 						forks = [];
 					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
@@ -149,53 +127,39 @@ module.exports = o(function*(req, res, user) {
 						if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
 						else {
 							res.write(
-								program.type == 1 ?
-									(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-									.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-									.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-									.replaceAll(
-										['$id', '$title', '$code'],
-										[program._id.toString(), html(program.title || 'Untitled'), html(program.code)]
-									).replaceAll(
-										['$created', '$updated'],
-										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-									).replace('$comments', commentstr).replaceAll(
-										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
-									).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
-									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-									.replace(
-										'$forked',
-										forkedFrom ?
-											' Forked from <a href="' + forkedFrom._id + '">' +
-												html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-												'</a>' :
-											''
-									).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
-								:
-									(yield fs.readFile('./html/dev/html.html', yield)).toString()
-									.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-									.replaceAll(
-										['$id', '$title', '$html', '$css', '$js'],
-										[program._id.toString(), html(program.title || 'Untitled'), html(program.html), html(program.css), html(program.js)]
-									).replaceAll(
-										['$created', '$updated'],
-										[new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-									).replace('$comments', commentstr).replaceAll(
-										['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
-										[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
-									).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
-									.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-									.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
-									.replace(
-										'$forked',
-										forkedFrom ?
-											' Forked from <a href="' + forkedFrom._id + '">' +
-												html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-												'</a>' :
-											''
-									).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+								(
+									program.type == 1 ?
+										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+										.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+										.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
+										.replaceAll(
+											'$code',
+											html(program.code)
+										)
+									:
+										(yield fs.readFile('./html/dev/html.html', yield)).toString()
+										.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+										.replaceAll(
+											['$html', '$css', '$js'],
+											[html(program.html), html(program.css), html(program.js)]
+										)
+								).replaceAll(
+									['$id', '$title', '$created', '$updated'],
+									[program._id.toString(), html(program.title || 'Untitled'), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
+								).replace('$comments', commentstr).replaceAll(
+									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
+									[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
+								).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
+								.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+								.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
+								.replace(
+									'$forked',
+									forkedFrom ?
+										' Forked from <a href="' + forkedFrom._id + '">' +
+											html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
+											'</a>' :
+										''
+								).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}

@@ -4,10 +4,12 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	opName = (document.getElementById('user') || {}).value,
 	myRep = parseInt((document.getElementById('rep') || {}).value),
 	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+	title = document.getElementById('title'),
+	edit = document.getElementById('edit-title'),
 	editCommentForm = document.getElementById('editcomment'),
 	editCommentTA = document.getElementById('comment-edit-ta'),
 	editingComment,
- 	canvasJS = document.getElementById('canvas-js').value;
+	canvasJS = document.getElementById('canvas-js').value;
 function blink() {
 	document.getElementById('caret').hidden ^= 1;
 	blinkTimeout = setTimeout(blink, 500);
@@ -238,8 +240,6 @@ if (document.getElementById('meta')) {
 		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
 	});
 	if (mine) {
-		var title = document.getElementById('title'),
-			edit = document.getElementById('edit-title');
 		title.onclick = function() {
 			this.hidden = true;
 			edit.hidden = false;
@@ -341,7 +341,7 @@ if (document.getElementById('meta')) {
 			if (myRep >= 50) {
 				div.insertBefore(document.getElementById('main').nextElementSibling.cloneNode(true), div.firstChild);
 				div.firstChild.firstChild.onclick = upvoteComment;
-				if (myName == data.user) div.firstChild.lastChild.onclick = editComment;
+				if (username == data.user) div.firstChild.children[2].onclick = editComment;
 				else div.firstChild.removeChild(div.firstChild.lastChild);
 				var score = document.createElement('span');
 				score.classList.add('score');
@@ -428,6 +428,6 @@ if (document.getElementById('meta')) {
 	for (var i = 0; i < comments.length; i++) {
 		var sctrls = comments[i].getElementsByClassName('sctrls')[0];
 		sctrls.firstChild.onclick = upvoteComment;
-		if (sctrls.children.length == 3) sctrls.lastChild.onclick = editComment;
+		if (sctrls.children.length == 4) sctrls.children[2].onclick = editComment;
 	}
 }
