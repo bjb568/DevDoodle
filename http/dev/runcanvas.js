@@ -4,10 +4,12 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	opName = (document.getElementById('user') || {}).value,
 	myRep = parseInt((document.getElementById('rep') || {}).value),
 	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+	title = document.getElementById('title'),
+	edit = document.getElementById('edit-title'),
 	editCommentForm = document.getElementById('editcomment'),
 	editCommentTA = document.getElementById('comment-edit-ta'),
 	editingComment,
- 	canvasJS = document.getElementById('canvas-js').value;
+	canvasJS = document.getElementById('canvas-js').value;
 function blink() {
 	document.getElementById('caret').hidden ^= 1;
 	blinkTimeout = setTimeout(blink, 500);
@@ -238,8 +240,6 @@ if (document.getElementById('meta')) {
 		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
 	});
 	if (mine) {
-		var title = document.getElementById('title'),
-			edit = document.getElementById('edit-title');
 		title.onclick = function() {
 			this.hidden = true;
 			edit.hidden = false;
