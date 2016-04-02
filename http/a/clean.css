@@ -415,7 +415,6 @@ fieldset {
 .program {
 	display: flex;
 	flex-direction: column;
-	max-width: 95%;
 	width: 250px;
 	max-width: 512px;
 	height: 250px;
