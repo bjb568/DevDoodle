@@ -19,14 +19,10 @@ body {
 	line-height: 1.5em;
 }
 @keyframes target {
-	0%, 30% {
-		background: #950;
-	}
+	0%, 30% { background: #950 }
 }
 @-webkit-keyframes target {
-	0%, 30% {
-		background: #950;
-	}
+	0%, 30% { background: #950 }
 }
 :not(.target):target {
 	animation: target 1s;
@@ -376,14 +372,10 @@ code.blk {
 	-webkit-animation: fadein 0.5s;
 }
 @keyframes fadein {
-	from {
-		opacity: 0;
-	}
+	from { opacity: 0 }
 }
 @-webkit-keyframes fadein {
-	from {
-		opacity: 0;
-	}
+	from { opacity: 0 }
 }
 h1 small, h2 small { font-size: 0.85rem }
 h1 small { margin: 0.5em 0.5em 0 0 }
@@ -407,9 +399,7 @@ fieldset {
 	 padding: 4px 8px 4px 4px;
 	 text-align: left;
 }
-.user div {
-	margin-left: 4px;
-}
+.user div { margin-left: 4px }
 .user a { display: block }
 .programs { overflow: hidden }
 .program {
