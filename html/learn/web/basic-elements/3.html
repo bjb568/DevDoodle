@@ -35,11 +35,6 @@ Comments - Basic Elements
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate() {
-	if (!document.documentElement.outerHTML.match(/&lt;!--.*-->/i)) {
-		return {
-			success: false,
-			msg: 'Did you write the comment correctly? It looks like this: `&lt;!-- -->`'
-		};
-	}
+	if (!document.documentElement.outerHTML.match(/&lt;!--.*-->/i)) return {msg: 'Did you write the comment correctly? It looks like this: `&lt;!-- -->`'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>
