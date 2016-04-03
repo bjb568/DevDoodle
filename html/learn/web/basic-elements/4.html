@@ -1,0 +1,46 @@
+Links - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+		  <h2>Links</h2>
+			<p>Links are the binding force of the web. They allow you to navigate from one page to another just by pressing one. To create a link in HTML, we use the <code>&lt;a></code> tag. The a tag has an attribute called <code>href</code> that specifies where we want the link to go to. If we want the link to go to <code>http://placekitten.com</code> we use the attribute <code>href="http://placekitten.com"</code>. And so, our full tag would look like this:</p>
+			<code class="blk">&lt;a href="http://placekitten.com">When someone clicks on this text, they will be sent to placekitten.com!&lt;/a></code>
+			<p>To move on, write a link to <code>https://devdoodle.net</code> with any text you want.</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../5/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../3/" class="lft">Back</a> <a href="../5/" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<div id="html" class="ta-cont">
+			<textarea id="html-ta" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>To DevDoodle we go!&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>Press the link below to go to devdoodle!&lt;/p>
+        &lt;!--Write your link here!-->
+	&lt;/body>
+&lt;/html></textarea>
+			<code id="html-display" class="code-display"></code>
+		</div>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	if (document.getElementsByTagName(‘a’)[0].src == ‘https://devdoodle.net’) {
+		return {
+			success: false,
+			msg: 'Did you write the link correctly? Remember, it looks like this: `&lt;a href="url">text&lt;/a>`'
+		};
+	}
+}</textarea>
+<script src="/learn/course.js" async=""></script>
