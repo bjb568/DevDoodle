@@ -42,7 +42,6 @@ for (var i = 0; i < addCommentBtns.length; i++) {
 		});
 	};
 }
-var waiting = false;
 function langKeyUp() {
 	var firstChild;
 	while (firstChild = langsug.firstChild) langsug.removeChild(firstChild);

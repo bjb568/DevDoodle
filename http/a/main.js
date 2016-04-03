@@ -286,7 +286,7 @@ function mdValidate(correct) {
 		this.parentNode.insertBefore(span, this);
 	} else if (preverr) preverr.parentNode.removeChild(preverr);
 	return err;
-};
+}
 HTMLTextAreaElement.prototype.mdValidate = mdValidate;
 
 function mdValidateBody() {
@@ -403,7 +403,7 @@ function textareaHandler(e, s) {
 			this.value = data.body;
 			this.selectionStart = data.start;
 			this.selectionEnd = data.end;
-		} else e.shiftKey ? --this.hIndex : ++this.hIndex
+		} else e.shiftKey ? --this.hIndex : ++this.hIndex;
 	} else {
 		if (this.hist[this.hIndex].body != this.value) this.hist = this.hist.slice(0, this.hIndex + 1);
 		if (this.timer) clearTimeout(this.timer);
@@ -1590,7 +1590,7 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(keyword);
 			i += l - 1;
 		} else if (beforeWord && c != c.toLowerCase()) {
-		 	codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = c;
 			var capvar = document.createElement('span');
 			capvar.className = 'capvar';
