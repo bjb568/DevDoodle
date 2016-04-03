@@ -7,6 +7,7 @@ Using a Doctype - Intro to HTML
 			<p>The first thing that you must do to write an HTML document is to define the doctype.</p>
 			<code class="blk">&lt;!DOCTYPE html></code>
 			<p>This tells the browser that the page is in HTML5 (the latest version of HTML). There are other doctypes, but we will just be using this one for this tutorial.</p>
+			<p>To move on, add a doctype to the code area.</p>
 			<button id="check" class="blk" onclick="submit()">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2><span id="passtext"> </span> <small class="rit"><a href="../3/">Move on →</a></small></h2>
@@ -27,11 +28,6 @@ Using a Doctype - Intro to HTML
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate(data) {
-	if (data.trim() != '&lt;!DOCTYPE html>') {
-		return {
-			success: false,
-			msg: 'Did you copy the HTML5 doctype correctly?'
-		};
-	}
+	if (data.trim() != '&lt;!DOCTYPE html>') return {msg: 'Did you copy the HTML5 doctype correctly?'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>

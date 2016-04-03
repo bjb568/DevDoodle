@@ -1,9 +1,7 @@
 fieldset { padding: 0 4px }
 #form > div { overflow: hidden }
 #types label, #tags label { display: table }
-h2 label {
-	display: inline-flex;
-}
+h2 label { display: inline-flex }
 h2 label input {
 	flex-grow: 1;
 	margin-left: 0.5ch;

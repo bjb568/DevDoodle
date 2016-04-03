@@ -50,7 +50,7 @@ module.exports = o(function*(req, res, user, post) {
 			dbcs.users.update({name: fuser.name}, {
 				$set: {
 					pass: new Buffer(yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
-					salt: salt,
+					salt,
 					cookie: []
 				},
 				$unset: {

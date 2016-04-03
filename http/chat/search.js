@@ -45,7 +45,7 @@ room.addEventListener('keyup', function(e) {
 							var sel = roomlist.getElementsByClassName('selected');
 							if (sel.length) sel[0].classList.remove('selected');
 							this.classList.add('selected');
-						}
+						};
 						roomlist.appendChild(span);
 						if (i && span == roomlist.firstChild && !sel.length) span.classList.add('selected');
 					}
@@ -112,4 +112,4 @@ form.onsubmit = form.onchange = function(e) {
 			results.appendChild(div);
 		}
 	}, 'search=' + encodeURIComponent(document.getElementById('searchbox').value) + '&sort=' + document.getElementById('sort').value + '&user=' + encodeURIComponent(document.getElementById('user').value) + '&room=' + document.getElementById('room').value);
-}
+};

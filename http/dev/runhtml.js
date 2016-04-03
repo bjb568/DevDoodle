@@ -234,7 +234,7 @@ addEventListener('input', handleTAInput);
 htmle.onfocus = css.onfocus = js.onfocus = function() {
 	this.parentNode.classList.add('focused');
 };
-htmle.onblur = css.onblur = js.onblur = function(e) {
+htmle.onblur = css.onblur = js.onblur = function() {
 	delete this.lastCursorPos;
 	this.parentNode.classList.remove('focused');
 	(document.getElementById('caret') || {}).hidden = true;
@@ -444,7 +444,7 @@ if (document.getElementById('meta')) {
 			sig.appendChild(document.createTextNode('-'));
 			var a = document.createElement('a');
 			a.href = '/user/' + data.user;
-			a.appendChild(document.createTextNode(data.user))
+			a.appendChild(document.createTextNode(data.user));
 			sig.appendChild(a);
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');

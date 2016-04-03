@@ -48,7 +48,7 @@ addEventListener('resize', function() {
 		draw();
 	}
 });
-Object.getOwnPropertyNames(Math).forEach(function(element, index) {
+Object.getOwnPropertyNames(Math).forEach(function(element) {
 	window[element] = Math[element];
 });
 Number.prototype.bound = function(l, h) {
@@ -257,36 +257,7 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		mousePressed = false;
 	});
 } else {
-	addEventListener('touchstart', function(e) {
-		if (e.touches.length == 1) {
-			mousePressed = true;
-			try {
-				var cRect = canvas.getBoundingClientRect();
-				if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
-					mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
-					mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
-				}
-			} catch(e) {}
-		} else mousePressed = false;
-	});
-	addEventListener('touchmove', function(e) {
-		if (e.touches.length == 1) {
-			mousePressed = true;
-			try {
-				var cRect = canvas.getBoundingClientRect();
-				mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
-				mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
-				if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
-					e.preventDefault();
-					return false;
-				}
-				mouseX = mouseX.bound(0, width);
-				mouseY = mouseY.bound(0, height);
-			} catch(e) {}
-		} else mousePressed = false;
-	});
-	addEventListener('touchend', function(e) {
-		mousePressed = false;
+	function updateMouseCoords(e) {
 		try {
 			var cRect = canvas.getBoundingClientRect();
 			if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
@@ -294,6 +265,22 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 				mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
 			}
 		} catch(e) {}
+	}
+	addEventListener('touchstart', function(e) {
+		if (e.touches.length == 1) {
+			mousePressed = true;
+			updateMouseCoords(e);
+		} else mousePressed = false;
+	});
+	addEventListener('touchmove', function(e) {
+		if (e.touches.length == 1) {
+			mousePressed = true;
+			updateMouseCoords(e);
+		} else mousePressed = false;
+	});
+	addEventListener('touchend', function(e) {
+		mousePressed = false;
+		updateMouseCoords(e);
 	});
 	if (!suppressKeyboard) {
 		var b = document.createElement('a');

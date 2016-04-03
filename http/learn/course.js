@@ -137,7 +137,7 @@ addEventListener('input', handleTAInput);
 htmle.onfocus = function() {
 	this.parentNode.classList.add('focused');
 };
-htmle.onblur = function(e) {
+htmle.onblur = function() {
 	delete this.lastCursorPos;
 	this.parentNode.classList.remove('focused');
 	(document.getElementById('caret') || {}).hidden = true;
@@ -148,26 +148,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		(document.getElementById('caret') || {}).hidden = false;
 		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
 	});
-}
-function serialize(e) {
-	if (e.nodeValue) return e.nodeValue;
-	var attrs = {};
-	for (var i = 0; i < e.attributes.length; i++) attrs[e.attributes[i].name] = e.attributes[i].value;
-	var children = [],
-		ancestors = [];
-	for (var i = 0; i < e.childNodes.length; i++) {
-		var child = serialize(e.childNodes[i]);
-		children.push(child);
-		ancestors.push(child);
-		if (child.ancestors) ancestors = ancestors.concat(child.ancestors);
-	}
-	return {
-		id: e.id,
-		tagName: e.tagName,
-		attributes: attrs,
-		childNodes: children,
-		ancestors: ancestors
-	};
 }
 document.getElementById('check').onclick = function(e) {
 	e.preventDefault();

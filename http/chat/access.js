@@ -26,6 +26,21 @@ document.getElementById('changetype').onsubmit = function(e) {
 	e.preventDefault();
 	changeType();
 };
+function remuser() {
+	var el = this.parentNode;
+	el.classList.add('rem');
+	request('/api/chat/uninviteuser', function(res) {
+		if (res.indexOf('Error') == 0) {
+			el.classList.remove('rem');
+			alert(res);
+		} else if (res == 'Success') {
+			el.parentNode.removeChild(el);
+		} else {
+			el.classList.remove('rem');
+			alert('Unknown error removing user. Response was: ' + res);
+		}
+	}, 'user=' + el.children[1].children[0].textContent);
+}
 document.getElementById('adduser').onsubmit = function(e) {
 	e.preventDefault();
 	adduserinput.disabled = true;
@@ -65,21 +80,6 @@ document.getElementById('adduser').onsubmit = function(e) {
 		adduserinput.focus();
 	}, 'user=' + adduserinput.value);
 };
-function remuser() {
-	var el = this.parentNode;
-	el.classList.add('rem');
-	request('/api/chat/uninviteuser', function(res) {
-		if (res.indexOf('Error') == 0) {
-			el.classList.remove('rem');
-			alert(res);
-		} else if (res == 'Success') {
-			el.parentNode.removeChild(el);
-		} else {
-			el.classList.remove('rem');
-			alert('Unknown error removing user. Response was: ' + res);
-		}
-	}, 'user=' + el.children[1].children[0].textContent);
-}
 var els = document.getElementsByClassName('user');
 for (var i = 0; i < els.length; i++) {
 	els[i].getElementsByTagName('span')[0].onclick = remuser;

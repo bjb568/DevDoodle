@@ -166,7 +166,7 @@ module.exports.init = function(server) {
 			tws.trysend(JSON.stringify({
 				event: 'info-skipped',
 				body: skip,
-				ts: ts
+				ts
 			}));
 			dbcs.chat.find({
 				room: tws.room,
@@ -306,7 +306,7 @@ module.exports.init = function(server) {
 						event: 'add',
 						body: message.body,
 						user: tws.user.name,
-						id: id
+						id
 					});
 					for (let i in wss.clients) {
 						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
@@ -607,7 +607,7 @@ module.exports.init = function(server) {
 					dbcs.chat.update({_id: id}, {$inc: {stars: -1}});
 					let toSend = JSON.stringify({
 						event: 'unstar',
-						id: id
+						id
 					});
 					for (let i in wss.clients) {
 						if (wss.clients[i].room == tws.room) wss.clients[i].trysend(toSend);
@@ -637,13 +637,13 @@ module.exports.init = function(server) {
 						event: 'info-update',
 						name: message.name,
 						desc: message.desc,
-						id: id
+						id
 					}),
 					toSendB = JSON.stringify({
 						event: 'add',
 						body: newMessage,
 						user: tws.user.name,
-						id: id
+						id
 					});
 					for (let i in wss.clients) {
 						if (wss.clients[i].room == tws.room) {
@@ -716,7 +716,7 @@ module.exports.init = function(server) {
 						event: 'comment-add',
 						body: message.body,
 						user: tws.user.name,
-						id: id
+						id
 					});
 					for (let i in wss.clients) {
 						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
@@ -921,7 +921,7 @@ module.exports.init = function(server) {
 								body: message.body,
 								user: tws.user.name,
 								answer: tcomment.answer,
-								id: id
+								id
 							}));
 						}
 					}

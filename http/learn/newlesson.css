@@ -54,6 +54,6 @@ h1, h2 { border: none }
 	width: 120px;
 }
 #cntrls form {
-	display: inline;
+	display: inline-block;
 	margin: 0;
 }

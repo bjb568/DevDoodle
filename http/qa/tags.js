@@ -38,7 +38,7 @@ tname.addEventListener('blur', function(e) {
 });
 onclick = function(e) {
 	if (!document.body.classList.contains('active')) return;
-	var e = e.target;
+	e = e.target;
 	while (e) {
 		if (!isNaN(parseInt(e.id)) && !par.value) {
 			par.value = e.id;
@@ -48,4 +48,4 @@ onclick = function(e) {
 		if (e.tagName == 'section' && !lang.value) e = e.firstElementChild;
 		else e = e.parentNode;
 	}
-}
+};

@@ -1,0 +1,48 @@
+Links - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+		  	<h2>Links</h2>
+			<p>Links are the binding force of the web. They allow you to navigate from one page to another with just a tap. To create a link in HTML, we use the <code>&lt;a></code> (anchor) tag. The a tag has an <em>attribute</em>, <code>href</code> (<b>H</b>ypertext <b>Ref</b>erence), that specifies where we want the link to go to. If we want the link to go to <code>http://example.com</code> (the "http" part is important) we use the attribute <code>href="http://example.com"</code>. Our full tag would look like this:</p>
+			<code class="blk">&lt;a href="http://example.com">click here!&lt;/a></code>
+			<p>This appears as: <a href="http://example.com">click here!</a></p>
+			<p>An <em>attribute</em> defines a property of an element on its <em>start tag</em> (attributes always go on start tags, not end tags). They specify additional information that may change the way the element behaves, in this case where the link goes to. The text inside the attribute isn't seen by the user, but <em>is</em> seen by the browser.</p>
+			<p>To move on, write a link to <code>https://devdoodle.net</code> with any text you want.</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../5/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../3/" class="lft">Back</a> <a href="../5/" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<div id="html" class="ta-cont">
+			<textarea id="html-ta" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>To DevDoodle we go!&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>Press the link below to go to devdoodle!&lt;/p>
+		&lt;!-- Write your link here -->
+	&lt;/body>
+&lt;/html></textarea>
+			<code id="html-display" class="code-display"></code>
+		</div>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	var a = document.getElementsByTagName('a')[0];
+	if (!a) return {msg: 'Did you write the link correctly? Remember, it looks like this: `&lt;a href="my-url">text&lt;/a>`'};
+	if (a.href.indexOf('https://devdoodle.net')) {
+		if (a.href.indexOf('devdoodle') != -1) return {msg: 'Make sure to include https (the *protocol*) in your URL.'};
+		return {msg: 'Did you write the attribute correctly? Remember, the href attribute should contain `https://devdoodle.net`.'};
+	}
+}</textarea>
+<script src="/learn/course.js" async=""></script>
