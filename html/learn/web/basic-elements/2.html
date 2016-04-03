@@ -41,11 +41,6 @@ Headings - Basic Elements
 		!(document.body.getElementsByTagName('h4')[0] || {firstChild: {}}).firstChild.nodeValue ||
 		!(document.body.getElementsByTagName('h5')[0] || {firstChild: {}}).firstChild.nodeValue ||
 		!(document.body.getElementsByTagName('h6')[0] || {firstChild: {}}).firstChild.nodeValue
-	) {
-		return {
-			success: false,
-			msg: 'Did you write the tags correctly? Remember, there are 6 levels which look like this:\n\t&lt;h1>&lt;/h1>\n\t&lt;h2>&lt;/h2>\n\t&lt;h3>&lt;/h3>\n\t&lt;h4>&lt;/h4>\n\t&lt;h5>&lt;/h5>\n\t&lt;h6>&lt;/h6>\nGive each heading some text content too.'
-		};
-	}
+	) return {msg: 'Did you write the tags correctly? Remember, there are 6 levels which look like this:\n\t&lt;h1>&lt;/h1>\n\t&lt;h2>&lt;/h2>\n\t&lt;h3>&lt;/h3>\n\t&lt;h4>&lt;/h4>\n\t&lt;h5>&lt;/h5>\n\t&lt;h6>&lt;/h6>\nGive each heading some text content too.'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>

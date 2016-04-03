@@ -46,11 +46,7 @@ Tags and Page Setup - Intro to HTML
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate(data) {
-	if (!data.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html[^>]+?>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i)) {
-		return {
-			success: false,
-			msg: 'Did you copy the tags correctly? Make sure you have them in the right order. You need to add a body and a head element inside the HTML element.'
-		};
-	}
+	if (!data.match(/^\s*&lt;!DOCTYPE html>\s*&lt;html[^>]+?>\s*&lt;head>\s*&lt;\/head>\s*&lt;body>\s*&lt;\/body>\s*&lt;\/html>\s*$/i))
+		return {msg: 'Did you copy the tags correctly? Make sure you have them in the right order. You need to add a body and a head element inside the HTML element.'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>
