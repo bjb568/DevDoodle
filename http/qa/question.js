@@ -252,6 +252,26 @@ socket.onmessage = function(e) {
 		if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].parentNode.classList.remove('clkd');
 	} else alert(e.data);
 };
+socket.onclose = function() {
+	var ta = document.getElementById('commentta');
+	if (ta.disabled) return;
+	ta.blur();
+	ta.disabled = true;
+	var warning = document.createElement('div');
+	warning.className = 'connection-error';
+	warning.appendChild(document.createTextNode('Connection error. '));
+	var link = document.createElement('a');
+	link.appendChild(document.createTextNode('Reload?'));
+	link.href = '';
+	warning.appendChild(link);
+	var addcomment = document.getElementsByClassName('addcomment')[0];
+	addcomment.parentNode.insertAfter(warning, addcomment);
+	addcomment.hidden = true;
+	setInterval(function() {
+		if (socket.readyState == 1) return location.reload(true);
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/qa/' + id);
+	}, 5000);
+};
 function upvoteComment() {
 	this.title = this.classList.toggle('clkd') ? 'Unvote' : 'This comment is useful.';
 	socket.send(JSON.stringify({

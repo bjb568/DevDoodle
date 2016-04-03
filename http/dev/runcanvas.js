@@ -408,7 +408,7 @@ if (document.getElementById('meta')) {
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
 		setInterval(function() {
-			if (socket.readyState == 1) return location.reload(true);
+			if (socket.readyState == 1 && code.value == savedValue) return location.reload(true);
 			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};

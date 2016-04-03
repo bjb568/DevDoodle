@@ -499,8 +499,8 @@ if (document.getElementById('meta')) {
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
 		setInterval(function() {
-			if (socket.readyState == 1) return location.reload(true);
-			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/') + id;
+			if (socket.readyState == 1 && ([htmle.value, css.value, js.value]).toString() == savedValue.toString()) return location.reload(true);
+			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};
 	var deletebutton = document.getElementById('delete');
