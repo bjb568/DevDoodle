@@ -7,7 +7,7 @@ Images - Basic Elements
             <h2>Images</h2>
 			<p>Don't we all love looking at pictures of adorable kittens and puppies on the internet? Well, this wouldn't be possible without the <code>&lt;img></code> tag! The <code>&lt;img></code> tag allows us to display images on our webpage. Just like the <code>&lt;a></code> tag, it takes an attribute <code>src</code> (which is just an abbreviation for source) which points to the url of the image. Unlike most tags, the <code>&lt;img></code> tag is self closing, so it only includes one tag with a <code>/></code> on the end of it. The syntax for the <code>&lt;img></code> tag looks something like this:</p>
 			<code class="blk">&lt;img src="url"/></code>
-			<p>To move on, place this image of a kitten on your webpage: <code>http://placekitten.com/500/250</code>.</p>
+			<p>To move on, insert this image of a kitten on your webpage: <code>http://placekitten.com/500/250</code>.</p>
 			<button id="check" class="blk">Submit</button>
 			<div id="passed" class="passed clearfix">
 				<h2><span id="passtext"> </span> <small class="rit"><a href="#">Move on →</a></small></h2>
@@ -27,7 +27,7 @@ Images - Basic Elements
 		&lt;title>Kittehs! :3&lt;/title>
 	&lt;/head>
 	&lt;body>
-        &lt;!--Place your image here!-->
+        &lt;!--Insert your image here!-->
         &lt;p>Funny caption goes here :D&lt;/p>
 	&lt;/body>
 &lt;/html></textarea>
@@ -40,7 +40,7 @@ Images - Basic Elements
 	if (document.getElementsByTagName(‘img’)[0].src == ‘http://placekitten.com/500/250’) {
 		return {
 			success: false,
-			msg: 'Did you place the image correctly? Remember, the image tag looks like this: `&lt;img src="url of the image" />`'
+			msg: 'Did you insert the image correctly? Remember, the image tag looks like this: `&lt;img src="url of the image" />`'
 		};
 	}
 }</textarea>
