@@ -70,7 +70,6 @@ h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
 	font-size: 18px;
 	padding: 4px 8px;
 	background: rgba(0, 220, 0, 0.6);
-	box-shadow: none;
 	transition: background-color 0.4s;
 	border: none;
 	box-shadow: 1px 1px 2px #444;

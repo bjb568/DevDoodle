@@ -16,14 +16,10 @@ body {
 	line-height: 1.5em;
 }
 @keyframes target {
-	0%, 30% {
-		background: #f70;
-	}
+	0%, 30% { background: #f70 }
 }
 @-webkit-keyframes target {
-	0%, 30% {
-		background: #f70;
-	}
+	0%, 30% { background: #f70 }
 }
 :not(.target):target {
 	animation: target 1s;
@@ -372,14 +368,10 @@ code.blk {
 	-webkit-animation: fadein 0.5s;
 }
 @keyframes fadein {
-	from {
-		opacity: 0;
-	}
+	from { opacity: 0 }
 }
 @-webkit-keyframes fadein {
-	from {
-		opacity: 0;
-	}
+	from { opacity: 0 }
 }
 h1 small, h2 small { font-size: 0.85rem }
 h1 small { margin: 0.5em }
@@ -409,7 +401,6 @@ fieldset {
 .program {
 	display: flex;
 	flex-direction: column;
-	max-width: 95%;
 	width: 250px;
 	max-width: 512px;
 	height: 250px;
