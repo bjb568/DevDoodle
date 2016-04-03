@@ -609,6 +609,9 @@ if (ta) {
 	};
 }
 function send() {
+	var list = document.getElementById('pingsug'),
+		c;
+	while (c = list.firstChild) list.removeChild(c);
 	if (!ta.value || ta.mdValidate(true)) return;
 	socket.send(JSON.stringify({event: 'post', body: ta.value}));
 	location.hash = '';
@@ -617,6 +620,9 @@ function send() {
 	ta.focus();
 }
 function edit() {
+	var list = document.getElementById('pingsug'),
+		c;
+	while (c = list.firstChild) list.removeChild(c);
 	if (!ta.value || ta.mdValidate(true)) return;
 	socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
 	document.getElementsByClassName('editing')[0].classList.remove('editing');
