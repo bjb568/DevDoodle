@@ -9,11 +9,11 @@ var form = document.getElementById('form'),
 	err1 = document.getElementById('err1'),
 	err3 = document.getElementById('err3');
 function smoothScroll(el, t, p, s) {
+	p = t - p;
 	var dist = el.getBoundingClientRect().top,
-		now = new Date().getTime(),
-		p = t - p,
-		s = s || now,
-		elapsed = now - s;
+		now = new Date().getTime();
+	s = s || now;
+	var elapsed = now - s;
 	if (dist > 6 && document.body.scrollTop - document.body.scrollHeight + innerHeight) {
 		scrollBy(0, Math.min(dist - 5, Math.max(1, p * dist * elapsed * elapsed / 50000000)));
 		requestAnimationFrame(function(p) {
@@ -169,7 +169,7 @@ function findTags() {
 		err1.classList.remove('tag-warning');
 		form.onsubmit();
 	}, 'lang=' + encodeURIComponent(lang.value));
-};
+}
 lang.onblur = findTags;
 question.mdValidate = mdValidate;
 form.onsubmit = function(e) {
