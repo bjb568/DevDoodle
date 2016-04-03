@@ -600,9 +600,7 @@ if (ta) {
 		} else if (e.keyCode == 9) {
 			e.preventDefault();
 			this.noHandle = true;
-			var before = this.value.substr(0, this.selectionStart),
-				str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
-				list = document.getElementById('pingsug');
+			var list = document.getElementById('pingsug');
 			if (!list.firstChild) return;
 			var before = this.value.substr(0, this.selectionStart).lastIndexOf('@') + 1;
 			this.value = this.value.substr(0, before) + list.firstChild.textContent + ' ' + this.value.substr(this.selectionStart);
