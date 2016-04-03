@@ -53,7 +53,7 @@ code.blk:empty { display: none }
 	fill: #888;
 	transition: none;
 }
-.up.clkd, .dn.clkd { fill: #f90 }
+.clkd > .up, .up.clkd, .dn.clkd { fill: #f90 }
 .ctrl .fl { margin-bottom: 12px }
 .fl { fill: #f66 }
 .fl:hover {
