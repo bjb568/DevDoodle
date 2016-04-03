@@ -364,7 +364,7 @@ if (document.getElementById('meta')) {
 		request('/api/program/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
-				document.getElementsByClassName('user-' + opName)[0].getElementsByClassName('rep')[0].textContent -= (up.classList.contains('clkd') ? 1 : 0) - (dn.classList.contains('clkd') ? 1 : -1);
+				document.getElementsByClassName('user-' + opName)[0].getElementsByClassName('rep')[0].textContent -= (dn.classList.contains('clkd') ? -1 : 0) - (up.classList.contains('clkd') ? -1 : 1);
 				up.classList.toggle('clkd');
 				dn.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);

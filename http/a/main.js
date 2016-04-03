@@ -647,9 +647,9 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		tag.appendChild(document.createTextNode(chunk));
 		if (!inCloseTag && (chunk[chunk.length - 1] == '>' || /\n|\s*($|<[^/])/.test(chunk.substr(i))) && (chunk.length == 1 || chunk[chunk.length - 2] != '/')) {
 			tag.dataset.tagname = tagName;
-			tagName = '';
 			tag.className = 'xml-tag end-start-tag';
 		} else tag.className = 'xml-tag';
+		tagName = '';
 		codeBlock.appendChild(tag);
 		chunk = '';
 	}
