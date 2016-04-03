@@ -48,7 +48,7 @@ addEventListener('resize', function() {
 		draw();
 	}
 });
-Object.getOwnPropertyNames(Math).forEach(function(element, index) {
+Object.getOwnPropertyNames(Math).forEach(function(element) {
 	window[element] = Math[element];
 });
 Number.prototype.bound = function(l, h) {

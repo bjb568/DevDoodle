@@ -22,7 +22,7 @@ sendmail.oninput = function() {
 sendmail.onsubmit = function(e) {
 	e.preventDefault();
 	if (!uname.value || !mail.value) return;
-	request('/api/login/recover', function(res) {
+	request('/api/login/recover', function() {
 		uname.disabled = mail.disabled = submit1.disabled = true;
 		part2.hidden = false;
 		part2.classList.remove('hide');

@@ -574,7 +574,7 @@ let serverHandler = o(function*(req, res) {
 						mail: post.mail,
 						pic: 'https://gravatar.com/avatar/' + crypto.createHash('md5').update(post.mail).digest('hex') + '?s=576&amp;d=identicon',
 						confirm: confirmToken,
-						salt: salt,
+						salt,
 						joined: new Date().getTime(),
 						rep: 0,
 						level: 0
@@ -884,7 +884,7 @@ let serverHandler = o(function*(req, res) {
 				dbcs.users.update({name: user.name}, {
 					$set: {
 						pass: new Buffer(yield crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
-						salt: salt,
+						salt,
 						cookie: []
 					}
 				});

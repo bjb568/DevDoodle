@@ -33,4 +33,4 @@ module.exports = function(comment) {
 	this.toString = function(user) {
 		return commentToString(this.comment, user);
 	};
-}
+};

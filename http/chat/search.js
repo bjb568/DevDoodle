@@ -45,7 +45,7 @@ room.addEventListener('keyup', function(e) {
 							var sel = roomlist.getElementsByClassName('selected');
 							if (sel.length) sel[0].classList.remove('selected');
 							this.classList.add('selected');
-						}
+						};
 						roomlist.appendChild(span);
 						if (i && span == roomlist.firstChild && !sel.length) span.classList.add('selected');
 					}

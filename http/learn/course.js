@@ -137,7 +137,7 @@ addEventListener('input', handleTAInput);
 htmle.onfocus = function() {
 	this.parentNode.classList.add('focused');
 };
-htmle.onblur = function(e) {
+htmle.onblur = function() {
 	delete this.lastCursorPos;
 	this.parentNode.classList.remove('focused');
 	(document.getElementById('caret') || {}).hidden = true;

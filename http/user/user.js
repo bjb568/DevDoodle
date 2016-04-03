@@ -17,4 +17,4 @@ document.getElementById('mailedit').onclick = function() {
 	document.getElementById('mail').hidden = this.hidden = true;
 	document.getElementById('mailinput').hidden = document.getElementById('mailsave').hidden = document.getElementById('mailcancel').hidden = false;
 	document.getElementById('mailinput').focus();
-}
+};

@@ -6,5 +6,5 @@ addEventListener('DOMContentLoaded', function() {
 			else if (res == 'Success') location.reload();
 			else alert('Unknown error. Response was: ' + res);
 		});
-	}
+	};
 });
