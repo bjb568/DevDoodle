@@ -28,11 +28,6 @@ Using a Doctype - Intro to HTML
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate(data) {
-	if (data.trim() != '&lt;!DOCTYPE html>') {
-		return {
-			success: false,
-			msg: 'Did you copy the HTML5 doctype correctly?'
-		};
-	}
+	if (data.trim() != '&lt;!DOCTYPE html>') return {msg: 'Did you copy the HTML5 doctype correctly?'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>

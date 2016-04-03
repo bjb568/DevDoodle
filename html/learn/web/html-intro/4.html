@@ -53,21 +53,8 @@ Your first webpage - Intro to HTML
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate(data) {
-	if (!document.head || !document.body) {
-		return {
-			success: false,
-			msg: 'Make sure you wrote all your tags correctly and you have a head and body.'
-		};
-	} else if (document.head.getElementsByTagName('title').length != 1) {
-		return {
-			success: false,
-			msg: 'Did you put your title inside the head and your paragraph inside the body? Make sure you write your tags correctly.'
-		};
-	} else if (document.body.getElementsByTagName('p').length == 0) {
-		return {
-			success: false,
-			msg: 'Did you put your paragraph inside the body? Make sure you write your tags correctly.'
-		};
-	}
+	if (!document.head || !document.body) return {msg: 'Make sure you wrote all your tags correctly and you have a head and body.'};
+	if (document.head.getElementsByTagName('title').length != 1) return {msg: 'Did you put your title inside the head and your paragraph inside the body? Make sure you write your tags correctly.'};
+	if (document.body.getElementsByTagName('p').length == 0) return {msg: 'Did you put your paragraph inside the body? Make sure you write your tags correctly.'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>

@@ -4,7 +4,7 @@ Paragraphs - Basic Elements
 		<div id="text-inner">
 			<h1>Basic Elements</h1>
 			<div>In this lesson, we're going to start learning about basic content-formatting tags.</div>
-			<h3>"P" is for Paragraph</h3>
+			<h2>"P" is for Paragraph</h2>
 			<p>As we alreadly learned, body text can be put inside paragraph elements (wrapped in <code>&lt;p></code> and <code>&lt;/p></code>). It looks like this: </p>
 			<code class="blk">&lt;p>This is a paragraph.&lt;/p></code>
 			<p>To move on, create a paragraph element inside the document body with any text you like.</p>
@@ -36,11 +36,6 @@ Paragraphs - Basic Elements
 	</div>
 </div>
 <textarea id="validator" hidden="">function validate() {
-	if (!document.getElementsByTagName('p').length) {
-		return {
-			success: false,
-			msg: 'Did you write the tags correctly? They look like this: `&lt;p>` `&lt;/p>`'
-		};
-	}
+	if (!document.getElementsByTagName('p').length) return {msg: 'Did you write the tags correctly? They look like this: `&lt;p>` `&lt;/p>`'};
 }</textarea>
 <script src="/learn/course.js" async=""></script>
