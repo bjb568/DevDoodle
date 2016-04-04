@@ -115,11 +115,11 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (typeof header['Content-Security-Policy'] != 'string') {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
-			"upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " +
+			(config.HTTP2 ? "upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " : ''); +
 			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + "; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
-			"img-src https:";
+			"img-src " + (config.HTTP2 ? 'https:' : 'http:');
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="Gug+FC9PsilgbCb/VyBoLmXBNzizAL2VpCXDAEhuVOY="; max-age=2592000; includeSubdomains';
