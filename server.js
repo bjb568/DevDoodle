@@ -115,7 +115,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (typeof header['Content-Security-Policy'] != 'string') {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
-			(config.HTTP2 ? "upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " : ''); +
+			(config.HTTP2 ? "upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " : '') +
 			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + "; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
