@@ -104,6 +104,53 @@ var commentUnvote = o(function*(message, tws, cb) {
 		score: post.votes.length - 1
 	}));
 });
+var commentDelete = o(function*(message, tws, cb) {
+	let post = yield dbcs.comments.findOne({_id: message.id}, yield);
+	if (!post) return tws.trysend(JSON.stringify({
+		event: 'err',
+		body: 'Comment not found.'
+	}));
+	if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
+		event: 'err',
+		body: 'You may delete only your own comments.'
+	}));
+	dbcs.commenthistory.insert({
+		message: post._id,
+		event: 'delete',
+		time: new Date().getTime(),
+		by: [tws.user.name]
+	});
+	dbcs.comments.update({_id: post._id}, {$set: {deleted: 1}});
+	cb(null, JSON.stringify({
+		event: 'comment-delete',
+		id: post._id
+	}));
+});
+var commentUndelete = o(function*(message, tws, cb) {
+	let post = yield dbcs.comments.findOne({_id: message.id}, yield);
+	if (!post) return tws.trysend(JSON.stringify({
+		event: 'err',
+		body: 'Comment not found.'
+	}));
+	if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
+		event: 'err',
+		body: 'You may undelete only your own comments.'
+	}));
+	dbcs.commenthistory.insert({
+		message: post._id,
+		event: 'undelete',
+		time: new Date().getTime(),
+		by: [tws.user.name]
+	});
+	dbcs.comments.update({_id: post._id}, {$unset: {deleted: 1}});
+	cb(null, JSON.stringify({
+		event: 'comment-undelete',
+		id: post._id,
+		body: post.body,
+		user: post.user,
+		time: post.time
+	}));
+});
 
 module.exports = {};
 module.exports.init = function(server) {
@@ -760,6 +807,16 @@ module.exports.init = function(server) {
 					for (let i in wss.clients) {
 						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
 					}
+				} else if (message.event == 'comment-delete') {
+					let toSend = yield commentDelete(message, tws, yield);
+					for (let i in wss.clients) {
+						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
+					}
+				} else if (message.event == 'comment-undelete') {
+					let toSend = yield commentUndelete(message, tws, yield);
+					for (let i in wss.clients) {
+						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
+					}
 				} else tws.trysend(JSON.stringify({
 					event: 'err',
 					body: 'Invalid event type.'
@@ -964,6 +1021,16 @@ module.exports.init = function(server) {
 					}
 				} else if (message.event == 'comment-unvote') {
 					let toSend = yield commentUnvote(message, tws, yield);
+					for (let i in wss.clients) {
+						if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
+					}
+				} else if (message.event == 'comment-delete') {
+					let toSend = yield commentDelete(message, tws, yield);
+					for (let i in wss.clients) {
+						if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
+					}
+				} else if (message.event == 'comment-undelete') {
+					let toSend = yield commentUndelete(message, tws, yield);
 					for (let i in wss.clients) {
 						if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
 					}
