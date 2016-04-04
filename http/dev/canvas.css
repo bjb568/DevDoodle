@@ -119,7 +119,7 @@ section { background: transparent }
 	fill: #777;
 	transition: none;
 }
-.up.clkd { fill: #f90 }
+.clkd > .up { fill: #f90 }
 .fl { fill: #f88 }
 .fl:hover {
 	fill: #f66;

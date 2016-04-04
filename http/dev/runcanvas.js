@@ -209,7 +209,7 @@ if (save) save.onclick = function() {
 	}, 'code=' + encodeURIComponent(code.value));
 };
 function upvoteComment() {
-	this.classList.toggle('clkd');
+	this.title = this.classList.toggle('clkd') ? 'Unvote' : 'This comment is useful.';
 	socket.send(JSON.stringify({
 		event: this.classList.contains('clkd') ? 'comment-vote' : 'comment-unvote',
 		id: parseInt(this.parentNode.parentNode.id.substr(1))
@@ -389,7 +389,7 @@ if (document.getElementById('meta')) {
 			msg.insertBefore(score, msg.firstChild);
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
-			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].classList.remove('clkd');
+			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].parentNode.classList.remove('clkd');
 		}
 	};
 	socket.onclose = function() {
@@ -408,7 +408,7 @@ if (document.getElementById('meta')) {
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
 		setInterval(function() {
-			if (socket.readyState == 1) return location.reload(true);
+			if (socket.readyState == 1 && code.value == savedValue) return location.reload(true);
 			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};
