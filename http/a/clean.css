@@ -286,7 +286,7 @@ code {
 	padding-top: 2px;
 	height: 16px;
 }
-.comment .ctrl {
+.comment .ctrl:not([hidden]) {
 	display: inline-block;
 	width: 19px;
 	vertical-align: top;
@@ -311,6 +311,7 @@ code {
 	position: absolute;
 	top: 0; right: 0; bottom: 0; left: 0;
 }
+.comment.deleted[id^=c]::before { left: 74px }
 .comment.deleted::before { background: rgba(255, 128, 128, 0.95) }
 #pingsug {
 	position: absolute;
