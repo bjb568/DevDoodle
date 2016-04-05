@@ -238,6 +238,15 @@ var draw = function() {};
 	setTimeout(drawLoop, 1000 / frameRate);
 })();
 reset();
+function updateMouseCoords(e) {
+	try {
+		var cRect = canvas.getBoundingClientRect();
+		if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
+			mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
+			mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
+		}
+	} catch(e) {}
+}
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	addEventListener('mousemove', function(e) {
 		var cRect = canvas.getBoundingClientRect();
@@ -257,15 +266,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 		mousePressed = false;
 	});
 } else {
-	function updateMouseCoords(e) {
-		try {
-			var cRect = canvas.getBoundingClientRect();
-			if (e.touches[0].clientX > cRect.left && e.touches[0].clientX < cRect.right && e.touches[0].clientY > cRect.top && e.touches[0].clientY < cRect.bottom) {
-				mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
-				mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
-			}
-		} catch(e) {}
-	}
 	addEventListener('touchstart', function(e) {
 		if (e.touches.length == 1) {
 			mousePressed = true;

@@ -178,8 +178,7 @@ socket.onmessage = function(e) {
 		sig.appendChild(document.createTextNode(', '));
 		var permalink = document.createElement('a');
 		permalink.title = 'Permalink';
-		if (!data.time) data.time = new Date().getTime();
-		permalink.appendChild(agot(data.time));
+		permalink.appendChild(agot(data.time || new Date().getTime()));
 		permalink.href = '#' + (div.id = data.id);
 		sig.appendChild(permalink);
 		var currentNode = div;
@@ -226,7 +225,7 @@ socket.onmessage = function(e) {
 			if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 			else currentNode = currentNode.lastElementChild;
 		}
-		msg.appendChild(msgCtrls);
+		if (msgCtrls) msg.appendChild(msgCtrls);
 		if (onBottom) {
 			cont.scrollTop = cont.scrollHeight;
 			var imgs = msg.getElementsByTagName('img'),
@@ -279,11 +278,10 @@ socket.onmessage = function(e) {
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
-			if (!data.time) data.time = new Date().getTime();
-			permalink.appendChild(agot(data.time));
+			permalink.appendChild(agot(data.time || new Date().getTime()));
 			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
-			var currentNode = msg;
+			var currentNode = div;
 			while (!sig.parentNode) {
 				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
 				else currentNode = currentNode.lastElementChild;
@@ -302,7 +300,13 @@ socket.onmessage = function(e) {
 			} else tCtrls.children[data.deleted ? 3 : 4].hidden = true;
 			if (data.deleted) tCtrls.children[0].hidden = true;
 			if (username) div.appendChild(tCtrls);
-			cont.insertBefore(div, cont.firstChild);
+			for (var i = 0; i <= cont.children.length; i++) {
+				if (i == cont.children.length) cont.appendChild(div);
+				else if (parseInt(cont.children[i].id) > data.id) {
+					cont.insertBefore(div, cont.children[i]);
+					break;
+				}
+			}
 			cont.scrollTop += div.offsetHeight + 3;
 			if (onBottom) cont.scrollTop = cont.scrollHeight;
 			if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
@@ -346,8 +350,7 @@ socket.onmessage = function(e) {
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
-			if (!data.time) data.time = new Date().getTime();
-			permalink.appendChild(agot(data.time));
+			permalink.appendChild(agot(data.time || new Date().getTime()));
 			permalink.href = '#' + data.id;
 			sig.appendChild(permalink);
 			var currentNode = div;
@@ -609,6 +612,9 @@ if (ta) {
 	};
 }
 function send() {
+	var list = document.getElementById('pingsug'),
+		c;
+	while (c = list.firstChild) list.removeChild(c);
 	if (!ta.value || ta.mdValidate(true)) return;
 	socket.send(JSON.stringify({event: 'post', body: ta.value}));
 	location.hash = '';
@@ -617,6 +623,9 @@ function send() {
 	ta.focus();
 }
 function edit() {
+	var list = document.getElementById('pingsug'),
+		c;
+	while (c = list.firstChild) list.removeChild(c);
 	if (!ta.value || ta.mdValidate(true)) return;
 	socket.send(JSON.stringify({event: 'edit', body: ta.value, id: parseInt(editing)}));
 	document.getElementsByClassName('editing')[0].classList.remove('editing');
