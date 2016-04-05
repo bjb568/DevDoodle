@@ -701,7 +701,7 @@ body > * { flex-shrink: 0 }
 	}
 	#logo svg { width: 145px }
 	#nav > div:last-of-type { margin-left: 6px }
-	#nav form { margin: 4px 0 }
+	#nav form { margin: 3px 0 }
 	#nav form input { max-width: 18em }
 }
 @media (min-width: 376px) and (max-width: 499px) {
