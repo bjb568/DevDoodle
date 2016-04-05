@@ -1,5 +1,3 @@
-*::-webkit-input-placeholder { color: #999 }
-*::-moz-placeholder { color: #999 }
 section { background: transparent }
 #content, #main {
 	display: flex;
@@ -16,8 +14,6 @@ section { background: transparent }
 }
 #main { padding: 0 }
 #content { padding-bottom: 0 }
-#main a:hover { color: #4ff }
-#main a:active { color: #06f }
 #meta {
 	padding: 4px;
 	margin-bottom: 6px;

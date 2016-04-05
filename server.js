@@ -167,7 +167,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				html(query.q || '')
 			).replace(
 				'$inhead',
-				inhead
+				(clean ? '<link rel="stylesheet" href="/a/clean.css" />' : '') + inhead
 			).replace(
 				'$bnotifs',
 				(user && user.unread) ? ' class="unread"' : ''
@@ -188,7 +188,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			).replace(
 				'<a href="/mod/"><span>Mod</span></a>',
 				user && user.level > 1 ? '<a href="/mod/"><span>Mod</span></a>' : ''
-			).replace('main.css', clean ? 'clean.css' : 'main.css'),
+			),
 			req.url.pathname,
 			yield
 		)

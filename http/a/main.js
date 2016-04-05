@@ -458,7 +458,7 @@ addEventListener('DOMContentLoaded', function() {
 	var navAnchors = document.querySelectorAll('#nav > div > a');
 	for (var i = 0; i < navAnchors.length; i++) {
 		if (navAnchors[i].children.length - 1) navAnchors[i].addEventListener('touchstart', function(e) {
-			if (innerWidth >= 800 && (this.dataset.clicked ^= 1)) {
+			if (innerWidth >= 840 && (this.dataset.clicked ^= 1)) {
 				e.preventDefault();
 				e.stopPropagation();
 				for (var i = 0; i < navAnchors.length; i++) if (navAnchors[i] != this) navAnchors[i].dataset.clicked = 0;
@@ -466,7 +466,7 @@ addEventListener('DOMContentLoaded', function() {
 		});
 	}
 	addEventListener('touchstart', function() {
-		if (innerWidth >= 800) for (var i = 0; i < navAnchors.length; i++) navAnchors[i].dataset.clicked = 0;
+		if (innerWidth >= 840) for (var i = 0; i < navAnchors.length; i++) navAnchors[i].dataset.clicked = 0;
 	});
 	applyProgramIframes();
 });
