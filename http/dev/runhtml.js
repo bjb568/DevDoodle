@@ -1,3 +1,4 @@
+'use strict';
 if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = document.getElementById('mine').value == '1',
 	id = parseInt(document.getElementById('id').value),
@@ -75,12 +76,7 @@ htmle.onkeypress = function(e) {
 		var toSelection = this.value.substr(0, oldSelectionStart),
 			tabs = toSelection
 			.split('\n')[toSelection.split('\n').length - 1]
-			.split('\t').length
-			- (
-				el.className == 'xml-tag end-start-tag'
-				? 0
-				: 1
-			);
+			.split('\t').length - (el.className == 'xml-tag end-start-tag' ? 0 : 1);
 		this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 		this.selectionStart = ++oldSelectionStart + tabs;
 		this.selectionEnd = this.selectionStart;
@@ -436,7 +432,7 @@ if (document.getElementById('meta')) {
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
+	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 	document.getElementById('comment').onsubmit = function(e) {
 		e.preventDefault();
 		if (this.firstElementChild.mdValidate(true)) return;
@@ -472,7 +468,7 @@ if (document.getElementById('meta')) {
 		console.log(e.data);
 		try {
 			var data = JSON.parse(e.data);
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
@@ -538,7 +534,7 @@ if (document.getElementById('meta')) {
 		addcomment.hidden = true;
 		setInterval(function() {
 			if (socket.readyState == 1 && ([htmle.value, css.value, js.value]).toString() == savedValue.toString()) return location.reload(true);
-			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
+			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};
 	var deletebutton = document.getElementById('delete');

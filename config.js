@@ -1,3 +1,4 @@
+'use strict';
 module.exports = {
 	normal: {
 		HTTP2: true,

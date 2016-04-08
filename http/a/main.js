@@ -302,12 +302,12 @@ function passStrength(pass) {
 	var penalties = /(.+?)(.*)(\1+)/g,
 		match,
 		deductions = 0;
-	while (match = penalties.exec(pass)) deductions += (4 - match[2].length/2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
+	while (match = penalties.exec(pass)) deductions += (4 - match[2].length / 2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
 	penalties = /\d+/g;
-	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 3/2);
+	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 1.5);
 	penalties = /\w{2,}/gi;
 	while (match = penalties.exec(pass)) deductions += match[0].length * 1.5;
-	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2/3) / 10 + pass.length / 8 - 8));
+	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2 / 3) / 10 + pass.length / 8 - 8));
 }
 
 function request(uri, callback, params) {
@@ -443,7 +443,7 @@ addEventListener('DOMContentLoaded', function() {
 			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.remove('unread');
 			document.getElementById('notifs').innerHTML = '';
 		});
-	}
+	};
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {
@@ -493,7 +493,7 @@ function applyProgramIframes() {
 				var j = e[i].parentNode.parentNode;
 				if (e[i].src || j.getBoundingClientRect().top - j.parentNode.getBoundingClientRect().top > j.parentNode.offsetHeight) continue;
 				var outputBlob = new Blob([
-					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch(e){error(e)}</script></body></html>'
+					'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>' + html(this.responseText) + 'try{this.eval(' + html(JSON.stringify(e[i].dataset.code)) + ')}catch (e){error(e)}</script></body></html>'
 				], {type: 'application/xhtml+xml'});
 				e[i].src = URL.createObjectURL(outputBlob);
 			}
@@ -530,22 +530,16 @@ function jsKeypressHandler(e) {
 		oldSelectionStart = this.selectionStart = this.selectionEnd = oldSelectionStart - cut;
 		var tabs = this.value.substr(0, oldSelectionStart)
 			.split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1]
-			.split('\t').length
-			- (
-				('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1)
-				? 0
-				: (
-					['}', ')', ']'].indexOf(this.value[oldSelectionStart]) == -1
-					? 1
-					: 2
-				)
+			.split('\t').length -
+			(
+				('{([:,'.indexOf(this.value[oldSelectionStart - 1]) + 1) ?
+				0
+				: (['}', ')', ']'].indexOf(this.value[oldSelectionStart]) == -1 ? 1 : 2)
 			);
 			this.value =
 				this.value.substr(0, oldSelectionStart) + '\n' + '\t'.repeat(tabs) +
 				(
-					'{(['.indexOf(this.value[oldSelectionStart - 1]) == -1 || '{([])}'.indexOf(this.value[oldSelectionStart]) == -1
-					? ''
-					: '\n' + '\t'.repeat(tabs - 1)
+					'{(['.indexOf(this.value[oldSelectionStart - 1]) == -1 || '{([])}'.indexOf(this.value[oldSelectionStart]) == -1 ? '' : '\n' + '\t'.repeat(tabs - 1)
 				) + this.value.substr(oldSelectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
 		e.preventDefault();
@@ -834,9 +828,9 @@ function highlightCSS(codeBlock, input) {
 			if (!schunk) return;
 			if (inSub) {
 				var span = document.createElement('span');
-				span.className = inClass ? 'class' : inID ? 'id' :
-					inPseudoClass ? (schunk == ':not' || schunk == ':matches' ? 'pseudo-class logical' : 'pseudo-class') :
-					inPseudoElement ? 'pseudo-element' : inRefComb ? 'reference-combinator' : 'element';
+				span.className = inClass ? 'class' : inID ? 'id'
+					: inPseudoClass ? (schunk == ':not' || schunk == ':matches' ? 'pseudo-class logical' : 'pseudo-class')
+					: inPseudoElement ? 'pseudo-element' : inRefComb ? 'reference-combinator' : 'element';
 				span.appendChild(document.createTextNode(schunk));
 				codeBlock.appendChild(span);
 				inSub = inClass = inID = inPseudoClass = inPseudoElement = false;
@@ -1215,7 +1209,7 @@ function highlightCSS(codeBlock, input) {
 			if (inValueString) {
 				endValueString();
 				inValueString = false;
-				warnings.push([i, 'Unexpected end of value with unterminated string.'])
+				warnings.push([i, 'Unexpected end of value with unterminated string.']);
 			}
 			endVal();
 			var semicolon = document.createElement('span');
@@ -1278,7 +1272,7 @@ function highlightJS(codeBlock, input) {
 			string.className = 'string';
 			while ((d = input[++i]) && d != c) {
 				if (d == '\n') {
-					if (c != '`' ) {
+					if (c != '`') {
 						warnings.push([i, 'Unexpected line end with unterminated string literal.']);
 						break;
 					} else {
@@ -1388,15 +1382,15 @@ function highlightJS(codeBlock, input) {
 				codeBlock.appendChild(linenum);
 			}
 		} else if (
-				c == '/'
-				&& (
+				c == '/' &&
+				(
 					(
-						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1
-						&& /(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/.test(input.substr(0, i))
+						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1 &&
+						/(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/.test(input.substr(0, i))
 					) || (
-						codeBlock.lastElementChild
-						&& codeBlock.lastElementChild.firstChild
-						&& codeBlock.lastElementChild.firstChild.nodeValue == 'return'
+						codeBlock.lastElementChild &&
+						codeBlock.lastElementChild.firstChild &&
+						codeBlock.lastElementChild.firstChild.nodeValue == 'return'
 					)
 				)
 			) {
@@ -1461,89 +1455,87 @@ function highlightJS(codeBlock, input) {
 						range.appendChild(document.createTextNode(d + input[++i] + input[++i]));
 						charclass.appendChild(range);
 					} else chunk += d;
-				} else {
-					if (d == '^' || d == '$' || d == '|' || d == '.') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = '';
-						var special = document.createElement('span');
-						special.className = 'special';
-						special.appendChild(document.createTextNode(d));
-						regex.appendChild(special);
-					} else if (d == '?' || d == '+' || d == '*') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = '';
-						var quantifier = document.createElement('span');
-						quantifier.className = 'quantifier';
-						quantifier.appendChild(document.createTextNode(d));
-						regex.appendChild(quantifier);
-					} else if (d == '?' || d == '+' || d == '*') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = '';
-						var quantifier = document.createElement('span');
-						quantifier.className = 'quantifier';
-						quantifier.appendChild(document.createTextNode(d));
-						regex.appendChild(quantifier);
-					} else if (d == '(' || d == ')') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = d;
-						if (d == '(' && input[i + 1] == '?' && ':=!'.indexOf(input[i + 2]) != -1) chunk += input[++i] + input[++i];
-						var grouper = document.createElement('span');
-						grouper.className = 'grouper';
-						grouper.appendChild(document.createTextNode(chunk));
-						regex.appendChild(grouper);
-						chunk = '';
-					} else if (d == '{') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = '';
-						var quantifier = document.createElement('span');
-						quantifier.className = 'quantifier';
+				} else if (d == '^' || d == '$' || d == '|' || d == '.') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					var special = document.createElement('span');
+					special.className = 'special';
+					special.appendChild(document.createTextNode(d));
+					regex.appendChild(special);
+				} else if (d == '?' || d == '+' || d == '*') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					var quantifier = document.createElement('span');
+					quantifier.className = 'quantifier';
+					quantifier.appendChild(document.createTextNode(d));
+					regex.appendChild(quantifier);
+				} else if (d == '?' || d == '+' || d == '*') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					var quantifier = document.createElement('span');
+					quantifier.className = 'quantifier';
+					quantifier.appendChild(document.createTextNode(d));
+					regex.appendChild(quantifier);
+				} else if (d == '(' || d == ')') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = d;
+					if (d == '(' && input[i + 1] == '?' && ':=!'.indexOf(input[i + 2]) != -1) chunk += input[++i] + input[++i];
+					var grouper = document.createElement('span');
+					grouper.className = 'grouper';
+					grouper.appendChild(document.createTextNode(chunk));
+					regex.appendChild(grouper);
+					chunk = '';
+				} else if (d == '{') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = '';
+					var quantifier = document.createElement('span');
+					quantifier.className = 'quantifier';
+					var brace = document.createElement('span');
+					brace.className = 'punctuation';
+					brace.appendChild(document.createTextNode('{'));
+					quantifier.appendChild(brace);
+					while ((d = input[++i]) && d != '}') {
+						if (d == '\n') {
+							warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
+							quantifier.appendChild(document.createTextNode(chunk + '\n'));
+							chunk = '';
+							var linenum = document.createElement('span');
+							linenum.className = 'line';
+							linenum.dataset.linenum = ++line;
+							quantifier.appendChild(linenum);
+							break;
+						}
+						if (d == ',') {
+							quantifier.appendChild(document.createTextNode(chunk));
+							chunk = '';
+							var comma = document.createElement('span');
+							comma.className = 'punctuation';
+							comma.appendChild(document.createTextNode(','));
+							quantifier.appendChild(comma);
+						} else chunk += d;
+					}
+					quantifier.appendChild(document.createTextNode(chunk));
+					if (d == '}') {
 						var brace = document.createElement('span');
 						brace.className = 'punctuation';
-						brace.appendChild(document.createTextNode('{'));
+						brace.appendChild(document.createTextNode('}'));
 						quantifier.appendChild(brace);
-						while ((d = input[++i]) && d != '}') {
-							if (d == '\n') {
-								warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
-								quantifier.appendChild(document.createTextNode(chunk + '\n'));
-								chunk = '';
-								var linenum = document.createElement('span');
-								linenum.className = 'line';
-								linenum.dataset.linenum = ++line;
-								quantifier.appendChild(linenum);
-								break;
-							}
-							if (d == ',') {
-								quantifier.appendChild(document.createTextNode(chunk));
-								chunk = '';
-								var comma = document.createElement('span');
-								comma.className = 'punctuation';
-								comma.appendChild(document.createTextNode(','));
-								quantifier.appendChild(comma);
-							} else chunk += d;
-						}
-						quantifier.appendChild(document.createTextNode(chunk));
-						if (d == '}') {
-							var brace = document.createElement('span');
-							brace.className = 'punctuation';
-							brace.appendChild(document.createTextNode('}'));
-							quantifier.appendChild(brace);
-						} else warnings.push([i, 'Unclosed regex quantifier.']);
-						chunk = '';
-						regex.appendChild(quantifier);
-					} else if (d == '[') {
-						regex.appendChild(document.createTextNode(chunk));
-						chunk = '[';
-						if (input[++i] == '^') chunk += '^';
-						else i--;
-						charclass = document.createElement('span');
-						charclass.className = 'charclass';
-						var start = document.createElement('span');
-						start.className = 'punctuation';
-						start.appendChild(document.createTextNode(chunk));
-						charclass.appendChild(start);
-						chunk = '';
-					} else chunk += d;
-				}
+					} else warnings.push([i, 'Unclosed regex quantifier.']);
+					chunk = '';
+					regex.appendChild(quantifier);
+				} else if (d == '[') {
+					regex.appendChild(document.createTextNode(chunk));
+					chunk = '[';
+					if (input[++i] == '^') chunk += '^';
+					else i--;
+					charclass = document.createElement('span');
+					charclass.className = 'charclass';
+					var start = document.createElement('span');
+					start.className = 'punctuation';
+					start.appendChild(document.createTextNode(chunk));
+					charclass.appendChild(start);
+					chunk = '';
+				} else chunk += d;
 			}
 			(charclass || regex).appendChild(document.createTextNode(chunk));
 			if (charclass) regex.appendChild(charclass);
@@ -1576,11 +1568,11 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(proto);
 			i += 9;
 		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && (
-				('NaN' == input.substr(i, 3) && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
-				('true' == input.substr(i, 4) && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
-				('null' == input.substr(i, 4) && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
-				('false' == input.substr(i, 5) && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
-				('Infinity' == input.substr(i, 8) && !/\w/.test(input[i + 8] || '') && (l = 8))
+				(input.substr(i, 3) == 'NaN' && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
+				(input.substr(i, 4) == 'true' && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				(input.substr(i, 4) == 'null' && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
+				(input.substr(i, 5) == 'false' && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
+				(input.substr(i, 8) == 'Infinity' && !/\w/.test(input[i + 8] || '') && (l = 8))
 			)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
@@ -1878,7 +1870,7 @@ function highlightJS(codeBlock, input) {
 			operator.appendChild(document.createTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
-		}else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input[i + 3] != '=')) {
+		} else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input[i + 3] != '=')) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
@@ -1901,7 +1893,7 @@ function highlightJS(codeBlock, input) {
 			operator.className = 'operator';
 			operator.appendChild(document.createTextNode(c));
 			codeBlock.appendChild(operator);
-		}  else if (beforeWord && /\d/.test(c)) {
+		} else if (beforeWord && /\d/.test(c)) {
 			codeBlock.appendChild(document.createTextNode(chunk));
 			chunk = '';
 			var start = i;

@@ -61,7 +61,7 @@ module.exports = o(function*(req, res, user) {
 							(message.body.match(/\w\s+:/) ? 1 : 0) -
 							(message.body.match(/@([a-zA-Z0-9-]{3,16})\W/g) || []).length -
 							(message.body.match(/(.+)\s*\1\s*\1/g) || []).length -
-							(message.body.match(/\!\!+/g) || []).length -
+							(message.body.match(/!!+/g) || []).length -
 							(message.body.match(/\b[A-Z]\w*\b/) ? 0 : 1) -
 							((message.body.match(/\b[A-Z]\w*\b/g) || []).length / ((message.body.match(/\b\w+\b/g) || []).length + 2) > 0.5 ? 2 : 0) +
 							((message.body.match(/\w{8,}/g) || []).length > 3 ? 1 : 0) +

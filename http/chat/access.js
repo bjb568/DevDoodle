@@ -1,3 +1,4 @@
+'use strict';
 var changetypeStat = document.getElementById('changetypeStat'),
 	adduserinput = document.getElementById('adduserinput'),
 	type = document.getElementById('type'),
@@ -50,7 +51,7 @@ document.getElementById('adduser').onsubmit = function(e) {
 		else {
 			try {
 				res = JSON.parse(res);
-			} catch(e) {
+			} catch (e) {
 				return alert('Unknown error adding user. Response was: ' + res);
 			}
 			var div = document.createElement('div'),

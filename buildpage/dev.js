@@ -94,8 +94,8 @@ module.exports = o(function*(req, res, user) {
 					'This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' +
 					(
 						program.deleted.by.length == 1 && program.deleted.by == program.user ?
-							'voluntarily by its owner' :
-							'for moderation reasons'
+							'voluntarily by its owner'
+							: 'for moderation reasons'
 					) +
 					'.'
 				);
@@ -130,19 +130,18 @@ module.exports = o(function*(req, res, user) {
 								(
 									program.type == 1 ?
 										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-										.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-										.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-										.replaceAll(
-											'$code',
-											html(program.code)
-										)
-									:
-										(yield fs.readFile('./html/dev/html.html', yield)).toString()
-										.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-										.replaceAll(
-											['$html', '$css', '$js'],
-											[html(program.html), html(program.css), html(program.js)]
-										)
+											.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+											.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
+											.replaceAll(
+												'$code',
+												html(program.code)
+											)
+										: (yield fs.readFile('./html/dev/html.html', yield)).toString()
+											.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+											.replaceAll(
+												['$html', '$css', '$js'],
+												[html(program.html), html(program.css), html(program.js)]
+											)
 								).replaceAll(
 									['$id', '$title', '$created', '$updated'],
 									[program._id.toString(), html(program.title || 'Untitled'), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
@@ -157,8 +156,8 @@ module.exports = o(function*(req, res, user) {
 									forkedFrom ?
 										' Forked from <a href="' + forkedFrom._id + '">' +
 											html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
-											'</a>' :
-										''
+											'</a>'
+										: ''
 								).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));

@@ -1,3 +1,4 @@
+'use strict';
 var namef = document.getElementById('name'),
 	mailf = document.getElementById('mail');
 namef.oninput = mailf.oninput = function() {

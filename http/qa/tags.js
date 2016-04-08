@@ -1,3 +1,4 @@
+'use strict';
 var tname = document.getElementById('name'),
 	lang = document.getElementById('lang'),
 	par = document.getElementById('par');
@@ -7,7 +8,7 @@ document.getElementById('addtag').onsubmit = function() {
 		else {
 			try {
 				res = JSON.parse(res);
-			} catch(e) {
+			} catch (e) {
 				return alert('Unknown error. Response was: ' + res);
 			}
 			var li = document.createElement('li'),

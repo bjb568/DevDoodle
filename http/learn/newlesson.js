@@ -1,3 +1,4 @@
+'use strict';
 var code = document.getElementById('validator'),
 	codeDisplay = document.getElementById('validator-display'),
 	taCont = document.getElementById('ta-cont');

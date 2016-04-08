@@ -1,3 +1,4 @@
+'use strict';
 var htmle = document.getElementById('html-ta'),
 	htmlDisplay = document.getElementById('html-display'),
 	htmlCont = document.getElementById('html'),
@@ -36,12 +37,7 @@ htmle.onkeypress = function(e) {
 		var toSelection = this.value.substr(0, oldSelectionStart),
 			tabs = toSelection
 			.split('\n')[toSelection.split('\n').length - 1]
-			.split('\t').length
-			- (
-				el.className == 'xml-tag end-start-tag'
-				? 0
-				: 1
-			);
+			.split('\t').length - (el.className == 'xml-tag end-start-tag' ? 0 : 1);
 		this.value = this.value.substr(0, this.selectionStart) + '\n' + '\t'.repeat(tabs) + this.value.substr(this.selectionStart);
 		this.selectionStart = ++oldSelectionStart + tabs;
 		this.selectionEnd = this.selectionStart;

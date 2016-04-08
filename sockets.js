@@ -1,5 +1,6 @@
 'use strict';
-let cookie = require('cookie');
+let ws = require('ws'),
+	cookie = require('cookie');
 
 function markdownEscape(input) {
 	return input.replace(/([^\\]?)(\\*)([`*_–\-+[(:"])/g, function(m, p1, p2, p3, i) {
@@ -154,8 +155,7 @@ var commentUndelete = o(function*(message, tws, cb) {
 
 module.exports = {};
 module.exports.init = function(server) {
-	let ws = require('ws'),
-		wss = new ws.Server({server: server});
+	let wss = new ws.Server({server});
 	wss.on('connection', o(function*(tws) {
 		console.log('SOCKET CONNECT ' + tws.upgradeReq.url);
 		let i;
@@ -172,7 +172,7 @@ module.exports.init = function(server) {
 		tws.trysend = function(msg) {
 			try {
 				tws.send(msg);
-			} catch(e) {}
+			} catch (e) {}
 		};
 		if (tws.upgradeReq.url == '/test') {
 			tws.trysend('Socket connection successful.');
@@ -890,7 +890,7 @@ module.exports.init = function(server) {
 							question: message.question.substr(0, 144),
 							code: message.code,
 							type: message.type,
-							tags: tags
+							tags
 						}
 					});
 					let tagstr = '';
