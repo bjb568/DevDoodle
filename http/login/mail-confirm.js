@@ -1,3 +1,4 @@
+'use strict';
 document.getElementById('resendform').onsubmit = function(e) {
 	e.preventDefault();
 	request('/api/login/resend', function(res) {

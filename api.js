@@ -22,7 +22,7 @@ module.exports = o(function*(req, res, user, post) {
 		res.writeHead(200);
 		res.end(user && user.unread ?
 			'<ul>' +
-			user.notifs.map(function(tNotif){
+			user.notifs.map(function(tNotif) {
 				if (!tNotif.unread) return '';
 				return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
 					'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>';
@@ -373,7 +373,7 @@ module.exports = o(function*(req, res, user, post) {
 			question: post.question.substr(0, 288),
 			code: post.code,
 			type: post.type,
-			tags: tags,
+			tags,
 			gr: post.gr == 'on',
 			user: user.name,
 			time: new Date().getTime(),
@@ -405,7 +405,7 @@ module.exports = o(function*(req, res, user, post) {
 		let parent = yield dbcs.qtags.findOne({_id: parseInt(post.par)}, yield),
 			newTag = {
 				name: post.name.substr(0, 48),
-				lang: post.lang.substr(0, 48),
+				lang: post.lang.substr(0, 48)
 			};
 		if (parent) {
 			newTag.parentID = parent._id;
@@ -502,7 +502,7 @@ module.exports = o(function*(req, res, user, post) {
 			let last = yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield),
 				i = last ? last._id + 1 : 1,
 				tprogram = {
-					type: type,
+					type,
 					user: user.name,
 					created: new Date().getTime(),
 					updated: new Date().getTime(),

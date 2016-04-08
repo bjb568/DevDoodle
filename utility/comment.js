@@ -21,8 +21,8 @@ function commentToString(comment, user) {
 			'<span title="Edit" class="ctrl" ' + (user.name == comment.user ? '' : ' hidden=""') + '>✎</span>' +
 			'<span title="Delete…" class="ctrl red" ' + (user.name == comment.user && !comment.deleted ? '' : ' hidden=""') + '>✕</span>' +
 			'<span title="Undelete…" class="ctrl" ' + (user.name == comment.user && comment.deleted ? '' : ' hidden=""') + '>↑</span>' +
-		'</span>'
-		+ commentBody + '</div>'
+		'</span>' +
+		commentBody + '</div>'
 	);
 }
 module.exports = function(comment) {

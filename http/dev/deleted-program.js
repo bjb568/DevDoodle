@@ -1,3 +1,4 @@
+'use strict';
 addEventListener('DOMContentLoaded', function() {
 	var undel = document.getElementById('undelete');
 	if (undel) undel.onclick = function() {

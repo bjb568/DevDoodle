@@ -1,3 +1,4 @@
+'use strict';
 if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = (document.getElementById('mine') || {}).value == '1',
 	id = parseInt((document.getElementById('id') || {}).value),
@@ -69,7 +70,7 @@ function run() {
 	}
 	if (save && !save.classList.contains('progress') && code.value != savedValue) save.textContent = 'Save';
 	var outputBlob = new Blob([
-		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>\'use strict\';' + html(canvasJS) + 'try{this.eval(\'\\\'use strict\\\';\' + ' + html(JSON.stringify(lines.join('\n'))) + ')}catch(e){error(e)}</script></body></html>'
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>' + html(canvasJS) + 'try{this.eval(' + html(JSON.stringify(lines.join('\n'))) + ')}catch (e){error(e)}</script></body></html>'
 	], {type: 'application/xhtml+xml'});
 	output.src = URL.createObjectURL(outputBlob);
 }
@@ -311,7 +312,7 @@ if (document.getElementById('meta')) {
 			}, 'title=' + encodeURIComponent(this.value));
 		};
 		edit.onkeypress = function(e) {
-			if (e.keyCode == 13) this.onblur.call(this);
+			if (e.keyCode == 13) this.onblur.apply(this);
 			else if (e.keyCode == 27) {
 				this.value = title.textContent;
 				title.hidden = false;
@@ -345,7 +346,7 @@ if (document.getElementById('meta')) {
 			document.getElementById('commentta').focus();
 		}, 0);
 	};
-	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
+	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 	document.getElementById('comment').onsubmit = function(e) {
 		e.preventDefault();
 		if (this.firstElementChild.mdValidate(true)) return;
@@ -381,7 +382,7 @@ if (document.getElementById('meta')) {
 		console.log(e.data);
 		try {
 			var data = JSON.parse(e.data);
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 			return alert('JSON Error. Response was: ' + e.data);
 		}
@@ -447,7 +448,7 @@ if (document.getElementById('meta')) {
 		addcomment.hidden = true;
 		setInterval(function() {
 			if (socket.readyState == 1 && code.value == savedValue) return location.reload(true);
-			socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/dev/' + id);
+			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};
 	var deletebutton = document.getElementById('delete');

@@ -1,3 +1,4 @@
+'use strict';
 window.alert = window.confirm = window.prompt = null;
 
 var canvas = document.getElementById('canvas'),
@@ -119,8 +120,8 @@ function bcurve(x1, y1, x2, y2, x3, y3, x4, y4) {
 	curve(
 		x2,
 		y2,
-		x2 * 5/4 - x3/4,
-		y2 * 5/4 - y3/4,
+		x2 * 5 / 4 - x3 / 4,
+		y2 * 5 / 4 - y3 / 4,
 		x1,
 		y1,
 		x1,
@@ -135,10 +136,10 @@ function point(x, y) {
 	line(x, y, x + 0.01, y + 0.01);
 }
 function ellipse(cx, cy, rx, ry) {
-	if (!cx && cx !== 0) throw 'Invalid or missing argument[0] for ellipse';
-	if (!cy && cy !== 0) throw 'Invalid or missing argument[1] for ellipse';
-	if (!(rx >= 0)) throw 'Invalid or missing argument[2] for ellipse';
-	if (!(ry >= 0)) throw 'Invalid or missing argument[3] for ellipse';
+	if (!cx && cx !== 0) throw new Error('Invalid or missing argument[0] for ellipse');
+	if (!cy && cy !== 0) throw new Error('Invalid or missing argument[1] for ellipse');
+	if (!(rx >= 0)) throw new Error('Invalid or missing argument[2] for ellipse');
+	if (!(ry >= 0)) throw new Error('Invalid or missing argument[3] for ellipse');
 	ctx.save();
 	ctx.beginPath();
 	ctx.translate(cx - rx, cy - ry);
@@ -149,7 +150,7 @@ function ellipse(cx, cy, rx, ry) {
 	ctx.fill();
 }
 function textAlign(h, v) {
-	if (arguments.length !== 2) throw 'textAlign expects 2 arguments';
+	if (arguments.length !== 2) throw new Error('textAlign expects 2 arguments');
 	ctx.textAlign = h.toLowerCase();
 	ctx.textBaseline = v.toLowerCase();
 }
@@ -231,12 +232,12 @@ var draw = function() {};
 	key = textarea.value;
 	try {
 		draw();
-	} catch(e) {
+	} catch (e) {
 		error(e);
 	}
 	textarea.value = key = '';
 	setTimeout(drawLoop, 1000 / frameRate);
-})();
+}());
 reset();
 function updateMouseCoords(e) {
 	try {
@@ -245,7 +246,7 @@ function updateMouseCoords(e) {
 			mouseX = (e.touches[0].clientX - Math.round(cRect.left)) / cRect.width * width;
 			mouseY = (e.touches[0].clientY - Math.round(cRect.top)) / cRect.height * height;
 		}
-	} catch(e) {}
+	} catch (e) {}
 }
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	addEventListener('mousemove', function(e) {

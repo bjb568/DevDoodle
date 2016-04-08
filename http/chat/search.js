@@ -1,3 +1,4 @@
+'use strict';
 var username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
 	rooms = JSON.parse(document.getElementById('rooms').value),
 	form = document.getElementById('form'),
@@ -23,36 +24,34 @@ room.addEventListener('keyup', function(e) {
 		} else roomlist.lastChild.classList.add('selected');
 	} else if (e.keyCode == 13) {
 		if (sel.length) sel[0].onmousedown();
-	} else {
-		if (!(roomlist.hidden = !this.value || !isNaN(this.value))) {
-			var firstChild;
-			while (firstChild = roomlist.firstChild) roomlist.removeChild(firstChild);
-			var i = this.value.length,
-				used = [];
-			while (used.length < 2) {
-				for (var j = 0; j < rooms.length; j++) {
-					if (used.indexOf(rooms[j].name) == -1 && rooms[j].name.substr(0, i).toLowerCase() == this.value.substr(0, i).toLowerCase()) {
-						used.push(rooms[j].name);
-						var span = document.createElement('span');
-						span.appendChild(document.createTextNode(rooms[j].name));
-						span.dataset.rid = rooms[j].id;
-						span.onmousedown = function(e) {
-							if (e) e.preventDefault();
-							room.value = this.dataset.rid;
-							this.parentNode.hidden = true;
-						};
-						span.onmouseover = function() {
-							var sel = roomlist.getElementsByClassName('selected');
-							if (sel.length) sel[0].classList.remove('selected');
-							this.classList.add('selected');
-						};
-						roomlist.appendChild(span);
-						if (i && span == roomlist.firstChild && !sel.length) span.classList.add('selected');
-					}
+	} else if (!(roomlist.hidden = !this.value || !isNaN(this.value))) {
+		var firstChild;
+		while (firstChild = roomlist.firstChild) roomlist.removeChild(firstChild);
+		var i = this.value.length,
+			used = [];
+		while (used.length < 2) {
+			for (var j = 0; j < rooms.length; j++) {
+				if (used.indexOf(rooms[j].name) == -1 && rooms[j].name.substr(0, i).toLowerCase() == this.value.substr(0, i).toLowerCase()) {
+					used.push(rooms[j].name);
+					var span = document.createElement('span');
+					span.appendChild(document.createTextNode(rooms[j].name));
+					span.dataset.rid = rooms[j].id;
+					span.onmousedown = function(e) {
+						if (e) e.preventDefault();
+						room.value = this.dataset.rid;
+						this.parentNode.hidden = true;
+					};
+					span.onmouseover = function() {
+						var sel = roomlist.getElementsByClassName('selected');
+						if (sel.length) sel[0].classList.remove('selected');
+						this.classList.add('selected');
+					};
+					roomlist.appendChild(span);
+					if (i && span == roomlist.firstChild && !sel.length) span.classList.add('selected');
 				}
-				if (i == 0) return;
-				i--;
 			}
+			if (i == 0) return;
+			i--;
 		}
 	}
 });
@@ -76,7 +75,7 @@ form.onsubmit = form.onchange = function(e) {
 		while (fc = results.firstChild) results.removeChild(fc);
 		try {
 			res = JSON.parse(res);
-		} catch(e) {
+		} catch (e) {
 			return alert('JSON Error. Response was: ' + res);
 		}
 		for (var i = 0; i < res.length; i++) {

@@ -244,7 +244,7 @@ module.exports = o(function*(req, res, user) {
 									res.write(
 										(yield addVersionNonces((yield fs.readFile('./html/qa/question.html', yield)).toString(), req.url.pathname, yield))
 										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
-										.replace(revcount ? '$revcount': ' ($revcount)', revcount || '')
+										.replace(revcount ? '$revcount' : ' ($revcount)', revcount || '')
 										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
 										.replaceAll(

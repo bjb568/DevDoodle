@@ -9,7 +9,7 @@ String.prototype.repeat = function(num) {
 	return new Array(++num).join(this);
 };
 Number.prototype.bound = function(l, h) {
-	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this,h),l);
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
 
 global.o = require('yield-yield');
@@ -20,7 +20,7 @@ let http = require('http'),
 	https = require('https'),
 	http2 = require('http2'),
 	uglifyJS = require('uglify-js'),
-	cleanCSS = require('clean-css'),
+	CleanCSS = require('clean-css'),
 	zlib = require('zlib'),
 	etag = require('etag'),
 	fs = require('fs'),
@@ -32,23 +32,23 @@ let http = require('http'),
 	essentials = require('./utility/essentials.js'),
 	nodemailer = require('nodemailer'),
 	sendmailTransport = require('nodemailer-sendmail-transport'),
-	mongo = require('mongodb').MongoClient,
-	usedDBCs = [
-		'users',
-		'questions',
-		'qtags',
-		'answers',
-		'posthistory',
-		'chathistory',
-		'chatstars',
-		'chatusers',
-		'chatrooms',
-		'programs',
-		'comments',
-		'commenthistory',
-		'votes',
-		'lessons'
-	];
+	mongo = require('mongodb').MongoClient;
+const usedDBCs = [
+	'users',
+	'questions',
+	'qtags',
+	'answers',
+	'posthistory',
+	'chathistory',
+	'chatstars',
+	'chatusers',
+	'chatrooms',
+	'programs',
+	'comments',
+	'commenthistory',
+	'votes',
+	'lessons'
+];
 
 global.site = {
 	name: 'DevDoodle',
@@ -71,7 +71,7 @@ global.dbcs = {};
 global.githubAuth = '{}';
 try {
 	githubAuth = fs.readFileSync('../Secret/github-auth.json');
-} catch(e) {
+} catch (e) {
 	console.log(e.toString());
 	console.log('We won\'t be able to log users in with GitHub.'.yellow);
 }
@@ -79,9 +79,9 @@ githubAuth = JSON.parse(githubAuth);
 
 global.getVersionNonce = o(function*(pn, file, cb) {
 	try {
-		cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
-	} catch(e) {
-		cb(e);
+		return cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
+	} catch (e) {
+		return cb(e);
 	}
 });
 global.addVersionNonces = o(function*(str, pn, cb) {
@@ -90,7 +90,7 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 			while (str[i] && str[i] != '"') i++;
 			try {
 				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
-			} catch(e) {
+			} catch (e) {
 				console.log(e);
 			}
 		}
@@ -154,8 +154,8 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				'"' + req.url.pathname + '"',
 				'"' + req.url.pathname + '" class="active"'
 			).replace(
-				'"/' + dirs[1]+ '/"',
-				'"/' + dirs[1]+ '/" class="active"'
+				'"/' + dirs[1] + '/"',
+				'"/' + dirs[1] + '/" class="active"'
 			).replace(
 				'"/' + dirs[1] + '/' + dirs[2] + '/"',
 				'"/' + dirs[1] + '/' + dirs[2] + '/" class="active"'
@@ -178,7 +178,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 				'$notifs',
 				user && user.unread ?
 					'<ul>' +
-					user.notifs.map(function(tNotif){
+					user.notifs.map(function(tNotif) {
 						if (!tNotif.unread) return '';
 						return '<li class="hglt pad"><em>' + tNotif.type + ' on ' + tNotif.on + '</em><blockquote class="large-limited">' + markdown(tNotif.body) + '</blockquote>' +
 							'-' + tNotif.from.link('/user/' + tNotif.from) + ', <time datetime="' + new Date(tNotif.time).toISOString() + '"></time></li>';
@@ -215,10 +215,10 @@ global.errorsHTML = function(errs) {
 	return errs.length ?
 		(
 			errs.length == 1 ?
-				'<div class="error">' + errs[0] + '</div>' :
-				'<div class="error">\t<ul>\t\t<li>' + errs.join('</li>\t\t<li>') + '</li>\t</ul></div>'
-		) :
-		'';
+				'<div class="error">' + errs[0] + '</div>'
+				: '<div class="error">\t<ul>\t\t<li>' + errs.join('</li>\t\t<li>') + '</li>\t</ul></div>'
+		)
+		: '';
 };
 
 let respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpass) {
@@ -313,18 +313,19 @@ global.questionTypes = {
 };
 
 let statics = JSON.parse(fs.readFileSync('./statics.json')),
-	buildpageServers = [
-		['/status/', require('./buildpage/status.js')],
-		['/user/', require('./buildpage/user.js')],
-		['/qa/', require('./buildpage/qa.js')],
-		['/chat/', require('./buildpage/chat.js')],
-		['/dev/', require('./buildpage/dev.js')],
-		['/learn/', require('./buildpage/learn.js')],
-		['/mod/', require('./buildpage/mod.js')],
-		['/', require('./buildpage/home.js')]
-	],
-	apiServer = require('./api.js'),
 	canvasJS = fs.readFileSync('./http/dev/canvas.js');
+
+const buildpageServers = [
+	['/status/', require('./buildpage/status.js')],
+	['/user/', require('./buildpage/user.js')],
+	['/qa/', require('./buildpage/qa.js')],
+	['/chat/', require('./buildpage/chat.js')],
+	['/dev/', require('./buildpage/dev.js')],
+	['/learn/', require('./buildpage/learn.js')],
+	['/mod/', require('./buildpage/mod.js')],
+	['/', require('./buildpage/home.js')]
+];
+let apiServer = require('./api.js');
 
 let cache = {},
 	tempVerificationTokens = {};
@@ -432,7 +433,7 @@ let serverHandler = o(function*(req, res) {
 								}
 							}
 						});
-						res.writeHead(303, {'Location': 'unoff/' + lesson._id + '/'});
+						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
 						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
@@ -450,7 +451,7 @@ let serverHandler = o(function*(req, res) {
 								html: post.html || ''
 							}]
 						});
-						res.writeHead(303, {'Location': 'unoff/' + id + '/'});
+						res.writeHead(303, {Location: 'unoff/' + id + '/'});
 						res.end();
 					}
 				} else if (parseInt(req.url.query.preview)) {
@@ -559,7 +560,7 @@ let serverHandler = o(function*(req, res) {
 					if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
 					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
 					if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
-					if (passStrength(post.pass) < 1/4) {
+					if (passStrength(post.pass) < 0.25) {
 						errors.push('Password is too short.');
 						if (!nfillm && !nfilln) fpass = true;
 					}
@@ -730,7 +731,7 @@ let serverHandler = o(function*(req, res) {
 							};
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
-					} catch(e) {console.log(e);
+					} catch (e) {console.log(e);
 						yield respondPage('Login Error', user, req, res, yield, {}, 500);
 						res.write('<h1>Login Error</h1>');
 						res.write('<p>An invalid response was recieved from the GitHub API. ' + tryagain + '</p>');
@@ -743,7 +744,7 @@ let serverHandler = o(function*(req, res) {
 					res.write('<p>HTTP error when connecting to the GitHub API: ' + e + ' ' + tryagain + '</p>');
 					res.end(yield fs.readFile('html/a/foot.html', yield));
 				}));
-			} catch(e) {
+			} catch (e) {
 				yield respondPage('Login Error', user, req, res, yield, {}, 500);
 				res.write('<h1>Login Error</h1>');
 				res.write('<p>An invalid response was recieved from GitHub. ' + tryagain + '</p>');
@@ -876,7 +877,7 @@ let serverHandler = o(function*(req, res) {
 				if (!user || user.name != i[1]) return errorForbidden(req, res, user);
 				if ((!post.old && user.pass) || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
 				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
-				if (passStrength(post.new) < 1/4) return respondChangePassPage(['Password is too short.'], user, req, res, {});
+				if (passStrength(post.new) < 0.25) return respondChangePassPage(['Password is too short.'], user, req, res, {});
 				if (user.pass && new Buffer(yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != user.pass) {
 					return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
 				}
@@ -936,7 +937,7 @@ let serverHandler = o(function*(req, res) {
 					invited: [user.name],
 					_id: i
 				});
-				res.writeHead(303, {'Location': i});
+				res.writeHead(303, {Location: i});
 				res.end();
 			}));
 		} else {
@@ -947,7 +948,9 @@ let serverHandler = o(function*(req, res) {
 		let stats;
 		try {
 			stats = yield fs.stat('./http/' + req.url.pathname, yield);
-		} catch(e) { return errorNotFound(req, res, user); }
+		} catch (e) {
+			return errorNotFound(req, res, user);
+		}
 		if (!stats.isFile()) return errorNotFound(req, res, user);
 		let raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
 		if (cache[req.url.pathname]) {
@@ -963,11 +966,13 @@ let serverHandler = o(function*(req, res) {
 				let data;
 				try {
 					data = yield fs.readFile('http' + req.url.pathname, yield);
-				} catch(e) { return; }
+				} catch (e) {
+					return;
+				}
 				switch (path.extname(req.url.pathname)) {
 					case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 					break;
-					case '.css': data = new cleanCSS().minify(data).styles;
+					case '.css': data = new CleanCSS().minify(data).styles;
 					break;
 				}
 				cache[req.url.pathname] = {
@@ -980,11 +985,13 @@ let serverHandler = o(function*(req, res) {
 			let data;
 			try {
 				data = yield fs.readFile('http' + req.url.pathname, yield);
-			} catch(e) { return errorNotFound(req, res, user); }
+			} catch (e) {
+				return errorNotFound(req, res, user);
+			}
 			switch (path.extname(req.url.pathname)) {
 				case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
 				break;
-				case '.css': data = new cleanCSS().minify(data).styles;
+				case '.css': data = new CleanCSS().minify(data).styles;
 				break;
 			}
 			cache[req.url.pathname] = {
@@ -1040,8 +1047,8 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 			});
 			testRes.on('end', function() {
 				console.log('HTTP test passed, starting socket test.'.green);
-				let WebSocket = require('ws'),
-					wsc = new WebSocket('ws://localhost:' + config.port + '/test');
+				let WS = require('ws');
+				let wsc = new WS('ws://localhost:' + config.port + '/test');
 				wsc.on('open', function() {
 					console.log('Connected to socket.');
 				});
@@ -1060,7 +1067,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
 	} else {
 		let constants = require('constants');
-		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1|constants.SSL_OP_NO_TLSv1|constants.SSL_OP_NO_SSLv3|constants.SSL_OP_NO_SSLv2;
+		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
 		server = http2.createServer({
 			key: fs.readFileSync('../Secret/devdoodle.net.key'),
 			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),

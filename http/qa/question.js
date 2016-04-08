@@ -1,3 +1,4 @@
+'use strict';
 var myRep = parseInt(document.getElementById('rep').value),
 	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
 	id = parseInt(location.href.match(/\d+/)[0]),
@@ -118,7 +119,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answer.value));
 });
-var socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/q/' + id),
+var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/q/' + id),
 	commentForms = document.getElementsByClassName('commentform');
 for (var i = 0; i < commentForms.length; i++) {
 	commentForms[i].onsubmit = function(e) {
@@ -250,7 +251,7 @@ socket.onmessage = function(e) {
 	console.log(e.data);
 	try {
 		var data = JSON.parse(e.data);
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return alert('JSON Error. Response was: ' + e.data);
 	}
@@ -336,7 +337,7 @@ socket.onclose = function() {
 	addcomment.hidden = true;
 	setInterval(function() {
 		if (socket.readyState == 1) return location.reload(true);
-		socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/qa/' + id);
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
 	}, 5000);
 };
 var comments = document.getElementsByClassName('comment');

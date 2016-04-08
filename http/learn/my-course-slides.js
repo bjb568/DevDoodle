@@ -1,3 +1,4 @@
+'use strict';
 document.getElementById('title').onclick = function() {
 	this.hidden = true;
 	var edit = document.getElementById('edit-title');

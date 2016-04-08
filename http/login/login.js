@@ -1,3 +1,4 @@
+'use strict';
 var jsFormConfirm;
 addEventListener('click', function() {
 	if (!jsFormConfirm) {
@@ -42,8 +43,8 @@ create.onchange = namef.oninput = pass.oninput = pass.onfocus = passc.oninput = 
 		else nameError.firstChild.nodeValue = '';
 	} else nameError.firstChild.nodeValue = '';
 	var strength = passStrength(pass.value);
-	passBad.hidden = !(pass.value && strength < 1/4);
-	fail |= strength < 1/4;
+	passBad.hidden = !(pass.value && strength < 0.25);
+	fail |= strength < 0.25;
 	passBarOuter.style.opacity = pass.value ? '1' : '';
 	passBar.style.width = strength * 100 + '%';
 	passBar.style.background = 'hsl(' + strength * 130 + ', 100%, 50%)';

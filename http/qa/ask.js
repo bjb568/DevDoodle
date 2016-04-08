@@ -1,3 +1,4 @@
+'use strict';
 var form = document.getElementById('form'),
 	title = document.getElementById('title'),
 	lang = document.getElementById('lang'),
@@ -74,7 +75,7 @@ function findDups() {
 	request('/api/question/search', function(res) {
 		try {
 			res = JSON.parse(res);
-		} catch(e) {
+		} catch (e) {
 			alert('JSON Error. Response was: ' + res);
 			res = [];
 		}
@@ -118,13 +119,13 @@ function findTags() {
 		var child;
 		while (child = tags.firstChild) tags.removeChild(child);
 		if (res.indexOf('Error:') == 0) return alert(res);
-		if (res == '[]' && !err1.textContent){
+		if (res == '[]' && !err1.textContent) {
 			err1.classList.add('tag-warning');
 			return err1.textContent = 'No tags found for language.';
 		}
 		try {
 			res = JSON.parse(res);
-		} catch(e) {
+		} catch (e) {
 			return alert('JSON error. Response was: ' + res);
 		}
 		var labels = {};
@@ -295,9 +296,9 @@ document.getElementById('showpreview').onclick = function(e) {
 	h1.appendChild(close);
 	preview.appendChild(h1);
 	var body = document.createElement('div');
-	body.innerHTML = markdown(description.value)
-		+ (code.value ? '<code class="blk">' + html(code.value) + '</code>' : '')
-		+ '<p><strong>' + inlineMarkdown(question.value) + '</strong></p>';
+	body.innerHTML = markdown(description.value) +
+		(code.value ? '<code class="blk">' + html(code.value) + '</code>' : '') +
+		'<p><strong>' + inlineMarkdown(question.value) + '</strong></p>';
 	preview.appendChild(body);
 	var submit = document.createElement('button');
 	submit.appendChild(document.createTextNode('Post Question'));

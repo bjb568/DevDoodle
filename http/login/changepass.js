@@ -1,3 +1,4 @@
+'use strict';
 var old = document.getElementById('old'),
 	pass = document.getElementById('new'),
 	passc = document.getElementById('conf'),
@@ -9,8 +10,8 @@ var old = document.getElementById('old'),
 (old || {}).oninput = pass.oninput = passc.oninput = function() {
 	var fail = false;
 	var strength = passStrength(pass.value);
-	passBad.hidden = !(pass.value && strength < 1/4);
-	fail |= strength < 1/4;
+	passBad.hidden = !(pass.value && strength < 0.25);
+	fail |= strength < 0.25;
 	passBarOuter.style.opacity = pass.value ? '1' : '';
 	passBar.style.width = strength * 100 + '%';
 	passBar.style.background = 'hsl(' + strength * 130 + ', 100%, 50%)';

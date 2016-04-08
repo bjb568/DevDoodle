@@ -1,11 +1,12 @@
+'use strict';
 var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.match(/\d+/)[0],
-	socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
 	rawdesc = document.getElementById('descedit').value,
 	onBottom = true,
-	state = 1,
+	userstate = 1,
 	skipped,
 	ta = document.getElementById('ta'),
 	btn = document.getElementById('btn'),
@@ -88,12 +89,12 @@ ctrlsFlag.textContent = '⚑';
 ctrlsFlag.title = 'This message is inappropriate.';
 ctrlsFlag.className = 'red';
 ctrlsFlag.onclick = function() {
-	var body = prompt('Describe what exactly is wrong');
-	if (!body) return;
+	var flagtext = prompt('Describe what exactly is wrong');
+	if (!flagtext) return;
 	socket.send(JSON.stringify({
 		event: 'flag',
 		id: parseInt(this.parentNode.parentNode.id),
-		body: body
+		body: flagtext
 	}));
 };
 ctrls.appendChild(ctrlsStar);
@@ -110,9 +111,9 @@ addEventListener('resize', function() {
 });
 function statechange(nstate) {
 	if (nstate == 1 && ta && ta.value) nstate = 2;
-	if (state != nstate) {
-		state = nstate;
-		socket.send(JSON.stringify({event: 'statechange', state: state}));
+	if (userstate != nstate) {
+		userstate = nstate;
+		socket.send(JSON.stringify({event: 'statechange', state: userstate}));
 	}
 }
 function inactive() {
@@ -143,7 +144,7 @@ socket.onmessage = function(e) {
 	var data;
 	try {
 		data = JSON.parse(e.data);
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return alert('JSON Error. Response was: ' + e.data);
 	}
@@ -472,7 +473,7 @@ socket.onclose = function() {
 	warning.appendChild(link);
 	ta.parentNode.insertBefore(warning, ta);
 	setInterval(function() {
-		socket = new WebSocket((location.protocol == 'http:' ? 'ws://': 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 		socket.onopen = function() {
 			location.reload();
 		};
@@ -671,7 +672,7 @@ addEventListener('hashchange', function(e) {
 				try {
 					res = JSON.parse(res);
 					if (res.room == roomID) location.reload();
-				} catch(e) {}
+				} catch (e) {}
 			});
 		}
 	} else hashchangeready = true;

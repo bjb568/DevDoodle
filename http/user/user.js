@@ -1,3 +1,4 @@
+'use strict';
 document.getElementById('mailform').onsubmit = function(e) {
 	e.preventDefault();
 	request('/api/me/changemail', function(res) {
