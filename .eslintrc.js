@@ -1,10 +1,10 @@
 module.exports = {
-    "env": {
-        "browser": true,
+	"env": {
+		"browser": true,
 		"node": true,
-        "es6": true
-    },
-    "rules": {
+		"es6": true
+	},
+	"rules": {
 		"comma-dangle": ["error"],
 		"no-debugger": ["error"],
 		"no-dupe-args": ["error"],
@@ -80,7 +80,7 @@ module.exports = {
 		"id-match": ["error", "^([a-zA-Z0-9]+|[A-Z0-9_]+)$"],
 		"key-spacing": ["error"],
 		"keyword-spacing": ["error"],
-        "linebreak-style": ["error"],
+		"linebreak-style": ["error"],
 		"max-depth": ["error", 8],
 		"max-nested-callbacks": ["error", 4],
 		"max-statements-per-line": ["error"],
@@ -123,5 +123,5 @@ module.exports = {
 		"require-yield": ["error"],
 		"template-curly-spacing": ["error", "never"],
 		"yield-star-spacing": ["error", {"before": false, "after": true}]
-    }
+	}
 };
