@@ -430,12 +430,6 @@ function updateTimes() {
 }
 
 addEventListener('DOMContentLoaded', function() {
-	if (navigator.userAgent.indexOf('Trident') != -1 || navigator.userAgent.indexOf('MSIE') != -1) {
-		var span = document.createElement('span');
-		span.appendChild(document.createTextNode('This site does not support Microsoft Internet Explorer due to its lack of compatibility with web specifications.'));
-		document.getElementById('err').appendChild(span);
-		document.getElementById('content').hidden = true;
-	}
 	var markread = document.getElementById('markread');
 	if (markread) markread.onclick = function() {
 		request('/api/me/clearnotifs', function(res) {

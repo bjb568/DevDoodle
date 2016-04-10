@@ -448,17 +448,17 @@ fieldset {
 	font-size: 0.9em;
 }
 ul, ol, p { margin: 0.3em 0 0.2em }
-#err, .error {
+noscript, .error {
 	background: #f00;
 	color: #fff;
 }
-.notice { background: #ff0 }
-#err a { color: #fff }
-#err > * {
+noscript {
 	display: block;
+	z-index: 1;
 	text-align: center;
 	padding: 3em;
 }
+.notice { background: #ff0 }
 .center { margin: 0 auto }
 .center-text, #footer, #nav { text-align: center }
 .pre { white-space: pre-wrap }
