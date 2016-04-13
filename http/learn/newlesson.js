@@ -30,7 +30,7 @@ caret.id = 'caret';
 caret.appendChild(document.createTextNode('\xA0'));
 codeDisplay.insertAfter(caret, codeDisplay.firstChild);
 caret.hidden = true;
-function handleTAInput() {
+function handleCodeTAInput() {
 	var codeScrollDiff = code.scrollHeight - code.offsetHeight;
 	if (code.value != code.lastValue) {
 		highlightJS(codeDisplay, code.lastValue = code.value);
@@ -62,21 +62,21 @@ function handleTAInput() {
 	}
 }
 code.addEventListener('keypress', function() {
-	setTimeout(handleTAInput, 0);
+	setTimeout(handleCodeTAInput, 0);
 });
 code.addEventListener('keyup', function() {
-	setTimeout(handleTAInput, 0);
+	setTimeout(handleCodeTAInput, 0);
 });
 code.addEventListener('keydown', function() {
-	setTimeout(handleTAInput, 0);
+	setTimeout(handleCodeTAInput, 0);
 });
 code.addEventListener('mousedown', function() {
-	setTimeout(handleTAInput, 0);
+	setTimeout(handleCodeTAInput, 0);
 });
 addEventListener('mousemove', function() {
-	setTimeout(handleTAInput, 0);
+	setTimeout(handleCodeTAInput, 0);
 });
-code.addEventListener('input', handleTAInput);
+code.addEventListener('input', handleCodeTAInput);
 code.addEventListener('focus', function() {
 	this.parentNode.classList.add('focused');
 	document.getElementById('caret').hidden = false;
