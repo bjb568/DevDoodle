@@ -1586,7 +1586,7 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(capvar);
 			chunk = '';
 		} else if (beforeWord && (
-				(['do', 'if', 'in'].indexOf(input.substr(i, 2)) != -1 && !/\w/.test(input[i + 2] || '') && (l = 2)) ||
+				(['do', 'if', 'in', 'of'].indexOf(input.substr(i, 2)) != -1 && !/\w/.test(input[i + 2] || '') && (l = 2)) ||
 				(['for', 'get', 'let', 'new', 'try', 'var'].indexOf(input.substr(i, 3)) != -1 && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
 				(['case', 'else', 'this', 'void', 'with'].indexOf(input.substr(i, 4)) != -1 && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
 				(['break', 'class', 'catch', 'const', 'super', 'throw', 'while', 'yield'].indexOf(input.substr(i, 5)) != -1 && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
