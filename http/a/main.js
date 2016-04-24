@@ -1601,13 +1601,13 @@ function highlightJS(codeBlock, input) {
 			keyword.className = 'keyword';
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
-			if (input.substr(i, l) == 'var') inVarDec.unshift({
+			if (input.substr(i, l) == 'var' || input.substr(i, l) == 'let' || input.substr(i, l) == 'const') inVarDec.unshift({
 				parens: 0,
 				brackets: 0,
 				braces: 0,
 				equals: false
 			});
-			if (input.substr(i, l) == 'in') inVarDec.shift();
+			if (input.substr(i, l) == 'in' || input.substr(i, l) == 'of') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
 				(['enum', 'eval'].indexOf(input.substr(i, 4)) != -1 && !/\w/.test(input[i + 4] || '') && (l = 4)) ||
@@ -1624,13 +1624,6 @@ function highlightJS(codeBlock, input) {
 			keyword.className = 'keyword reserved';
 			keyword.appendChild(document.createTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
-			if (input.substr(i, l) == 'var') inVarDec.unshift({
-				parens: 0,
-				brackets: 0,
-				braces: 0,
-				equals: false
-			});
-			if (input.substr(i, l) == 'in') inVarDec.shift();
 			i += l - 1;
 		} else if (beforeWord && (
 				(['top'].indexOf(input.substr(i, 3)) != -1 && !/\w/.test(input[i + 3] || '') && (l = 3)) ||
