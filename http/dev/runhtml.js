@@ -63,7 +63,7 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 function run() {
 	if (!save.classList.contains('progress')) save.textContent = 'Save';
 	var outputBlob = new Blob([
-		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
+		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
 	], {type: 'application/xhtml+xml'});
 	document.getElementById('output').src = URL.createObjectURL(outputBlob);
 }
