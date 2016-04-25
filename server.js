@@ -60,6 +60,16 @@ global.site = {
 		mod: 'Moderation'
 	}
 };
+global.typeIcons = {
+	P: '',
+	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#90f" width="10" height="16">' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#90f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
+		'</svg>',
+	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#90f" width="10" height="14">' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#90f" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
+		'</svg>',
+	M: ' <span class="diamond private">♦</span>'
+};
 global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
@@ -294,7 +304,7 @@ let respondCreateRoomPage = o(function*(errs, user, req, res, post) {
 	res.write('\t<option value="P">Public</option>');
 	res.write('\t<option value="R">Read-only</option>');
 	res.write('\t<option value="N">Private</option>');
-	if (user.level > 4) res.write('\t<option value="M">♦ only</option>');
+	if (user.level > 4) res.write('\t<option value="M">Level 5 moderator ♦ only</option>');
 	res.write('</select>');
 	res.write('</div>');
 	res.write('<button type="submit">Submit</button>');

@@ -189,9 +189,9 @@ module.exports.init = function(server) {
 				event: 'err',
 				body: 'You have not been invited to this private room.'
 			}));
-			if (room.type == 'M' && user.level != 5) return tws.trysend(JSON.stringify({
+			if (room.type == 'M' && (!user || user.level < 5)) return tws.trysend(JSON.stringify({
 				event: 'err',
-				body: 'You must be a moderator to join this room.'
+				body: 'You must be a level 5 moderator to join this room.'
 			}));
 			let count = yield dbcs.chat.find({
 				room: tws.room,
