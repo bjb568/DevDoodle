@@ -6,8 +6,10 @@ services:
 install:
   - npm install
   - npm install -g snyk
+  - npm install -g nsp
   - npm install -g eslint
 script:
   - npm test
   - snyk test
+  - nsp check
   - eslint ./
