@@ -12,7 +12,6 @@ body { color: #eee }
 #content, #sidebar, #footer { background: transparent }
 .hglt, .desc, .comment, article, code { background: #333 }
 .shglt { background: #444 }
-iframe:not([seamless]) { background: #fff }
 .grey, a.small, .c-sig, .ctrls a { color: #aaa }
 .disabled, a.disabled:hover, a.disabled:active { color: #666 }
 .qlist-tags .rit { padding-top: 0.5em }
