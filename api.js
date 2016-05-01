@@ -87,7 +87,7 @@ module.exports = o(function*(req, res, user, post) {
 				dbcs.chat.find(criteria, {score: {$meta: 'textScore'}}).sort(sort[post.sort] || post.text).each(function(err, msg) {
 					if (err) throw err;
 					if (msg) {
-						if ((rooms[msg.room].type != 'N' || rooms[msg.room].invited.indexOf(user.name) != -1) && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
+						if ((rooms[msg.room].type != 'N' || rooms[msg.room].invited.includes(user.name)) && (rooms[msg.room].type != 'M' || (user && user.level > 4))) results.push({
 							id: msg._id,
 							body: msg.body,
 							user: msg.user,
@@ -104,10 +104,10 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (req.url.pathname == '/chat/changeroomtype') {
 		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
 		id = i ? parseInt(i[1]) : 0;
-		if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) return res.writeHead(400) || res.end('Error: Invalid room type.');
+		if (!['P', 'R', 'N', 'M'].includes(post.type)) return res.writeHead(400) || res.end('Error: Invalid room type.');
 		let room = yield dbcs.chatrooms.findOne({_id: id}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
-		if (room.invited.indexOf(user.name) == -1) return res.writeHead(403) || res.end('Error: You don\'t have permission to change the room type.');
+		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to change the room type.');
 		dbcs.chatrooms.update({_id: id}, {$set: {type: post.type}});
 		res.writeHead(204);
 		res.end();
@@ -116,10 +116,10 @@ module.exports = o(function*(req, res, user, post) {
 		id = i ? parseInt(i[1]) : 0;
 		let room = yield dbcs.chatrooms.findOne({_id: id}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
-		if (room.invited.indexOf(user.name) == -1) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
+		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
 		let invUser = yield dbcs.users.findOne({name: post.user}, yield);
 		if (!invUser) return res.writeHead(400) || res.end('Error: User not found.');
-		if (room.invited.indexOf(invUser.name) != -1) return res.writeHead(409) || res.end('Error: ' + invUser.name + ' has already been invited.');
+		if (room.invited.includes(invUser.name)) return res.writeHead(409) || res.end('Error: ' + invUser.name + ' has already been invited.');
 		dbcs.chatrooms.update({_id: id}, {$push: {invited: invUser.name}});
 		res.writeHead(200);
 		res.end(JSON.stringify({
@@ -131,8 +131,8 @@ module.exports = o(function*(req, res, user, post) {
 		id = i ? parseInt(i[1]) : 0;
 		let room = yield dbcs.chatrooms.findOne({_id: id}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
-		if (room.invited.indexOf(user.name) == -1) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
-		if (room.invited.indexOf(post.user) == -1) return res.writeHead(409) || res.end('Error: ' + post.user + ' has not been invited.');
+		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
+		if (!room.invited.includes(post.user)) return res.writeHead(409) || res.end('Error: ' + post.user + ' has not been invited.');
 		if (room.invited.length == 1) return res.writeHead(400) || res.end('Error: You may not remove the only invited user.');
 		dbcs.chatrooms.update({_id: id}, {$pull: {invited: post.user}});
 		res.writeHead(204);
@@ -154,7 +154,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.writeHead(204);
 			return res.end();
 		}
-		if ((msg.reviewers || []).indexOf(user.name) != -1) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
+		if ((msg.reviewers || []).includes(user.name)) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
 		let changes = {
 			$push: {
 				dels: {
@@ -200,7 +200,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.writeHead(204);
 			return res.end();
 		}
-		if ((msg.reviewers || []).indexOf(user.name) != -1) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
+		if ((msg.reviewers || []).includes(user.name)) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
 		let changes = {
 			$push: {
 				nans: {
@@ -237,7 +237,7 @@ module.exports = o(function*(req, res, user, post) {
 		id = i ? parseInt(i[1]) : 0;
 		let msg = yield dbcs.chat.findOne({_id: id}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
-		if (post.mod && (msg.reviewers || []).indexOf(user.name) != -1) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
+		if (post.mod && (msg.reviewers || []).includes(user.name)) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
 		if (post.mod && msg.mod) return res.writeHead(403) || res.end('Error: This post is already mod-only. You may still leave a regular comment.');
 		let changes = {
 			$push: {
@@ -266,7 +266,7 @@ module.exports = o(function*(req, res, user, post) {
 		let msg = yield dbcs.chat.findOne({_id: id}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
 		let changes = {$set: {body: post.body}};
-		if ((msg.reviewers || []).indexOf(user.name) == -1) changes.$push = {reviewers: user.name};
+		if (!(msg.reviewers || []).includes(user.name)) changes.$push = {reviewers: user.name};
 		dbcs.chat.update({_id: id}, changes);
 		dbcs.chathistory.insert({
 			message: msg._id,

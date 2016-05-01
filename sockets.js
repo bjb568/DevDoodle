@@ -184,8 +184,8 @@ module.exports.init = function(server) {
 				body: 'Room not found.'
 			}));
 			tws.roomType = room.type;
-			tws.isInvited = room.type == 'P' || room.invited.indexOf(tws.user.name) != -1;
-			if (room.type == 'N' && room.invited.indexOf(user.name) == -1) return tws.trysend(JSON.stringify({
+			tws.isInvited = room.type == 'P' || room.invited.includes(tws.user.name);
+			if (room.type == 'N' && !room.invited.includes(user.name)) return tws.trysend(JSON.stringify({
 				event: 'err',
 				body: 'You have not been invited to this private room.'
 			}));
@@ -249,7 +249,7 @@ module.exports.init = function(server) {
 					dbcs.chatstars.find({room: tws.room}).sort({time: -1}).limit(24).each(function(err, star) {
 						if (err) throw err;
 						if (star) {
-							if (pids.indexOf(star.pid) == -1) pids.push(star.pid);
+							if (!pids.includes(star.pid)) pids.push(star.pid);
 						} else {
 							dbcs.chat.find({
 								_id: {$in: pids},
@@ -771,7 +771,7 @@ module.exports.init = function(server) {
 					let matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
 					for (let i in matches) matches[i] = matches[i].substr(1, matches[i].length - 2);
 					let program = yield dbcs.programs.findOne({_id: tws.program}, yield);
-					if (matches.indexOf(program.user) == -1) matches.push(program.user);
+					if (!matches.includes(program.user)) matches.push(program.user);
 					for (let i = 0; i < matches.length; i++) {
 						if (matches[i] == tws.user.name) continue;
 						dbcs.users.findOne({name: matches[i]}, function(err, user) {
@@ -905,7 +905,7 @@ module.exports.init = function(server) {
 								if (tag) tlang.push(tag);
 								else {
 									let writeTagRecursive = function(tag) {
-										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.includes(tag._id) ? ' checked=""' : '') + ' /> ' + tag.name + '</label>';
 										tlang.splice(tlang.indexOf(tag), 1);
 										tageditstr += '<div class="indt">';
 										i = -1;
@@ -987,8 +987,8 @@ module.exports.init = function(server) {
 					let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 					if (tcomment.answer) {
 						let answer = yield dbcs.answers.findOne({_id: tcomment.answer}, yield);
-						if (matches.indexOf(answer.user) == -1) matches.push(answer.user);
-					} else if (matches.indexOf(question.user) == -1) matches.push(question.user);
+						if (!matches.includes(answer.user)) matches.push(answer.user);
+					} else if (!matches.includes(question.user)) matches.push(question.user);
 					for (let i = 0; i < matches.length; i++) {
 						if (matches[i] == tws.user.name) continue;
 						dbcs.users.findOne({name: matches[i]}, function(err, user) {

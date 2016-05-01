@@ -219,10 +219,10 @@ module.exports = o(function*(req, res, user) {
 								if (err) throw err;
 								if (tag) {
 									tlang.push(tag);
-									if (question.tags.indexOf(tag._id) != -1) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
+									if (question.tags.includes(tag._id)) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 								} else {
 									let writeFormTagRecursive = function(tag) {
-										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.includes(tag._id) ? ' checked=""' : '') + ' /> ' + tag.name + '</label>';
 										tlang.splice(tlang.indexOf(tag), 1);
 										tageditstr += '<div class="indt">';
 										let i = -1;

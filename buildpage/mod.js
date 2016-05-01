@@ -66,7 +66,7 @@ module.exports = o(function*(req, res, user) {
 							((message.body.match(/\b[A-Z]\w*\b/g) || []).length / ((message.body.match(/\b\w+\b/g) || []).length + 2) > 0.5 ? 2 : 0) +
 							((message.body.match(/\w{8,}/g) || []).length > 3 ? 1 : 0) +
 							((message.body.match(/\. [A-Z]/g) || []).length > 3 ? 1 : 0) +
-							(message.body.indexOf(', ') != -1 ? 1 : 0)
+							(message.body.includes(', ') ? 1 : 0)
 						) + ', Length: ' + message.body.length +
 						', Uppercase ratio: ' + (Math.round((message.body.match(/[A-Z]/g) || []).length / (message.body.match(/[a-z]/g) || []).length * 100) / 100)
 					).replace('$comments', commentstr)
