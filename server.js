@@ -22,7 +22,6 @@ let http = require('http'),
 	uglifyJS = require('uglify-js'),
 	CleanCSS = require('clean-css'),
 	zlib = require('zlib'),
-	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
 	url = require('url'),
@@ -614,7 +613,6 @@ let serverHandler = o(function*(req, res) {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800',
-				'ETag': etag(cache[req.url.pathname].raw),
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
@@ -659,7 +657,6 @@ let serverHandler = o(function*(req, res) {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800',
-				'ETag': etag(data),
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
