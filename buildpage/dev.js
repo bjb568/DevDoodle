@@ -121,11 +121,13 @@ module.exports = o(function*(req, res, user) {
 				if (comment) commentstr += new Comment(comment).toString(user);
 				else {
 					let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield),
-						forks = [];
+						forks = '';
 					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
 						if (err) throw err;
-						if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
-						else {
+						if (forkFrom) {
+							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
+							forks += '<li><a href="' + forkFrom._id + '"' + (forkFrom.deleted ? ' class="red"' : '') + '>' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a></li>';
+						} else {
 							res.write(
 								(
 									program.type == 1 ?
@@ -158,7 +160,7 @@ module.exports = o(function*(req, res, user) {
 											html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
 											'</a>'
 										: ''
-								).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+								).replace('$forks', forks.length ? '<h2>Forks</h2><ul>' + forks + '</ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}

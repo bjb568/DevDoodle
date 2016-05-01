@@ -62,7 +62,7 @@ small, a.small, footer, .ctrls a { font-size: 0.85em }
 small { font-weight: normal }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
-.red { color: #f00 }
+.red, a.red:visited { color: #f00 }
 .green { color: #0b0 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
