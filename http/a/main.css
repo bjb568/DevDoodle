@@ -49,7 +49,7 @@ body {
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, article { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, 0.8) }
-code { background: #fff }
+code, iframe { background: #fff }
 code { padding: 2px; }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
