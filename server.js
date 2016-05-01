@@ -13,7 +13,7 @@ Number.prototype.bound = function(l, h) {
 };
 
 global.o = require('yield-yield');
-global.config = require('./config.js')[process.argv.indexOf('--test') == -1 ? 'normal' : 'test'];
+global.config = require('./config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
 
 require('colors');
 let http = require('http'),
@@ -22,7 +22,6 @@ let http = require('http'),
 	uglifyJS = require('uglify-js'),
 	CleanCSS = require('clean-css'),
 	zlib = require('zlib'),
-	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
 	url = require('url'),
@@ -582,7 +581,7 @@ let serverHandler = o(function*(req, res) {
 				let errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) errors.push('Invalid room type.');
+				if (!['P', 'R', 'N', 'M'].includes(post.type)) errors.push('Invalid room type.');
 				if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 				let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
 					i = last ? last._id + 1 : 1;
@@ -600,7 +599,7 @@ let serverHandler = o(function*(req, res) {
 			res.writeHead(405);
 			res.end('Method not allowed. Use GET or POST.');
 		}
-	} else if (req.url.pathname.indexOf('.') != -1) {
+	} else if (req.url.pathname.includes('.')) {
 		let stats;
 		try {
 			stats = yield fs.stat('./http/' + req.url.pathname, yield);
@@ -608,13 +607,12 @@ let serverHandler = o(function*(req, res) {
 			return errorNotFound(req, res, user);
 		}
 		if (!stats.isFile()) return errorNotFound(req, res, user);
-		let raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
+		let raw = !req.headers['accept-encoding'] || !req.headers['accept-encoding'].includes('gzip') || req.headers['accept-encoding'].includes('gzip;q=0');
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].raw),
+				'Cache-Control': 'max-age=6012800',
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
@@ -658,15 +656,14 @@ let serverHandler = o(function*(req, res) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(data),
+				'Cache-Control': 'max-age=6012800',
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 		}
 	} else {
 		for (let i = 0; i < buildpageServers.length; i++) {
-			if (!req.url.pathname.indexOf(buildpageServers[i][0])) return buildpageServers[i][1](req, res, user || {});
+			if (req.url.pathname.indexOf(buildpageServers[i][0]) == 0) return buildpageServers[i][1](req, res, user || {});
 		}
 	}
 });
@@ -692,7 +689,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	console.log('Connected to mongodb.'.cyan);
-	if (process.argv.indexOf('--test') != -1) {
+	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
 		http.get({
 			port: config.port,

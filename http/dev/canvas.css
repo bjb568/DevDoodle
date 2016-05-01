@@ -27,10 +27,10 @@ section { background: transparent }
 }
 #meta h1, h2, h3, h4, h5, h6 { color: #000 }
 #meta code { background: #fff }
-#meta a { color: #000 }
-#meta a:visited { color: #444 }
-#meta a:hover { color: #15f }
-#meta a:active, #meta .ctrl:active { color: #02d }
+#meta a:not(.red) { color: #000 }
+#meta :not(.connection-error) > a:visited:not(.red) { color: #444 }
+#meta a:hover:not(.red) { color: #15f }
+#meta a:active:not(.red), #meta .ctrl:active { color: #02d }
 #meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .c-sig, .c-sig > * { color: #666 }

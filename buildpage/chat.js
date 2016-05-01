@@ -21,7 +21,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) throw err;
 			if (doc) {
 				if (doc.type == 'M' && (!user || user.level < 5)) return;
-				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
+				if (doc.type == 'N' && !doc.invited.includes(user.name)) return;
 				res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>');
 				res.write(markdown(doc.desc));
 				roomnames[doc._id] = doc.name;
@@ -62,7 +62,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) throw err;
 			if (doc) {
 				if (doc.type == 'M' && (!user || user.level < 5)) return;
-				if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return;
+				if (doc.type == 'N' && !doc.invited.includes(user.name)) return;
 				rooms.push({id: doc._id, name: doc.name});
 			} else {
 				res.write(
@@ -77,7 +77,7 @@ module.exports = o(function*(req, res, user) {
 		let doc = yield dbcs.chatrooms.findOne({_id: parseInt(i[1])}, yield);
 		if (!doc) return errorNotFound(req, res, user);
 		if (req.url.query && typeof(req.url.query.access) == 'string') {
-			if (doc.invited.indexOf(user.name) == -1) return errorForbidden(req, res, user, 'You don\'t have permission to control access to this room.');
+			if (!doc.invited.includes(user.name)) return errorForbidden(req, res, user, 'You don\'t have permission to control access to this room.');
 			yield respondPage('Access for ' + doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
 			let userstr = '';
 			dbcs.users.find({name: {$in: doc.invited}}).each(o(function*(err, invUser) {
@@ -96,10 +96,10 @@ module.exports = o(function*(req, res, user) {
 				}
 			}));
 		} else {
-			if (doc.type == 'N' && doc.invited.indexOf(user.name) == -1) return errorForbidden(req, res, user, 'You have not been invited to this private room.');
+			if (doc.type == 'N' && !doc.invited.includes(user.name)) return errorForbidden(req, res, user, 'You have not been invited to this private room.');
 			if (doc.type == 'M' && (!user || user.level < 5)) return errorForbidden(req, res, user, 'You must be a moderator to join this room.');
 			yield respondPage(doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
-			let isInvited = doc.type == 'P' || doc.invited.indexOf(user.name) != -1;
+			let isInvited = doc.type == 'P' || doc.invited.includes(user.name);
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('./html/chat/room.html', yield)).toString(), req.url.pathname, yield))
 				.replaceAll('$id', doc._id)
@@ -120,7 +120,7 @@ module.exports = o(function*(req, res, user) {
 						)
 						: '<p id="loginmsg">You must be <a href="/login/" title="Log in">logged in</a> and have 30 reputation to chat.</p>')
 				.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
-				.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
+				.replace(' $access', doc.invited.includes(user.name) ? ' <small><a href="?access">Access</a></small>' : '')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}

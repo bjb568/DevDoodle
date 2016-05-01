@@ -24,7 +24,6 @@
 		"nodemailer-sendmail-transport": "^1.0.0",
 		"ws": "^1.1.0",
 		"mongodb": "^2.1.16",
-		"etag": "^1.7.0",
 		"uglify-js": "^2.6.2",
 		"clean-css": "^3.4.12",
 		"diff": "^2.2.2"
