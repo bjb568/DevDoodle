@@ -118,7 +118,7 @@ module.exports = o(function*(req, res, user) {
 										: '<p>Posting in a non-public room is by invitation only.</p>'
 								)
 						)
-						: '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+						: '<p id="loginmsg">You must be <a href="/login/" title="Log in">logged in</a> and have 30 reputation to chat.</p>')
 				.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
 				.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
 			);
