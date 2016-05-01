@@ -613,7 +613,7 @@ let serverHandler = o(function*(req, res) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
+				'Cache-Control': 'max-age=6012800',
 				'ETag': etag(cache[req.url.pathname].raw),
 				'Vary': 'Accept-Encoding'
 			});
@@ -658,7 +658,7 @@ let serverHandler = o(function*(req, res) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
+				'Cache-Control': 'max-age=6012800',
 				'ETag': etag(data),
 				'Vary': 'Accept-Encoding'
 			});
