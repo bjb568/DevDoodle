@@ -12,7 +12,10 @@ section { background: transparent }
 	position: absolute;
 	width: 100%;
 }
-#main { padding: 0 }
+#main {
+	min-height: 600px;
+	padding: 0;
+}
 #content { padding-bottom: 0 }
 #meta {
 	padding: 4px;
@@ -32,7 +35,6 @@ section { background: transparent }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .c-sig, .c-sig > * { color: #666 }
 #output { width: 100% }
-#main { min-height: 600px }
 #edit-title {
 	width: 400px;
 	max-width: 100%;

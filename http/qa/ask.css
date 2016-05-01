@@ -45,7 +45,7 @@ aside, fieldset:not(:first-of-type), #form > div { margin-top: 24px }
 	position: absolute;
 	top: 0; left: 0;
 	width: 100%;
-	font-size: .9em;
+	font-size: 0.9em;
 	font-family: inherit;
 	line-height: 1.2;
 	white-space: pre-wrap;

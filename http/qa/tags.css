@@ -4,4 +4,4 @@ ul {
 	margin: 0;
 }
 ul:empty { display: none }
-section { padding: 4px 4px 0 4px }
+section { padding: 4px 4px 0 }
