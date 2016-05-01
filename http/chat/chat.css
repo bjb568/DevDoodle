@@ -10,8 +10,12 @@
 	flex-grow: 1;
 	display: flex;
 	align-items: stretch;
+	height: calc(100% - 120px);
 }
-#chat { flex: 1 1 0 }
+#chat {
+	background: #ddd;
+	flex: 1 1 0;
+}
 #changetypeStat:empty { color: rgba(0, 0, 0, 0) }
 #changetypeStat:not(:empty) {
 	transition: color 0.2s 0.2s;
@@ -43,7 +47,6 @@
 	color: #444;
 }
 #chat, #aside { overflow-x: hidden }
-#chat-div { height: calc(100% - 120px) }
 textarea {
 	height: 96px;
 	flex-shrink: 0;
@@ -91,4 +94,3 @@ textarea {
 	position: absolute;
 	z-index: 1;
 }
-#chat { background: #ddd }
