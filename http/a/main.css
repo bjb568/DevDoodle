@@ -1,9 +1,11 @@
 html { background: #000 }
 body {
-	font-family: helvetica, sans-serif;
+	font-family: 'Helvetica', sans-serif;
 	-webkit-text-size-adjust: none;
 	tab-size: 4;
 	line-height: 1.2;
+	display: flex;
+	flex-direction: column;
 }
 * {
 	box-sizing: border-box;
@@ -26,7 +28,7 @@ body {
 [hidden], .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment, .spoiler { position: relative }
 .abs, .ctrls { position: absolute }
-.fullwidth, input[type=text].fullwidth, input[type=email].fullwidth, input[type=password].fullwidth { width: 100% }
+.fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth { width: 100% }
 .maxwidth, img, input { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
@@ -35,7 +37,7 @@ body {
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .tumar, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 2px }
 .sumar, :not(img) + .desc, .blk { margin-top: 4px }
-.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer, #sidebar { margin-top: 4px }
+.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), #footer, #sidebar { margin-top: 4px }
 .bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 8px }
 .bmar, .max-width, .error, .half, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
@@ -45,7 +47,7 @@ body {
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
-.noscrl, .comment > :last-child, blockquote { overflow: hidden }
+.noscrl, .comment > :last-child, blockquote, .limited, .large-limited, #programs, #profpic + div { overflow: hidden }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, article { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, 0.8) }
@@ -55,10 +57,9 @@ code { padding: 2px; }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
 .disabled, a.disabled:hover, a.disabled:active { color: #999 }
-small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
+small, a.small, a.grey, .c-sig > *, .c-sig, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
 small, a.small, footer, .ctrls a { font-size: 0.85em }
 small { font-weight: normal }
-.c-sig { font: 0.8rem helvetica, sans-serif }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }
 .red { color: #f00 }
@@ -112,10 +113,7 @@ li {
 	border-radius: 4px;
 	color: #000;
 }
-.limited, .large-limited {
-	max-height: 72px;
-	overflow: hidden;
-}
+.limited, .large-limited { max-height: 72px }
 .large-limited { max-height: 144px }
 .spoiler { transition: color 0.2s }
 .spoiler:not(:hover) { color: transparent }
@@ -182,22 +180,22 @@ code .line.warning::before {
 	color: #ff6;
 	font-weight: bold;
 }
-.ta-cont[data-line="0"] { padding-left: 0.8em }
-.ta-cont[data-line="1"] { padding-left: 1.3em }
-.ta-cont[data-line="2"] { padding-left: 1.8em }
-.ta-cont[data-line="3"] { padding-left: 2.3em }
-.ta-cont[data-line="4"] { padding-left: 2.8em }
-.ta-cont[data-line="5"] { padding-left: 3.3em }
-.ta-cont[data-line="6"] { padding-left: 3.8em }
-.ta-cont[data-line="7"] { padding-left: 4.3em }
-.ta-cont[data-line="0"] textarea { width: calc(100% - 0.8rem - 5px) }
-.ta-cont[data-line="1"] textarea { width: calc(100% - 1.3rem - 5px) }
-.ta-cont[data-line="2"] textarea { width: calc(100% - 1.8rem - 5px) }
-.ta-cont[data-line="3"] textarea { width: calc(100% - 2.3rem - 5px) }
-.ta-cont[data-line="4"] textarea { width: calc(100% - 2.8rem - 5px) }
-.ta-cont[data-line="5"] textarea { width: calc(100% - 3.3rem - 5px) }
-.ta-cont[data-line="6"] textarea { width: calc(100% - 3.8rem - 5px) }
-.ta-cont[data-line="7"] textarea { width: calc(100% - 4.3rem - 5px) }
+.ta-cont[data-line='0'] { padding-left: 0.8em }
+.ta-cont[data-line='1'] { padding-left: 1.3em }
+.ta-cont[data-line='2'] { padding-left: 1.8em }
+.ta-cont[data-line='3'] { padding-left: 2.3em }
+.ta-cont[data-line='4'] { padding-left: 2.8em }
+.ta-cont[data-line='5'] { padding-left: 3.3em }
+.ta-cont[data-line='6'] { padding-left: 3.8em }
+.ta-cont[data-line='7'] { padding-left: 4.3em }
+.ta-cont[data-line='0'] textarea { width: calc(100% - 0.8rem - 5px) }
+.ta-cont[data-line='1'] textarea { width: calc(100% - 1.3rem - 5px) }
+.ta-cont[data-line='2'] textarea { width: calc(100% - 1.8rem - 5px) }
+.ta-cont[data-line='3'] textarea { width: calc(100% - 2.3rem - 5px) }
+.ta-cont[data-line='4'] textarea { width: calc(100% - 2.8rem - 5px) }
+.ta-cont[data-line='5'] textarea { width: calc(100% - 3.3rem - 5px) }
+.ta-cont[data-line='6'] textarea { width: calc(100% - 3.8rem - 5px) }
+.ta-cont[data-line='7'] textarea { width: calc(100% - 4.3rem - 5px) }
 code .xml-tag { color: #adf }
 code .xml-attr { color: #ff7 }
 code .xml-attr-ns { color: #fa8 }
@@ -226,15 +224,17 @@ code .inline-comment { color: #888 }
 code .keyword { color: #fd3 }
 code .reserved, code .bad { color: #f00 }
 code .constant, code .string .escape, .template.punctuation { color: #df0 }
-code .string { color: #6C3 }
+code .string { color: #6c3 }
 code .regex { color: #ffa }
 code .regex .open, code .regex .close, code .regex .modifier { color: #ff0 }
 code .regex .escape, code .color { color: #afa }
 code .regex .backreference { color: #0f0 }
 code .regex .special { color: #faa }
 code .regex .grouper { color: #fff }
-code .regex .charclass { color: #ffd }
-code .regex .charclass { background: #730 }
+code .regex .charclass {
+	color: #ffd;
+	background: #730;
+}
 code .regex .charclass .range { color: #fed }
 code .regex .charclass .punctuation, code .function-call { color: #f90 }
 code .regex .quantifier { color: #2af }
@@ -300,8 +300,8 @@ code .browser { color: #9bd }
 	content: '';
 	position: absolute;
 	top: 0; right: 0; bottom: 0; left: 0;
+	background: rgba(255, 128, 128, 0.95);
 }
-.comment.deleted::before { background: rgba(255, 128, 128, 0.95) }
 .comment.deleted[id^=c]::before { left: 74px }
 #pingsug {
 	position: absolute;
@@ -313,7 +313,10 @@ code .browser { color: #9bd }
 	margin: 0 2px;
 }
 .diamond { color: #000 }
-.c-sig { padding: 2px 0 0 4px }
+.c-sig {
+	font-size: 0.8rem;
+	padding: 2px 0 0 4px;
+}
 .c-sig > * { color: #666 }
 .ctrls :hover { color: #00f }
 .ctrls .star:hover { color: #880 }
@@ -378,17 +381,16 @@ fieldset {
 	box-shadow: 1px 1px 8px #000;
 }
 .user {
-	 background: #9ef;
-	 color: #000;
-	 min-width: 140px;
-	 max-width: 14em;
-	 display: inline-block;
-	 padding: 4px 8px 4px 4px;
-	 text-align: left;
+	background: #9ef;
+	color: #000;
+	min-width: 140px;
+	max-width: 14em;
+	display: inline-block;
+	padding: 4px 8px 4px 4px;
+	text-align: left;
 }
 .user div { margin-left: 4px }
 .user a { display: block }
-.programs { overflow: hidden }
 .program {
 	display: flex;
 	flex-direction: column;
@@ -406,7 +408,9 @@ fieldset {
 	overflow: auto;
 }
 .program iframe { flex-grow: 1 }
-.programs { max-height: 1000px }
+.programs {
+	max-height: 1000px;
+}
 .lim-programs { max-height: 600px }
 @media (min-width: 650px) {
 	.program { width: 300px }
@@ -470,11 +474,11 @@ noscript {
 }
 h1, h2, h3, h4, h5, h6 {
 	margin-top: 0.2em; margin-bottom: 0.2em;
-	font-family: Tahoma, Helvetica;
+	font-family: 'Tahoma', 'Helvetica';
 }
 h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), h6:not(.title) {
 	font-weight: normal;
-	font-family: Verdana;
+	font-family: 'Verdana';
 }
 .underline, h1, aside h2 { border-bottom: 1px solid #aaa }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
@@ -515,7 +519,7 @@ a.blk:hover, a.blk:active { background: rgba(255, 255, 255, 0.2) }
 a.blk:active { color: #00f }
 input[type=text], input[type=email], input[type=password] { width: 18em }
 input[type=text], input[type=email], input[type=number], input[type=search], input[type=password], textarea {
-	font-family: helvetica;
+	font-family: 'Helvetica';
 	font-size: 1rem;
 }
 .score {
@@ -525,51 +529,50 @@ input[type=text], input[type=email], input[type=number], input[type=search], inp
 	color: #f00;
 	padding: 0 4px;
 }
-.score[data-score="0"] { display: none }
-.score[data-score="1"] { color: #888 }
-.score[data-score="2"] { color: #666 }
-.score[data-score="3"] { color: #444 }
-.score[data-score="4"] { color: #222 }
-.score[data-score="5"] { color: #000 }
-.score[data-score="6"] { color: #001 }
-.score[data-score="7"] { color: #002 }
-.score[data-score="8"] { color: #003 }
-.score[data-score="9"] { color: #004 }
-.score[data-score="10"] { color: #005 }
-.score[data-score="11"] { color: #006 }
-.score[data-score="12"] { color: #007 }
-.score[data-score="13"] { color: #008 }
-.score[data-score="14"] { color: #009 }
-.score[data-score="15"] { color: #00a }
-.score[data-score="16"] { color: #00b }
-.score[data-score="17"] { color: #00c }
-.score[data-score="18"] { color: #00d }
-.score[data-score="19"] { color: #00e }
-.score[data-score="20"] { color: #00f }
-.score[data-score="21"] { color: #33f }
-.score[data-score="22"] { color: #66f }
-.score[data-score="23"] { color: #f90 }
-.score[data-score="24"] { color: #f80 }
-.score[data-score="25"] { color: #f70 }
-.score[data-score="26"] { color: #f60 }
-.score[data-score="27"] { color: #f50 }
-.score[data-score="28"] { color: #f40 }
-.score[data-score="29"] { color: #f30 }
-.score[data-score="30"] { color: #f20 }
-.score[data-score="31"] { color: #f10 }
+.score[data-score='0'] { display: none }
+.score[data-score='1'] { color: #888 }
+.score[data-score='2'] { color: #666 }
+.score[data-score='3'] { color: #444 }
+.score[data-score='4'] { color: #222 }
+.score[data-score='5'] { color: #000 }
+.score[data-score='6'] { color: #001 }
+.score[data-score='7'] { color: #002 }
+.score[data-score='8'] { color: #003 }
+.score[data-score='9'] { color: #004 }
+.score[data-score='10'] { color: #005 }
+.score[data-score='11'] { color: #006 }
+.score[data-score='12'] { color: #007 }
+.score[data-score='13'] { color: #008 }
+.score[data-score='14'] { color: #009 }
+.score[data-score='15'] { color: #00a }
+.score[data-score='16'] { color: #00b }
+.score[data-score='17'] { color: #00c }
+.score[data-score='18'] { color: #00d }
+.score[data-score='19'] { color: #00e }
+.score[data-score='20'] { color: #00f }
+.score[data-score='21'] { color: #33f }
+.score[data-score='22'] { color: #66f }
+.score[data-score='23'] { color: #f90 }
+.score[data-score='24'] { color: #f80 }
+.score[data-score='25'] { color: #f70 }
+.score[data-score='26'] { color: #f60 }
+.score[data-score='27'] { color: #f50 }
+.score[data-score='28'] { color: #f40 }
+.score[data-score='29'] { color: #f30 }
+.score[data-score='30'] { color: #f20 }
+.score[data-score='31'] { color: #f10 }
 .starcount {
 	font-weight: bold;
 	color: #d60;
 	line-height: 1.2;
 }
-.starcount[data-count="0"] { display: none }
+.starcount[data-count='0'] { display: none }
 html, body { height: 100% }
-body {
-	display: flex;
-	flex-direction: column;
-}
 body > * { flex-shrink: 0 }
-#content { flex-grow: 1 }
+#content {
+	flex-grow: 1;
+	padding-bottom: 1rem;
+}
 #footer {
 	position: absolute;
 	width: 100%;
@@ -580,10 +583,7 @@ body > * { flex-shrink: 0 }
 	max-width: 144px;
 	max-height: 144px;
 }
-#profpic + div {
-	padding-left: 6px;
-	overflow: hidden;
-}
+#profpic + div { padding-left: 6px }
 .big-rep { font-size: 1.8em }
 #logo-big {
 	max-width: 100%;
@@ -628,9 +628,11 @@ body > * { flex-shrink: 0 }
 	.resp-flex > section:not(:first-child) { margin-left: 6px }
 }
 @media (min-width: 701px) {
-	.half { float: left }
+	.half {
+		float: left;
+		width: 49.5%;
+	}
 	.half.rit, .half:not(.rit) + .half:last-child { float: right }
-	.half { width: 49.5% }
 }
 #nav {
 	background: #000;
@@ -668,7 +670,6 @@ body > * { flex-shrink: 0 }
 	padding: 0 8px;
 }
 #notifs:empty { display: none }
-#content { padding-bottom: 1rem }
 #nav a.active > span { font-weight: bold }
 @media (max-width: 375px) {
 	#nav #logo {
@@ -694,9 +695,8 @@ body > * { flex-shrink: 0 }
 	}
 	#nav #logo {
 		float: left;
-		margin-right: 4px;
 		height: calc(4px + 1.9em);
-		margin: -2px 0;
+		margin: -2px 0 0 4px;
 		padding: 0 10px;
 	}
 	#logo svg { width: 145px }

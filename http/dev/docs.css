@@ -23,7 +23,6 @@
 	display: flex;
 	align-items: stretch;
 }
-#output { margin-left: 8px }
 #ta-cont {
 	flex: 1 0 0;
 	position: relative;
@@ -67,8 +66,11 @@
 	width: 1px;
 }
 #caret[hidden] { display: none }
-#output { float: right }
-#output { width: 450px }
+#output {
+	float: right;
+	width: 450px;
+	margin-left: 8px;
+}
 @media (max-width: 1400px) {
 	#ta-cont, #output { zoom: 0.95 }
 }
