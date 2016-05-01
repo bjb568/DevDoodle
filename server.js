@@ -581,7 +581,7 @@ let serverHandler = o(function*(req, res) {
 				let errors = [];
 				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
 				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (['P', 'R', 'N', 'M'].includes(post.type) == -1) errors.push('Invalid room type.');
+				if (!['P', 'R', 'N', 'M'].includes(post.type)) errors.push('Invalid room type.');
 				if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
 				let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
 					i = last ? last._id + 1 : 1;

@@ -72,7 +72,7 @@ function inlineMarkdown(input) {
 			}
 		};
 	outer: for (var i = 0; i < input.length; i++) {
-		if (['code', 'samp'].includes(current[current.length - 1]) == -1) {
+		if (!['code', 'samp'].includes(current[current.length - 1])) {
 			if (input[i] == '\\') span += input[++i].replace('^', '\u0001').replace('[', '\u0002');
 			else {
 				for (var l = 3; l > 0; l--) {
