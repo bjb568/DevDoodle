@@ -3,11 +3,6 @@
 		"path": "./html/legal/tos.html",
 		"title": "Terms of Use"
 	},
-	"/login/recover": {
-		"path": "./html/login/recovery.html",
-		"title": "Recover Account",
-		"inhead": "<link rel=\"stylesheet\" href=\"login.css\" />"
-	},
 	"/formatting": {
 		"path": "./html/formatting.html",
 		"title": "Formatting",

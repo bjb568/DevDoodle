@@ -5,10 +5,21 @@ const voteMultiplier = {
 	answer: 5
 };
 let url = require('url'),
-	crypto = require('crypto');
+	cookie = require('cookie');
 module.exports = o(function*(req, res, user, post) {
 	let i, id;
-	if (req.url.pathname == '/me/clearnotifs') {
+	if (req.url.pathname == '/logout') {
+		res.writeHead(303, {
+			'Set-Cookie': cookie.serialize('id', '', {
+				path: '/',
+				expires: new Date(new Date().setDate(new Date().getDate() - 30)),
+				httpOnly: true,
+				secure: config.secureCookies
+			})
+		});
+		if (user) dbcs.users.update({name: user.name}, {$set: {cookie: []}});
+		res.end();
+	} else if (req.url.pathname == '/me/clearnotifs') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to clear your notifications.');
 		i = user.notifs.length;
 		while (i--) user.notifs[i].unread = false;
@@ -36,83 +47,6 @@ module.exports = o(function*(req, res, user, post) {
 		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address must be no longer than 256 characters.');
 		dbcs.users.update({name: user.name}, {$set: {mail: newmail}});
 		res.writeHead(200);
-	} else if (req.url.pathname == '/login/recover') {
-		if (post.code) {
-			let fuser = yield dbcs.users.findOne({
-				confirm: post.code,
-				confirmSentTime: {$gt: new Date() - 300000}
-			}, yield);
-			if (!fuser) return res.writeHead(403) || res.end('Error: Invalid or expired recovery code.');
-			if (!post.pass) return res.writeHead(400) || res.end('Error: No password received.');
-			let salt = crypto.randomBytes(64).toString('base64');
-			res.writeHead(303, {Location: '/login/?r=recovered'});
-			res.end();
-			dbcs.users.update({name: fuser.name}, {
-				$set: {
-					pass: new Buffer(yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
-					salt,
-					cookie: []
-				},
-				$unset: {
-					confirm: true,
-					confirmSentTime: true
-				}
-			});
-		} else {
-			if (!post.user || !post.mail) return res.writeHead(400) || res.end('Error: Both user and mail are required.');
-			let fuser = yield dbcs.users.findOne({
-				name: post.user,
-				mail: post.mail
-			}, yield);
-			if (fuser) {
-				let token = crypto.randomBytes(12).toString('base64');
-				transport.sendMail({
-					from: 'DevDoodle <support@devdoodle.net>',
-					to: post.mail,
-					subject: 'Password Reset',
-					html: '<p>Your ' + fuser.name + ' account\'s <em>case sensitive</em> recovery code is <strong>' + token + '</strong></p>' +
-						'<p>Enter the code into the existing account recovery page to reset your password.</p>' +
-						'<p>If you have not requested a password reset for the account ' + fuser.name + ' on DevDoodle, you may safely ignore this email.</p>'
-				});
-				dbcs.users.update({name: fuser.name}, {
-					$set: {
-						cookie: [],
-						confirm: token,
-						confirmSentTime: new Date().getTime()
-					}
-				});
-			}
-			res.writeHead(204);
-			res.end();
-		}
-	} else if (req.url.pathname == '/login/resend') {
-		if (!post.name || !post.pass || !post.mail) return res.writeHead(400) || res.end('Error: user, pass, and mail are required fields.');
-		if (post.mail.length > 256) return res.writeHead(400) || res.end('Error: Email address must be no longer than 256 characters.');
-		let fuser = yield dbcs.users.findOne({name: post.name}, yield);
-		if (!fuser) return res.writeHead(403) || res.end('Error: Invalid credentials.');
-		if (
-			(
-				yield crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)
-			).toString('base64') != fuser.pass
-		) return res.writeHead(403) || res.end('Error: Invalid credentials.');
-		let confirmToken = crypto.randomBytes(128).toString('base64');
-		dbcs.users.update({name: fuser.name}, {
-			$set: {
-				mail: post.mail,
-				confirm: confirmToken
-			}
-		});
-		transport.sendMail({
-			from: 'DevDoodle <support@devdoodle.net>',
-			to: post.mail,
-			subject: 'Confirm your account',
-			html:
-				'<h1>Welcome to DevDoodle!</h1>' +
-				'<p>An account on <a href="http://devdoodle.net/">DevDoodle</a> has been made for this email address under the name ' + post.name + '. ' +
-				'Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
-		});
-		res.writeHead(200);
-		res.end('Confirmation email sent.');
 	} else if (i = req.url.pathname.match(/^\/comment\/(\d+)\/body$/)) {
 		let doc = yield dbcs.comments.findOne({_id: parseInt(i[1])}, {body: true}, yield);
 		if (!doc) return res.writeHead(404) || res.end('Error: Invalid comment id.');
