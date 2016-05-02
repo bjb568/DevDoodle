@@ -81,19 +81,13 @@ module.exports = o(function*(req, res, user) {
 		}
 		yield respondPage(dispUser.name, user, req, res, yield);
 		let questions = 0;
-		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
+		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a id="logout">Log out</a></small>' : '') + '</h1>');
 		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
 		res.write('<div>');
 		res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 		if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 		res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
 		if (dispUser.githubName) res.write('<a href="https://github.com/' + dispUser.githubName + '/">' + dispUser.githubName + ' on GitHub</a>');
-		if (me && !dispUser.githubID) {
-			res.write(
-				'<a href="//gravatar.com/' + crypto.createHash('md5').update(dispUser.mail).digest('hex') + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
-				'(you must <a href="http://gravatar.com/login" target="_blank">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
-			);
-		}
 		res.write('</div>');
 		res.write('<div class="clear"><span class="big-rep">' + dispUser.rep + '</span> reputation</div>');
 		res.write(notifstr);

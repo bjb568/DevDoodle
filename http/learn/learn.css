@@ -257,8 +257,8 @@
 	left: calc(50% + 4em);
 	width: 2px;
 	height: 163em;
-	transform: rotate(36.0deg);
-	-webkit-transform: rotate(36.0deg);
+	transform: rotate(36deg);
+	-webkit-transform: rotate(36deg);
 	transform-origin: top;
 	-webkit-transform-origin: top;
 	background: #000;

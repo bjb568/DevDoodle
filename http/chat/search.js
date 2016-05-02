@@ -1,5 +1,5 @@
 'use strict';
-var username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+var username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	rooms = JSON.parse(document.getElementById('rooms').value),
 	form = document.getElementById('form'),
 	room = document.getElementById('room'),

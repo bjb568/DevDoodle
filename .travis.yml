@@ -6,8 +6,12 @@ services:
 install:
   - npm install
   - npm install -g snyk
+  - npm install -g nsp
   - npm install -g eslint
+  - npm install -g stylelint
 script:
   - npm test
   - snyk test
+  - nsp check
   - eslint ./
+  - stylelint ./*/*.css ./*/*/*.css -v

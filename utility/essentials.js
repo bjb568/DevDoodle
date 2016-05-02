@@ -72,7 +72,7 @@ function inlineMarkdown(input) {
 			}
 		};
 	outer: for (var i = 0; i < input.length; i++) {
-		if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
+		if (!['code', 'samp'].includes(current[current.length - 1])) {
 			if (input[i] == '\\') span += input[++i].replace('^', '\u0001').replace('[', '\u0002');
 			else {
 				for (var l = 3; l > 0; l--) {
@@ -81,7 +81,7 @@ function inlineMarkdown(input) {
 						span = '';
 						if (current[current.length - 1] == tags[input.substr(i, l)]) output += '</' + current.pop() + '>';
 						else {
-							if (current.indexOf(tags[input.substr(i, l)]) != -1) warning('Illegal nesting of "' + input.substr(i, l) + '"');
+							if (current.includes(tags[input.substr(i, l)])) warning('Illegal nesting of "' + input.substr(i, l) + '"');
 							output += '<' + tags[input.substr(i, l)] + '>';
 							current.push(tags[input.substr(i, l)]);
 						}
@@ -241,7 +241,7 @@ function markdown(input) {
 function passStrength(pass) {
 	var uniqueChars = [];
 	for (var i = 0; i < pass.length; i++) {
-		if (uniqueChars.indexOf(pass[i]) == -1) uniqueChars.push(pass[i]);
+		if (!uniqueChars.includes(pass[i])) uniqueChars.push(pass[i]);
 	}
 	var penalties = /(.+?)(.*)(\1+)/g,
 		match,
