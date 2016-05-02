@@ -7,11 +7,17 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>');
 		res.write('<div class="flexcont programs">');
-		dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
+		dbcs.programs.find({
+			deleted: {$exists: false},
+			$or: [
+				{private: false},
+				{user: user.name}
+			]
+		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
 			if (err) throw err;
 			if (data) {
 				res.write('<div class="program">');
-				res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
+				res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
 				if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>');
 				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>');
 				res.write('</div> ');
@@ -143,13 +149,17 @@ module.exports = o(function*(req, res, user) {
 												[html(program.html), html(program.css), html(program.js)]
 											)
 								).replaceAll(
-									['$id', '$title', '$created', '$updated'],
-									[program._id.toString(), html(program.title || 'Untitled'), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-								).replace('$comments', commentstr).replaceAll(
+									['$id', '$created', '$updated'],
+									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
+								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								.replace('$comments', commentstr).replaceAll(
 									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 									[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
 								).replace('Fork</a>', (program.user != user.name ? 'Fork</a>' : 'Save</a> <line /> <a id="fork" title="Create a new program based on this one">Fork</a> <line /> <a id="delete" class="red">Delete</a>'))
-								.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+								.replace('$private',
+									(program.private ? '<span id="is-private" class="private">private</span>.' : '<span id="is-private">public</span>.') +
+									(program.user == user.name ? '<button id="privitize">Make ' + (program.private ? 'public' : 'private') + '</button>' : '')
+								).replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
 								.replace(vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'id="up"' : 'id="dn"') : 'nomatch') + ' class="clkd"')
 								.replace(
 									'$forked',

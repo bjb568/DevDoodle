@@ -109,8 +109,11 @@ module.exports = o(function*(req, res, user) {
 								)
 						)
 						: '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
-				.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
-				.replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
+				.replace(
+					' $options',
+					typeIcons[doc.type].replace('width="10" height="16"', 'width="13" height="21"') +
+					' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>'
+				).replace(' $access', doc.invited.indexOf(user.name) == -1 ? '' : ' <small><a href="?access">Access</a></small>')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}

@@ -509,6 +509,7 @@ module.exports = o(function*(req, res, user, post) {
 					score: 0,
 					hotness: 0,
 					upvotes: 0,
+					private: false,
 					_id: i
 				};
 			if (type == 1) tprogram.code = (post.code || '').toString();

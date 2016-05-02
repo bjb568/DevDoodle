@@ -817,6 +817,19 @@ module.exports.init = function(server) {
 					for (let i in wss.clients) {
 						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
 					}
+				} else if (message.event == 'privitize') {
+					if (typeof message.private != 'boolean') return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Invalid value for private.'
+					}));
+					dbcs.programs.update({_id: program._id}, {$set: {private: message.private}});
+					let toSend = JSON.stringify({
+						event: 'privitize',
+						private: message.private
+					});
+					for (let i in wss.clients) {
+						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
+					}
 				} else tws.trysend(JSON.stringify({
 					event: 'err',
 					body: 'Invalid event type.'

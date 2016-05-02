@@ -55,7 +55,7 @@ code { padding: 2px; }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
 .diamond { color: #000 }
-.private { color: #90f }
+.private { color: #a4f }
 .disabled, a.disabled:hover, a.disabled:active { color: #999 }
 small, a.small, a.grey, .c-sig > *, .c-sig, .ctrls a, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
 small, a.small, footer, .ctrls a { font-size: 0.85em }
