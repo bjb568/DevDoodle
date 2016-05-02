@@ -5,6 +5,10 @@ var mine = document.getElementById('mine').value == '1',
 	opName = document.getElementById('user').value,
 	myRep = parseInt(document.getElementById('rep').value),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
+	title = document.getElementById('title'),
+	privitize = document.getElementById('privitize'),
+	isPrivate = document.getElementById('is-private'),
+	edit = document.getElementById('edit-title'),
 	htmle = document.getElementById('html'),
 	css = document.getElementById('css'),
 	js = document.getElementById('js'),
@@ -384,27 +388,31 @@ if (document.getElementById('meta')) {
 	if (mine) {
 		document.getElementById('title').onclick = function() {
 			this.hidden = true;
-			var edit = document.getElementById('edit-title');
 			edit.hidden = false;
 			edit.focus();
 		};
-		document.getElementById('edit-title').onblur = function() {
+		edit.onblur = function() {
 			request('/api/program/edit-title', function(res) {
-				var edit = document.getElementById('edit-title');
+				var edit = edit;
 				if (res.indexOf('Error') == 0) {
 					alert(res);
 					edit.value = document.getElementById('title').textContent;
 				} else if (res == 'Success') {
 					edit.hidden = true;
-					var title = document.getElementById('title');
 					document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
 					if (!edit.value) edit.value = 'Untitled';
 					title.hidden = false;
 				} else alert('Unknown error. Response was: ' + res);
 			}, 'title=' + encodeURIComponent(this.value));
 		};
-		document.getElementById('edit-title').onkeypress = function(e) {
+		edit.onkeypress = function(e) {
 			if (e.keyCode == 13) this.onblur.call(this);
+		};
+		privitize.onclick = function() {
+			socket.send(JSON.stringify({
+				event: 'privitize',
+				private: !isPrivate.classList.contains('private')
+			}));
 		};
 	}
 	up.onclick = function() {
@@ -512,6 +520,11 @@ if (document.getElementById('meta')) {
 				msgCtrls[3].hidden = false;
 				msgCtrls[4].hidden = true;
 			} else createComment(data);
+		} else if (data.event == 'privitize') {
+			isPrivate.classList.toggle('private', data.private);
+			title.lastChild[data.private ? 'removeAttribute' : 'setAttribute']('hidden', '');
+			isPrivate.firstChild.nodeValue = data.private ? 'private' : 'public';
+			if (privitize) privitize.firstChild.nodeValue = 'Make ' + (data.private ? 'public' : 'private');
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].parentNode.classList.remove('clkd');

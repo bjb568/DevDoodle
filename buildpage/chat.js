@@ -1,15 +1,5 @@
 'use strict';
 let fs = require('fs');
-let typeIcons = {
-	P: '',
-	R: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="16">' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
-		'</svg>',
-	N: ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="14">' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="black" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
-		'</svg>',
-	M: ' <span class="diamond">♦</span>'
-};
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/chat/') {
@@ -118,9 +108,12 @@ module.exports = o(function*(req, res, user) {
 										: '<p>Posting in a non-public room is by invitation only.</p>'
 								)
 						)
-						: '<p id="loginmsg">You must be <a href="/login/" title="Log in">logged in</a> and have 30 reputation to chat.</p>')
-				.replace(' $options', typeIcons[doc.type] + ' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>')
-				.replace(' $access', doc.invited.includes(user.name) ? ' <small><a href="?access">Access</a></small>' : '')
+						: '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+				.replace(
+					' $options',
+					typeIcons[doc.type].replace('width="10" height="16"', 'width="13" height="21"') +
+					' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>'
+				).replace(' $access', doc.invited.includes(user.name) ? '' : ' <small><a href="?access">Access</a></small>')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}

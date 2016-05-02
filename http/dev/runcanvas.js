@@ -6,6 +6,8 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	myRep = parseInt((document.getElementById('rep') || {}).value),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	title = document.getElementById('title'),
+	privitize = document.getElementById('privitize'),
+	isPrivate = document.getElementById('is-private'),
 	edit = document.getElementById('edit-title'),
 	editCommentForm = document.getElementById('editcomment'),
 	editCommentTA = document.getElementById('comment-edit-ta'),
@@ -320,6 +322,12 @@ if (document.getElementById('meta')) {
 				code.focus();
 			}
 		};
+		privitize.onclick = function() {
+			socket.send(JSON.stringify({
+				event: 'privitize',
+				private: !isPrivate.classList.contains('private')
+			}));
+		};
 	}
 	up.onclick = function() {
 		request('/api/program/vote', function(res) {
@@ -426,6 +434,11 @@ if (document.getElementById('meta')) {
 				msgCtrls[3].hidden = false;
 				msgCtrls[4].hidden = true;
 			} else createComment(data);
+		} else if (data.event == 'privitize') {
+			isPrivate.classList.toggle('private', data.private);
+			title.lastChild[data.private ? 'removeAttribute' : 'setAttribute']('hidden', '');
+			isPrivate.firstChild.nodeValue = data.private ? 'private' : 'public';
+			if (privitize) privitize.firstChild.nodeValue = 'Make ' + (data.private ? 'public' : 'private');
 		} else if (data.event == 'err') {
 			alert('Error: ' + data.body);
 			if (data.commentUnvote) document.getElementById('c' + data.commentUnvote).getElementsByClassName('up')[0].parentNode.classList.remove('clkd');

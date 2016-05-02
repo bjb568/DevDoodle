@@ -27,11 +27,14 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h2 class="underline">Hot Programs</h2>');
 			res.write('<div class="flexcont programs lim-programs">');
 			let programstr = '';
-			dbcs.programs.find({deleted: {$exists: false}}).sort({hotness: -1, updated: -1}).limit(24).each(o(function*(err, data) {
+			dbcs.programs.find({
+				deleted: {$exists: false},
+				private: false
+			}).sort({hotness: -1, updated: -1}).limit(24).each(o(function*(err, data) {
 				if (err) throw err;
 				if (data) {
 					programstr += '<div class="program">';
-					programstr += '<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>';
+					programstr += '<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>';
 					if (data.type == 1) programstr += '<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>';
 					else if (data.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>';
 					programstr += '</div> ';

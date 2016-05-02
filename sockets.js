@@ -189,9 +189,9 @@ module.exports.init = function(server) {
 				event: 'err',
 				body: 'You have not been invited to this private room.'
 			}));
-			if (room.type == 'M' && user.level != 5) return tws.trysend(JSON.stringify({
+			if (room.type == 'M' && (!user || user.level < 5)) return tws.trysend(JSON.stringify({
 				event: 'err',
-				body: 'You must be a moderator to join this room.'
+				body: 'You must be a level 5 moderator to join this room.'
 			}));
 			let count = yield dbcs.chat.find({
 				room: tws.room,
@@ -814,6 +814,19 @@ module.exports.init = function(server) {
 					}
 				} else if (message.event == 'comment-undelete') {
 					let toSend = yield commentUndelete(message, tws, yield);
+					for (let i in wss.clients) {
+						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
+					}
+				} else if (message.event == 'privitize') {
+					if (typeof message.private != 'boolean') return tws.trysend(JSON.stringify({
+						event: 'err',
+						body: 'Invalid value for private.'
+					}));
+					dbcs.programs.update({_id: program._id}, {$set: {private: message.private}});
+					let toSend = JSON.stringify({
+						event: 'privitize',
+						private: message.private
+					});
 					for (let i in wss.clients) {
 						if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
 					}

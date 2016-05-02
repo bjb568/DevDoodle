@@ -124,18 +124,20 @@ module.exports = o(function*(req, res, user) {
 						res.write('<section class="resp-block">');
 						res.write('<h2 class="underline">Programs <small><a href="/dev/search/user/' + dispUser.name + '">Show All</a></small></h2>');
 						res.write('<div class="flexcont programs lim-programs">');
-						let programs = 0;
-						dbcs.programs.find({
-							user: dispUser.name,
-							deleted: {$exists: false}
-						}).sort({
+						let programs = 0,
+							programQuery = {
+								user: dispUser.name,
+								deleted: {$exists: false}
+							};
+						if (!me) programQuery.private = false;
+						dbcs.programs.find(programQuery).sort({
 							score: -1,
 							updated: -1
 						}).limit(24).each(o(function*(err, program) {
 							if (err) throw err;
 							if (program) {
 								res.write('<div class="program">');
-								res.write('<h2 class="title"><a href="/dev/' + program._id + '">' + html(program.title || 'Untitled') + '</a></h2>');
+								res.write('<h2 class="title"><a href="/dev/' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a></h2>');
 								if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
 								else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
 								res.write('</div> ');
