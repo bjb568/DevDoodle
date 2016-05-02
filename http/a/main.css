@@ -47,7 +47,7 @@ body {
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
 .scrly { overflow-y: auto }
-.noscrl, .comment > :last-child, blockquote, .limited, .large-limited, #programs, #profpic + div { overflow: hidden }
+.noscrl, .comment > :last-child, blockquote, .limited, .large-limited, .programs, #profpic + div { overflow: hidden }
 .br, .desc { border-radius: 4px }
 .hglt, .desc, .comment, article { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, 0.8) }
