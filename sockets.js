@@ -907,7 +907,7 @@ module.exports.init = function(server) {
 						}
 					});
 					let tagstr = '';
-					dbcs.qtags.find({_id: {$in: question.tags}}).sort({_id: 1}).each(function(err, tag) {
+					dbcs.qtags.find({_id: {$in: tags}}).sort({_id: 1}).each(function(err, tag) {
 						if (err) throw err;
 						if (tag) tagstr += '<a href="search/tag/' + tag._id + '" class="tag">' + tag.name + '</a> ';
 						else {
