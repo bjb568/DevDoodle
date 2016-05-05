@@ -101,7 +101,7 @@ document.getElementById('edit-tags').onchange = function() {
 		for (var i = 0; i < els.length; i++) {
 			arr.push(els[i].id.substr(3));
 		}
-		document.getElementById('edit-tags-input').value = arr.join();
+		document.getElementById('edit-tags-input').value = arr.join(',');
 	}, 0);
 };
 document.getElementById('answerform').addEventListener('submit', function(e) {
