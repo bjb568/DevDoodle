@@ -106,7 +106,7 @@ module.exports = o(function*(req, res, user) {
 				if (tag) langTags[tag._id] = tag.name;
 				else {
 					let tagify = tag => '<a href="search?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>';
-					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]));
+					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]) + ' ');
 					res.write('</div>');
 					res.write('</article>');
 					let revnum = 0,
@@ -147,13 +147,14 @@ module.exports = o(function*(req, res, user) {
 								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
-								let d = diff.diffWords(item.tags.join(), prev.tags.join());
+								let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));
 								for (let i = 0; i < d.length; i++) {
 									let t = d[i].value.split(',');
 									for (let j = 0; j < t.length; j++) {
+										if (!t[j]) continue;
 										if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins> ');
 										else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del> ');
-										else res.write(tagify(t[j]));
+										else res.write(tagify(t[j]) + ' ');
 									}
 								}
 								res.write('</div>');
@@ -255,7 +256,7 @@ module.exports = o(function*(req, res, user) {
 											[markdown(question.description), inlineMarkdown(question.question)]
 										).replaceAll(
 											['$edit-tags', '$raw-edit-tags'],
-											[tageditstr, question.tags.join()]
+											[tageditstr, question.tags.join(',')]
 										).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
 											['$qcommentstr', '$answers', '$tags', '$rep'],
 											[commentstr, answerstr, tagstr, (user.rep || 0).toString()]

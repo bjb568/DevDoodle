@@ -869,7 +869,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'Invalid type parameter.'
 					}));
-					let tags = message.tags.split();
+					let tags = message.tags.split(',');
 					for (let i = 0; i < tags.length; i++) {
 						if (!(tags[i] = parseInt(tags[i]))) return tws.trysend(JSON.stringify({
 							event: 'err',
