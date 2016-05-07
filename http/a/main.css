@@ -664,8 +664,8 @@ body > * { flex-shrink: 0 }
 }
 #nav a {
 	color: #ddd;
-	font-size: 0.9rem;
-	line-height: 1.9;
+	font-size: 0.95rem;
+	line-height: 1.9em;
 	padding: 0 3px;
 }
 #nav a:note(#logo) { white-space: pre }
@@ -685,14 +685,13 @@ body > * { flex-shrink: 0 }
 #nav form {
 	min-width: 8em;
 	width: 100%;
-	font-size: 0.9rem;
+	font-size: 1rem;
 	padding: 0 4px;
 	margin: 2px 0;
 }
 #nav form input {
 	width: 100%;
 	color: #000;
-	font-size: 16px;
 	line-height: 1em;
 	padding: 0 8px;
 }
@@ -723,7 +722,7 @@ body > * { flex-shrink: 0 }
 	#nav #logo {
 		float: left;
 		height: calc(4px + 1.9em);
-		margin: -2px 0 0 4px;
+		margin: -2px 4px -2px 0;
 		padding: 0 10px;
 	}
 	#logo > svg { width: 145px }
@@ -763,6 +762,7 @@ body > * { flex-shrink: 0 }
 }
 @media (max-width: 839px) {
 	#nav { margin-bottom: 2px }
+	#nav span { vertical-align: middle }
 	#nav a:hover > span, #nav #logo:hover { background: #33a }
 	#nav a.active > span, #nav a:active > span, #logo.active, #nav #logo:active { background: #119 }
 	#nav a.active > span, #nav a:active > span, #nav #logo:active, #nav a:hover > span, #nav #logo:hover {
