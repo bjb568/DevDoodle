@@ -1,0 +1,15 @@
+<h1>Create Room</h1>
+<form id="form" method="post" action="/api/chat/newroom">
+	<p><label>Name: <input id="name" type="text" name="name" required="" minlength="4" maxlength="92" value="" autofocus="" /></label> <span id="err" class="red"></span></p>
+	<p><label>Description: <textarea id="desc" name="desc" required="" minlength="16" maxlength="800" rows="3" cols="80" class="maxwidth"></textarea></label></p>
+	<p><label>Type:
+		<select id="type" name="type">
+			<option value="P">Public</option>
+			<option value="R">Read-only</option>
+			<option value="N">Private</option>
+			<option value="M">Level 5 moderator ♦ only</option>
+		</select>
+	</label></p>
+	<button id="submit" type="submit">Submit</button>
+</form>
+<script src="create-room.js" async=""></script>
