@@ -70,7 +70,10 @@ function run() {
 			if (navigator.userAgent.indexOf('Mobile') == -1 && !fullScreen) document.body.classList.add('fullscreen');
 		}
 	}
-	if (save && !save.classList.contains('progress') && code.value != savedValue) save.textContent = 'Save';
+	if (save && !save.classList.contains('progress')) {
+		save.textContent = 'Save';
+		save.classList.toggle('modified', code.value != savedValue);
+	}
 	var outputBlob = new Blob([
 		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><style>*{margin:0;max-width:100%;box-sizing:border-box}body{background:#000;color:#fff}#canvas{border:1px solid #fff;-webkit-user-select:none;-moz-user-select:none;cursor:default}#console{height:100px;background:#111;padding:4px;overflow:auto;margin-top:8px}button,canvas{display:block}button{margin-top:6px}</style><body><canvas id="canvas"></canvas><div id="console"></div><button onclick="location.reload()">Restart</button><script>' + html(canvasJS) + 'try{this.eval(' + html(JSON.stringify(lines.join('\n'))) + ')}catch (e){error(e)}</script></body></html>'
 	], {type: 'application/xhtml+xml'});
@@ -181,6 +184,7 @@ if (save) save.onclick = function() {
 		} else if (res == 'Success') {
 			savedValue = code.value;
 			save.textContent = 'Saved';
+			save.classList.remove('modified');
 			document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 		} else {
 			clearTimeout(savingTimeout);
@@ -366,8 +370,10 @@ if (document.getElementById('meta')) {
 		document.getElementById('c-reset').onclick();
 	};
 	document.getElementById('c-reset').onclick = function() {
+		var scrlTop = document.body.scrollTop;
 		location.hash = '';
 		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
 	};
 	document.getElementById('c-edit-reset').onclick = function() {
 		editCommentForm.hidden = true;
