@@ -83,7 +83,7 @@ module.exports = o(function*(req, res, user) {
 			if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) {
 				res.write('<h1>' + html(program.title || 'Untitled') + '</h1>');
 				res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. ');
-				res.write('<a class="red" id="undelete">[undelete]</a>');
+				res.write('<button id="undelete">Undelete…</button>');
 			} else if (user.level >= 4) {
 				let deletersstr = '',
 					i = program.deleted.by.length;
@@ -94,7 +94,7 @@ module.exports = o(function*(req, res, user) {
 				}
 				res.write('<h1>' + html(program.title || 'Untitled') + '</h1>');
 				res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. ');
-				res.write('<a class="red" id="undelete">[undelete]</a>');
+				res.write('<button id="undelete">Undelete…</button>');
 			} else {
 				res.write(
 					'This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' +
