@@ -73,7 +73,7 @@ module.exports = o(function*(req, res, user) {
 			dbcs.users.find({name: {$in: doc.invited}}).each(o(function*(err, invUser) {
 				if (err) throw err;
 				if (invUser) userstr +=
-					'<div class="lft user"><img src="' + invUser.pic + '" width="40" height="40" />' +
+					'<div class="lft user"><img src="' + invUser.pic + '" alt="profile picture for ' + invUser.name + '" width="40" height="40" />' +
 					'<div><a href="/user/' + invUser.name + '">' + invUser.name + '</a><small class="rep">' + invUser.rep + '</small></div><span>✕</span>' +
 					'</div>';
 				else {
