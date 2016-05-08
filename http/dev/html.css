@@ -44,7 +44,7 @@ section { background: transparent }
 	width: 400px;
 	max-width: 100%;
 }
-#outputbox { margin-bottom: 2px; }
+#outputbox { margin-bottom: 2px }
 @media (max-width: 699px) {
 	#row { flex-direction: column }
 	#left {

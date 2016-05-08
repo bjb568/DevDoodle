@@ -52,7 +52,7 @@ body {
 .hglt, .desc, .comment, article { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, 0.8) }
 code, iframe { background: #fff }
-code { padding: 2px; }
+code { padding: 2px }
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 2px }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }

@@ -20,7 +20,7 @@ body { color: #eee }
 blockquote { border-left: 2px solid #fa0 }
 .diamond, h1, h2, h3, h4, h5, h6, code { color: #fff }
 a, .ctrl, a.blk { color: #fff }
-a:visited { color: #ccc; }
+a:visited { color: #ccc }
 a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }
 .user a { color: #000 }
