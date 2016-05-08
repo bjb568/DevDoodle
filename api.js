@@ -44,7 +44,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change your email.');
 		let newmail = post.newmail;
 		if (!newmail) return res.writeHead(400) || res.end('Error: No email specified.');
-		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address must be no longer than 256 characters.');
+		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address length may not exceed 256 characters.');
 		dbcs.users.update({name: user.name}, {$set: {mail: newmail}});
 		res.writeHead(200);
 	} else if (i = req.url.pathname.match(/^\/comment\/(\d+)\/body$/)) {
@@ -111,6 +111,23 @@ module.exports = o(function*(req, res, user, post) {
 		dbcs.chatrooms.update({_id: id}, {$set: {type: post.type}});
 		res.writeHead(204);
 		res.end();
+	} else if (req.url.pathname == '/chat/newroom') {
+		if (!post.name || post.name.length < 4) return res.writeHead(400) || res.end('Error: Name must be at least 4 characters long.');
+		if (!post.desc || post.desc.length < 16) return res.writeHead(400) || res.end('Error: Description must be at least 16 characters long.');
+		if (!['P', 'R', 'N', 'M'].includes(post.type)) res.writeHead(400) || res.end('Error: Invalid room type.');
+		if (post.name.length > 92) return res.writeHead(400) || res.end('Error: Name length may not exceed 92 characters.');
+		if (post.desc.length > 800) return res.writeHead(400) || res.end('Error: Description length may not exceed 800 characters.');
+		let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
+			i = last ? last._id + 1 : 1;
+		dbcs.chatrooms.insert({
+			name: post.name,
+			desc: post.desc,
+			type: post.type,
+			invited: [user.name],
+			_id: i
+		});
+		res.writeHead(200);
+		res.end('Location: /chat/' + i);
 	} else if (req.url.pathname == '/chat/inviteuser') {
 		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
 		id = i ? parseInt(i[1]) : 0;
