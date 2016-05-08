@@ -738,7 +738,7 @@ body > * { flex-shrink: 0 }
 	}
 	#nav form { width: 100% }
 }
-@media (min-width: 500px) {
+@media (min-width: 480px) {
 	#nav a { display: inline-block }
 	#nav:not(.sub) {
 		display: flex;
@@ -750,7 +750,7 @@ body > * { flex-shrink: 0 }
 		flex-grow: 1;
 	}
 }
-@media (min-width: 500px) and (max-width: 839px) {
+@media (min-width: 480px) and (max-width: 839px) {
 	#nav div:nth-of-type(2) { flex-grow: 1 }
 }
 @media (min-width: 645px) {
