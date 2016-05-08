@@ -113,7 +113,7 @@ module.exports = o(function*(req, res, user) {
 					' $options',
 					typeIcons[doc.type].replace('width="10" height="16"', 'width="13" height="21"') +
 					' <small><a href="search?room=' + doc._id + '">Search</a>' + (user.rep > 200 && isInvited ? ' <line /> <a id="edit">Edit</a>' : '') + '</small>'
-				).replace(' $access', doc.invited.includes(user.name) ? '' : ' <small><a href="?access">Access</a></small>')
+				).replace(' $access', doc.invited.includes(user.name) ? ' <small><a href="?access">Access</a></small>' : '')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
