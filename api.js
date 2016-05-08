@@ -319,7 +319,7 @@ module.exports = o(function*(req, res, user, post) {
 		dbcs.questions.insert({
 			_id: id,
 			title: post.title.substr(0, 144),
-			lang: post.lang.substr(0, 48),
+			lang: post.lang,
 			description: post.description,
 			question: post.question.substr(0, 288),
 			code: post.code,

@@ -39,7 +39,7 @@
 	</aside>
 	<div>
 		<fieldset id="step0" class="hide">
-			<h2><label class="fullwidth">Title: <input type="text" name="title" id="title" autocomplete="off" maxlength="144" /></label></h2>
+			<h2><label class="fullwidth">Title: <input type="text" name="title" id="title" autocomplete="off" minlength="12" maxlength="144" /></label></h2>
 			<h2><label>Language: <input type="text" name="lang" id="lang" autocomplete="off" /></label></h2>
 			<div id="langsug" hidden="" class="abs"></div>
 			<button type="submit" id="submit1">Next</button>
@@ -60,11 +60,11 @@
 	<fieldset id="step2" class="hide">
 		<h2>Question Body</h2>
 		<div class="ta-cont">
-			<textarea name="description" id="description" placeholder="What's the problem? What have you tried to solve it?"></textarea>
+			<textarea name="description" id="description" placeholder="What's the problem? What have you tried to solve it?" minlength="144"></textarea>
 			<pre></pre>
 		</div>
 		<h3>Core Question</h3>
-		<h2><input type="text" name="question" id="question" placeholder="Summarize your problem in one well-written sentencce" class="fullwidth" maxlength="144" autocomplete="off" /></h2>
+		<h2><input type="text" name="question" id="question" placeholder="Summarize your problem in one well-written sentencce" class="fullwidth" minlength="12" maxlength="144" autocomplete="off" /></h2>
 		<button type="submit" id="submit3" hidden="">Next</button>
 		<div id="err3" class="err"></div>
 	</fieldset>

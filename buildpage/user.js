@@ -34,7 +34,7 @@ module.exports = o(function*(req, res, user) {
 			if (cUser) {
 				num++;
 				dstr +=
-					'<div class="user"><img src="' + cUser.pic + '" width="40" height="40" />' +
+					'<div class="user"><img src="' + cUser.pic + '" alt="profile picture for ' + cUser.name + '" width="40" height="40" />' +
 					'<div><a href="/user/' + cUser.name + '">' + cUser.name + '</a><small class="rep">' + cUser.rep + '</small></div>' +
 					'</div>';
 			} else {
@@ -82,7 +82,7 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage(dispUser.name, user, req, res, yield);
 		let questions = 0;
 		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a id="logout">Log out</a></small>' : '') + '</h1>');
-		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
+		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" alt="profile picture for ' + dispUser.name + '" />');
 		res.write('<div>');
 		res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 		if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
