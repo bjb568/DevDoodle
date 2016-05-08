@@ -366,8 +366,10 @@ if (document.getElementById('meta')) {
 		document.getElementById('c-reset').onclick();
 	};
 	document.getElementById('c-reset').onclick = function() {
+		var scrlTop = document.body.scrollTop;
 		location.hash = '';
 		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
 	};
 	document.getElementById('c-edit-reset').onclick = function() {
 		editCommentForm.hidden = true;
