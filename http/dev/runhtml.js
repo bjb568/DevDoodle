@@ -29,7 +29,7 @@ var mine = document.getElementById('mine').value == '1',
 	savedValue = [htmle.value, css.value, js.value],
 	lastValue = savedValue,
 	onbeforeunload = function() {
-		return ([htmle.value, css.value, js.value]).toString() == savedValue.toString() ? null : 'You have unsaved code.';
+		return JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue) ? null : 'You have unsaved code.';
 	},
 	blinkTimeout;
 function blink() {
@@ -65,7 +65,10 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
 function run() {
-	if (!save.classList.contains('progress')) save.textContent = 'Save';
+	if (save && !save.classList.contains('progress')) {
+		save.textContent = 'Save';
+		save.classList.toggle('modified', JSON.stringify([htmle.value, css.value, js.value]) != JSON.stringify(savedValue));
+	}
 	var outputBlob = new Blob([
 		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
 	], {type: 'application/xhtml+xml'});
@@ -209,7 +212,7 @@ function handleTAInput() {
 		blinkTimeout = setTimeout(blink, 500);
 	}
 	var newValue = [htmle.value, css.value, js.value];
-	if (document.getElementById('autorun').checked && lastValue.toString() != newValue.toString()) {
+	if (document.getElementById('autorun').checked && JSON.stringify(lastValue) != JSON.stringify(newValue)) {
 		clearTimeout(runTimeout);
 		runTimeout = setTimeout(run, 200);
 	}
@@ -257,29 +260,29 @@ addEventListener('keypress', function(e) {
 	}
 });
 save.onclick = function() {
-	var e = this;
-	if (e.classList.contains('progress')) return;
-	e.classList.add('progress');
+	if (save.classList.contains('progress')) return;
+	save.classList.add('progress');
 	var savingTimeout = setTimeout(function() {
-		if (e.textContent == 'Save') e.textContent = 'Saving…';
+		if (save.textContent == 'Save') save.textContent = 'Saving…';
 	}, 200);
 	request('/api/program/save?type=2', function(res) {
 		if (res.indexOf('Error') == 0) {
 			clearTimeout(savingTimeout);
 			alert(res);
-			e.textContent = 'Save';
+			save.textContent = 'Save';
 		} else if (res.indexOf('Location') == 0) {
 			onbeforeunload = null;
 			location.href = res.split(' ')[1];
 		} else if (res == 'Success') {
-			e.textContent = 'Saved';
+			save.textContent = 'Saved';
+			save.classList.remove('modified');
 			savedValue = [htmle.value, css.value, js.value];
 			document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 		} else {
 			clearTimeout(savingTimeout);
 			alert('Unknown error. Response was: ' + res);
 		}
-		e.classList.remove('progress');
+		save.classList.remove('progress');
 	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 };
 (document.getElementById('fork') || {}).onclick = function() {
@@ -452,8 +455,10 @@ if (document.getElementById('meta')) {
 		document.getElementById('c-reset').onclick();
 	};
 	document.getElementById('c-reset').onclick = function() {
+		var scrlTop = document.body.scrollTop;
 		location.hash = '';
 		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
 	};
 	document.getElementById('c-edit-reset').onclick = function() {
 		editCommentForm.hidden = true;
@@ -546,7 +551,7 @@ if (document.getElementById('meta')) {
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
 		setInterval(function() {
-			if (socket.readyState == 1 && ([htmle.value, css.value, js.value]).toString() == savedValue.toString()) return location.reload(true);
+			if (socket.readyState == 1 && JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue)) return location.reload(true);
 			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 		}, 5000);
 	};

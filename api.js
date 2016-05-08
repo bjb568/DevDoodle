@@ -562,7 +562,10 @@ module.exports = o(function*(req, res, user, post) {
 		let program = yield dbcs.programs.findOne({_id: id}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own programs.');
-		dbcs.programs.update({_id: id}, {$unset: {deleted: 1}});
+		dbcs.programs.update({_id: id}, {
+			$unset: {deleted: 1},
+			$set: {private: true}
+		});
 		res.writeHead(204);
 		res.end();
 	} else if (req.url.pathname == '/lesson/edit-title') {
