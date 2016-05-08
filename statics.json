@@ -14,6 +14,11 @@
 		"clean": true,
 		"inhead": "<link rel=\"stylesheet\" href=\"about.css\" />"
 	},
+	"/chat/newroom": {
+		"path": "./html/chat/create-room.html",
+		"title": "Create Room",
+		"inhead": "<link rel=\"stylesheet\" href=\"chat.css\" />"
+	},
 	"/dev/new/": {
 		"path": "./html/dev/new.html",
 		"title": "New",

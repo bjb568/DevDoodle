@@ -236,26 +236,6 @@ global.errorsHTML = function(errs) {
 		: '';
 };
 
-let respondCreateRoomPage = o(function*(errs, user, req, res, post) {
-	if (!post) post = {};
-	yield respondPage('Create Room', user, req, res, yield);
-	res.write('<h1>Create Room</h1>');
-	res.write(errorsHTML(errs));
-	res.write('<form method="post">');
-	res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
-	res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80" style="max-width: 100%">' + html(post.desc || '') + '</textarea></div>');
-	res.write('<div>Type: <select name="type">');
-	res.write('\t<option value="P">Public</option>');
-	res.write('\t<option value="R">Read-only</option>');
-	res.write('\t<option value="N">Private</option>');
-	if (user.level > 4) res.write('\t<option value="M">Level 5 moderator ♦ only</option>');
-	res.write('</select>');
-	res.write('</div>');
-	res.write('<button type="submit">Submit</button>');
-	res.write('</form>');
-	res.end(yield fs.readFile('html/a/foot.html', yield));
-});
-
 global.questionTypes = {
 	err: 'an error',
 	bug: 'unexpected behavior',
@@ -570,45 +550,6 @@ let serverHandler = o(function*(req, res) {
 		);
 		res.write('</ul>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (req.url.pathname == '/chat/newroom') {
-		if (!user) return errorForbidden(req, res, user, 'You must be logged in and have 200 reputation to create a room.');
-		if (user.rep < 200) return errorForbidden(req, res, user, 'You must have 200 reputation to create a room.');
-		if (req.method == 'GET') respondCreateRoomPage([], user, req, res);
-		else if (req.method == 'POST') {
-			let post = '';
-			req.on('data', function(data) {
-				if (req.abort) return;
-				post += data;
-				if (post.length > 1e5) {
-					res.writeHead(413);
-					res.end('Error: Request entity too large.');
-					req.abort = true;
-				}
-			});
-			req.on('end', o(function*() {
-				if (req.abort) return;
-				post = querystring.parse(post);
-				let errors = [];
-				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
-				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (!['P', 'R', 'N', 'M'].includes(post.type)) errors.push('Invalid room type.');
-				if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
-				let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
-					i = last ? last._id + 1 : 1;
-				dbcs.chatrooms.insert({
-					name: post.name,
-					desc: post.desc,
-					type: post.type,
-					invited: [user.name],
-					_id: i
-				});
-				res.writeHead(303, {Location: i});
-				res.end();
-			}));
-		} else {
-			res.writeHead(405);
-			res.end('Method not allowed. Use GET or POST.');
-		}
 	} else if (req.url.pathname.includes('.')) {
 		let stats;
 		try {

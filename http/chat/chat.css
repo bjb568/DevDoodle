@@ -1,6 +1,8 @@
 .user, .user:first-child { margin-top: 6px }
 .user span { float: right }
 .rem { opacity: 0.5 }
+label .md-err { margin-left: 10ch }
+label + .red { padding-left: 1ch }
 #content {
 	height: 0;
 	display: flex;
