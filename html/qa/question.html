@@ -33,9 +33,9 @@
 	<form id="q-edit" class="indt" hidden="">
 		<div class="bmar">Language: <input type="text" id="lang-edit" value="$lang" required="" /></div>
 		<div id="langsug" hidden="" class="abs"></div>
-		<textarea id="q-desc-edit" rows="24" required="">$rawdesc</textarea>
-		<textarea id="q-code-edit" rows="24" class="umar" required="">$code</textarea>
-		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" maxlength="144" required="" />
+		<textarea id="q-desc-edit" rows="24" required="" minlength="144">$rawdesc</textarea>
+		<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" minlength="12" maxlength="144" required="" />
 		<p class="sumar">
 			This question is about
 			<select id="edit-type" name="type">
@@ -77,7 +77,7 @@
 $answers
 <h2 class="bumar">Answer this question</h2>
 <form id="answerform" class="umar rel" action="/api/answer/add">
-	<textarea id="answerta" name="body"></textarea>
+	<textarea id="answerta" name="body" rows="24" minlength="144"></textarea>
 	<div id="answertips" class="pad abs">
 		<h3>Thanks for answering!</h3>
 		<p>While answering, make sure to:</p>
