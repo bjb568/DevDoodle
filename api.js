@@ -44,7 +44,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change your email.');
 		let newmail = post.newmail;
 		if (!newmail) return res.writeHead(400) || res.end('Error: No email specified.');
-		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address must be no longer than 256 characters.');
+		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address length may not exceed 256 characters.');
 		dbcs.users.update({name: user.name}, {$set: {mail: newmail}});
 		res.writeHead(200);
 	} else if (i = req.url.pathname.match(/^\/comment\/(\d+)\/body$/)) {
