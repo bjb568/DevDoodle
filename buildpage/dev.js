@@ -154,7 +154,8 @@ module.exports = o(function*(req, res, user) {
 								).replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-								).replaceAll('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								.replaceAll('$raw-title', html(program.title || 'Untitled'))
 								.replace('$comments', commentstr).replaceAll(
 									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 									[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
