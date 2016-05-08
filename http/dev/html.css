@@ -68,6 +68,11 @@ section { background: transparent }
 	}
 	#right { margin-left: 8px }
 }
+#save:not(.modified) {
+	cursor: default;
+	color: #888;
+}
+#save.modified { color: #ff8 }
 #save.progress {
 	cursor: progress;
 	color: #4ff;

@@ -70,6 +70,11 @@ section { background: transparent }
 	#ta-cont { margin-bottom: 0 }
 	.fullscreen #ta-cont { width: calc(5% + 70ch) }
 }
+#save:not(.modified) {
+	cursor: default;
+	color: #888;
+}
+#save.modified { color: #ff8 }
 #save.progress {
 	cursor: progress;
 	color: #4ff;
