@@ -550,11 +550,15 @@ if (document.getElementById('meta')) {
 		var addcomment = document.getElementById('addcomment');
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 		setInterval(function() {
-			if (socket.readyState == 1 && JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue)) return location.reload(true);
+			if (socket.readyState == 1 && JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue)) return location.reload();
 			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
-		}, 5000);
+		}, 200);
 	};
+	addEventListener('popstate', function(event) {
+		if (socket.readyState != 1) location.reload();
+	});
 	var deletebutton = document.getElementById('delete');
 	if (deletebutton) {
 		deletebutton.onclick = function() {

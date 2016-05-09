@@ -472,6 +472,7 @@ socket.onclose = function() {
 	link.href = '';
 	warning.appendChild(link);
 	ta.parentNode.insertBefore(warning, ta);
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 	setInterval(function() {
 		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 		socket.onopen = function() {
@@ -479,6 +480,9 @@ socket.onclose = function() {
 		};
 	}, 200);
 };
+addEventListener('popstate', function(event) {
+	if (socket.readyState != 1) location.reload();
+});
 if (ta) {
 	ta.addEventListener('input', function() {
 		var before = ta.value.substr(0, ta.selectionStart),

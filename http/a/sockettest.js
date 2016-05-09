@@ -12,3 +12,6 @@ socket.onclose = function(e) {
 	));
 	if (!e.wasClean) socketTest.classList.add('red');
 };
+addEventListener('popstate', function(event) {
+	if (socket.readyState != 1) location.reload();
+});
