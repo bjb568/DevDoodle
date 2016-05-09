@@ -335,11 +335,15 @@ socket.onclose = function() {
 	var addcomment = document.getElementsByClassName('addcomment')[0];
 	addcomment.parentNode.insertAfter(warning, addcomment);
 	addcomment.hidden = true;
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
 	setInterval(function() {
-		if (socket.readyState == 1) return location.reload(true);
+		if (socket.readyState == 1) return location.reload();
 		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
-	}, 5000);
+	}, 200);
 };
+addEventListener('popstate', function(event) {
+	if (socket.readyState != 1) location.reload();
+});
 var comments = document.getElementsByClassName('comment');
 for (var i = 0; i < comments.length; i++) {
 	var sctrls = comments[i].getElementsByClassName('sctrls')[0];
