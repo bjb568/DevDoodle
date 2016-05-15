@@ -15,8 +15,8 @@ section { background: transparent }
 #main { padding: 0 }
 #content { padding-bottom: 0 }
 #meta {
-	padding: 4px;
-	margin-bottom: 6px;
+	padding: 0.25em;
+	margin-bottom: 0.4em;
 	background: rgba(255, 255, 255, 0.8);
 	color: #000;
 	text-align: left;
@@ -32,7 +32,7 @@ section { background: transparent }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .c-sig, .c-sig > * { color: #666 }
 .ta-cont {
-	margin: 3px 0;
+	margin: 2px 0;
 	flex-basis: 0;
 }
 .collapsed {
@@ -54,7 +54,7 @@ section { background: transparent }
 	#right {
 		height: 400px; width: 100%;
 		flex-grow: 1;
-		margin-bottom: 8px;
+		margin-bottom: 0.5em;
 	}
 }
 @media (min-width: 700px) {
@@ -66,7 +66,7 @@ section { background: transparent }
 		flex-shrink: 0;
 		width: 50%;
 	}
-	#right { margin-left: 8px }
+	#right { margin-left: 0.5em }
 }
 #save:not(.modified) {
 	cursor: default;

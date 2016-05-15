@@ -1,47 +1,40 @@
 .clr { clear: left }
-.err {
-	position: absolute;
-	padding: 8px;
-	width: 300px;
-	background: #f00;
-	z-index: 1;
-}
-.err:empty { display: none }
 #answer-error { margin-left: 4em }
 .q-editing h1 { border-bottom: none }
 #q-content, .a-content {
 	border-left: 1px solid #aaa;
-	padding-left: 6px;
+	padding-left: 0.3em;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }
-#q-body, .a-body { margin-bottom: 8px }
-#question .ctrl + *, .answer .ctrl + * { margin-left: 32px }
+#q-body, .a-body { margin-bottom: 0.5em }
+#question .ctrl + *, .answer .ctrl + *, #q-edit { margin-left: 32px }
+.indt { margin-left: 36px }
 #q-edit, .a-edit { padding-left: 2px }
 #q-edit textarea, .a-edit textarea, #answerta {
 	width: 100%;
 	max-height: 70vmin;
-	min-height: 200px;
+	min-height: 12em;
 }
 #title-edit {
 	font-size: 0.8em;
 	width: 100%;
-	padding-left: 4px;
+	padding-left: 0.25em;
 	margin-bottom: -0.18em;
 }
 #langsug {
-	padding: 8px 3px 4px;
+	font-size: 1rem;
+	padding: 0.4em 0.3em;
 	background: #eee;
-	margin-top: -5px;
-	box-shadow: 1px 3px 3px #444;
+	z-index: 2;
 }
 #langsug span {
 	cursor: pointer;
 	background: #afa;
-	padding: 2px 6px;
+	padding: 0.1em 0.4em;
 	box-shadow: 1px 1px 1px #444;
 }
-.comments { margin: 6px 0 }
+.comments { margin: 0.4em 0 }
 code.blk:empty { display: none }
 :not(.sctrls) > .up, :not(.sctrls) > .dn { margin-bottom: 4px }
 .up, .dn { fill: #999 }

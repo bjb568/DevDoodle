@@ -40,8 +40,7 @@
 	<div>
 		<fieldset id="step0" class="hide">
 			<h2><label class="fullwidth">Title: <input type="text" name="title" id="title" autocomplete="off" minlength="12" maxlength="144" /></label></h2>
-			<h2><label>Language: <input type="text" name="lang" id="lang" autocomplete="off" /></label></h2>
-			<div id="langsug" hidden="" class="abs"></div>
+			<h2><label>Language: <span class="ib rel"><input type="text" name="lang" id="lang" autocomplete="off" /><div id="langsug" hidden="" class="abs"></div></span></label></h2>
 			<button type="submit" id="submit1">Next</button>
 			<div id="err1" class="err"></div>
 		</fieldset>
@@ -75,7 +74,7 @@
 	<fieldset id="step3" class="hide">
 		<h2>Code</h2>
 		<div class="ta-cont">
-			<textarea name="code" id="code" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="(Optional) code that reproduces the problem or that you want help with"></textarea>
+			<textarea name="code" id="codeta" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="(Optional) code that reproduces the problem or that you want help with"></textarea>
 			<pre></pre>
 		</div>
 		<button type="submit" id="submit4" hidden="">Almost done!</button>

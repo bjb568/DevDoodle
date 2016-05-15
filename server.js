@@ -325,7 +325,7 @@ let serverHandler = o(function*(req, res) {
 		if (req.method == 'GET') {
 			yield respondPage('New Lesson', user, req, res, yield, {
 				clean: true,
-				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+				inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 			});
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -367,7 +367,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
+						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
@@ -387,7 +387,7 @@ let serverHandler = o(function*(req, res) {
 				} else if (parseInt(req.url.query.preview)) {
 					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/lessonpreview.html', yield)).toString(), req.url.pathname, yield))
@@ -400,7 +400,7 @@ let serverHandler = o(function*(req, res) {
 				} else {
 					yield respondPage('New Lesson', user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))

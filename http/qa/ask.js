@@ -5,7 +5,7 @@ var form = document.getElementById('form'),
 	langsug = document.getElementById('langsug'),
 	description = document.getElementById('description'),
 	question = document.getElementById('question'),
-	code = document.getElementById('code'),
+	code = document.getElementById('codeta'),
 	tags = document.getElementById('tags'),
 	err1 = document.getElementById('err1'),
 	err3 = document.getElementById('err3');
@@ -194,7 +194,7 @@ form.onsubmit = function(e) {
 		}
 		if (title.value.length > 144) {
 			title.focus();
-			err1.textContent = 'Title must no longer than 144 characters.';
+			err1.textContent = 'Title must be no longer than 144 characters.';
 			return;
 		}
 		if (!lang.value) {

@@ -8,7 +8,6 @@ body { color: #eee }
 @keyframes target {
 	0%, 30% { background: #950 }
 }
-.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), #footer, #sidebar { margin-top: 6px }
 #content, #sidebar, #footer { background: transparent }
 .hglt, .desc, .comment, article, code { background: #333 }
 .shglt { background: #444 }
