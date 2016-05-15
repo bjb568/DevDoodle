@@ -128,7 +128,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"img-src " + (config.HTTP2 ? 'https:' : 'http:');
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="Gug+FC9PsilgbCb/VyBoLmXBNzizAL2VpCXDAEhuVOY="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
