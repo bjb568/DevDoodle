@@ -83,7 +83,7 @@ module.exports = {
 		"linebreak-style": ["error"],
 		"max-depth": ["error", 8],
 		"max-nested-callbacks": ["error", 4],
-		"max-statements-per-line": ["error"],
+		"max-statements-per-line": ["error", {"max": 2}],
 		"new-cap": ["error"],
 		"new-parens": ["error"],
 		"no-array-constructor": ["error"],
