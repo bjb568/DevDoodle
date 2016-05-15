@@ -117,7 +117,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!['P', 'R', 'N', 'M'].includes(post.type)) res.writeHead(400) || res.end('Error: Invalid room type.');
 		if (post.name.length > 92) return res.writeHead(400) || res.end('Error: Name length may not exceed 92 characters.');
 		if (post.desc.length > 800) return res.writeHead(400) || res.end('Error: Description length may not exceed 800 characters.');
-		let id = ((yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
+		let id = ((yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.chatrooms.insert({
 			name: post.name,
 			desc: post.desc,
@@ -313,7 +313,7 @@ module.exports = o(function*(req, res, user, post) {
 		}
 		let tag = yield dbcs.qtags.findOne({lang: post.lang}, yield);
 		if (!tag) return res.writeHead(400) || res.end('Error: Invalid language.');
-		let id = ((yield dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
+		let id = ((yield dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.questions.insert({
 			_id: id,
 			title: post.title.substr(0, 144),
@@ -360,7 +360,7 @@ module.exports = o(function*(req, res, user, post) {
 			newTag.parentID = parent._id;
 			newTag.parentName = parent.name;
 		}
-		newTag._id = ((yield dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
+		newTag._id = ((yield dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.qtags.insert(newTag);
 		res.writeHead(200);
 		res.end(JSON.stringify(newTag));
@@ -389,7 +389,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
 		let qid = parseInt(i[1]),
 			question = yield dbcs.questions.findOne({_id: qid}, yield),
-			id = ((yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
+			id = ((yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.answers.insert({
 			_id: id,
 			question: qid,
@@ -446,7 +446,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.writeHead(204);
 			res.end();
 		} else {
-			let id = ((yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1,
+			let id = ((yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1,
 				tprogram = {
 					type,
 					user: user.name,
