@@ -6,6 +6,10 @@ body {
 	line-height: 1.2;
 	display: flex;
 	flex-direction: column;
+	font-size: calc(0.4 / 600 * 100vw + 15.6em / 16)
+}
+@media (max-width: 600px) {
+	body { font-size: calc(5 / 600 * 100vw + 11em / 16) }
 }
 * {
 	box-sizing: border-box;
@@ -42,7 +46,7 @@ body {
 .bmar, .max-width, .error, .half, #notifs li { margin-bottom: 6px }
 .lftpad, .user { margin-left: 6px }
 .indt { margin-left: 32px }
-.pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 4px }
+.pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 0.25em }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
@@ -625,10 +629,6 @@ body > * { flex-shrink: 0 }
 		max-width: 900px;
 		max-height: 200px;
 	}
-}
-body { font-size: calc(0.5 / 600 * 100vw + 15.5em / 16) }
-@media (max-width: 600px) {
-	body { font-size: calc(5 / 600 * 100vw + 11em / 16) }
 }
 @media (min-width: 360px) {
 	line {
