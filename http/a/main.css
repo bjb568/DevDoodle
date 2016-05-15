@@ -673,7 +673,7 @@ body { font-size: calc(0.5 / 600 * 100vw + 15.5em / 16) }
 	display: inline-block;
 }
 #nav #logo { display: inline-block }
-#logo > svg {
+#logo svg {
 	max-width: 100%;
 	height: 100%;
 	fill: #fff;
@@ -721,9 +721,8 @@ body { font-size: calc(0.5 / 600 * 100vw + 15.5em / 16) }
 		float: left;
 		height: calc(4px + 1.9em);
 		margin: -2px 4px -2px 0;
-		padding: 0 10px;
+		padding: 4px 10px;
 	}
-	#logo > svg { width: 145px }
 	#nav > div:last-of-type { margin-left: 6px }
 	#nav form { margin: 3px 0 }
 	#nav form input { max-width: 18em }
