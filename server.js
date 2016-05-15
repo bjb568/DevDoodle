@@ -367,8 +367,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
-							id = last ? last._id + 1 : 1;
+						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0}) + 1;
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
