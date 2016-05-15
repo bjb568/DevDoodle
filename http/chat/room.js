@@ -507,11 +507,11 @@ if (ta) {
 		}
 	});
 	ta.onkeypress = ta.onkeydown = function(e) {
-		if (e.keyCode == 13 && !e.shiftKey && !e.metaKey) {
+		if (e.which == 13 && !e.shiftKey && !e.metaKey) {
 			e.preventDefault();
 			if (editing) edit();
 			else send();
-		} else if (editing && e.keyCode == 27 && !e.metaKey) {
+		} else if (editing && e.which == 27 && !e.metaKey) {
 			e.preventDefault();
 			document.getElementsByClassName('editing')[0].classList.remove('editing');
 			ta.hists = ta.hists || {};
@@ -528,7 +528,7 @@ if (ta) {
 			btn.textContent = 'Send';
 			this.value = '';
 			cont.scrollTop = cont.scrollHeight;
-		} else if (e.keyCode == 38 && !this.value && !e.shiftKey && !e.metaKey) {
+		} else if (e.which == 38 && !this.value && !e.shiftKey && !e.metaKey) {
 			e.preventDefault();
 			var i = cont.children.length;
 			while (i--) {
@@ -537,7 +537,7 @@ if (ta) {
 					return e.onclick.apply(e);
 				}
 			}
-		} else if (e.keyCode == 38 && editing && this.value == source[editing] && !e.shiftKey && !e.metaKey) {
+		} else if (e.which == 38 && editing && this.value == source[editing] && !e.shiftKey && !e.metaKey) {
 			e.preventDefault();
 			var i = cont.children.indexOf(document.getElementById(editing));
 			while (i--) {
@@ -559,7 +559,7 @@ if (ta) {
 					return e.onclick.apply(e);
 				}
 			}
-		} else if (e.keyCode == 40 && editing && this.value == source[editing] && !e.shiftKey && !e.metaKey) {
+		} else if (e.which == 40 && editing && this.value == source[editing] && !e.shiftKey && !e.metaKey) {
 			e.preventDefault();
 			var i = cont.children.indexOf(document.getElementById(editing));
 			while (++i < cont.children.length) {
@@ -605,7 +605,7 @@ if (ta) {
 			btn.textContent = 'Send';
 			this.value = '';
 			cont.scrollTop = cont.scrollHeight;
-		} else if (e.keyCode == 9) {
+		} else if (e.which == 9) {
 			e.preventDefault();
 			this.noHandle = true;
 			var list = document.getElementById('pingsug');
