@@ -626,11 +626,9 @@ body > * { flex-shrink: 0 }
 		max-height: 200px;
 	}
 }
+body { font-size: calc(0.5 / 600 * 100vw + 15.5em / 16) }
 @media (max-width: 600px) {
-	body { font-size: 0.95em }
-}
-@media (max-width: 400px) {
-	body { font-size: 0.9em }
+	body { font-size: calc(5 / 600 * 100vw + 11em / 16) }
 }
 @media (min-width: 360px) {
 	line {
