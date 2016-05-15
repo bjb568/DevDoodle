@@ -117,14 +117,13 @@ module.exports = o(function*(req, res, user, post) {
 		if (!['P', 'R', 'N', 'M'].includes(post.type)) res.writeHead(400) || res.end('Error: Invalid room type.');
 		if (post.name.length > 92) return res.writeHead(400) || res.end('Error: Name length may not exceed 92 characters.');
 		if (post.desc.length > 800) return res.writeHead(400) || res.end('Error: Description length may not exceed 800 characters.');
-		let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
-			i = last ? last._id + 1 : 1;
+		let id = ((yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.chatrooms.insert({
 			name: post.name,
 			desc: post.desc,
 			type: post.type,
 			invited: [user.name],
-			_id: i
+			_id: id
 		});
 		res.writeHead(200);
 		res.end('Location: /chat/' + i);
@@ -314,8 +313,7 @@ module.exports = o(function*(req, res, user, post) {
 		}
 		let tag = yield dbcs.qtags.findOne({lang: post.lang}, yield);
 		if (!tag) return res.writeHead(400) || res.end('Error: Invalid language.');
-		let last = yield dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(yield),
-			id = last ? last._id + 1 : 1;
+		let id = ((yield dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.questions.insert({
 			_id: id,
 			title: post.title.substr(0, 144),
@@ -362,8 +360,7 @@ module.exports = o(function*(req, res, user, post) {
 			newTag.parentID = parent._id;
 			newTag.parentName = parent.name;
 		}
-		let last = yield dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(yield);
-		newTag._id = last ? last._id + 1 : 1;
+		newTag._id = ((yield dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.qtags.insert(newTag);
 		res.writeHead(200);
 		res.end(JSON.stringify(newTag));
@@ -392,8 +389,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
 		let qid = parseInt(i[1]),
 			question = yield dbcs.questions.findOne({_id: qid}, yield),
-			last = yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield),
-			id = last ? last._id + 1 : 1;
+			id = ((yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 		dbcs.answers.insert({
 			_id: id,
 			question: qid,
@@ -450,8 +446,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.writeHead(204);
 			res.end();
 		} else {
-			let last = yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield),
-				i = last ? last._id + 1 : 1,
+			let id = ((yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1,
 				tprogram = {
 					type,
 					user: user.name,
@@ -461,7 +456,7 @@ module.exports = o(function*(req, res, user, post) {
 					hotness: 0,
 					upvotes: 0,
 					private: false,
-					_id: i
+					_id: id
 				};
 			if (type == 1) tprogram.code = (post.code || '').toString();
 			else if (type == 2) {
@@ -475,7 +470,7 @@ module.exports = o(function*(req, res, user, post) {
 			}
 			dbcs.programs.insert(tprogram);
 			res.writeHead(200);
-			res.end('Location: /dev/' + i);
+			res.end('Location: /dev/' + id);
 		}
 	} else if (req.url.pathname == '/program/edit-title') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a program title.');

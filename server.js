@@ -29,8 +29,6 @@ let http = require('http'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./utility/essentials.js'),
-	nodemailer = require('nodemailer'),
-	sendmailTransport = require('nodemailer-sendmail-transport'),
 	mongo = require('mongodb').MongoClient;
 const usedDBCs = [
 	'users',
@@ -69,7 +67,6 @@ global.typeIcons = {
 		'</svg>',
 	M: ' <span class="diamond private">♦</span>'
 };
-global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
@@ -328,7 +325,7 @@ let serverHandler = o(function*(req, res) {
 		if (req.method == 'GET') {
 			yield respondPage('New Lesson', user, req, res, yield, {
 				clean: true,
-				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+				inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 			});
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -370,8 +367,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
-							id = last ? last._id + 1 : 1;
+						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
@@ -391,7 +387,7 @@ let serverHandler = o(function*(req, res) {
 				} else if (parseInt(req.url.query.preview)) {
 					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/lessonpreview.html', yield)).toString(), req.url.pathname, yield))
@@ -404,7 +400,7 @@ let serverHandler = o(function*(req, res) {
 				} else {
 					yield respondPage('New Lesson', user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))

@@ -5,7 +5,7 @@ var form = document.getElementById('form'),
 	langsug = document.getElementById('langsug'),
 	description = document.getElementById('description'),
 	question = document.getElementById('question'),
-	code = document.getElementById('code'),
+	code = document.getElementById('codeta'),
 	tags = document.getElementById('tags'),
 	err1 = document.getElementById('err1'),
 	err3 = document.getElementById('err3');
@@ -194,7 +194,7 @@ form.onsubmit = function(e) {
 		}
 		if (title.value.length > 144) {
 			title.focus();
-			err1.textContent = 'Title must no longer than 144 characters.';
+			err1.textContent = 'Title must be no longer than 144 characters.';
 			return;
 		}
 		if (!lang.value) {
@@ -221,7 +221,7 @@ form.onsubmit = function(e) {
 		document.getElementById('submit2').hidden = true;
 		document.getElementById('submit3').hidden = false;
 		document.getElementById('step2').classList.remove('hide');
-		smoothScroll(document.getElementById('step2'));
+		smoothScroll(document.getElementById('explainhelp'));
 		description.required = question.required = true;
 		question.pattern = "[^\\?]{11,}\\?";
 		setTimeout(function() {
@@ -254,7 +254,7 @@ form.onsubmit = function(e) {
 		document.getElementById('submit3').hidden = true;
 		document.getElementById('submit4').hidden = false;
 		document.getElementById('step3').classList.remove('hide');
-		smoothScroll(document.getElementById('step3'));
+		smoothScroll(document.getElementById('codehelp'));
 		setTimeout(function() {
 			code.focus();
 		}, 400);

@@ -318,8 +318,8 @@ module.exports.init = function(server) {
 						body: 'JSON error.'
 					}));
 				}
-				let id;
 				if (message.event == 'post') {
+					console.log(323);
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'You must be logged in and have 30 reputation to chat.'
@@ -341,7 +341,9 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'Chat message length may not exceed 2880 characters.'
 					}));
-					id = (yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield) || {_id: 0})._id + 1;
+					console.log(345);
+					let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+					console.log(347);
 					dbcs.chat.insert({
 						_id: id,
 						body: message.body,
@@ -349,6 +351,7 @@ module.exports.init = function(server) {
 						time: new Date().getTime(),
 						room: tws.room
 					});
+					console.log(354);
 					let toSend = JSON.stringify({
 						event: 'add',
 						body: message.body,
@@ -567,11 +570,11 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'You must have 30 reputation to star messages.'
 					}));
-					id = parseInt(message.id);
-					let post = yield dbcs.chat.findOne({
-						_id: id,
-						deleted: {$exists: false}
-					}, yield);
+					let id = parseInt(message.id),
+						post = yield dbcs.chat.findOne({
+							_id: id,
+							deleted: {$exists: false}
+						}, yield);
 					if (!post) return tws.trysend(JSON.stringify({
 						event: 'err',
 						body: 'Invalid message id.'
@@ -632,7 +635,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'You must be logged in to unstar messages.'
 					}));
-					id = parseInt(message.id);
+					let id = parseInt(message.id);
 					if (!(yield dbcs.chat.findOne({
 						_id: id,
 						deleted: {$exists: false}
@@ -671,7 +674,7 @@ module.exports.init = function(server) {
 							desc: message.desc
 						}
 					});
-					id = (yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield) || {_id: 0})._id + 1;
+					let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 					let newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
 					dbcs.chat.insert({
 						_id: id,
@@ -732,7 +735,6 @@ module.exports.init = function(server) {
 						body: 'JSON error.'
 					}));
 				}
-				let id;
 				if (message.event == 'comment') {
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
 						event: 'err',
@@ -751,7 +753,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'Comment length may not exceed 720 characters.'
 					}));
-					id = (yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield) || {_id: 0})._id + 1;
+					let id = ((yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 					dbcs.comments.insert({
 						_id: id,
 						body: message.body,
@@ -850,7 +852,6 @@ module.exports.init = function(server) {
 						body: 'JSON error.'
 					}));
 				}
-				let id;
 				if (message.event == 'q-edit') {
 					let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 					if (!tws.user.name) return tws.trysend(JSON.stringify({
@@ -974,7 +975,7 @@ module.exports.init = function(server) {
 						event: 'err',
 						body: 'Comment length may not exceed 720 characters.'
 					}));
-					id = (yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield) || {_id: 0})._id + 1;
+					let id = ((yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 					let tcomment = {
 						_id: id,
 						body: message.body,

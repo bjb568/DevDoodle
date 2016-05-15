@@ -18,8 +18,8 @@ section { background: transparent }
 }
 #content { padding-bottom: 0 }
 #meta {
-	padding: 4px;
-	margin-bottom: 6px;
+	padding: 0.25em;
+	margin-bottom: 0.4em;
 	background: rgba(255, 255, 255, 0.8);
 	color: #000;
 	text-align: left;

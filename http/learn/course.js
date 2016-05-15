@@ -151,7 +151,7 @@ document.getElementById('check').onclick = function(e) {
 		script = doc.createElement('script');
 	script.appendChild(document.createTextNode(document.getElementById('validator').value + '\naddEventListener(\'load\', function() { parent.postMessage(validate(' + JSON.stringify(htmle.value) + '), \'*\') })'));
 	if (!doc.body) doc.documentElement.appendChild(doc.createElement('body'));
-	doc.body.appendChild(script);
+	if (doc.body) doc.body.appendChild(script);
 	var outputBlob = new Blob(['<!DOCTYPE html>' + doc.documentElement.outerHTML], {type: 'application/xhtml+xml'});
 	document.getElementById('output').src = URL.createObjectURL(outputBlob);
 	onmessage = function(e) {
