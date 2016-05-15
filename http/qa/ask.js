@@ -221,7 +221,7 @@ form.onsubmit = function(e) {
 		document.getElementById('submit2').hidden = true;
 		document.getElementById('submit3').hidden = false;
 		document.getElementById('step2').classList.remove('hide');
-		smoothScroll(document.getElementById('step2'));
+		smoothScroll(document.getElementById('explainhelp'));
 		description.required = question.required = true;
 		question.pattern = "[^\\?]{11,}\\?";
 		setTimeout(function() {
@@ -254,7 +254,7 @@ form.onsubmit = function(e) {
 		document.getElementById('submit3').hidden = true;
 		document.getElementById('submit4').hidden = false;
 		document.getElementById('step3').classList.remove('hide');
-		smoothScroll(document.getElementById('step3'));
+		smoothScroll(document.getElementById('codehelp'));
 		setTimeout(function() {
 			code.focus();
 		}, 400);
