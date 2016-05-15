@@ -16,11 +16,11 @@ function handleTA() {
 }
 var keyCodes = {};
 addEventListener('keydown', function(e) {
-	keyCodes[e.keyCode] = true;
+	keyCodes[e.which] = true;
 	handleTA();
 });
 addEventListener('keyup', function(e) {
-	delete keyCodes[e.keyCode];
+	delete keyCodes[e.which];
 	delete keyCodes[229];
 	handleTA();
 });
