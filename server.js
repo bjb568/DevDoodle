@@ -29,8 +29,6 @@ let http = require('http'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./utility/essentials.js'),
-	nodemailer = require('nodemailer'),
-	sendmailTransport = require('nodemailer-sendmail-transport'),
 	mongo = require('mongodb').MongoClient;
 const usedDBCs = [
 	'users',
@@ -69,7 +67,6 @@ global.typeIcons = {
 		'</svg>',
 	M: ' <span class="diamond private">♦</span>'
 };
-global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
