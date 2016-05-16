@@ -73,7 +73,6 @@ global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
-global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
