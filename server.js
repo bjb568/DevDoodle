@@ -559,7 +559,8 @@ let serverHandler = o(function*(req, res) {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800',
-				'Vary': 'Accept-Encoding'
+				'Vary': 'Accept-Encoding',
+				'ETag': cache[req.url.pathname].hash
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
@@ -578,6 +579,7 @@ let serverHandler = o(function*(req, res) {
 				cache[req.url.pathname] = {
 					raw: data,
 					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
+					hash: yield getVersionNonce('/', req.url.pathname, yield),
 					updated: stats.mtime
 				};
 			}
@@ -597,6 +599,7 @@ let serverHandler = o(function*(req, res) {
 			cache[req.url.pathname] = {
 				raw: data,
 				gzip: yield zlib.gzip(data, yield),
+				hash: yield getVersionNonce('/', req.url.pathname, yield),
 				updated: stats.mtime
 			};
 			res.writeHead(200, {
