@@ -142,7 +142,7 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 }
 code.addEventListener('keypress', jsKeypressHandler);
 code.addEventListener('keydown', function(e) {
-	if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
+	if (e.which == 8 && this.selectionStart == this.selectionEnd) {
 		if (
 			(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
 			(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||
@@ -158,10 +158,10 @@ code.addEventListener('keydown', function(e) {
 	}
 });
 addEventListener('keypress', function(e) {
-	if (e.keyCode == 13 && e.metaKey) {
+	if (e.which == 13 && e.metaKey) {
 		e.preventDefault();
 		title.dispatchEvent(new MouseEvent('click'));
-	} else if (e.keyCode == 115 && e.metaKey) {
+	} else if (e.which == 115 && e.metaKey) {
 		e.preventDefault();
 		var target = e.shiftKey ? fork : save;
 		if (target) target.dispatchEvent(new MouseEvent('click'));
@@ -318,8 +318,8 @@ if (document.getElementById('meta')) {
 			}, 'title=' + encodeURIComponent(this.value));
 		};
 		edit.onkeypress = function(e) {
-			if (e.keyCode == 13) this.onblur.apply(this);
-			else if (e.keyCode == 27) {
+			if (e.which == 13) this.onblur.apply(this);
+			else if (e.which == 27) {
 				this.value = title.textContent;
 				title.hidden = false;
 				this.hidden = true;

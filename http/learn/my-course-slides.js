@@ -21,5 +21,5 @@ document.getElementById('edit-title').onblur = function() {
 	}, 'title=' + encodeURIComponent(this.value));
 };
 document.getElementById('edit-title').onkeypress = function(e) {
-	if (e.keyCode == 13) this.onblur.call(this);
+	if (e.which == 13) this.onblur.call(this);
 };

@@ -91,7 +91,7 @@ code.addEventListener('blur', function() {
 });
 code.addEventListener('keypress', jsKeypressHandler);
 code.addEventListener('keydown', function(e) {
-	if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
+	if (e.which == 8 && this.selectionStart == this.selectionEnd) {
 		if (
 			(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
 			(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||

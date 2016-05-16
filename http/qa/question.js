@@ -72,7 +72,7 @@ lang.addEventListener('keyup', function() {
 });
 langKeyUp();
 lang.addEventListener('keydown', function(e) {
-	if (this.value && e.keyCode == 9) this.value = langsug.firstChild.textContent;
+	if (this.value && e.which == 9) this.value = langsug.firstChild.textContent;
 });
 lang.addEventListener('blur', function() {
 	langsug.hidden = true;
