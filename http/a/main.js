@@ -294,22 +294,6 @@ function mdValidateBody() {
 }
 addEventListener('input', mdValidateBody);
 
-function passStrength(pass) {
-	var uniqueChars = [];
-	for (var i = 0; i < pass.length; i++) {
-		if (uniqueChars.indexOf(pass[i]) == -1) uniqueChars.push(pass[i]);
-	}
-	var penalties = /(.+?)(.*)(\1+)/g,
-		match,
-		deductions = 0;
-	while (match = penalties.exec(pass)) deductions += (4 - match[2].length / 2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
-	penalties = /\d+/g;
-	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 1.5);
-	penalties = /\w{2,}/gi;
-	while (match = penalties.exec(pass)) deductions += match[0].length * 1.5;
-	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2 / 3) / 10 + pass.length / 8 - 8));
-}
-
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
 	i.open('POST', uri, true);
