@@ -51,7 +51,7 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (req.url.pathname == '/dev/new/canvas') {
-		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
+		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/canvas.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
 			.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
@@ -64,7 +64,7 @@ module.exports = o(function*(req, res, user) {
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/dev/new/html') {
-		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
+		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/html.css" />'});
 		res.write(
 			(yield fs.readFile('./html/dev/html.html', yield)).toString()
 			.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
@@ -124,9 +124,7 @@ module.exports = o(function*(req, res, user) {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield,
 				{
 					clean: true,
-					inhead: '<link rel="stylesheet" href="/dev/' +
-						(program.type == 1 ? 'canvas' : 'html') +
-						'.css" />'
+					inhead: '<link rel="stylesheet" href="/dev/program.css" />' + (program.type ? ('<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />') : '')
 				}
 			);
 			let vote = (yield dbcs.votes.findOne({
@@ -148,21 +146,20 @@ module.exports = o(function*(req, res, user) {
 						} else {
 							res.write(
 								(
-									program.type == 1 ?
+									!program.type ? (yield fs.readFile('./html/dev/text.html', yield)).toString().replaceAll('$code', html(program.code))
+									: program.type == 1 ?
 										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
 											.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
 											.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-											.replaceAll(
-												'$code',
-												html(program.code)
-											)
+											.replaceAll('$code', html(program.code))
 										: (yield fs.readFile('./html/dev/html.html', yield)).toString()
 											.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
 											.replaceAll(
 												['$html', '$css', '$js'],
 												[html(program.html), html(program.css), html(program.js)]
 											)
-								).replaceAll(
+								).replace('/dev/program.js', '/dev/program.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/program.js', yield)))
+								.replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))

@@ -12,10 +12,7 @@ section { background: transparent }
 	position: absolute;
 	width: 100%;
 }
-#main {
-	min-height: 600px;
-	padding: 0;
-}
+#main { padding: 0 }
 #content { padding-bottom: 0 }
 #meta {
 	padding: 0.25em;
@@ -34,41 +31,9 @@ section { background: transparent }
 #meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .c-sig, .c-sig > * { color: #666 }
-#output { width: 100% }
 #edit-title {
 	width: 400px;
 	max-width: 100%;
-}
-@media (max-width: 719px) {
-	#row { flex-direction: column }
-	#ta-cont {
-		height: 400px;
-		flex-grow: 1;
-	}
-	#output {
-		height: 560px;
-		margin-top: 6px;
-	}
-}
-@media (min-width: 720px) {
-	#row { height: 0 }
-	#ta-cont {
-		flex-shrink: 0;
-		width: 60%;
-	}
-	#output { margin-left: 8px }
-	body:not(.fullscreen) #ta-cont { min-width: calc(99% - 640px) }
-	.fullscreen #ta-cont { width: calc(20% + 28ch) }
-}
-@media (min-width: 850px) {
-	.fullscreen #ta-cont { width: calc(40% + 9ch) }
-}
-@media (min-width: 1200px) {
-	.fullscreen #ta-cont { width: calc(20% + 36ch) }
-}
-@media (min-width: 1500px) {
-	#ta-cont { margin-bottom: 0 }
-	.fullscreen #ta-cont { width: calc(5% + 70ch) }
 }
 #save:not(.modified) {
 	cursor: default;
@@ -79,11 +44,7 @@ section { background: transparent }
 	cursor: progress;
 	color: #4ff;
 }
-#up, #dn {
-	width: 22px;
-	height: 24px;
-	fill: #777;
-}
+#up, #dn { fill: #777 }
 #up:hover, #dn:hover {
 	fill: #888;
 	transition: fill 0.1s;
@@ -92,12 +53,8 @@ section { background: transparent }
 	fill: #666;
 	transition: none;
 }
-#up.clkd, #dn.clkd {
-	fill: #f90;
-}
+#up.clkd, #dn.clkd { fill: #f90 }
 #fl {
-	width: 20px;
-	height: 24px;
 	fill: #f44;
 	margin-left: 12px;
 }
@@ -105,9 +62,7 @@ section { background: transparent }
 	fill: #f55;
 	transition: fill 0.2s;
 }
-#fl.clkd {
-	fill: #f00;
-}
+#fl.clkd { fill: #f00 }
 #fl:active {
 	transition: fill 0.1s;
 	fill: #c00;
