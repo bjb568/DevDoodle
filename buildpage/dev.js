@@ -75,6 +75,17 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
+	} else if (req.url.pathname == '/dev/new/text') {
+		yield respondPage('Plain Text Program', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" />'});
+		res.write(
+			(yield fs.readFile('./html/dev/text.html', yield)).toString()
+			.replace(/<section id="meta">[^]+<\/section>/, '')
+			.replaceAll(
+				['$id', '$title', '$html', '$css', '$js'],
+				['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+			)
+		);
+		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		let program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
 		if (!program) return errorNotFound(req, res, user);
