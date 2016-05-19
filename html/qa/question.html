@@ -5,7 +5,7 @@
 		<a title="This question needs improvement or is not useful."><svg class="blk dn" id="q-dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
 		<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg" width="20" height="24"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
 		<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
-		<a class="ctrlicon delbtn" title="Delete…">✕</a>
+		<a id="q-delete" class="ctrlicon delbtn" title="Delete…">✕</a>
 	</div>
 	<div id="q-content">
 		<div id="q-body">
@@ -30,13 +30,12 @@
 			</div>
 		</div>
 	</div>
-	<form id="q-edit" class="indt" hidden="">
-		<div class="bmar">Language: <input type="text" id="lang-edit" value="$lang" required="" /></div>
-		<div id="langsug" hidden="" class="abs"></div>
+	<form id="q-edit" hidden="">
+		<label class="blk bmar">Language: <span class="ib rel"><input type="text" name="lang" id="lang-edit" value="$lang" required="" autocomplete="off" /><div id="langsug" hidden="" class="abs"></div></span></label>
 		<textarea id="q-desc-edit" rows="24" required="" minlength="144">$rawdesc</textarea>
 		<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
 		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" minlength="12" maxlength="144" required="" />
-		<p class="sumar">
+		<label class="sumar">
 			This question is about
 			<select id="edit-type" name="type">
 				<option value="err">fixing non-working code</option>
@@ -47,11 +46,11 @@
 				<option value="pra">techniques and best practices</option>
 				<option value="the">a theoretical scenario</option>
 			</select>
-		</p>
+		</label>
 		<h3 class="nomar">Tags:</h3>
 		<div id="edit-tags">$edit-tags</div>
 		<input type="hidden" id="edit-tags-input" value="$raw-edit-tags" />
-		<p><strong>Edit Comment:</strong> <input type="text" id="q-edit-comment" class="fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></p>
+		<label><strong>Edit Comment:</strong> <input type="text" id="q-edit-comment" class="fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></label>
 		<div class="bumar">
 			<button type="submit">Submit Edit</button>
 			<button type="reset" id="cancel-edit">Cancel</button>

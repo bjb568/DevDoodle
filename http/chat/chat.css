@@ -1,4 +1,4 @@
-.user, .user:first-child { margin-top: 6px }
+.user, .user:first-child { margin-top: 0.4em }
 .user span { float: right }
 .rem { opacity: 0.5 }
 label .md-err { margin-left: 10ch }
@@ -32,18 +32,20 @@ label + .red { padding-left: 1ch }
 	font-size: 1em;
 }
 #roomlist {
-	background: #4af;
+	color: #fff;
+	background: #16f;
 	z-index: 1;
+	left: 0; right: 0;
 }
 #roomlist span {
 	cursor: pointer;
 	display: block;
 	margin: 0;
-	padding: 2px 6px;
+	padding: 0.1em 0.3em;
 	border: 1px solid #000;
 	border-top: none;
 }
-#roomlist .selected { background: #6df }
+#roomlist .selected { background: #39f }
 #results:empty::after {
 	content: '(no results)';
 	color: #444;
@@ -64,7 +66,7 @@ textarea {
 	list-style-type: none;
 	padding: 0;
 }
-#stars li { margin: 4px 0 }
+#stars li { margin: 0.25em 0 }
 #editform { margin: 0 }
 #users .lft { float: left }
 #users a { text-decoration: none }
@@ -83,8 +85,8 @@ textarea {
 }
 #aside {
 	float: right;
-	padding-top: 4px;
-	margin-left: 6px;
+	padding-top: 0.25em;
+	margin-left: 0.4em;
 }
 @media (max-width: 699px) {
 	#aside { display: none }

@@ -1,11 +1,10 @@
 body { line-height: 1.4 }
 #nav, #footer { transition: opacity 0.2s 0.2s }
 #nav:not(:hover), #footer:not(:hover) { opacity: 0.5 }
+#content h1 { margin-top: 0.2em }
 h1 {
 	border-bottom: none;
 	font-size: 2em;
-	padding-top: 24px;
-	padding-bottom: 12px;
 	animation: fadein 3s;
 }
 #content > p, h1, h2 {
@@ -26,14 +25,14 @@ em {
 		clear: both;
 	}
 }
-.row { margin-top: 32px }
+.row { margin-top: 2em }
 .half { padding: 0 1% }
-ul { padding-left: 48px }
+ul { padding-left: 3em }
 #quality-b ul {
-	padding-left: 12px;
+	padding-left: 0.75em;
 	list-style-type: none;
 }
-:not(#privleges-b) > ul > li { padding: 4px 0 }
+:not(#privleges-b) > ul > li { padding: 0.25em 0 }
 svg { vertical-align: middle }
 #overview { animation: fadeinb 4s }
 #q-ov { animation: fadeinc 4s }

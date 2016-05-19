@@ -29,8 +29,6 @@ let http = require('http'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./utility/essentials.js'),
-	nodemailer = require('nodemailer'),
-	sendmailTransport = require('nodemailer-sendmail-transport'),
 	mongo = require('mongodb').MongoClient;
 const usedDBCs = [
 	'users',
@@ -69,11 +67,9 @@ global.typeIcons = {
 		'</svg>',
 	M: ' <span class="diamond private">♦</span>'
 };
-global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
-global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
@@ -131,7 +127,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"img-src " + (config.HTTP2 ? 'https:' : 'http:');
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="Gug+FC9PsilgbCb/VyBoLmXBNzizAL2VpCXDAEhuVOY="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
@@ -328,7 +324,7 @@ let serverHandler = o(function*(req, res) {
 		if (req.method == 'GET') {
 			yield respondPage('New Lesson', user, req, res, yield, {
 				clean: true,
-				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+				inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 			});
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -370,8 +366,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
-							id = last ? last._id + 1 : 1;
+						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
@@ -391,7 +386,7 @@ let serverHandler = o(function*(req, res) {
 				} else if (parseInt(req.url.query.preview)) {
 					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/lessonpreview.html', yield)).toString(), req.url.pathname, yield))
@@ -404,7 +399,7 @@ let serverHandler = o(function*(req, res) {
 				} else {
 					yield respondPage('New Lesson', user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -564,7 +559,8 @@ let serverHandler = o(function*(req, res) {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
 				'Cache-Control': 'max-age=6012800',
-				'Vary': 'Accept-Encoding'
+				'Vary': 'Accept-Encoding',
+				'ETag': cache[req.url.pathname].hash
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
@@ -583,6 +579,7 @@ let serverHandler = o(function*(req, res) {
 				cache[req.url.pathname] = {
 					raw: data,
 					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
+					hash: yield getVersionNonce('/', req.url.pathname, yield),
 					updated: stats.mtime
 				};
 			}
@@ -602,6 +599,7 @@ let serverHandler = o(function*(req, res) {
 			cache[req.url.pathname] = {
 				raw: data,
 				gzip: yield zlib.gzip(data, yield),
+				hash: yield getVersionNonce('/', req.url.pathname, yield),
 				updated: stats.mtime
 			};
 			res.writeHead(200, {

@@ -32,7 +32,7 @@ function run() {
 htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart,
 		el = (document.getElementById('caret') || {}).previousElementSibling;
-	if (e.keyCode == 13) {
+	if (e.which == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 		var toSelection = this.value.substr(0, oldSelectionStart),
 			tabs = toSelection
@@ -42,19 +42,19 @@ htmle.onkeypress = function(e) {
 		this.selectionStart = ++oldSelectionStart + tabs;
 		this.selectionEnd = this.selectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 62 && el.className == 'xml-tag end-start-tag') {
+	} else if (e.which == 62 && el.className == 'xml-tag end-start-tag') {
 		this.value = this.value.substr(0, this.selectionStart) + '></' + el.dataset.tagname + '>' + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 34) {
+	} else if (e.which == 34) {
 		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? '""' : '"') + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 39) {
+	} else if (e.which == 39) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? "''" : "'") + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
+	} else if (e.which == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
 		var lines = this.value.substr(0, oldSelectionStart).split('\n');
 		if (lines[lines.length - 1].indexOf('\t') == -1) return;
 		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
@@ -64,7 +64,7 @@ htmle.onkeypress = function(e) {
 	}
 };
 htmle.onkeydown = function(e) {
-	if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
+	if (e.which == 8 && this.selectionStart == this.selectionEnd) {
 		if (
 			(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
 			(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||
@@ -151,7 +151,7 @@ document.getElementById('check').onclick = function(e) {
 		script = doc.createElement('script');
 	script.appendChild(document.createTextNode(document.getElementById('validator').value + '\naddEventListener(\'load\', function() { parent.postMessage(validate(' + JSON.stringify(htmle.value) + '), \'*\') })'));
 	if (!doc.body) doc.documentElement.appendChild(doc.createElement('body'));
-	doc.body.appendChild(script);
+	if (doc.body) doc.body.appendChild(script);
 	var outputBlob = new Blob(['<!DOCTYPE html>' + doc.documentElement.outerHTML], {type: 'application/xhtml+xml'});
 	document.getElementById('output').src = URL.createObjectURL(outputBlob);
 	onmessage = function(e) {

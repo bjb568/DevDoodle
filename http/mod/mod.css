@@ -3,11 +3,11 @@ blockquote { overflow-x: auto }
 pre { margin: 0 }
 section {
 	background: #222;
-	padding: 4px;
+	padding: 0.25em;
 }
 .op { font-size: 1.3em }
 .actions { font-size: 1.18em }
-.actions span { padding: 12px }
+.actions span { padding: 0.75em }
 .bad { color: #e44 }
 .bad:hover { color: #f00 }
 .warn { color: #bb0 }
