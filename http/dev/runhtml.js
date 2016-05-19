@@ -4,7 +4,7 @@ var mine = document.getElementById('mine').value == '1',
 	id = parseInt(document.getElementById('id').value),
 	opName = document.getElementById('user').value,
 	myRep = parseInt(document.getElementById('rep').value),
-	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	title = document.getElementById('title'),
 	privitize = document.getElementById('privitize'),
 	isPrivate = document.getElementById('is-private'),
@@ -29,7 +29,7 @@ var mine = document.getElementById('mine').value == '1',
 	savedValue = [htmle.value, css.value, js.value],
 	lastValue = savedValue,
 	onbeforeunload = function() {
-		return ([htmle.value, css.value, js.value]).toString() == savedValue.toString() ? null : 'You have unsaved code.';
+		return JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue) ? null : 'You have unsaved code.';
 	},
 	blinkTimeout;
 function blink() {
@@ -65,7 +65,10 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
 function run() {
-	if (!save.classList.contains('progress')) save.textContent = 'Save';
+	if (save && !save.classList.contains('progress')) {
+		save.textContent = 'Save';
+		save.classList.toggle('modified', JSON.stringify([htmle.value, css.value, js.value]) != JSON.stringify(savedValue));
+	}
 	var outputBlob = new Blob([
 		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
 	], {type: 'application/xhtml+xml'});
@@ -75,7 +78,7 @@ restart.onclick = run;
 htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart,
 		el = (document.getElementById('caret') || {}).previousElementSibling;
-	if (e.keyCode == 13) {
+	if (e.which == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 		var toSelection = this.value.substr(0, oldSelectionStart),
 			tabs = toSelection
@@ -85,19 +88,19 @@ htmle.onkeypress = function(e) {
 		this.selectionStart = ++oldSelectionStart + tabs;
 		this.selectionEnd = this.selectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 62 && el.className == 'xml-tag end-start-tag') {
+	} else if (e.which == 62 && el.className == 'xml-tag end-start-tag') {
 		this.value = this.value.substr(0, this.selectionStart) + '></' + el.dataset.tagname + '>' + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 34) {
+	} else if (e.which == 34) {
 		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? '""' : '"') + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 39) {
+	} else if (e.which == 39) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + (this.value[this.selectionStart - 1] == '=' ? "''" : "'") + this.value.substr(this.selectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
+	} else if (e.which == 47 && this.value.substr(this.selectionEnd - 2, 2) == '\t<' && (this.value[this.selectionEnd] || '\n') == '\n') {
 		var lines = this.value.substr(0, oldSelectionStart).split('\n');
 		if (lines[lines.length - 1].indexOf('\t') == -1) return;
 		lines[lines.length - 1] = lines[lines.length - 1].replace('\t', '');
@@ -107,7 +110,7 @@ htmle.onkeypress = function(e) {
 	}
 };
 htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
-	if (e.keyCode == 8 && this.selectionStart == this.selectionEnd) {
+	if (e.which == 8 && this.selectionStart == this.selectionEnd) {
 		if (
 			(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
 			(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||
@@ -209,7 +212,7 @@ function handleTAInput() {
 		blinkTimeout = setTimeout(blink, 500);
 	}
 	var newValue = [htmle.value, css.value, js.value];
-	if (document.getElementById('autorun').checked && lastValue.toString() != newValue.toString()) {
+	if (document.getElementById('autorun').checked && JSON.stringify(lastValue) != JSON.stringify(newValue)) {
 		clearTimeout(runTimeout);
 		runTimeout = setTimeout(run, 200);
 	}
@@ -247,39 +250,39 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	});
 }
 addEventListener('keypress', function(e) {
-	if (e.keyCode == 13 && e.metaKey) {
+	if (e.which == 13 && e.metaKey) {
 		e.preventDefault();
 		document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-	} else if (e.keyCode == 115 && e.metaKey) {
+	} else if (e.which == 115 && e.metaKey) {
 		e.preventDefault();
 		var target = e.shiftKey ? fork : save;
 		if (target) target.dispatchEvent(new MouseEvent('click'));
 	}
 });
 save.onclick = function() {
-	var e = this;
-	if (e.classList.contains('progress')) return;
-	e.classList.add('progress');
+	if (save.classList.contains('progress')) return;
+	save.classList.add('progress');
 	var savingTimeout = setTimeout(function() {
-		if (e.textContent == 'Save') e.textContent = 'Saving…';
+		if (save.textContent == 'Save') save.textContent = 'Saving…';
 	}, 200);
 	request('/api/program/save?type=2', function(res) {
 		if (res.indexOf('Error') == 0) {
 			clearTimeout(savingTimeout);
 			alert(res);
-			e.textContent = 'Save';
+			save.textContent = 'Save';
 		} else if (res.indexOf('Location') == 0) {
 			onbeforeunload = null;
 			location.href = res.split(' ')[1];
 		} else if (res == 'Success') {
-			e.textContent = 'Saved';
+			save.textContent = 'Saved';
+			save.classList.remove('modified');
 			savedValue = [htmle.value, css.value, js.value];
 			document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
 		} else {
 			clearTimeout(savingTimeout);
 			alert('Unknown error. Response was: ' + res);
 		}
-		e.classList.remove('progress');
+		save.classList.remove('progress');
 	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 };
 (document.getElementById('fork') || {}).onclick = function() {
@@ -406,7 +409,7 @@ if (document.getElementById('meta')) {
 			}, 'title=' + encodeURIComponent(this.value));
 		};
 		edit.onkeypress = function(e) {
-			if (e.keyCode == 13) this.onblur.call(this);
+			if (e.which == 13) this.onblur.call(this);
 		};
 		privitize.onclick = function() {
 			socket.send(JSON.stringify({
@@ -452,8 +455,10 @@ if (document.getElementById('meta')) {
 		document.getElementById('c-reset').onclick();
 	};
 	document.getElementById('c-reset').onclick = function() {
+		var scrlTop = document.body.scrollTop;
 		location.hash = '';
 		history.replaceState('', document.title, window.location.pathname);
+		document.body.scrollTop = scrlTop;
 	};
 	document.getElementById('c-edit-reset').onclick = function() {
 		editCommentForm.hidden = true;
@@ -545,11 +550,15 @@ if (document.getElementById('meta')) {
 		var addcomment = document.getElementById('addcomment');
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
+		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
 		setInterval(function() {
-			if (socket.readyState == 1 && ([htmle.value, css.value, js.value]).toString() == savedValue.toString()) return location.reload(true);
+			if (socket.readyState == 1 && JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue)) return location.reload();
 			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
-		}, 5000);
+		}, 200);
 	};
+	addEventListener('popstate', function(event) {
+		if (socket.readyState != 1) location.reload();
+	});
 	var deletebutton = document.getElementById('delete');
 	if (deletebutton) {
 		deletebutton.onclick = function() {

@@ -31,7 +31,7 @@ module.exports = o(function*(req, res, user) {
 				let tagstr = '';
 				dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
 					if (err) throw err;
-					if (tag) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
+					if (tag) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 					else {
 						res.write('<p class="underline qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						cursor.nextObject(questionSummaryHandler);
@@ -105,8 +105,8 @@ module.exports = o(function*(req, res, user) {
 				if (err) throw err;
 				if (tag) langTags[tag._id] = tag.name;
 				else {
-					let tagify = tag => '<a href="search?q=[[' + tag + ']]" class="tag">' + langTags[tag] + '</a>';
-					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]));
+					let tagify = tag => '<a href="search?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>';
+					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]) + ' ');
 					res.write('</div>');
 					res.write('</article>');
 					let revnum = 0,
@@ -147,13 +147,14 @@ module.exports = o(function*(req, res, user) {
 								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
-								let d = diff.diffWords(item.tags.join(), prev.tags.join());
+								let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));
 								for (let i = 0; i < d.length; i++) {
 									let t = d[i].value.split(',');
 									for (let j = 0; j < t.length; j++) {
+										if (!t[j]) continue;
 										if (d[i].added) res.write('<ins>' + tagify(t[j]) + '</ins> ');
 										else if (d[i].removed) res.write('<del>' + tagify(t[j]) + '</del> ');
-										else res.write(tagify(t[j]));
+										else res.write(tagify(t[j]) + ' ');
 									}
 								}
 								res.write('</div>');
@@ -219,10 +220,10 @@ module.exports = o(function*(req, res, user) {
 								if (err) throw err;
 								if (tag) {
 									tlang.push(tag);
-									if (question.tags.indexOf(tag._id) != -1) tagstr += '<a href="search?q=[[' + tag._id + ']]" class="tag">' + tag.name + '</a> ';
+									if (question.tags.includes(tag._id)) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 								} else {
 									let writeFormTagRecursive = function(tag) {
-										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.indexOf(tag._id) == -1 ? '' : ' checked=""') + ' /> ' + tag.name + '</label>';
+										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.includes(tag._id) ? ' checked=""' : '') + ' /> ' + tag.name + '</label>';
 										tlang.splice(tlang.indexOf(tag), 1);
 										tageditstr += '<div class="indt">';
 										let i = -1;
@@ -255,7 +256,7 @@ module.exports = o(function*(req, res, user) {
 											[markdown(question.description), inlineMarkdown(question.question)]
 										).replaceAll(
 											['$edit-tags', '$raw-edit-tags'],
-											[tageditstr, question.tags.join()]
+											[tageditstr, question.tags.join(',')]
 										).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
 											['$qcommentstr', '$answers', '$tags', '$rep'],
 											[commentstr, answerstr, tagstr, (user.rep || 0).toString()]

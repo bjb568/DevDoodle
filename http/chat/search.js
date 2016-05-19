@@ -1,5 +1,5 @@
 'use strict';
-var username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+var username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	rooms = JSON.parse(document.getElementById('rooms').value),
 	form = document.getElementById('form'),
 	room = document.getElementById('room'),
@@ -8,21 +8,21 @@ var username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2
 if (username == 'Log\xa0in') username = false;
 room.addEventListener('keyup', function(e) {
 	var sel = roomlist.getElementsByClassName('selected');
-	if (e.keyCode == 40) {
+	if (e.which == 40) {
 		if (sel.length) {
 			sel = sel[0];
 			sel.classList.remove('selected');
 			if (sel.nextSibling) sel.nextSibling.classList.add('selected');
 			else roomlist.firstChild.classList.add('selected');
 		} else roomlist.firstChild.classList.add('selected');
-	} else if (e.keyCode == 38) {
+	} else if (e.which == 38) {
 		if (sel.length) {
 			sel = sel[0];
 			sel.classList.remove('selected');
 			if (sel.previousSibling) sel.previousSibling.classList.add('selected');
 			else roomlist.lastChild.classList.add('selected');
 		} else roomlist.lastChild.classList.add('selected');
-	} else if (e.keyCode == 13) {
+	} else if (e.which == 13) {
 		if (sel.length) sel[0].onmousedown();
 	} else if (!(roomlist.hidden = !this.value || !isNaN(this.value))) {
 		var firstChild;
@@ -56,7 +56,7 @@ room.addEventListener('keyup', function(e) {
 	}
 });
 room.addEventListener('keydown', function(e) {
-	if (this.value && e.keyCode == 9) {
+	if (this.value && e.which == 9) {
 		this.value = roomlist.firstChild.textContent;
 		form.onsubmit();
 	}

@@ -48,7 +48,7 @@ function spanMarkdown(input) {
 		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
 		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
 		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
-		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
+		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" alt="user image" />')
 		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, function(m, p1, p2, p3) {
 			var parsed = parseURL(p2.replace('youtu.be/', 'youtube.com/watch?v='));
 			var i;
@@ -294,22 +294,6 @@ function mdValidateBody() {
 }
 addEventListener('input', mdValidateBody);
 
-function passStrength(pass) {
-	var uniqueChars = [];
-	for (var i = 0; i < pass.length; i++) {
-		if (uniqueChars.indexOf(pass[i]) == -1) uniqueChars.push(pass[i]);
-	}
-	var penalties = /(.+?)(.*)(\1+)/g,
-		match,
-		deductions = 0;
-	while (match = penalties.exec(pass)) deductions += (4 - match[2].length / 2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
-	penalties = /\d+/g;
-	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 1.5);
-	penalties = /\w{2,}/gi;
-	while (match = penalties.exec(pass)) deductions += match[0].length * 1.5;
-	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2 / 3) / 10 + pass.length / 8 - 8));
-}
-
 function request(uri, callback, params) {
 	var i = new XMLHttpRequest();
 	i.open('POST', uri, true);
@@ -347,7 +331,7 @@ function textareaHandler(e, s) {
 		end: 0
 	}];
 	if (!this.hIndex) this.hIndex = 0;
-	if (!s && e.keyCode == 9) {
+	if (!s && e.which == 9) {
 		if (this.selectionStart == this.selectionEnd) {
 			if (e.shiftKey) {
 				var cS = this.selectionEnd - 1;
@@ -388,7 +372,7 @@ function textareaHandler(e, s) {
 		});
 		this.hIndex = this.hist.length - 1;
 		e.preventDefault();
-	} else if (e.keyCode == 90 && e.metaKey && !e.altKey) {
+	} else if (e.which == 90 && e.metaKey && !e.altKey) {
 		e.preventDefault();
 		if (this.hIndex == this.hist.length - 1 && this.hist[this.hIndex].body != this.value) {
 			this.hist.push({
@@ -416,9 +400,9 @@ function textareaHandler(e, s) {
 				end: e.selectionEnd
 			});
 			e.hIndex = e.hist.length - 1;
-		}, this.lastKeyCode == e.keyCode || [8, 13].indexOf(e.keyCode) == -1 ? 200 : e.metaKey || e.shiftKey ? 100 : 0, this);
+		}, this.lastKeyCode == e.which || [8, 13].indexOf(e.which) == -1 ? 200 : e.metaKey || e.shiftKey ? 100 : 0, this);
 	}
-	this.lastKeyCode = e.keyCode;
+	this.lastKeyCode = e.which;
 }
 
 function updateTimes() {
@@ -434,7 +418,7 @@ addEventListener('DOMContentLoaded', function() {
 	if (markread) markread.onclick = function() {
 		request('/api/me/clearnotifs', function(res) {
 			if (res != 'Success') return alert(res);
-			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.remove('unread');
+			document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2)').classList.remove('unread');
 			document.getElementById('notifs').innerHTML = '';
 		});
 	};
@@ -497,9 +481,9 @@ function applyProgramIframes() {
 addEventListener('resize', applyProgramIframes);
 
 document.addEventListener('visibilitychange', function() {
-	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue != 'Log in') {
+	if (!document.hidden && document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue != 'Log in') {
 		request('/api/me/notif', function(res) {
-			document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2)').classList.toggle('unread', res);
+			document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2)').classList.toggle('unread', res);
 			document.getElementById('notifs').innerHTML = res;
 		});
 	}
@@ -517,7 +501,7 @@ function jsKeypressHandler(e) {
 	endChars[41] = ')';
 	endChars[93] = ']';
 	endChars[125] = '}';
-	if (e.keyCode == 13) {
+	if (e.which == 13) {
 		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
 		var cut = /[\n^]\s+$/.test(this.value.substr(0, oldSelectionStart)) ? 0 : (this.value.substr(0, oldSelectionStart).match(/[\t ]+$/) || '').length;
 		this.value = this.value.substr(0, oldSelectionStart - cut) + this.value.substr(oldSelectionStart);
@@ -537,40 +521,40 @@ function jsKeypressHandler(e) {
 				) + this.value.substr(oldSelectionStart);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart + tabs;
 		e.preventDefault();
-	} else if (e.keyCode == 34) {
+	} else if (e.which == 34) {
 		if (this.value[this.selectionStart] != '"') this.value = this.value.substr(0, this.selectionStart) + '""' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (e.keyCode == 39) {
+	} else if (e.which == 39) {
 		if (this.value[this.selectionStart] != "'") this.value = this.value.substr(0, this.selectionStart) + "''" + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (pairChars[e.keyCode]) {
-		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.keyCode] + this.value.substr(this.selectionEnd);
+	} else if (pairChars[e.which]) {
+		this.value = this.value.substr(0, this.selectionStart) + pairChars[e.which] + this.value.substr(this.selectionEnd);
 		this.selectionEnd = ++oldSelectionStart;
 		e.preventDefault();
-	} else if (endChars[e.keyCode] && this.value[this.selectionStart] == endChars[e.keyCode] && this.selectionStart == this.selectionEnd) {
+	} else if (endChars[e.which] && this.value[this.selectionStart] == endChars[e.which] && this.selectionStart == this.selectionEnd) {
 		this.selectionStart = ++this.selectionEnd;
 		e.preventDefault();
-	} else if (this.id != 'css' && e.keyCode == 61 && /(draw|refresh) $/.test(this.value.substr(0, this.selectionStart))) {
+	} else if (this.id != 'css' && e.which == 61 && /(draw|refresh) $/.test(this.value.substr(0, this.selectionStart))) {
 		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
 		this.value = this.value.substr(0, this.selectionStart) + '= function() {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 15 + tabs;
 		e.preventDefault();
-	} else if (this.id != 'css' && e.keyCode == 116 && /func$/.test(this.value.substr(0, this.selectionStart))) {
+	} else if (this.id != 'css' && e.which == 116 && /func$/.test(this.value.substr(0, this.selectionStart))) {
 		var tabs = this.value.substr(0, oldSelectionStart).split('\n')[this.value.substr(0, oldSelectionStart).split('\n').length - 1].split('\t').length;
 		this.value = this.value.substr(0, this.selectionStart) + 'tion () {\n' + '\t'.repeat(tabs) + '\n' + '\t'.repeat(tabs - 1) + '}' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 5;
 		e.preventDefault();
-	} else if (e.keyCode == 44) {
+	} else if (e.which == 44) {
 		this.value = this.value.substr(0, this.selectionStart) + ', ' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 		e.preventDefault();
-	} else if (this.id != 'css' && e.keyCode == 58) {
+	} else if (this.id != 'css' && e.which == 58) {
 		this.value = this.value.substr(0, this.selectionStart) + ': ' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart + 2;
 		e.preventDefault();
-	} else if (e.keyCode == 125 && this.value[this.selectionStart - 1] == '\t') {
+	} else if (e.which == 125 && this.value[this.selectionStart - 1] == '\t') {
 		this.value = this.value.substr(0, this.selectionStart - 1) + '}' + this.value.substr(this.selectionEnd);
 		this.selectionEnd = this.selectionStart = oldSelectionStart;
 		e.preventDefault();

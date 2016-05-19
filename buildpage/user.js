@@ -34,7 +34,7 @@ module.exports = o(function*(req, res, user) {
 			if (cUser) {
 				num++;
 				dstr +=
-					'<div class="user"><img src="' + cUser.pic + '" width="40" height="40" />' +
+					'<div class="user"><img src="' + cUser.pic + '" alt="profile picture for ' + cUser.name + '" width="40" height="40" />' +
 					'<div><a href="/user/' + cUser.name + '">' + cUser.name + '</a><small class="rep">' + cUser.rep + '</small></div>' +
 					'</div>';
 			} else {
@@ -81,19 +81,13 @@ module.exports = o(function*(req, res, user) {
 		}
 		yield respondPage(dispUser.name, user, req, res, yield);
 		let questions = 0;
-		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a href="/logout">Log out</a></small>' : '') + '</h1>');
-		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" />');
+		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a id="logout">Log out</a></small>' : '') + '</h1>');
+		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" alt="profile picture for ' + dispUser.name + '" />');
 		res.write('<div>');
 		res.write('<div>Joined <time datetime="' + new Date(dispUser.joined).toISOString() + '"></time></div>');
 		if (dispUser.seen) res.write('<div>Seen <time datetime="' + new Date(dispUser.seen).toISOString() + '"></time></div>');
 		res.write('<div class="grey">Moderator level ' + dispUser.level + '</div>');
 		if (dispUser.githubName) res.write('<a href="https://github.com/' + dispUser.githubName + '/">' + dispUser.githubName + ' on GitHub</a>');
-		if (me && !dispUser.githubID) {
-			res.write(
-				'<a href="//gravatar.com/' + crypto.createHash('md5').update(dispUser.mail).digest('hex') + '" target="_blank" title="Gravatar user page for this email">Change profile picture on gravatar</a> ' +
-				'(you must <a href="http://gravatar.com/login" target="_blank">create a gravatar account</a> if you don\'t have one <em>for this email</em>)'
-			);
-		}
 		res.write('</div>');
 		res.write('<div class="clear"><span class="big-rep">' + dispUser.rep + '</span> reputation</div>');
 		res.write(notifstr);
@@ -143,7 +137,7 @@ module.exports = o(function*(req, res, user) {
 							if (err) throw err;
 							if (program) {
 								res.write('<div class="program">');
-								res.write('<h2 class="title"><a href="/dev/' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a></h2>');
+								res.write('<h2 class="title"><a href="/dev/' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a></h2>');
 								if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
 								else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
 								res.write('</div> ');

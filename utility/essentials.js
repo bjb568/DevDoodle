@@ -27,7 +27,7 @@ function spanMarkdown(input) {
 		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
 		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
 		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
-		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" />')
+		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" alt="user image" />')
 		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, function(m, p1, p2, p3) {
 			var parsed = parseURL(p2.replace('youtu.be/', 'youtube.com/watch?v='));
 			var i;
@@ -72,7 +72,7 @@ function inlineMarkdown(input) {
 			}
 		};
 	outer: for (var i = 0; i < input.length; i++) {
-		if (['code', 'samp'].indexOf(current[current.length - 1]) == -1) {
+		if (!['code', 'samp'].includes(current[current.length - 1])) {
 			if (input[i] == '\\') span += input[++i].replace('^', '\u0001').replace('[', '\u0002');
 			else {
 				for (var l = 3; l > 0; l--) {
@@ -81,7 +81,7 @@ function inlineMarkdown(input) {
 						span = '';
 						if (current[current.length - 1] == tags[input.substr(i, l)]) output += '</' + current.pop() + '>';
 						else {
-							if (current.indexOf(tags[input.substr(i, l)]) != -1) warning('Illegal nesting of "' + input.substr(i, l) + '"');
+							if (current.includes(tags[input.substr(i, l)])) warning('Illegal nesting of "' + input.substr(i, l) + '"');
 							output += '<' + tags[input.substr(i, l)] + '>';
 							current.push(tags[input.substr(i, l)]);
 						}
@@ -238,28 +238,12 @@ function markdown(input) {
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
 }
-function passStrength(pass) {
-	var uniqueChars = [];
-	for (var i = 0; i < pass.length; i++) {
-		if (uniqueChars.indexOf(pass[i]) == -1) uniqueChars.push(pass[i]);
-	}
-	var penalties = /(.+?)(.*)(\1+)/g,
-		match,
-		deductions = 0;
-	while (match = penalties.exec(pass)) deductions += (4 - match[2].length / 2).bound(0.5, 3) * Math.pow(match[1].length + match[3].length, 1.4) / Math.sqrt(match[1].length + 3);
-	penalties = /\d+/g;
-	while (match = penalties.exec(pass)) deductions += Math.pow(match[0].length, 1.5);
-	penalties = /\w{2,}/gi;
-	while (match = penalties.exec(pass)) deductions += match[0].length * 1.5;
-	return 1 - 1 / (1 + Math.pow(2, uniqueChars.length / 2 - Math.pow(deductions, 2 / 3) / 10 + pass.length / 8 - 8));
-}
 
 module.exports = {
 	html,
 	spanMarkdown,
 	inlineMarkdown,
 	markdown,
-	passStrength,
 	mime: {
 		'.html': 'text/html',
 		'.css': 'text/css',

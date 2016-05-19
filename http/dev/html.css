@@ -15,8 +15,8 @@ section { background: transparent }
 #main { padding: 0 }
 #content { padding-bottom: 0 }
 #meta {
-	padding: 4px;
-	margin-bottom: 6px;
+	padding: 0.25em;
+	margin-bottom: 0.4em;
 	background: rgba(255, 255, 255, 0.8);
 	color: #000;
 	text-align: left;
@@ -24,15 +24,15 @@ section { background: transparent }
 }
 #meta h1, h2, h3, h4, h5, h6 { color: #000 }
 #meta code { background: #fff }
-#meta a { color: #000 }
-#meta a:visited { color: #444 }
-#meta a:hover { color: #15f }
-#meta a:active, #meta .ctrl:active { color: #02d }
+#meta a:not(.red) { color: #000 }
+#meta :not(.connection-error) > a:visited:not(.red) { color: #444 }
+#meta a:hover:not(.red) { color: #15f }
+#meta a:active:not(.red), #meta .ctrl:active { color: #02d }
 #meta .connection-error a { color: #ffb }
 .comment { background: rgba(255, 255, 255, 0.4) }
 .c-sig, .c-sig > * { color: #666 }
 .ta-cont {
-	margin: 3px 0;
+	margin: 2px 0;
 	flex-basis: 0;
 }
 .collapsed {
@@ -44,7 +44,7 @@ section { background: transparent }
 	width: 400px;
 	max-width: 100%;
 }
-#outputbox { margin-bottom: 2px; }
+#outputbox { margin-bottom: 2px }
 @media (max-width: 699px) {
 	#row { flex-direction: column }
 	#left {
@@ -54,7 +54,7 @@ section { background: transparent }
 	#right {
 		height: 400px; width: 100%;
 		flex-grow: 1;
-		margin-bottom: 8px;
+		margin-bottom: 0.5em;
 	}
 }
 @media (min-width: 700px) {
@@ -66,8 +66,13 @@ section { background: transparent }
 		flex-shrink: 0;
 		width: 50%;
 	}
-	#right { margin-left: 8px }
+	#right { margin-left: 0.5em }
 }
+#save:not(.modified) {
+	cursor: default;
+	color: #888;
+}
+#save.modified { color: #ff8 }
 #save.progress {
 	cursor: progress;
 	color: #4ff;

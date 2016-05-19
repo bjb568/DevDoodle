@@ -1,6 +1,6 @@
 'use strict';
 var myRep = parseInt(document.getElementById('rep').value),
-	username = document.querySelector('#nav > div:nth-of-type(2) > a:nth-child(2) span').firstChild.nodeValue,
+	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	id = parseInt(location.href.match(/\d+/)[0]),
 	langs = JSON.parse(document.getElementById('langs').value),
 	langsug = document.getElementById('langsug'),
@@ -72,7 +72,7 @@ lang.addEventListener('keyup', function() {
 });
 langKeyUp();
 lang.addEventListener('keydown', function(e) {
-	if (this.value && e.keyCode == 9) this.value = langsug.firstChild.textContent;
+	if (this.value && e.which == 9) this.value = langsug.firstChild.textContent;
 });
 lang.addEventListener('blur', function() {
 	langsug.hidden = true;
@@ -101,7 +101,7 @@ document.getElementById('edit-tags').onchange = function() {
 		for (var i = 0; i < els.length; i++) {
 			arr.push(els[i].id.substr(3));
 		}
-		document.getElementById('edit-tags-input').value = arr.join();
+		document.getElementById('edit-tags-input').value = arr.join(',');
 	}, 0);
 };
 document.getElementById('answerform').addEventListener('submit', function(e) {
@@ -335,11 +335,15 @@ socket.onclose = function() {
 	var addcomment = document.getElementsByClassName('addcomment')[0];
 	addcomment.parentNode.insertAfter(warning, addcomment);
 	addcomment.hidden = true;
+	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
 	setInterval(function() {
-		if (socket.readyState == 1) return location.reload(true);
+		if (socket.readyState == 1) return location.reload();
 		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
-	}, 5000);
+	}, 200);
 };
+addEventListener('popstate', function(event) {
+	if (socket.readyState != 1) location.reload();
+});
 var comments = document.getElementsByClassName('comment');
 for (var i = 0; i < comments.length; i++) {
 	var sctrls = comments[i].getElementsByClassName('sctrls')[0];

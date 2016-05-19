@@ -1,24 +1,13 @@
-<form action="?preview=1&amp;submit=0" method="POST" id="row">
+<form action="?preview=1&amp;submit=0" method="post" id="row">
 	<div id="text">
 		<div id="text-inner">
-			<h1><input type="text" value="$title" name="title" placeholder="Lesson Title" autofocus="" required="" /></h1>
-			<h2><input type="text" value="$stitle" name="stitle" placeholder="Section Title" required="" /></h2>
-			<textarea name="sbody" placeholder="Section Content" required="">$sbody</textarea>
+			<h1 class="noborder"><input type="text" class="fullwidth" value="$title" name="title" placeholder="Lesson Title" autofocus="" required="" /></h1>
+			<h2 class="noborder"><input type="text" class="fullwidth" value="$stitle" name="stitle" placeholder="Section Title" required="" /></h2>
+			<textarea name="sbody" class="fullwidth" rows="24" placeholder="Section Content" required="">$sbody</textarea>
 			<h2>JS validator code <small class="nofloat">(<a href="/learn/api/validation" target="_blank">API</a>)</small></h2>
-			<div id="ta-cont">
-				<textarea id="validator" name="validate" autocapitalize="none" autocomplete="off" spellcheck="false">function validate(data) {
-	if (data.indexOf('test') == -1) {
-		return {
-			success: false,
-			msg: 'Did you remember to foo the bar?'
-		};
-	}
-	return {
-		success: true,
-		msg: 'You did it!'
-	};
-}</textarea>
-				<code id="validator-display"></code>
+			<div id="ta-cont" class="bmar">
+				<textarea id="validator" class="code" name="validate" autocapitalize="none" autocomplete="off" spellcheck="false">function validate(data) {}</textarea>
+				<code id="validator-display" class="code-display"></code>
 			</div>
 			<div id="checker">
 				<button type="button" id="check" class="blk">Test User Submit</button>
@@ -31,7 +20,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="cntrls"><button type="submit">Preview Lesson</button></div>
+		<div id="cntrls" class="meta"><button type="submit">Preview Lesson</button></div>
 	</div>
 	<div id="ide">
 		<div id="html" class="ta-cont">

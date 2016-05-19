@@ -20,11 +20,8 @@
 		"yield-yield": "^1.0.1",
 		"http2": "^3.3.4",
 		"cookie": "^0.2.3",
-		"nodemailer": "^2.3.2",
-		"nodemailer-sendmail-transport": "^1.0.0",
 		"ws": "^1.1.0",
-		"mongodb": "^2.1.16",
-		"etag": "^1.7.0",
+		"mongodb": "^2.1.18",
 		"uglify-js": "^2.6.2",
 		"clean-css": "^3.4.12",
 		"diff": "^2.2.2"

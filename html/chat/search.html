@@ -1,5 +1,5 @@
 <h1>Search Chat</h1>
-<form method="POST" action="/api/chat/search" id="form">
+<form method="post" action="/api/chat/search" id="form">
 	<input id="searchbox" type="search" name="search" results="12" autosave="chat" autofocus="" />
 	Sort by
 	<select id="sort">
@@ -9,7 +9,7 @@
 		<option value="stars">Stars</option>
 	</select>
 	when said by <input type="text" name="user" id="user" />
-	in room <span class="rel"><input type="text" name="room" id="room" value="$qroom" /><div id="roomlist" hidden="" class="abs"></div></span>
+	in room <span class="rel ib"><input type="text" name="room" id="room" value="$qroom" /><div id="roomlist" hidden="" class="abs"></div></span>
 	<button>Go</button>
 </form>
 <div id="results" class="umar"></div>

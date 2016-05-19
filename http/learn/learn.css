@@ -82,9 +82,9 @@
 }
 #tree-inner .course a {
 	z-index: 3;
-	background: #3af;
+	background: #99e6ff;
 	padding: 0.22em 0.44em;
-	border-radius: 0.22em;
+	border-radius: 0.25em;
 	font-size: 18em;
 	line-height: 0.89em;
 	min-width: 6.67em;
@@ -113,7 +113,7 @@
 }
 #tree-inner .course:hover a {
 	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
-	background: #4cf;
+	background: #cef;
 	color: #333;
 }
 #tree-inner .course:active a { color: #00f }
@@ -257,8 +257,8 @@
 	left: calc(50% + 4em);
 	width: 2px;
 	height: 163em;
-	transform: rotate(36.0deg);
-	-webkit-transform: rotate(36.0deg);
+	transform: rotate(36deg);
+	-webkit-transform: rotate(36deg);
 	transform-origin: top;
 	-webkit-transform-origin: top;
 	background: #000;

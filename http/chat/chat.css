@@ -1,6 +1,8 @@
-.user, .user:first-child { margin-top: 6px }
+.user, .user:first-child { margin-top: 0.4em }
 .user span { float: right }
 .rem { opacity: 0.5 }
+label .md-err { margin-left: 10ch }
+label + .red { padding-left: 1ch }
 #content {
 	height: 0;
 	display: flex;
@@ -10,8 +12,12 @@
 	flex-grow: 1;
 	display: flex;
 	align-items: stretch;
+	height: calc(100% - 120px);
 }
-#chat { flex: 1 1 0 }
+#chat {
+	background: #ddd;
+	flex: 1 1 0;
+}
 #changetypeStat:empty { color: rgba(0, 0, 0, 0) }
 #changetypeStat:not(:empty) {
 	transition: color 0.2s 0.2s;
@@ -26,24 +32,25 @@
 	font-size: 1em;
 }
 #roomlist {
-	background: #4af;
+	color: #fff;
+	background: #16f;
 	z-index: 1;
+	left: 0; right: 0;
 }
 #roomlist span {
 	cursor: pointer;
 	display: block;
 	margin: 0;
-	padding: 2px 6px;
+	padding: 0.1em 0.3em;
 	border: 1px solid #000;
 	border-top: none;
 }
-#roomlist .selected { background: #6df }
+#roomlist .selected { background: #39f }
 #results:empty::after {
 	content: '(no results)';
 	color: #444;
 }
 #chat, #aside { overflow-x: hidden }
-#chat-div { height: calc(100% - 120px) }
 textarea {
 	height: 96px;
 	flex-shrink: 0;
@@ -59,7 +66,7 @@ textarea {
 	list-style-type: none;
 	padding: 0;
 }
-#stars li { margin: 4px 0 }
+#stars li { margin: 0.25em 0 }
 #editform { margin: 0 }
 #users .lft { float: left }
 #users a { text-decoration: none }
@@ -78,8 +85,8 @@ textarea {
 }
 #aside {
 	float: right;
-	padding-top: 4px;
-	margin-left: 6px;
+	padding-top: 0.25em;
+	margin-left: 0.4em;
 }
 @media (max-width: 699px) {
 	#aside { display: none }
@@ -91,4 +98,3 @@ textarea {
 	position: absolute;
 	z-index: 1;
 }
-#chat { background: #ddd }

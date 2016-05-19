@@ -8,11 +8,9 @@ body { color: #eee }
 @keyframes target {
 	0%, 30% { background: #950 }
 }
-.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action="/search/"]), #footer, #sidebar { margin-top: 6px }
 #content, #sidebar, #footer { background: transparent }
 .hglt, .desc, .comment, article, code { background: #333 }
 .shglt { background: #444 }
-iframe:not([seamless]) { background: #fff }
 .grey, a.small, .c-sig, .ctrls a { color: #aaa }
 .disabled, a.disabled:hover, a.disabled:active { color: #666 }
 .qlist-tags .rit { padding-top: 0.5em }
@@ -21,7 +19,7 @@ iframe:not([seamless]) { background: #fff }
 blockquote { border-left: 2px solid #fa0 }
 .diamond, h1, h2, h3, h4, h5, h6, code { color: #fff }
 a, .ctrl, a.blk { color: #fff }
-a:visited { color: #ccc; }
+a:visited { color: #ccc }
 a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }
 .user a { color: #000 }

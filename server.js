@@ -13,7 +13,7 @@ Number.prototype.bound = function(l, h) {
 };
 
 global.o = require('yield-yield');
-global.config = require('./config.js')[process.argv.indexOf('--test') == -1 ? 'normal' : 'test'];
+global.config = require('./config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
 
 require('colors');
 let http = require('http'),
@@ -22,7 +22,6 @@ let http = require('http'),
 	uglifyJS = require('uglify-js'),
 	CleanCSS = require('clean-css'),
 	zlib = require('zlib'),
-	etag = require('etag'),
 	fs = require('fs'),
 	path = require('path'),
 	url = require('url'),
@@ -30,8 +29,6 @@ let http = require('http'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
 	essentials = require('./utility/essentials.js'),
-	nodemailer = require('nodemailer'),
-	sendmailTransport = require('nodemailer-sendmail-transport'),
 	mongo = require('mongodb').MongoClient;
 const usedDBCs = [
 	'users',
@@ -70,11 +67,9 @@ global.typeIcons = {
 		'</svg>',
 	M: ' <span class="diamond private">♦</span>'
 };
-global.transport = nodemailer.createTransport(sendmailTransport());
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;
 global.markdown = essentials.markdown;
-global.passStrength = essentials.passStrength;
 global.mime = essentials.mime;
 global.dbcs = {};
 
@@ -132,7 +127,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"img-src " + (config.HTTP2 ? 'https:' : 'http:');
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="Gug+FC9PsilgbCb/VyBoLmXBNzizAL2VpCXDAEhuVOY="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
@@ -152,7 +147,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	}
 	res.writeHead(status || 200, header);
 	let data = (yield fs.readFile('html/a/head.html', yield)).toString();
-	if ((user = huser || user) && user.name) data = data.replace('<a href="/login/"><span>Log&#160;in</span></a>', '<a href="/user/' + user.name + '"$bnotifs><span>' + user.name + '</span></a>');
+	if ((user = huser || user) && user.name) data = data.replace(/<a id="github-button".+?<\/a>/, '<a href="/user/' + user.name + '"$bnotifs><span>' + user.name + '</span></a>');
 	let dirs = req.url.pathname.split('/');
 	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"');
 	res.write(
@@ -172,6 +167,12 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			).replaceAll(
 				'class="active" class="active"',
 				'class="active"'
+			).replace(
+				'$ghClientId',
+				githubAuth.client_id
+			).replace(
+				'$currentPage',
+				req.url.pathname
 			).replace(
 				'$search',
 				html(query.q || '')
@@ -230,87 +231,6 @@ global.errorsHTML = function(errs) {
 		)
 		: '';
 };
-
-let respondLoginPage = o(function*(errs, user, req, res, post, fillm, filln, fpass) {
-	if (!post) post = {};
-	let num = 0;
-	while (!num) num = Math.floor(Math.random() * 25 - 12);
-	yield respondPage('Login', user, req, res, yield, {
-		inhead: '<meta name="robots" content="noindex" /><link rel="stylesheet" href="/login/login.css" />'
-	});
-	res.write('<h1>Log in</h1>');
-	let notice = ({
-		ask: 'You must be logged in to ask a question.',
-		recovered: 'Your password has been reset. You may now login.',
-		updated: 'Your password has been updated. You may now login with your new password.'
-	})[post.r];
-	res.write(errorsHTML(errs) || (notice ? '<div class="notice">' + notice + '</div>' : ''));
-	res.write('<a href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.headers.referer || '') + '" id="github-button"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 120 120"><path d="M60 1.103C26.653 1.103-0.388 28.138-0.388 61.491 -0.388 88.171 16.915 110.807 40.909 118.792 43.927 119.351 45.035 117.482 45.035 115.887 45.035 114.448 44.979 109.69 44.953 104.644 28.153 108.297 24.608 97.519 24.608 97.519 21.861 90.54 17.903 88.683 17.903 88.683 12.424 84.935 18.316 85.012 18.316 85.012 24.38 85.438 27.573 91.236 27.573 91.236 32.959 100.467 41.7 97.798 45.146 96.255 45.689 92.353 47.253 89.688 48.98 88.18 35.567 86.654 21.467 81.475 21.467 58.336 21.467 51.744 23.826 46.356 27.689 42.127 27.062 40.606 24.995 34.464 28.275 26.146 28.275 26.146 33.346 24.524 44.885 32.337 49.702 30.999 54.868 30.328 60 30.304 65.132 30.328 70.302 30.999 75.128 32.337 86.654 24.524 91.718 26.146 91.718 26.146 95.005 34.464 92.938 40.606 92.311 42.127 96.183 46.356 98.525 51.744 98.525 58.336 98.525 81.531 84.398 86.637 70.951 88.132 73.117 90.006 75.047 93.681 75.047 99.315 75.047 107.395 74.978 113.898 74.978 115.887 74.978 117.495 76.064 119.377 79.125 118.785 103.107 110.791 120.388 88.163 120.388 61.491 120.388 28.138 93.351 1.103 60 1.103" fill="#161514" /></svg> Log in with GitHub</a>');
-	res.write('<p class="bumar">Or on DevDoodle:</p>');
-	res.write('<form method="post">');
-	res.write('<input type="checkbox" name="create" id="create"' + (post.create ? ' checked=""' : '') + ' /> <label for="create">Create an account</label>');
-	res.write(
-		'<div>' +
-			'<input type="text" id="name" name="name" placeholder="Name"' +
-				(filln && post.name ? ' value="' + html(post.name) + '"' : '') +
-				' required="" maxlength="16"' +
-			' autocapitalize="none" /> ' +
-			'<span id="name-error" class="red"> </span>' +
-		'</div>'
-	);
-	res.write(
-		'<div><input type="password" id="pass" name="pass" placeholder="Password" required=""' + (fpass ? ' autofocus=""' : '') + ' /> ' +
-		'<span id="pass-bad" class="red" hidden="">too short</span></div>'
-	);
-	res.write('<div id="ccreate">');
-	res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
-	res.write('<div><input type="password" id="passc" name="passc" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn\'t match</span></div>');
-	res.write('<p><small>Please use a password manager to store passwords</small></p>');
-	res.write('<div><input type="email" name="mail" id="mail" maxlength="256" placeholder="Email"' + (fillm && post.mail ? ' value="' + html(post.mail) + '"' : '') + ' /></div>');
-	res.write('<p id="sec" data-num="' + num + '">[No JS]<input type="text" name="sec' + num + '" placeholder="Confirm you\'re human" autocorrect="off" autocapitalize="none" /></p>');
-	res.write('</div>');
-	res.write('<input type="hidden" name="referer" value="' + html(post.referer || '') + '" />');
-	res.write('<button type="submit" id="submit" class="umar">Submit</button>');
-	res.write('</form>');
-	res.write('<p class="bumar"><small><a href="recover">Recover account from email</a></small></p>');
-	res.write(yield addVersionNonces('<script src="login.js"></script>', req.url.pathname, yield));
-	res.end(yield fs.readFile('html/a/foot.html', yield));
-});
-let respondChangePassPage = o(function*(errs, user, req, res, post) {
-	if (!post) post = {};
-	yield respondPage('Change Password', user, req, res, yield, {inhead: '<link rel="stylesheet" href="/login/login.css" />'});
-	res.write('<h1>Change Password for ' + user.name + '</h1>');
-	res.write(errorsHTML(errs));
-	res.write('<form method="post">');
-	if (user.pass) res.write('<div><input type="password" id="old" name="old" placeholder="Old password" required="" autofocus="" /></div>');
-	res.write('<div><input type="password" id="new" name="new" placeholder="New password" required="" /> <span id="pass-bad" class="red" hidden="">too short</span></div>');
-	res.write('<div id="pass-bar-outer"><div id="pass-bar"></div></div>');
-	res.write('<div><input type="password" id="conf" name="conf" placeholder="Confirm Password" /> <span id="pass-match" class="red" hidden="">doesn\'t match</span></div>');
-	res.write('<p><small>Please use a password manager to store passwords</small></p>');
-	res.write('<button type="submit" id="submit" disabled="">Submit</button>');
-	res.write('</form>');
-	res.write(yield addVersionNonces('<script src="/login/changepass.js"></script>', req.url.pathname, yield));
-	res.end(yield fs.readFile('html/a/foot.html', yield));
-});
-let respondCreateRoomPage = o(function*(errs, user, req, res, post) {
-	if (!post) post = {};
-	yield respondPage('Create Room', user, req, res, yield);
-	res.write('<h1>Create Room</h1>');
-	res.write(errorsHTML(errs));
-	res.write('<form method="post">');
-	res.write('<div>Name: <input type="text" name="name" required="" value="' + html(post.name || '') + '" /></div>');
-	res.write('<div>Description: <textarea name="desc" required="" minlength="16" rows="3" cols="80" style="max-width: 100%">' + html(post.desc || '') + '</textarea></div>');
-	res.write('<div>Type: <select name="type">');
-	res.write('\t<option value="P">Public</option>');
-	res.write('\t<option value="R">Read-only</option>');
-	res.write('\t<option value="N">Private</option>');
-	if (user.level > 4) res.write('\t<option value="M">Level 5 moderator ♦ only</option>');
-	res.write('</select>');
-	res.write('</div>');
-	res.write('<button type="submit">Submit</button>');
-	res.write('</form>');
-	res.end(yield fs.readFile('html/a/foot.html', yield));
-});
 
 global.questionTypes = {
 	err: 'an error',
@@ -404,7 +324,7 @@ let serverHandler = o(function*(req, res) {
 		if (req.method == 'GET') {
 			yield respondPage('New Lesson', user, req, res, yield, {
 				clean: true,
-				inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+				inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 			});
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -446,8 +366,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let last = yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield),
-							id = last ? last._id + 1 : 1;
+						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
@@ -467,7 +386,7 @@ let serverHandler = o(function*(req, res) {
 				} else if (parseInt(req.url.query.preview)) {
 					yield respondPage('Previewing ' + post.title + ': ' + post.stitle, user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/lessonpreview.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/lessonpreview.html', yield)).toString(), req.url.pathname, yield))
@@ -480,7 +399,7 @@ let serverHandler = o(function*(req, res) {
 				} else {
 					yield respondPage('New Lesson', user, req, res, yield, {
 						clean: true,
-						inhead: '<link rel="stylesheet" href="/learn/course.css" />\n<link rel="stylesheet" href="/learn/newlesson.css" />'
+						inhead: '<link rel="stylesheet" href="/learn/course.css" />'
 					});
 					res.write(
 						(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
@@ -497,163 +416,12 @@ let serverHandler = o(function*(req, res) {
 			res.end('Method not allowed. Use GET or POST.');
 		}
 	} else if (req.url.pathname == '/login/') {
-		if (req.method == 'GET') respondLoginPage([], user, req, res, {referer: req.headers.referer, r: req.url.query.r});
-		else if (req.method == 'POST') {
-			let post = '';
-			req.on('data', function(data) {
-				if (req.abort) return;
-				post += data;
-				if (post.length > 1e4) {
-					res.writeHead(413);
-					res.end('Error: Request entity too large.');
-					req.abort = true;
-				}
-			});
-			req.on('end', o(function*() {
-				if (req.abort) return;
-				post = querystring.parse(post);
-				if (!post.referer) post.referer = req.headers.referer;
-				if (post.create) {
-					if (post.check != 'JS-confirm') return errorForbidden(req, res, user, 'Suspicious request.');
-					let secAnswered = false;
-					for (let i = -12; i <= 12; i++) {
-						if (!i) continue;
-						let str = post['sec' + i],
-							fail;
-						if (!str) continue;
-						secAnswered = true;
-						fail |= str.match(/[a-wyz]/i);
-						str = str.replace(/\s/g, '').replace(/1?\*?(x\^2|x\s*\*\s*x|x\s*\*\*\s*2|x²)/, 'x^2');
-						fail |= str.match(/[^\d\+-^x]/);
-						let arr = [],
-							lstart = 0;
-						for (let j = 0; j < str.length; j++) {
-							if (str[j] == '+' || str[j] == '-') {
-								arr.push(str.substring(lstart, j));
-								lstart = j;
-							}
-						}
-						arr.push(str.substr(lstart));
-						let cA, cB, cC;
-						for (let j = 0; j < arr.length; j++) {
-							if (arr[j].length == 1) fail = true;
-							if (arr[j][0] == '+') arr[j] = (arr[j].match(/\d/) ? '' : '1') + arr[j].substr(1);
-							fail |= arr[j].match(/\d\D+\d/);
-							fail |= arr[j].match(/x.*x/);
-							fail |= arr[j].match(/^.*^/);
-							fail |= arr[j].indexOf('+') != -1;
-							let n = parseInt(arr[j].replace(/[^\d-]/g, ''));
-							if (arr[j].substring(arr[j].length - 3, arr[j].length) == 'x^2') {
-								fail |= n != 1 && arr[j].length != 3;
-								cA = true;
-							} else if (arr[j][arr[j].length - 1] == 'x') {
-								fail |= n != 2 * i;
-								fail |= arr[j].indexOf('^') != -1;
-								cB = true;
-							} else if (!arr[j].match(/[^\d-]/)) {
-								fail |= n != i * i;
-								cC = true;
-							} else fail = true;
-						}
-						if (fail || !cA || !cB || !cC) return respondLoginPage(['Incorrect response to security question.'], user, req, res, post, true, true, true);
-						break;
-					}
-					if (!secAnswered) return errorForbidden(req, res, user, 'Suspicious request.');
-					if (!post.name || !post.pass || !post.passc || !post.mail) return respondLoginPage(['All fields are required.'], user, req, res, post, false, true, true);
-					let errors = [],
-						nfillm,
-						nfilln,
-						fpass;
-					if (post.name.length > 16 && (nfilln = true)) errors.push('Name must be no longer than 16 characters.');
-					if (post.name.length < 3 && (nfilln = true)) errors.push('Name must be at least 3 characters long.');
-					if (!post.name.match(/^[a-zA-Z0-9-]+$/) && (nfilln = true)) errors.push('Name may only contain alphanumeric characters and dashes.');
-					if (post.name.indexOf(/---/) != -1 && (nfilln = true)) errors.push('Name may not contain a sequence of 3 dashes.');
-					if (post.pass != post.passc) errors.push('Passwords don\'t match.');
-					if (post.mail.length > 256 && (nfillm = true)) errors.push('Email address must be no longer than 256 characters.');
-					if (passStrength(post.pass) < 0.25) {
-						errors.push('Password is too short.');
-						if (!nfillm && !nfilln) fpass = true;
-					}
-					if (errors.length) return respondLoginPage(errors, user, req, res, post, !nfillm, !nfilln, fpass);
-					let existingUser = yield dbcs.users.findOne({name: post.name}, yield);
-					if (existingUser) return respondLoginPage(['Username already taken.'], user, req, res, post, true);
-					let salt = crypto.randomBytes(64).toString('base64'),
-						confirmToken = crypto.randomBytes(128).toString('base64');
-					dbcs.users.insert({
-						name: post.name,
-						pass: new Buffer(yield crypto.pbkdf2(post.pass + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
-						mail: post.mail,
-						pic: 'https://gravatar.com/avatar/' + crypto.createHash('md5').update(post.mail).digest('hex') + '?s=576&amp;d=identicon',
-						confirm: confirmToken,
-						salt,
-						joined: new Date().getTime(),
-						rep: 0,
-						level: 0
-					});
-					transport.sendMail({
-						from: 'DevDoodle <support@devdoodle.net>',
-						to: post.mail,
-						subject: 'Confirm your account',
-						html:
-							'<h1>Welcome to DevDoodle!</h1>' +
-							'<p>An account on devdoodle has been made for this email address under the name ' + post.name + '. ' +
-							'Confirm your account creation <a href="http://devdoodle.net/login/confirm/' + confirmToken + '">here</a>.</p>'
-					});
-					yield respondPage('Account Created', user, req, res, yield);
-					res.write('An account for you has been created. To activate it, click the link in the email sent to you. It may take a few minutes for the email to reach you, but please check your spam folder.');
-					res.end(yield fs.readFile('html/a/foot.html', yield));
-				} else {
-					if (!post.name || !post.pass) return respondLoginPage(['All fields are required.'], user, req, res, post, true, true, post.name && !post.pass);
-					let fuser = yield dbcs.users.findOne({name: post.name}, yield);
-					if (!fuser) return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-					if (fuser.confirm) {
-						if (fuser.seen) return respondLoginPage(['This account has been disabled by a user-initiated password reset. It can be <a href="recover">recovered with email verification</a>.'], user, req, res, post);
-						yield respondPage('Confirm Account', user, req, res, yield);
-						res.write(
-							(yield addVersionNonces((yield fs.readFile('html/login/login-confirm.html', yield)).toString(), req.url.pathname, yield))
-							.replaceAll(['$user', '$pass', '$mail'], [fuser.name, html(post.pass), html(fuser.mail)])
-						);
-						return res.end(yield fs.readFile('html/a/foot.html', yield));
-					}
-					if (fuser.level < 1) return respondLoginPage(['This account has been disabled.'], user, req, res, post);
-					if ((yield crypto.pbkdf2(post.pass + fuser.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != fuser.pass) {
-						return respondLoginPage(['Invalid Credentials.'], user, req, res, post);
-					}
-					let idToken = crypto.randomBytes(128).toString('base64'),
-						idCookie = cookie.serialize('id', idToken, {
-							path: '/',
-							expires: new Date(new Date().setDate(new Date().getDate() + 30)),
-							httpOnly: true,
-							secure: config.secureCookies
-						});
-					dbcs.users.update({name: fuser.name}, {
-						$push: {
-							cookie: {
-								token: idToken,
-								created: new Date().getTime()
-							}
-						}
-					});
-					var r = (url.parse(req.headers.referer, true).query || {}).r;
-					if (r == 'ask') {
-						res.writeHead(303, {
-							Location: '/qa/ask',
-							'Set-Cookie': idCookie
-						});
-						return res.end();
-					}
-					let referer = url.parse(post.referer);
-					res.writeHead(303, {
-						Location: referer && referer.host == req.headers.host && referer.pathname.indexOf('/login') != 0 && r != 'updated' ? referer.pathname : '/',
-						'Set-Cookie': idCookie
-					});
-					return res.end();
-				}
-			}));
-		} else {
-			res.writeHead(405);
-			res.end('Method not allowed. Use GET or POST.');
-		}
+		yield respondPage('Login', user, req, res, yield, {inhead: '<meta name="robots" content="noindex" />'});
+		res.write('<h1>Login</h1>');
+		if (req.url.query.r == 'ask') res.write('<div class="notice">You must be logged in to ask a question.</div>');
+		if (user) res.write('<p>You are signed in as <a href="/user/' + user.name + '">' + user.name + '</a>.</p>');
+		res.write('<a class="button larger" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.r == 'ask' ? '/qa/ask' : req.headers.referer || '') + '"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 120 120"><path d="M60 1.103C26.653 1.103-0.388 28.138-0.388 61.491 -0.388 88.171 16.915 110.807 40.909 118.792 43.927 119.351 45.035 117.482 45.035 115.887 45.035 114.448 44.979 109.69 44.953 104.644 28.153 108.297 24.608 97.519 24.608 97.519 21.861 90.54 17.903 88.683 17.903 88.683 12.424 84.935 18.316 85.012 18.316 85.012 24.38 85.438 27.573 91.236 27.573 91.236 32.959 100.467 41.7 97.798 45.146 96.255 45.689 92.353 47.253 89.688 48.98 88.18 35.567 86.654 21.467 81.475 21.467 58.336 21.467 51.744 23.826 46.356 27.689 42.127 27.062 40.606 24.995 34.464 28.275 26.146 28.275 26.146 33.346 24.524 44.885 32.337 49.702 30.999 54.868 30.328 60 30.304 65.132 30.328 70.302 30.999 75.128 32.337 86.654 24.524 91.718 26.146 91.718 26.146 95.005 34.464 92.938 40.606 92.311 42.127 96.183 46.356 98.525 51.744 98.525 58.336 98.525 81.531 84.398 86.637 70.951 88.132 73.117 90.006 75.047 93.681 75.047 99.315 75.047 107.395 74.978 113.898 74.978 115.887 74.978 117.495 76.064 119.377 79.125 118.785 103.107 110.791 120.388 88.163 120.388 61.491 120.388 28.138 93.351 1.103 60 1.103" fill="#161514" /></svg> <span>Log in with GitHub</span></a>');
+		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/login/github') {
 		let tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
 		let ghReq = https.request({
@@ -702,13 +470,7 @@ let serverHandler = o(function*(req, res) {
 						console.log(apiData);
 						let matchUser = yield dbcs.users.findOne({githubID: apiData.id}, yield);
 						if (matchUser) {
-							let idToken = crypto.randomBytes(128).toString('base64'),
-								idCookie = cookie.serialize('id', idToken, {
-									path: '/',
-									expires: new Date(new Date().setDate(new Date().getDate() + 30)),
-									httpOnly: true,
-									secure: config.secureCookies
-								});
+							let idToken = crypto.randomBytes(128).toString('base64');
 							dbcs.users.update({githubID: apiData.id}, {
 								$push: {
 									cookie: {
@@ -718,17 +480,21 @@ let serverHandler = o(function*(req, res) {
 								},
 								$set: {githubName: apiData.login}
 							});
-							let referer = url.parse(req.url.query.state || '');
 							res.writeHead(303, {
-								Location: req.url.query.state && referer.host == req.headers.host && referer.pathname.indexOf('login') == -1 ? referer.pathname : '/',
-								'Set-Cookie': idCookie
+								Location: req.url.query.state ? url.parse(req.url.query.state).pathname : '/',
+								'Set-Cookie': cookie.serialize('id', idToken, {
+									path: '/',
+									expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+									httpOnly: true,
+									secure: config.secureCookies
+								})
 							});
 							return res.end();
 						} else {
 							yield respondPage('Create Login', user, req, res, yield);
 							let verificationToken = crypto.randomBytes(128).toString('base64');
 							res.write(
-								(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
+								(yield addVersionNonces((yield fs.readFile('html/new-login.html', yield)).toString(), req.url.pathname, yield))
 								.replace('$errors', '')
 								.replace('$verification-token', verificationToken)
 								.replace('$name', (yield dbcs.users.findOne({name: apiData.login}, yield)) ? '' : html(apiData.login))
@@ -768,87 +534,6 @@ let serverHandler = o(function*(req, res) {
 			res.write('<p>HTTP error when connecting to GitHub: ' + e + ' ' + tryagain + '</p>');
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}));
-	} else if (req.url.pathname == '/login/new') {
-		if (req.method != 'POST') return res.writeHead(405) || res.end('Method not allowed. Use POST.');
-		let post = '';
-		req.on('data', function(data) {
-			if (req.abort) return;
-			post += data;
-			if (post.length > 1e4) {
-				res.writeHead(413);
-				res.end('Error: Request entity too large.');
-				req.abort = true;
-			}
-		});
-		req.on('end', o(function*() {
-			if (req.abort) return;
-			post = querystring.parse(post);
-			if (!tempVerificationTokens[post.token]) return errorForbidden(req, res, user, 'Invalid verification token.');
-			let errors = [];
-			if (!post.name) errors.push('Name is a required field.');
-			if (!post.mail) errors.push('Email address is a required field.');
-			if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
-			if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
-			if (!post.name.match(/^[a-zA-Z0-9-]+$/)) errors.push('Name may only contain alphanumeric characters and dashes.');
-			if (post.name.indexOf(/---/) != -1) errors.push('Name may not contain a sequence of 3 dashes.');
-			if (post.mail.length > 4096) errors.push('Email address must be no longer than 4096 characters.');
-			if (yield dbcs.users.findOne({name: post.name}, yield)) errors.push('Name has already been taken.');
-			if (errors.length) {
-				yield respondPage('Create Login', user, req, res, yield);
-				res.write(
-					(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
-					.replace('$errors', errorsHTML(errors))
-					.replace('$verification-token', post.token || '')
-					.replace('$name', post.name || '')
-					.replace('$mail', post.mail || '')
-				);
-				return res.end(yield fs.readFile('html/a/foot.html', yield));
-			}
-			let idToken = crypto.randomBytes(128).toString('base64'),
-				idCookie = cookie.serialize('id', idToken, {
-					path: '/',
-					expires: new Date(new Date().setDate(new Date().getDate() + 30)),
-					httpOnly: true,
-					secure: config.secureCookies
-				});
-			user = {
-				name: post.name,
-				mail: post.mail,
-				pic: tempVerificationTokens[post.token].pic,
-				githubID: tempVerificationTokens[post.token].githubID,
-				githubName: tempVerificationTokens[post.token].githubName,
-				joined: new Date().getTime(),
-				rep: 0,
-				level: 1,
-				cookie: [{
-					token: idToken,
-					created: new Date().getTime()
-				}]
-			};
-			dbcs.users.insert(user);
-			delete tempVerificationTokens[post.token];
-			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
-			res.write('An account for you has been created. You are now logged in.');
-			res.end(yield fs.readFile('html/a/foot.html', yield));
-		}));
-	} else if (i = req.url.pathname.match(/^\/login\/confirm\/([A-Za-z\d+\/=]{172})$/)) {
-		user = yield dbcs.users.findOne({confirm: i[1]}, yield);
-		if (user) {
-			dbcs.users.update({name: user.name}, {
-				$set: {
-					level: 1,
-					cookie: []
-				},
-				$unset: {confirm: 1}
-			});
-			yield respondPage('Account confirmed', user, req, res, yield);
-			res.write('<h1>Account confirmed</h1><p>You may <a href="/login/">log in</a> now.</p>');
-			res.end(yield fs.readFile('html/a/foot.html', yield));
-		} else {
-			yield respondPage('Account confirmation failed', user, req, res, yield);
-			res.write('<h1>Account confirmation failed</h1><p>Your token is invalid.</p>');
-			res.end(yield fs.readFile('html/a/foot.html', yield));
-		}
 	} else if (req.url.pathname == '/notifs') {
 		if (!user.name) return errorForbidden(req, res, 'You must be logged in to view your notifications.');
 		yield respondPage('Notifications', user, req, res, yield);
@@ -860,101 +545,7 @@ let serverHandler = o(function*(req, res) {
 		);
 		res.write('</ul>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (req.url.pathname == '/logout') {
-		res.writeHead(303, {
-			location: '/',
-			'Set-Cookie': 'id='
-		});
-		dbcs.users.update({name: user.name}, {$set: {cookie: []}});
-		res.end();
-	} else if (i = req.url.pathname.match(/^\/user\/([a-zA-Z0-9-]{3,16})\/changepass$/)) {
-		if (!user) return errorForbidden(req, res, user, 'You must be <a href="/login/">logged in</a> to change your password.');
-		if (req.method == 'GET') respondChangePassPage([], user, req, res, {});
-		else if (req.method == 'POST') {
-			let post = '';
-			req.on('data', function(data) {
-				if (req.abort) return;
-				post += data;
-				if (post.length > 1e5) {
-					res.writeHead(413);
-					res.end('Error: Request entity too large.');
-					req.abort = true;
-				}
-			});
-			req.on('end', o(function*() {
-				if (req.abort) return;
-				post = querystring.parse(post);
-				if (!user || user.name != i[1]) return errorForbidden(req, res, user);
-				if ((!post.old && user.pass) || !post.new || !post.conf) return respondChangePassPage(['All fields are required.'], user, req, res, {});
-				if (post.new != post.conf) return respondChangePassPage(['New passwords don\'t match.'], user, req, res, {});
-				if (passStrength(post.new) < 0.25) return respondChangePassPage(['Password is too short.'], user, req, res, {});
-				if (user.pass && new Buffer(yield crypto.pbkdf2(post.old + user.salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64') != user.pass) {
-					return respondChangePassPage(['Incorrect old password.'], user, req, res, {});
-				}
-				let salt = crypto.randomBytes(64).toString('base64');
-				dbcs.users.update({name: user.name}, {
-					$set: {
-						pass: new Buffer(yield crypto.pbkdf2(post.new + salt, 'KJ:C5A;_?F!00S(4S[T-3X!#NCZI;A', 1e5, 128, yield)).toString('base64'),
-						salt,
-						cookie: []
-					}
-				});
-				let idCookie = cookie.serialize('id', '', {
-					path: '/',
-					expires: new Date(),
-					httpOnly: true,
-					secure: config.secureCookies
-				});
-				res.writeHead(303, {
-					Location: '/login/?r=updated',
-					'Set-Cookie': idCookie
-				});
-				res.end();
-			}));
-		} else {
-			res.writeHead(405);
-			res.end('Method not allowed. Use GET or POST.');
-		}
-	} else if (req.url.pathname == '/chat/newroom') {
-		if (!user) return errorForbidden(req, res, user, 'You must be logged in and have 200 reputation to create a room.');
-		if (user.rep < 200) return errorForbidden(req, res, user, 'You must have 200 reputation to create a room.');
-		if (req.method == 'GET') respondCreateRoomPage([], user, req, res);
-		else if (req.method == 'POST') {
-			let post = '';
-			req.on('data', function(data) {
-				if (req.abort) return;
-				post += data;
-				if (post.length > 1e5) {
-					res.writeHead(413);
-					res.end('Error: Request entity too large.');
-					req.abort = true;
-				}
-			});
-			req.on('end', o(function*() {
-				if (req.abort) return;
-				post = querystring.parse(post);
-				let errors = [];
-				if (!post.name || post.name.length < 4) errors.push('Name must be at least 4 chars long.');
-				if (!post.desc || post.desc.length < 16) errors.push('Description must be at least 16 chars long.');
-				if (['P', 'R', 'N', 'M'].indexOf(post.type) == -1) errors.push('Invalid room type.');
-				if (errors.length) return respondCreateRoomPage(errors, user, req, res, post);
-				let last = yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield),
-					i = last ? last._id + 1 : 1;
-				dbcs.chatrooms.insert({
-					name: post.name,
-					desc: post.desc,
-					type: post.type,
-					invited: [user.name],
-					_id: i
-				});
-				res.writeHead(303, {Location: i});
-				res.end();
-			}));
-		} else {
-			res.writeHead(405);
-			res.end('Method not allowed. Use GET or POST.');
-		}
-	} else if (req.url.pathname.indexOf('.') != -1) {
+	} else if (req.url.pathname.includes('.')) {
 		let stats;
 		try {
 			stats = yield fs.stat('./http/' + req.url.pathname, yield);
@@ -962,14 +553,14 @@ let serverHandler = o(function*(req, res) {
 			return errorNotFound(req, res, user);
 		}
 		if (!stats.isFile()) return errorNotFound(req, res, user);
-		let raw = !req.headers['accept-encoding'] || req.headers['accept-encoding'].indexOf('gzip') == -1 || req.headers['accept-encoding'].indexOf('gzip;q=0') != -1;
+		let raw = !req.headers['accept-encoding'] || !req.headers['accept-encoding'].includes('gzip') || req.headers['accept-encoding'].includes('gzip;q=0');
 		if (cache[req.url.pathname]) {
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(cache[req.url.pathname].raw),
-				'Vary': 'Accept-Encoding'
+				'Cache-Control': 'max-age=6012800',
+				'Vary': 'Accept-Encoding',
+				'ETag': cache[req.url.pathname].hash
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 			if (cache[req.url.pathname].updated < stats.mtime) {
@@ -988,6 +579,7 @@ let serverHandler = o(function*(req, res) {
 				cache[req.url.pathname] = {
 					raw: data,
 					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
+					hash: yield getVersionNonce('/', req.url.pathname, yield),
 					updated: stats.mtime
 				};
 			}
@@ -1007,20 +599,20 @@ let serverHandler = o(function*(req, res) {
 			cache[req.url.pathname] = {
 				raw: data,
 				gzip: yield zlib.gzip(data, yield),
+				hash: yield getVersionNonce('/', req.url.pathname, yield),
 				updated: stats.mtime
 			};
 			res.writeHead(200, {
 				'Content-Encoding': raw ? 'identity' : 'gzip',
 				'Content-Type': (mime[path.extname(req.url.pathname)] || 'text/plain') + '; charset=utf-8',
-				'Cache-Control': 'max-age=6012800, public',
-				'ETag': etag(data),
+				'Cache-Control': 'max-age=6012800',
 				'Vary': 'Accept-Encoding'
 			});
 			res.end(cache[req.url.pathname][raw ? 'raw' : 'gzip']);
 		}
 	} else {
 		for (let i = 0; i < buildpageServers.length; i++) {
-			if (!req.url.pathname.indexOf(buildpageServers[i][0])) return buildpageServers[i][1](req, res, user || {});
+			if (req.url.pathname.indexOf(buildpageServers[i][0]) == 0) return buildpageServers[i][1](req, res, user || {});
 		}
 	}
 });
@@ -1046,7 +638,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	console.log('Connected to mongodb.'.cyan);
-	if (process.argv.indexOf('--test') != -1) {
+	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
 		http.get({
 			port: config.port,

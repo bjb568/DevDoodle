@@ -89,12 +89,13 @@ module.exports = o(function*(req, res, user) {
 	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
 		let program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
 		if (!program) return errorNotFound(req, res, user);
+		let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield);
 		if (program.deleted) {
 			yield respondPage('[Deleted]', user, req, res, yield, {inhead: '<script src="deleted-program.js"></script>'}, 404);
 			if (program.deleted.by.length == 1 && program.deleted.by == program.user && program.user == user.name) {
 				res.write('<h1>' + html(program.title || 'Untitled') + '</h1>');
-				res.write('You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. ');
-				res.write('<a class="red" id="undelete">[undelete]</a>');
+				res.write('<p>You deleted this <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time>. ');
+				res.write('<button id="undelete">Undelete…</button></p>');
 			} else if (user.level >= 4) {
 				let deletersstr = '',
 					i = program.deleted.by.length;
@@ -103,9 +104,9 @@ module.exports = o(function*(req, res, user) {
 					if (i == 1) deletersstr += ', and ';
 					else if (i) deletersstr += ', ';
 				}
-				res.write('<h1>' + html(program.title || 'Untitled') + '</h1>');
-				res.write('This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. ');
-				res.write('<a class="red" id="undelete">[undelete]</a>');
+				res.write('<h1>' + html(program.title || 'Untitled') + ' by <a href="/user/' + program.user + '">' + program.user + '</a></h1>');
+				res.write('<p>This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. ');
+				res.write('<button id="undelete">Undelete…</button></p>');
 			} else {
 				res.write(
 					'This program was deleted <time datetime="' + new Date(program.deleted.time).toISOString() + '"></time> ' +
@@ -117,6 +118,7 @@ module.exports = o(function*(req, res, user) {
 					'.'
 				);
 			}
+			if (forkedFrom) res.write('<p>It was forked from <a href="' + forkedFrom._id + '">' + html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user + '</a></p>');
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield,
@@ -133,16 +135,17 @@ module.exports = o(function*(req, res, user) {
 			}, yield)) || {val: 0},
 				op = yield dbcs.users.findOne({name: program.user}, yield),
 				commentstr = '';
-			dbcs.comments.find({program: program._id}).sort({_id: 1}).each(o(function*(err, comment) {
+			dbcs.comments.find({program: program._id}).sort({_id: 1}).each(function(err, comment) {
 				if (err) throw err;
 				if (comment) commentstr += new Comment(comment).toString(user);
 				else {
-					let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield),
-						forks = [];
+					let forks = '';
 					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
 						if (err) throw err;
-						if (forkFrom) forks.push('<a href="' + forkFrom._id + '">' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a>');
-						else {
+						if (forkFrom) {
+							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
+							forks += '<li><a href="' + forkFrom._id + '"' + (forkFrom.deleted ? ' class="red"' : '') + '>' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a></li>';
+						} else {
 							res.write(
 								(
 									program.type == 1 ?
@@ -163,6 +166,7 @@ module.exports = o(function*(req, res, user) {
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								.replaceAll('$raw-title', html(program.title || 'Untitled'))
 								.replace('$comments', commentstr).replaceAll(
 									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
 									[op.name == user.name ? '1' : '', (user.rep || 0).toString(), op.name, op.rep.toString(), op.pic]
@@ -179,13 +183,13 @@ module.exports = o(function*(req, res, user) {
 											html(forkedFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkedFrom.user + '">' + forkedFrom.user +
 											'</a>'
 										: ''
-								).replace('$forks', forks.length ? '<h2>Forks</h2><ul><li>' + forks.join('</li><li>') + '</li></ul>' : '')
+								).replace('$forks', forks.length ? '<h2>Forks</h2><ul>' + forks + '</ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
 					}));
 				}
-			}));
+			});
 		}
 	} else errorNotFound(req, res, user);
 });

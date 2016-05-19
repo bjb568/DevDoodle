@@ -21,7 +21,7 @@
 			<div class="rit">
 				<div>Asked <time datetime="$askdate"></time> by</div>
 				<div class="user user-$op-name">
-					<img src="$op-pic" width="40" height="40" />
+					<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" />
 					<div>
 						<a href="/user/$op-name">$op-name</a>
 						<small class="rep">$op-rep</small>
@@ -30,13 +30,12 @@
 			</div>
 		</div>
 	</div>
-	<form id="q-edit" class="indt" hidden="">
-		<div class="bmar">Language: <input type="text" id="lang-edit" value="$lang" required="" /></div>
-		<div id="langsug" hidden="" class="abs"></div>
-		<textarea id="q-desc-edit" rows="24" required="">$rawdesc</textarea>
-		<textarea id="q-code-edit" rows="24" class="umar" required="">$code</textarea>
-		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" maxlength="144" required="" />
-		<p class="sumar">
+	<form id="q-edit" hidden="">
+		<label class="blk bmar">Language: <span class="ib rel"><input type="text" name="lang" id="lang-edit" value="$lang" required="" autocomplete="off" /><div id="langsug" hidden="" class="abs"></div></span></label>
+		<textarea id="q-desc-edit" rows="24" required="" minlength="144">$rawdesc</textarea>
+		<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>
+		<input type="text" id="q-question-edit" value="$rawq" class="fullwidth bmar" minlength="12" maxlength="144" required="" />
+		<label class="sumar">
 			This question is about
 			<select id="edit-type" name="type">
 				<option value="err">fixing non-working code</option>
@@ -47,11 +46,11 @@
 				<option value="pra">techniques and best practices</option>
 				<option value="the">a theoretical scenario</option>
 			</select>
-		</p>
+		</label>
 		<h3 class="nomar">Tags:</h3>
 		<div id="edit-tags">$edit-tags</div>
 		<input type="hidden" id="edit-tags-input" value="$raw-edit-tags" />
-		<p><strong>Edit Comment:</strong> <input type="text" id="q-edit-comment" class="fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></p>
+		<label><strong>Edit Comment:</strong> <input type="text" id="q-edit-comment" class="fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></label>
 		<div class="bumar">
 			<button type="submit">Submit Edit</button>
 			<button type="reset" id="cancel-edit">Cancel</button>
@@ -77,7 +76,7 @@
 $answers
 <h2 class="bumar">Answer this question</h2>
 <form id="answerform" class="umar rel" action="/api/answer/add">
-	<textarea id="answerta" name="body"></textarea>
+	<textarea id="answerta" name="body" rows="24" minlength="144"></textarea>
 	<div id="answertips" class="pad abs">
 		<h3>Thanks for answering!</h3>
 		<p>While answering, make sure to:</p>
