@@ -324,7 +324,7 @@ function editComment() {
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
 		request('/api/comment/' + editingComment + '/body', function(res) {
-			if (res.indexOf('Error:') == 0) alert(res);
+			if (res.indexOf('Error') == 0) alert(res);
 			else {
 				editCommentTA.value = res;
 				editCommentTA.focus();
