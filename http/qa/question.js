@@ -94,6 +94,9 @@ document.getElementById('q-edit').onsubmit = function(e) {
 		tags: document.getElementById('edit-tags-input').value
 	}));
 };
+document.getElementById('q-delete').onclick = function() {
+	socket.send(JSON.stringify({event: 'q-delete'}));
+};
 document.getElementById('edit-tags').onchange = function() {
 	setTimeout(function() {
 		var arr = [],
