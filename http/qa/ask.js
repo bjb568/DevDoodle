@@ -118,7 +118,7 @@ function findTags() {
 	request('/api/qa/tags', function(res) {
 		var child;
 		while (child = tags.firstChild) tags.removeChild(child);
-		if (res.indexOf('Error:') == 0) return alert(res);
+		if (res.indexOf('Error') == 0) return alert(res);
 		if (res == '[]' && !err1.textContent) {
 			err1.classList.add('tag-warning');
 			return err1.textContent = 'No tags found for language.';

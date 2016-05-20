@@ -19,9 +19,9 @@ module.exports = o(function*(tws, wss, i) {
 			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 			if (!tws.user.name) return tws.trysend(JSON.stringify({
 				event: 'err',
-				body: 'You must be logged in and have level 3 moderator tools to edit posts.'
+				body: 'You must be logged in to edit posts.'
 			}));
-			if (tws.user.level < 3 && question.user != user.name) return tws.trysend(JSON.stringify({
+			if (tws.user.level < 3 && question.user != tws.user.name) return tws.trysend(JSON.stringify({
 				event: 'err',
 				body: 'You must have level 3 moderator tools to edit posts other than your own.'
 			}));

@@ -94,6 +94,15 @@ document.getElementById('q-edit').onsubmit = function(e) {
 		tags: document.getElementById('edit-tags-input').value
 	}));
 };
+document.getElementById('q-delete').onclick = function() {
+	if (confirm('Do you want to delete this question?')) {
+		request('/api/question/delete', function(res) {
+			if (res.indexOf('Error') == 0) alert(res);
+			else if (res == 'Success') location.reload();
+			else alert('Unknown error. Response was: ' + res);
+		});
+	}
+};
 document.getElementById('edit-tags').onchange = function() {
 	setTimeout(function() {
 		var arr = [],
@@ -115,7 +124,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		if (res.indexOf('Location:') == 0) {
 			location.href = '#' + res.substr(12);
 			location.reload();
-		} else if (res.indexOf('Error:') == 0) alert(res);
+		} else if (res.indexOf('Error') == 0) alert(res);
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answer.value));
 });
@@ -187,7 +196,7 @@ function editComment() {
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
 		request('/api/comment/' + editingComment + '/body', function(res) {
-			if (res.indexOf('Error:') == 0) alert(res);
+			if (res.indexOf('Error') == 0) alert(res);
 			else {
 				editCommentTA.value = res;
 				editCommentTA.focus();
