@@ -325,6 +325,46 @@ module.exports = o(function*(req, res, user, post) {
 		});
 		res.writeHead(200);
 		res.end('Location: /qa/' + id);
+	} else if (req.url.pathname == '/question/delete') {
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to delete questions.');
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
+		let question = yield dbcs.questions.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
+		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own questions.');
+		dbcs.posthistory.insert({
+			q: question._id,
+			event: 'delete',
+			by: [user.name],
+			time: new Date().getTime()
+		});
+		dbcs.questions.update({_id: question._id}, {
+			$set: {
+				deleted: {
+					by: [user.name],
+					time: new Date().getTime()
+				}
+			}
+		});
+		res.writeHead(204);
+		res.end();
+	} else if (req.url.pathname == '/question/undelete') {
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to undelete questions.');
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
+		let question = yield dbcs.questions.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
+		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own questions.');
+		dbcs.posthistory.insert({
+			q: question._id,
+			event: 'undelete',
+			by: [user.name],
+			time: new Date().getTime()
+		});
+		dbcs.questions.update({_id: question._id}, {
+			$unset: {deleted: 1},
+			$set: {private: true}
+		});
+		res.writeHead(204);
+		res.end();
 	} else if (req.url.pathname == '/qa/tags') {
 		res.writeHead(200);
 		res.write('[');
