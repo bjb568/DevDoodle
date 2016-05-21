@@ -1,3 +1,4 @@
+h1 small { cursor: default }
 section { background: transparent }
 #content, #main {
 	display: flex;

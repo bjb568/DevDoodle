@@ -54,7 +54,7 @@ htmle.onkeypress = function(e) {
 	var oldSelectionStart = this.selectionStart,
 		el = (document.getElementById('caret') || {}).previousElementSibling;
 	if (e.which == 13) {
-		if (e.metaKey) return document.getElementById('title').dispatchEvent(new MouseEvent('click'));
+		if (e.metaKey) return title.dispatchEvent(new MouseEvent('click'));
 		var toSelection = this.value.substr(0, oldSelectionStart),
 			tabs = toSelection
 			.split('\n')[toSelection.split('\n').length - 1]
@@ -84,23 +84,7 @@ htmle.onkeypress = function(e) {
 		e.preventDefault();
 	}
 };
-htmle.onkeydown = css.onkeydown = js.onkeydown = function(e) {
-	if (e.which == 8 && this.selectionStart == this.selectionEnd) {
-		if (
-			(this.value[this.selectionStart - 1] == '"' && this.value[this.selectionStart] == '"') ||
-			(this.value[this.selectionStart - 1] == "'" && this.value[this.selectionStart] == "'") ||
-			(this.value[this.selectionStart - 1] == '(' && this.value[this.selectionStart] == ')') ||
-			(this.value[this.selectionStart - 1] == '[' && this.value[this.selectionStart] == ']') ||
-			(this.value[this.selectionStart - 1] == '{' && this.value[this.selectionStart] == '}')
-		) {
-			var oldSelectionStart = this.selectionStart;
-			this.value = this.value.substr(0, this.selectionStart - 1) + this.value.substr(this.selectionStart + 1);
-			this.selectionEnd = --oldSelectionStart;
-			e.preventDefault();
-		}
-	}
-};
-css.onkeypress = js.onkeypress = jsKeypressHandler;
+css.onkeypress = js.onkeypress = taKeydownHandler;
 run();
 var runTimeout;
 htmlCont.classList.toggle('collapsed', !htmle.value);
@@ -193,171 +177,32 @@ function handleTAInput() {
 	}
 	lastValue = newValue;
 }
-addEventListener('keypress', function() {
-	setTimeout(handleTAInput, 0);
-});
-addEventListener('keyup', function() {
-	setTimeout(handleTAInput, 0);
-});
-addEventListener('keydown', function() {
-	setTimeout(handleTAInput, 0);
-});
-addEventListener('mousedown', function() {
-	setTimeout(handleTAInput, 0);
-});
-addEventListener('mousemove', function() {
-	setTimeout(handleTAInput, 0);
-});
+addEventListener('keypress', soonHandleTAInput);
+addEventListener('keyup', soonHandleTAInput);
+addEventListener('keydown', soonHandleTAInput);
+addEventListener('mousedown', soonHandleTAInput);
+addEventListener('mousemove', soonHandleTAInput);
 addEventListener('input', handleTAInput);
-htmle.onfocus = css.onfocus = js.onfocus = function() {
-	this.parentNode.classList.add('focused');
-};
-htmle.onblur = css.onblur = js.onblur = function() {
-	delete this.lastCursorPos;
-	this.parentNode.classList.remove('focused');
-	(document.getElementById('caret') || {}).hidden = true;
-	clearTimeout(blinkTimeout);
-};
+htmle.addEventListener('focus', taFocusHandler);
+css.addEventListener('focus', taFocusHandler);
+js.addEventListener('focus', taFocusHandler);
+htmle.addEventListener('blur', taBlurHandler);
+css.addEventListener('blur', taBlurHandler);
+js.addEventListener('blur', taBlurHandler);
 if (navigator.userAgent.indexOf('Mobile') == -1) {
 	addEventListener('focus', function() {
 		(document.getElementById('caret') || {}).hidden = false;
 		if (!blinkTimeout) blinkTimeout = setTimeout(blink, 500);
 	});
 }
-addEventListener('keypress', function(e) {
-	if (e.which == 13 && e.metaKey) {
-		e.preventDefault();
-		document.getElementById('title').dispatchEvent(new MouseEvent('click'));
-	} else if (e.which == 115 && e.metaKey) {
-		e.preventDefault();
-		var target = e.shiftKey ? fork : save;
-		if (target) target.dispatchEvent(new MouseEvent('click'));
-	}
-});
-save.onclick = function() {
-	if (save.classList.contains('progress')) return;
-	save.classList.add('progress');
-	var savingTimeout = setTimeout(function() {
-		if (save.textContent == 'Save') save.textContent = 'Saving…';
-	}, 200);
-	request('/api/program/save?type=2', function(res) {
-		if (res.indexOf('Error') == 0) {
-			clearTimeout(savingTimeout);
-			alert(res);
-			save.textContent = 'Save';
-		} else if (res.indexOf('Location') == 0) {
-			onbeforeunload = null;
-			location.href = res.split(' ')[1];
-		} else if (res == 'Success') {
-			save.textContent = 'Saved';
-			save.classList.remove('modified');
-			savedValue = [htmle.value, css.value, js.value];
-			document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
-		} else {
-			clearTimeout(savingTimeout);
-			alert('Unknown error. Response was: ' + res);
-		}
-		save.classList.remove('progress');
-	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
-};
-(document.getElementById('fork') || {}).onclick = function() {
-	var e = this;
-	if (e.classList.contains('progress')) return;
-	e.classList.add('progress');
-	e.textContent = 'Saving…';
-	var e = e.previousSibling.previousSibling;
-	e.hidden = e.previousSibling.previousSibling.hidden = true;
-	request('/api/program/save?type=2&fork=1', function(res) {
-		if (res.indexOf('Error') == 0) {
-			e.hidden = false;
-			e = e.nextSibling.nextSibling;
-			e.hidden = false;
-			e.nextSibling.nextSibling.textContent = 'Fork';
-			alert(res);
-		} else if (res.indexOf('Location') == 0) {
-			onbeforeunload = null;
-			location.href = res.split(' ')[1];
-		} else alert('Unknown error. Response was: ' + res);
-		e.classList.remove('progress');
-	}, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
-};
-function upvoteComment() {
-	this.title = this.classList.toggle('clkd') ? 'Unvote' : 'This comment is useful.';
-	socket.send(JSON.stringify({
-		event: this.classList.contains('clkd') ? 'comment-vote' : 'comment-unvote',
-		id: parseInt(this.parentNode.parentNode.id.substr(1))
-	}));
+function updateSavedValue() {
+	savedValue = [htmle.value, css.value, js.value];
 }
-function editComment() {
-	var s = this.parentNode.parentNode.classList.contains('editing'),
-		existing = document.getElementById('c' + editingComment);
-	if (existing) existing.classList.remove('editing');
-	if (editCommentForm.hidden = s) editingComment = false;
-	else {
-		this.parentNode.parentNode.classList.add('editing');
-		editingComment = parseInt(this.parentNode.parentNode.id.substr(1));
-		editCommentTA.value = '';
-		editCommentTA.placeholder = 'Loading…';
-		request('/api/comment/' + editingComment + '/body', function(res) {
-			if (res.indexOf('Error:') == 0) alert(res);
-			else {
-				editCommentTA.value = res;
-				editCommentTA.focus();
-				editCommentTA.selectionStart = editCommentTA.selectionEnd = res.length;
-			}
-		});
-	}
+function saveRequest() {
+	request('/api/program/save?type=2', saveHandler, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 }
-function deleteComment() {
-	if (confirm('Do you want to delete this comment?')) socket.send(JSON.stringify({event: 'comment-delete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
-}
-function undeleteComment() {
-	if (confirm('Do you want to undelete this comment?')) socket.send(JSON.stringify({event: 'comment-undelete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
-}
-function createComment(data) {
-	var div = document.createElement('div');
-	div.className = 'comment';
-	div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body));
-	div.insertBefore(document.getElementById('main').nextElementSibling.cloneNode(true), div.firstChild);
-	div.firstChild.children[0].onclick = upvoteComment;
-	if (username != data.user) {
-		div.firstChild.children[2].hidden = true;
-		div.firstChild.children[3].hidden = true;
-	}
-	if (myRep < 50) {
-		div.firstChild.children[0].hidden = true;
-		div.firstChild.children[1].hidden = true;
-	}
-	div.firstChild.children[4].hidden = true;
-	div.firstChild.children[2].onclick = editComment;
-	div.firstChild.children[3].onclick = deleteComment;
-	div.firstChild.children[4].onclick = undeleteComment;
-	var score = document.createElement('span');
-	score.classList.add('score');
-	score.appendChild(document.createTextNode(score.dataset.score = 0));
-	div.insertBefore(score, div.firstChild);
-	var sig = document.createElement('span');
-	sig.classList.add('c-sig');
-	sig.appendChild(document.createTextNode('-'));
-	var a = document.createElement('a');
-	a.href = '/user/' + data.user;
-	a.appendChild(document.createTextNode(data.user));
-	sig.appendChild(a);
-	sig.appendChild(document.createTextNode(', '));
-	var permalink = document.createElement('a');
-	permalink.appendChild(agot(data.time || new Date().getTime()));
-	permalink.href = '#' + (div.id = 'c' + data.id);
-	sig.appendChild(permalink);
-	var currentNode = div;
-	while (!sig.parentNode) {
-		if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
-		else currentNode = currentNode.lastElementChild;
-	}
-	var comments = document.getElementById('comments');
-	for (var i = 0; i < comments.children.length; i++) {
-		if (parseInt(comments.children[i].id.substr(1)) > data.id) return comments.insertBefore(div, comments.children[i]);
-	}
-	comments.appendChild(div);
+function forkRequest() {
+	request('/api/program/save?type=2&fork=1', forkHandler, 'html=' + encodeURIComponent(htmle.value) + '&css=' + encodeURIComponent(css.value) + '&js=' + encodeURIComponent(js.value));
 }
 function canUnload() {
 	return JSON.stringify([htmle.value, css.value, js.value]) == JSON.stringify(savedValue);
