@@ -41,8 +41,8 @@ body {
 .nofloat { float: none }
 .noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
-.sumar, :not(img) + .desc, .blk, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 0.15em }
-.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), .connection-error, #footer, #sidebar { margin-top: 0.2em }
+.sumar, :not(img) + .desc, .blk, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 3px }
+.umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), .connection-error, #footer, #sidebar { margin-top: 4px }
 #userlist .user { margin-top: 0.4em }
 .bumar, h1:not(:first-child), fieldset:not(:first-of-type) { margin-top: 0.5em }
 .bmar, .max-width, .error, .half, #notifs li { margin-bottom: 0.4em }
@@ -646,7 +646,7 @@ body > * { flex-shrink: 0 }
 		padding: 0.25em;
 		background: rgba(255, 255, 255, 0.4);
 	}
-	.resp-flex > section:not(:first-child) { margin-left: 6px }
+	.resp-flex > section:not(:first-child) { margin-left: 4px }
 }
 @media (min-width: 701px) {
 	.half {
