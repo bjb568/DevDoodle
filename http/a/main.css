@@ -145,7 +145,7 @@ li {
 	margin: 2px 2px 0;
 	color: #fff;
 	background: transparent;
-	font-family: monospace;
+	font: 0.85em monospace;
 	white-space: pre-wrap;
 	line-height: 1.2;
 	resize: none;

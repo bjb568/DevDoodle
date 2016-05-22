@@ -1,6 +1,7 @@
 h1 small { cursor: default }
 section { background: transparent }
 textarea.abs { top: 0; bottom: 0 }
+#text { font: 0.85em monospace }
 #content, #main {
 	display: flex;
 	flex-direction: column;
