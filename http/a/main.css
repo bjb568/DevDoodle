@@ -137,7 +137,6 @@ li {
 }
 .code, .code-display, #code, #code-display {
 	display: block;
-	min-height: calc(100% - 2px);
 	padding: 0;
 	margin: 2px;
 	color: #fff;
@@ -160,6 +159,7 @@ li {
 	top: 0; right: 0;
 	z-index: 1;
 	color: transparent;
+	min-height: calc(100% - 2px);
 }
 .code-display, #code-display {
 	width: calc(100% - 4px);
@@ -662,7 +662,7 @@ body > * { flex-shrink: 0 }
 	color: #ddd;
 	font-size: 0.95rem;
 	line-height: 1.9em;
-	padding: 0 3px;
+	padding: 0 0.2em;
 }
 #nav a:note(#logo) { white-space: pre }
 #nav span { padding: 0 4px }
@@ -689,7 +689,8 @@ body > * { flex-shrink: 0 }
 	width: 100%;
 	color: #000;
 	line-height: 1em;
-	padding: 0 8px;
+	padding: 0 0.5em;
+	font-size: 16px;
 }
 #notifs:empty { display: none }
 #nav a.active > span { font-weight: bold }
@@ -757,10 +758,10 @@ body > * { flex-shrink: 0 }
 }
 @media (max-width: 839px) {
 	#nav { margin-bottom: 2px }
-	#nav span { vertical-align: middle }
+	#nav span { vertical-align: 0 }
 	#nav a:hover > span, #nav #logo:hover { background: #33a }
 	#nav a.active > span, #nav a:active > span, #logo.active, #nav #logo:active { background: #119 }
-	#nav a.active > span, #nav a:active > span, #nav #logo:active, #nav a:hover > span, #nav #logo:hover {
+	#nav a > span, #nav #logo {
 		display: inline-block;
 		line-height: 1.5;
 	}
