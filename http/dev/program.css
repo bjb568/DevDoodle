@@ -1,5 +1,6 @@
 h1 small { cursor: default }
 section { background: transparent }
+textarea.abs { top: 0; bottom: 0 }
 #content, #main {
 	display: flex;
 	flex-direction: column;
@@ -7,6 +8,7 @@ section { background: transparent }
 #row {
 	display: flex;
 	align-items: stretch;
+	padding-bottom: 3px;
 }
 #main, #row { flex-grow: 1 }
 #footer {
@@ -40,7 +42,7 @@ section { background: transparent }
 	cursor: default;
 	color: #888;
 }
-#save.modified { color: #ff8 }
+#save.modified:not(:hover):not(:active) { color: #ff8 }
 #save.progress {
 	cursor: progress;
 	color: #4ff;

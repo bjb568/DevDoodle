@@ -20,6 +20,16 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	onbeforeunload = function() {
 		return canUnload() ? null : 'You have unsaved code.';
 	};
+function insertNodeAtPosition(node, refNode, pos) {
+	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
+	else {
+		for (var i = 0; i < refNode.childNodes.length; i++) {
+			var chNode = refNode.childNodes[i];
+			if (chNode.textContent.length <= pos && i != refNode.childNodes.length - 1) pos -= chNode.textContent.length;
+			else return insertNodeAtPosition(node, chNode, pos);
+		}
+	}
+}
 function blink() {
 	document.getElementById('caret').hidden ^= 1;
 	blinkTimeout = setTimeout(blink, 500);
@@ -54,30 +64,20 @@ function soonHandleTAInput() {
 }
 function updateSavedValue() {}
 function saveHandler(res) {
-	if (res.indexOf('Error') == 0) {
-		clearTimeout(savingTimeout);
-		alert(res);
-		save.textContent = 'Save';
-	} else if (res.indexOf('Location') == 0) {
+	if (res.indexOf('Error') == 0) alert(res);
+	else if (res.indexOf('Location') == 0) {
 		onbeforeunload = null;
 		location.href = res.split(' ')[1];
 	} else if (res == 'Success') {
 		updateSavedValue();
-		save.textContent = 'Saved';
 		save.classList.remove('modified');
 		document.getElementById('updated').setAttribute('datetime', new Date().toISOString());
-	} else {
-		clearTimeout(savingTimeout);
-		alert('Unknown error. Response was: ' + res);
-	}
+	} else alert('Unknown error. Response was: ' + res);
 	save.classList.remove('progress');
 }
 if (save) save.onclick = function() {
-	if (save.classList.contains('progress')) return;
+	if (save.classList.contains('progress') || !save.classList.contains('modified')) return;
 	save.classList.add('progress');
-	var savingTimeout = setTimeout(function() {
-		if (save.textContent == 'Save') save.textContent = 'Saving…';
-	}, 200);
 	saveRequest();
 };
 function forkHandler(res) {
@@ -112,6 +112,7 @@ addEventListener('keypress', function(e) {
 if (document.getElementById('meta')) {
 	addEventListener('DOMContentLoaded', function() {
 		document.getElementById('footer').insertBefore(document.getElementById('meta'), document.getElementById('footer').firstChild);
+		document.getElementById('meta').classList.remove('nodisplay');
 	});
 	if (mine) {
 		title.onclick = function() {

@@ -53,36 +53,39 @@ module.exports = o(function*(req, res, user) {
 	} else if (req.url.pathname == '/dev/new/canvas') {
 		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/canvas.css" />'});
 		res.write(
-			(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/canvas.html', yield)).toString())
 			.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
 			.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-			.replace(/<section id="meta">[^]+<\/section>/, '')
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
-				['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
-				['', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$code'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/dev/new/html') {
 		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/html.css" />'});
 		res.write(
-			(yield fs.readFile('./html/dev/html.html', yield)).toString()
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/html.html', yield)).toString())
 			.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-			.replace(/<section id="meta">[^]+<\/section>/, '')
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
-				['$id', '$title', '$html', '$css', '$js'],
-				['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$html', '$css', '$js'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/dev/new/text') {
-		yield respondPage('Plain Text Program', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" />'});
+		yield respondPage('New Plain Text', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" />'});
 		res.write(
-			(yield fs.readFile('./html/dev/text.html', yield)).toString()
-			.replace(/<section id="meta">[^]+<\/section>/, '')
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/text.html', yield)).toString())
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
-				['$id', '$title', '$html', '$css', '$js'],
-				['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$code', '$css'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
@@ -146,18 +149,20 @@ module.exports = o(function*(req, res, user) {
 						} else {
 							res.write(
 								(
-									!program.type ? (yield fs.readFile('./html/dev/text.html', yield)).toString().replaceAll('$code', html(program.code))
-									: program.type == 1 ?
-										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-											.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-											.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-											.replaceAll('$code', html(program.code))
-										: (yield fs.readFile('./html/dev/html.html', yield)).toString()
-											.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-											.replaceAll(
-												['$html', '$css', '$js'],
-												[html(program.html), html(program.css), html(program.js)]
-											)
+									(yield fs.readFile('./html/dev/program.html', yield)).toString() + (
+										!program.type ? (yield fs.readFile('./html/dev/text.html', yield)).toString().replaceAll('$code', html(program.code))
+										: program.type == 1 ?
+											(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+												.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+												.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
+												.replaceAll('$code', html(program.code))
+											: (yield fs.readFile('./html/dev/html.html', yield)).toString()
+												.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+												.replaceAll(
+													['$html', '$css', '$js'],
+													[html(program.html), html(program.css), html(program.js)]
+												)
+									)
 								).replace('/dev/program.js', '/dev/program.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/program.js', yield)))
 								.replaceAll(
 									['$id', '$created', '$updated'],

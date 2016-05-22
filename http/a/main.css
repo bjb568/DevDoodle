@@ -30,10 +30,11 @@ body {
 .blk, img.center, textarea { display: block }
 .ib { display: inline-block }
 .inline, summary * { display: inline }
-[hidden], .target:not(:target), #content > .sctrls { display: none }
+[hidden], .nodisplay, .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment, .spoiler { position: relative }
 .abs, .ctrls, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
+.fullheight, html, body { height: 100% }
 .maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
@@ -528,7 +529,6 @@ a.blk:hover, a.blk:active { background: rgba(255, 255, 255, 0.2) }
 a.blk:active { color: #00f }
 .button {
 	display: inline-block;
-	margin: 0.5em 0;
 	padding: 0.15em 0.35em;
 	background: #6cf;
 	border: 0.5px solid #666;
@@ -598,7 +598,6 @@ input[type=text], input[type=email], input[type=number], input[type=search], inp
 	line-height: 1.2;
 }
 .starcount[data-count='0'] { display: none }
-html, body { height: 100% }
 body > * { flex-shrink: 0 }
 #content {
 	flex-grow: 1;
