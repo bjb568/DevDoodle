@@ -30,13 +30,14 @@ module.exports = o(function*(req, res, user) {
 			dbcs.programs.find({
 				deleted: {$exists: false},
 				private: false
-			}).sort({hotness: -1, updated: -1}).limit(24).each(o(function*(err, data) {
+			}).sort({hotness: -1, updated: -1}).limit(24).each(o(function*(err, program) {
 				if (err) throw err;
-				if (data) {
+				if (program) {
 					programstr += '<div class="program">';
-					programstr += '<h2 class="title"><a href="dev/' + data._id + '">' + html(data.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>';
-					if (data.type == 1) programstr += '<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>';
-					else if (data.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>';
+					programstr += '<h2 class="title"><a href="dev/' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + program.user + '">' + program.user + '</a></small></h2>';
+					if (program.type == 0) programstr += '<div><code class="blk small">' + html(program.code) + '</code></div>';
+					if (program.type == 1) programstr += '<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>';
+					else if (program.type == 2) programstr += '<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>';
 					programstr += '</div> ';
 				} else {
 					res.write(programstr + '</div></section>');

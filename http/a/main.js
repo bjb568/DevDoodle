@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;
@@ -561,6 +561,11 @@ function jsKeypressHandler(e) {
 	}
 }
 
+function createZWSTextNode(input) {
+	var text = '';
+	for (var i = 0; i < input.length; i++) text += input[i] + '\u200B';
+	return document.createTextNode(text);
+}
 function highlightHTML(codeBlock, input, fullHTML) {
 	input = typeof(input) == 'string' ? input : codeBlock.textContent;
 	var chunk = '',
@@ -584,7 +589,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endCD() {
 		if (!chunk) return;
 		var cd = document.createElement('span');
-		cd.appendChild(document.createTextNode(chunk));
+		cd.appendChild(createZWSTextNode(chunk));
 		cd.className = 'cdata';
 		codeBlock.appendChild(cd);
 		chunk = '';
@@ -592,7 +597,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endComment() {
 		if (!chunk) return;
 		var comment = document.createElement('span');
-		comment.appendChild(document.createTextNode(chunk));
+		comment.appendChild(createZWSTextNode(chunk));
 		comment.className = 'inline-comment';
 		codeBlock.appendChild(comment);
 		chunk = '';
@@ -600,7 +605,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endEntity() {
 		if (!chunk) return;
 		var ent = document.createElement('span');
-		ent.appendChild(document.createTextNode(chunk));
+		ent.appendChild(createZWSTextNode(chunk));
 		ent.className = 'entity';
 		codeBlock.appendChild(ent);
 		chunk = '';
@@ -608,7 +613,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endPI() {
 		if (!chunk) return;
 		var pi = document.createElement('span');
-		pi.appendChild(document.createTextNode(chunk));
+		pi.appendChild(createZWSTextNode(chunk));
 		pi.className = 'processing-instruction';
 		codeBlock.appendChild(pi);
 		chunk = '';
@@ -616,7 +621,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endTag() {
 		if (!chunk) return;
 		var tag = document.createElement('span');
-		tag.appendChild(document.createTextNode(chunk));
+		tag.appendChild(createZWSTextNode(chunk));
 		if (!inCloseTag && (chunk[chunk.length - 1] == '>' || /\n|\s*($|<[^/])/.test(chunk.substr(i))) && (chunk.length == 1 || chunk[chunk.length - 2] != '/')) {
 			tag.dataset.tagname = tagName;
 			tag.className = 'xml-tag end-start-tag';
@@ -630,17 +635,17 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		var i;
 		if ((i = chunk.indexOf(':')) != -1) {
 			var attrns = document.createElement('span');
-			attrns.appendChild(document.createTextNode(chunk.substr(0, i)));
+			attrns.appendChild(createZWSTextNode(chunk.substr(0, i)));
 			attrns.className = 'xml-attr-ns';
 			codeBlock.appendChild(attrns);
 			var colon = document.createElement('span');
-			colon.appendChild(document.createTextNode(':'));
+			colon.appendChild(createZWSTextNode(':'));
 			colon.className = 'punctuation';
 			codeBlock.appendChild(colon);
 			chunk = chunk.substr(i + 1);
 		}
 		var attr = document.createElement('span');
-		attr.appendChild(document.createTextNode(chunk));
+		attr.appendChild(createZWSTextNode(chunk));
 		attr.className = 'xml-attr';
 		codeBlock.appendChild(attr);
 		chunk = '';
@@ -648,7 +653,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 	function endAttrValue() {
 		if (!chunk) return;
 		var val = document.createElement('span');
-		val.appendChild(document.createTextNode(chunk));
+		val.appendChild(createZWSTextNode(chunk));
 		val.className = 'xml-attr-value';
 		codeBlock.appendChild(val);
 		chunk = '';
@@ -661,7 +666,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		else if (inAttr) endAttr();
 		else if (inTag) endTag();
 		else {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 		}
 	}
@@ -670,7 +675,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		var c = input[i];
 		if (c == '\n') {
 			end();
-			codeBlock.appendChild(document.createTextNode('\n'));
+			codeBlock.appendChild(createZWSTextNode('\n'));
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
@@ -754,7 +759,7 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		} else chunk += c;
 	}
 	end();
-	codeBlock.appendChild(document.createTextNode('\xa0'));
+	codeBlock.appendChild(createZWSTextNode('\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
@@ -765,7 +770,6 @@ function highlightHTML(codeBlock, input, fullHTML) {
 		lineEl.title += 'Column ' + (warnings[i][0] - lines.slice(0, line).join('\n').length) + ': ' + warnings[i][1];
 	}
 }
-
 function highlightCSS(codeBlock, input) {
 	input = typeof(input) == 'string' ? input : codeBlock.textContent;
 	var chunk = '',
@@ -789,7 +793,7 @@ function highlightCSS(codeBlock, input) {
 	function endComment() {
 		var comment = document.createElement('span');
 		comment.className = 'inline-comment';
-		comment.appendChild(document.createTextNode(chunk));
+		comment.appendChild(createZWSTextNode(chunk));
 		codeBlock.appendChild(comment);
 		chunk = '';
 	}
@@ -809,10 +813,10 @@ function highlightCSS(codeBlock, input) {
 				span.className = inClass ? 'class' : inID ? 'id'
 					: inPseudoClass ? (schunk == ':not' || schunk == ':matches' ? 'pseudo-class logical' : 'pseudo-class')
 					: inPseudoElement ? 'pseudo-element' : inRefComb ? 'reference-combinator' : 'element';
-				span.appendChild(document.createTextNode(schunk));
+				span.appendChild(createZWSTextNode(schunk));
 				codeBlock.appendChild(span);
 				inSub = inClass = inID = inPseudoClass = inPseudoElement = false;
-			} else codeBlock.appendChild(document.createTextNode(schunk));
+			} else codeBlock.appendChild(createZWSTextNode(schunk));
 			schunk = '';
 		}
 		for (var i = 0; i < chunk.length; i++) {
@@ -830,19 +834,19 @@ function highlightCSS(codeBlock, input) {
 				endSChunk();
 				var star = document.createElement('span');
 				star.className = 'universal';
-				star.appendChild(document.createTextNode('*'));
+				star.appendChild(createZWSTextNode('*'));
 				codeBlock.appendChild(star);
 			} else if (inPseudoClass && c == '(') {
 				endSChunk();
 				var paren = document.createElement('span');
 				paren.className = 'punctuation';
-				paren.appendChild(document.createTextNode('('));
+				paren.appendChild(createZWSTextNode('('));
 				codeBlock.appendChild(paren);
 			} else if (c == ')' || c == '}') {
 				endSChunk();
 				var punc = document.createElement('span');
 				punc.className = 'punctuation';
-				punc.appendChild(document.createTextNode(c));
+				punc.appendChild(createZWSTextNode(c));
 				codeBlock.appendChild(punc);
 			} else if (c == '.') {
 				endSChunk();
@@ -879,7 +883,7 @@ function highlightCSS(codeBlock, input) {
 	function endProp() {
 		if (!chunk) return;
 		var prop = document.createElement('span');
-		prop.appendChild(document.createTextNode(chunk));
+		prop.appendChild(createZWSTextNode(chunk));
 		prop.className = 'property';
 		codeBlock.appendChild(prop);
 		chunk = '';
@@ -890,7 +894,7 @@ function highlightCSS(codeBlock, input) {
 			schunk = '';
 		function endSChunk() {
 			if (!schunk) return;
-			vs.appendChild(document.createTextNode(schunk));
+			vs.appendChild(createZWSTextNode(schunk));
 			schunk = '';
 		}
 		for (var i = 0; i < chunk.length; i++) {
@@ -899,7 +903,7 @@ function highlightCSS(codeBlock, input) {
 				endSChunk();
 				var esc = document.createElement('span');
 				esc.className = 'escape';
-				esc.appendChild(document.createTextNode(c + (chunk[i + 1] ? chunk[++i] : '')));
+				esc.appendChild(createZWSTextNode(c + (chunk[i + 1] ? chunk[++i] : '')));
 				vs.appendChild(esc);
 			} else schunk += c;
 		}
@@ -919,9 +923,9 @@ function highlightCSS(codeBlock, input) {
 			if (className) {
 				var span = document.createElement('span');
 				span.className = className;
-				span.appendChild(document.createTextNode(schunk));
+				span.appendChild(createZWSTextNode(schunk));
 				val.appendChild(span);
-			} else val.appendChild(document.createTextNode(schunk));
+			} else val.appendChild(createZWSTextNode(schunk));
 			schunk = '';
 		}
 		outer: for (var i = 0; i < chunk.length; i++) {
@@ -931,7 +935,7 @@ function highlightCSS(codeBlock, input) {
 					endSChunk();
 					var keyword = document.createElement('span');
 					keyword.className = keywords[j] == '!important' ? 'bad keyword' : 'keyword';
-					keyword.appendChild(document.createTextNode(keywords[j]));
+					keyword.appendChild(createZWSTextNode(keywords[j]));
 					val.appendChild(keyword);
 					i += keywords[j].length - 1;
 					continue outer;
@@ -942,7 +946,7 @@ function highlightCSS(codeBlock, input) {
 					endSChunk();
 					var color = document.createElement('span');
 					color.className = 'color';
-					color.appendChild(document.createTextNode(colors[j]));
+					color.appendChild(createZWSTextNode(colors[j]));
 					val.appendChild(color);
 					i += colors[j].length - 1;
 					continue outer;
@@ -952,13 +956,13 @@ function highlightCSS(codeBlock, input) {
 				endSChunk(c == '(' ? 'function-call' : '');
 				var punc = document.createElement('span');
 				punc.className = 'punctuation';
-				punc.appendChild(document.createTextNode(c));
+				punc.appendChild(createZWSTextNode(c));
 				val.appendChild(punc);
 			} else if (c == '+' || (c == '-' && !/\w/.test(input[i - 1])) || c == '*' || c == '/') {
 				endSChunk();
 				var op = document.createElement('span');
 				op.className = 'operator';
-				op.appendChild(document.createTextNode(c));
+				op.appendChild(createZWSTextNode(c));
 				val.appendChild(op);
 			} else if (c == '#') {
 				endSChunk();
@@ -985,7 +989,7 @@ function highlightCSS(codeBlock, input) {
 						endSChunk();
 						var unit = document.createElement('span');
 						unit.className = parseFloat(tchunk) ? 'unit' : 'unit bad';
-						unit.appendChild(document.createTextNode(units[j]));
+						unit.appendChild(createZWSTextNode(units[j]));
 						val.appendChild(unit);
 						i += units[j].length - 1;
 						continue outer;
@@ -1005,7 +1009,7 @@ function highlightCSS(codeBlock, input) {
 	function endAttrName() {
 		if (!chunk) return;
 		var an = document.createElement('span');
-		an.appendChild(document.createTextNode(chunk));
+		an.appendChild(createZWSTextNode(chunk));
 		an.className = 'attribute-name';
 		codeBlock.appendChild(an);
 		chunk = '';
@@ -1013,7 +1017,7 @@ function highlightCSS(codeBlock, input) {
 	function endAttrValue() {
 		if (!chunk) return;
 		var av = document.createElement('span');
-		av.appendChild(document.createTextNode(chunk));
+		av.appendChild(createZWSTextNode(chunk));
 		av.className = 'attribute-value';
 		codeBlock.appendChild(av);
 		chunk = '';
@@ -1028,9 +1032,9 @@ function highlightCSS(codeBlock, input) {
 		if (inAtNoNest) {
 			var span = document.createElement('span');
 			span.className = 'no-nest';
-			span.appendChild(document.createTextNode(chunk));
+			span.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(span);
-		} else codeBlock.appendChild(document.createTextNode(chunk));
+		} else codeBlock.appendChild(createZWSTextNode(chunk));
 		chunk = '';
 	}
 	function end() {
@@ -1048,7 +1052,7 @@ function highlightCSS(codeBlock, input) {
 		var c = input[i];
 		if (c == '\n') {
 			end();
-			(inNth || codeBlock).appendChild(document.createTextNode('\n'));
+			(inNth || codeBlock).appendChild(createZWSTextNode('\n'));
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
 			linenum.dataset.linenum = ++line;
@@ -1066,7 +1070,7 @@ function highlightCSS(codeBlock, input) {
 		} else if (inSelector) {
 			if (c == '{' || c == '[') {
 				endSel();
-				codeBlock.appendChild(document.createTextNode(c));
+				codeBlock.appendChild(createZWSTextNode(c));
 				inSelector = false;
 				if (c == '[') inAttr = true;
 			} else if (c == '@') {
@@ -1078,7 +1082,7 @@ function highlightCSS(codeBlock, input) {
 				endSel();
 				var paren = document.createElement('span');
 				paren.className = 'punctuation';
-				paren.appendChild(document.createTextNode('('));
+				paren.appendChild(createZWSTextNode('('));
 				codeBlock.appendChild(paren);
 				inSelector = false;
 				inNth = document.createElement('span');
@@ -1087,48 +1091,48 @@ function highlightCSS(codeBlock, input) {
 			if (c == '{' || c == ']') {
 				if (inAttrValue) endAttrValue();
 				else endAttrName();
-				codeBlock.appendChild(document.createTextNode(c));
+				codeBlock.appendChild(createZWSTextNode(c));
 				inAttr = inAttrValue = false;
 				if (c == ']') inSelector = true;
 			} else if (!inAttrValue && c == '=') {
 				endAttrName();
-				codeBlock.appendChild(document.createTextNode('='));
+				codeBlock.appendChild(createZWSTextNode('='));
 				inAttrValue = true;
 			} else if (!inAttrValue && ['~', '^', '$', '*', '|'].indexOf(c) != -1 && input[i + 1] == '=') {
 				endAttrName();
-				codeBlock.appendChild(document.createTextNode(c + '='));
+				codeBlock.appendChild(createZWSTextNode(c + '='));
 				inAttrValue = true;
 				i++;
 			} else chunk += c;
 		} else if (inNth) {
 			if (c == '{') {
 				endNth();
-				codeBlock.appendChild(document.createTextNode('{'));
+				codeBlock.appendChild(createZWSTextNode('{'));
 				inNth = false;
 			} else if (c == ')') {
 				endNth();
 				var paren = document.createElement('span');
 				paren.className = 'punctuation';
-				paren.appendChild(document.createTextNode(')'));
+				paren.appendChild(createZWSTextNode(')'));
 				codeBlock.appendChild(paren);
 				inNth = false;
 				inSelector = true;
 			} else if (input.substr(i, 4) == 'even') {
 				var n = document.createElement('span');
 				n.className = 'n';
-				n.appendChild(document.createTextNode('even'));
+				n.appendChild(createZWSTextNode('even'));
 				inNth.appendChild(n);
 				i += 3;
 			} else if (input.substr(i, 3) == 'odd') {
 				var n = document.createElement('span');
 				n.className = 'n';
-				n.appendChild(document.createTextNode('odd'));
+				n.appendChild(createZWSTextNode('odd'));
 				inNth.appendChild(n);
 				i += 2;
 			} else if (input.substr(i, 2) == 'of') {
 				var n = document.createElement('span');
 				n.className = 'logical';
-				n.appendChild(document.createTextNode('of'));
+				n.appendChild(createZWSTextNode('of'));
 				inNth.appendChild(n);
 				i++;
 				endNth();
@@ -1137,26 +1141,26 @@ function highlightCSS(codeBlock, input) {
 			} else if (c == 'n') {
 				var n = document.createElement('span');
 				n.className = 'n';
-				n.appendChild(document.createTextNode('n'));
+				n.appendChild(createZWSTextNode('n'));
 				inNth.appendChild(n);
 			} else if (/\d/.test(c)) {
 				var num = document.createElement('span');
 				num.className = 'number';
-				num.appendChild(document.createTextNode(input.substring(i, 1 + (i += input.substr(i).match(/\d+/)[0].length - 1))));
+				num.appendChild(createZWSTextNode(input.substring(i, 1 + (i += input.substr(i).match(/\d+/)[0].length - 1))));
 				inNth.appendChild(num);
-			} else inNth.appendChild(document.createTextNode(c));
+			} else inNth.appendChild(createZWSTextNode(c));
 		} else if (inAt) {
 			if (c == ';' && inAtNoNest) {
 				endAt();
 				var punc = document.createElement('span');
 				punc.className = 'punctuation';
-				punc.appendChild(document.createTextNode(';'));
+				punc.appendChild(createZWSTextNode(';'));
 				codeBlock.appendChild(punc);
 				inAt = inAtNoNest = false;
 				inSelector = true;
 			} else if (c == '{') {
 				endAt();
-				codeBlock.appendChild(document.createTextNode('{'));
+				codeBlock.appendChild(createZWSTextNode('{'));
 				inAt = false;
 				inSelector = true;
 			} else if (chunk == '@') {
@@ -1164,7 +1168,7 @@ function highlightCSS(codeBlock, input) {
 				i -= 2;
 				if (['@namespace', '@charset', '@import'].indexOf(chunk) != -1) inAtNoNest = true;
 				var atName = document.createElement('span');
-				atName.appendChild(document.createTextNode(chunk));
+				atName.appendChild(createZWSTextNode(chunk));
 				atName.className = 'at-rule-name';
 				codeBlock.appendChild(atName);
 				chunk = '';
@@ -1172,7 +1176,7 @@ function highlightCSS(codeBlock, input) {
 		} else if (!inValue && c == ':') {
 			endProp();
 			var colon = document.createElement('span');
-			colon.appendChild(document.createTextNode(':'));
+			colon.appendChild(createZWSTextNode(':'));
 			colon.className = 'colon';
 			codeBlock.appendChild(colon);
 			inValue = true;
@@ -1191,20 +1195,20 @@ function highlightCSS(codeBlock, input) {
 			}
 			endVal();
 			var semicolon = document.createElement('span');
-			semicolon.appendChild(document.createTextNode(';'));
+			semicolon.appendChild(createZWSTextNode(';'));
 			semicolon.className = 'punctuation';
 			codeBlock.appendChild(semicolon);
 			inValue = false;
 		} else if (c == '}') {
 			if (inValue) endVal();
 			else endProp();
-			codeBlock.appendChild(document.createTextNode('}'));
+			codeBlock.appendChild(createZWSTextNode('}'));
 			inValue = false;
 			inSelector = true;
 		} else chunk += c;
 	}
 	end();
-	codeBlock.appendChild(document.createTextNode('\xa0'));
+	codeBlock.appendChild(createZWSTextNode('\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {
@@ -1215,7 +1219,6 @@ function highlightCSS(codeBlock, input) {
 		lineEl.title += 'Column ' + (warnings[i][0] - lines.slice(0, line).join('\n').length) + ': ' + warnings[i][1];
 	}
 }
-
 function highlightJS(codeBlock, input) {
 	input = typeof(input) == 'string' ? input : codeBlock.textContent;
 	var chunk = '',
@@ -1235,13 +1238,13 @@ function highlightJS(codeBlock, input) {
 		var c = input[i],
 			l;
 		if (c == '"' || c == "'" || c == '`' || (inTemplate && c == '}')) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			var enteringTemplate = false;
 			if (c == '}') {
 				inTemplate--;
 				var punc = document.createElement('span');
 				punc.className = 'template punctuation';
-				punc.appendChild(document.createTextNode('}'));
+				punc.appendChild(createZWSTextNode('}'));
 				codeBlock.appendChild(punc);
 				chunk = '';
 				c = '`';
@@ -1254,7 +1257,7 @@ function highlightJS(codeBlock, input) {
 						warnings.push([i, 'Unexpected line end with unterminated string literal.']);
 						break;
 					} else {
-						string.appendChild(document.createTextNode(chunk + '\n'));
+						string.appendChild(createZWSTextNode(chunk + '\n'));
 						chunk = '';
 						var linenum = document.createElement('span');
 						linenum.className = 'line';
@@ -1262,7 +1265,7 @@ function highlightJS(codeBlock, input) {
 						string.appendChild(linenum);
 					}
 				} else if (d == '\\') {
-					string.appendChild(document.createTextNode(chunk));
+					string.appendChild(createZWSTextNode(chunk));
 					chunk = d;
 					if (d = input[++i]) chunk += d;
 					else warnings.push([i - 1, 'Incomplete escape sequence.']);
@@ -1282,7 +1285,7 @@ function highlightJS(codeBlock, input) {
 						} else if (input[i + 3]) chunk += input[++i] + input[++i] + input[++i];
 						else warnings.push([i, 'Incomplete escape sequence.']);
 					} else if (c == 'x') chunk += input[++i] + input[++i];
-					escape.appendChild(document.createTextNode(chunk));
+					escape.appendChild(createZWSTextNode(chunk));
 					string.appendChild(escape);
 					chunk = '';
 					if (d == '\n') {
@@ -1298,7 +1301,7 @@ function highlightJS(codeBlock, input) {
 				} else chunk += d;
 			}
 			if (d && !enteringTemplate) chunk += d;
-			string.appendChild(document.createTextNode(chunk));
+			string.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(string);
 			chunk = '';
 			if (d == '\n') {
@@ -1310,19 +1313,19 @@ function highlightJS(codeBlock, input) {
 			if (enteringTemplate) {
 				var punc = document.createElement('span');
 				punc.className = 'template punctuation';
-				punc.appendChild(document.createTextNode('${'));
+				punc.appendChild(createZWSTextNode('${'));
 				codeBlock.appendChild(punc);
 				i++;
 			}
 		} else if (c == '/' && input[i + 1] == '/') {
 			i++;
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '//';
 			var comment = document.createElement('span');
 			comment.className = 'inline-comment';
 			while ((d = input[++i]) && d != '\n') chunk += d;
 			if (d) chunk += '\n';
-			comment.appendChild(document.createTextNode(chunk));
+			comment.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(comment);
 			chunk = '';
 			if (d) {
@@ -1333,7 +1336,7 @@ function highlightJS(codeBlock, input) {
 			}
 		} else if (c == '/' && input[i + 1] == '*') {
 			i++;
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '/*';
 			var comment = document.createElement('span');
 			comment.className = 'inline-comment';
@@ -1341,7 +1344,7 @@ function highlightJS(codeBlock, input) {
 			while ((d = input[++i]) && (d != '/' || input[i - 1] != '*')) {
 				chunk += d;
 				if (d == '\n') {
-					comment.appendChild(document.createTextNode(chunk));
+					comment.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var linenum = document.createElement('span');
 					linenum.className = 'line';
@@ -1350,7 +1353,7 @@ function highlightJS(codeBlock, input) {
 				}
 			}
 			if (d) chunk += d;
-			comment.appendChild(document.createTextNode(chunk));
+			comment.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(comment);
 			chunk = '';
 			if (d == '\n') {
@@ -1372,20 +1375,20 @@ function highlightJS(codeBlock, input) {
 					)
 				)
 			) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var regex = document.createElement('span');
 			regex.className = 'regex';
 			var regexOpen = document.createElement('span');
 			regexOpen.className = 'open';
-			regexOpen.appendChild(document.createTextNode('/'));
+			regexOpen.appendChild(createZWSTextNode('/'));
 			regex.appendChild(regexOpen);
 			var d,
 				charclass = false;
 			while ((d = input[++i]) && d != '/') {
 				if (d == '\n') {
 					warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
-					regex.appendChild(document.createTextNode(chunk + '\n'));
+					regex.appendChild(createZWSTextNode(chunk + '\n'));
 					chunk = '';
 					var linenum = document.createElement('span');
 					linenum.className = 'line';
@@ -1394,8 +1397,8 @@ function highlightJS(codeBlock, input) {
 					break;
 				}
 				if (d == '\\') {
-					if (charclass) charclass.appendChild(document.createTextNode(chunk));
-					else regex.appendChild(document.createTextNode(chunk));
+					if (charclass) charclass.appendChild(createZWSTextNode(chunk));
+					else regex.appendChild(createZWSTextNode(chunk));
 					chunk = d + (d = input[++i]);
 					var escape = document.createElement('span');
 					escape.className = 'escape';
@@ -1407,7 +1410,7 @@ function highlightJS(codeBlock, input) {
 						i--;
 						escape.className = 'backreference';
 					}
-					escape.appendChild(document.createTextNode(chunk));
+					escape.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					if (charclass) charclass.appendChild(escape);
 					else regex.appendChild(escape);
@@ -1417,65 +1420,65 @@ function highlightJS(codeBlock, input) {
 					}
 				} else if (charclass) {
 					if (d == ']') {
-						charclass.appendChild(document.createTextNode(chunk));
+						charclass.appendChild(createZWSTextNode(chunk));
 						chunk = '';
 						var end = document.createElement('span');
 						end.className = 'punctuation';
-						end.appendChild(document.createTextNode(']'));
+						end.appendChild(createZWSTextNode(']'));
 						charclass.appendChild(end);
 						regex.appendChild(charclass);
 						charclass = false;
 					} else if (input[i + 1] == '-' && input[i + 2] != ']') {
-						charclass.appendChild(document.createTextNode(chunk));
+						charclass.appendChild(createZWSTextNode(chunk));
 						chunk = '';
 						var range = document.createElement('span');
 						range.className = 'range';
-						range.appendChild(document.createTextNode(d + input[++i] + input[++i]));
+						range.appendChild(createZWSTextNode(d + input[++i] + input[++i]));
 						charclass.appendChild(range);
 					} else chunk += d;
 				} else if (d == '^' || d == '$' || d == '|' || d == '.') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var special = document.createElement('span');
 					special.className = 'special';
-					special.appendChild(document.createTextNode(d));
+					special.appendChild(createZWSTextNode(d));
 					regex.appendChild(special);
 				} else if (d == '?' || d == '+' || d == '*') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var quantifier = document.createElement('span');
 					quantifier.className = 'quantifier';
-					quantifier.appendChild(document.createTextNode(d));
+					quantifier.appendChild(createZWSTextNode(d));
 					regex.appendChild(quantifier);
 				} else if (d == '?' || d == '+' || d == '*') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var quantifier = document.createElement('span');
 					quantifier.className = 'quantifier';
-					quantifier.appendChild(document.createTextNode(d));
+					quantifier.appendChild(createZWSTextNode(d));
 					regex.appendChild(quantifier);
 				} else if (d == '(' || d == ')') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = d;
 					if (d == '(' && input[i + 1] == '?' && ':=!'.indexOf(input[i + 2]) != -1) chunk += input[++i] + input[++i];
 					var grouper = document.createElement('span');
 					grouper.className = 'grouper';
-					grouper.appendChild(document.createTextNode(chunk));
+					grouper.appendChild(createZWSTextNode(chunk));
 					regex.appendChild(grouper);
 					chunk = '';
 				} else if (d == '{') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var quantifier = document.createElement('span');
 					quantifier.className = 'quantifier';
 					var brace = document.createElement('span');
 					brace.className = 'punctuation';
-					brace.appendChild(document.createTextNode('{'));
+					brace.appendChild(createZWSTextNode('{'));
 					quantifier.appendChild(brace);
 					while ((d = input[++i]) && d != '}') {
 						if (d == '\n') {
 							warnings.push([i, 'Unexpected line end with unterminated regex literal.']);
-							quantifier.appendChild(document.createTextNode(chunk + '\n'));
+							quantifier.appendChild(createZWSTextNode(chunk + '\n'));
 							chunk = '';
 							var linenum = document.createElement('span');
 							linenum.className = 'line';
@@ -1484,25 +1487,25 @@ function highlightJS(codeBlock, input) {
 							break;
 						}
 						if (d == ',') {
-							quantifier.appendChild(document.createTextNode(chunk));
+							quantifier.appendChild(createZWSTextNode(chunk));
 							chunk = '';
 							var comma = document.createElement('span');
 							comma.className = 'punctuation';
-							comma.appendChild(document.createTextNode(','));
+							comma.appendChild(createZWSTextNode(','));
 							quantifier.appendChild(comma);
 						} else chunk += d;
 					}
-					quantifier.appendChild(document.createTextNode(chunk));
+					quantifier.appendChild(createZWSTextNode(chunk));
 					if (d == '}') {
 						var brace = document.createElement('span');
 						brace.className = 'punctuation';
-						brace.appendChild(document.createTextNode('}'));
+						brace.appendChild(createZWSTextNode('}'));
 						quantifier.appendChild(brace);
 					} else warnings.push([i, 'Unclosed regex quantifier.']);
 					chunk = '';
 					regex.appendChild(quantifier);
 				} else if (d == '[') {
-					regex.appendChild(document.createTextNode(chunk));
+					regex.appendChild(createZWSTextNode(chunk));
 					chunk = '[';
 					if (input[++i] == '^') chunk += '^';
 					else i--;
@@ -1510,39 +1513,39 @@ function highlightJS(codeBlock, input) {
 					charclass.className = 'charclass';
 					var start = document.createElement('span');
 					start.className = 'punctuation';
-					start.appendChild(document.createTextNode(chunk));
+					start.appendChild(createZWSTextNode(chunk));
 					charclass.appendChild(start);
 					chunk = '';
 				} else chunk += d;
 			}
-			(charclass || regex).appendChild(document.createTextNode(chunk));
+			(charclass || regex).appendChild(createZWSTextNode(chunk));
 			if (charclass) regex.appendChild(charclass);
 			chunk = '';
 			if (d && d != '\n') {
 				var regexClose = document.createElement('span');
 				regexClose.className = 'close';
-				regexClose.appendChild(document.createTextNode('/'));
+				regexClose.appendChild(createZWSTextNode('/'));
 				regex.appendChild(regexClose);
 			} else warnings.push([i, 'Unterminated regex literal.']);
 			var modifiers = input.substr(i + 1).match(/^[igm]*/);
 			if (modifiers) {
 				var regexModifier = document.createElement('span');
 				regexModifier.className = 'modifier';
-				regexModifier.appendChild(document.createTextNode(modifiers[0]));
+				regexModifier.appendChild(createZWSTextNode(modifiers[0]));
 				regex.appendChild(regexModifier);
 				i += modifiers[0].length;
 			}
 			codeBlock.appendChild(regex);
 		} else if (input.substr(i, 10) == '.prototype') {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var dot = document.createElement('span');
 			dot.className = 'dot';
-			dot.appendChild(document.createTextNode('.'));
+			dot.appendChild(createZWSTextNode('.'));
 			codeBlock.appendChild(dot);
 			var proto = document.createElement('span');
 			proto.className = 'prototype';
-			proto.appendChild(document.createTextNode('prototype'));
+			proto.appendChild(createZWSTextNode('prototype'));
 			codeBlock.appendChild(proto);
 			i += 9;
 		} else if ((beforeWord = (input[i - 1] || ' ').match(/[^\w.]/)) && (
@@ -1552,21 +1555,21 @@ function highlightJS(codeBlock, input) {
 				(input.substr(i, 5) == 'false' && !/\w/.test(input[i + 5] || '') && (l = 5)) ||
 				(input.substr(i, 8) == 'Infinity' && !/\w/.test(input[i + 8] || '') && (l = 8))
 			)) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var keyword = document.createElement('span');
 			keyword.className = 'constant';
-			keyword.appendChild(document.createTextNode(input.substr(i, l)));
+			keyword.appendChild(createZWSTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
 		} else if (beforeWord && c != c.toLowerCase()) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = c;
 			var capvar = document.createElement('span');
 			capvar.className = 'capvar';
 			while ((d = input[++i]) && /[\w\d]/.test(d)) chunk += d;
 			i--;
-			capvar.appendChild(document.createTextNode(chunk));
+			capvar.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(capvar);
 			chunk = '';
 		} else if (beforeWord && (
@@ -1579,11 +1582,11 @@ function highlightJS(codeBlock, input) {
 				(['continue', 'debugger'].indexOf(input.substr(i, 8)) != -1 && !/\w/.test(input[i + 8] || '') && (l = 8)) ||
 				(['instanceof'].indexOf(input.substr(i, 10)) != -1 && !/\w/.test(input[i + 10] || '') && (l = 10))
 			)) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var keyword = document.createElement('span');
 			keyword.className = 'keyword';
-			keyword.appendChild(document.createTextNode(input.substr(i, l)));
+			keyword.appendChild(createZWSTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			if (input.substr(i, l) == 'var' || input.substr(i, l) == 'let' || input.substr(i, l) == 'const') inVarDec.unshift({
 				parens: 0,
@@ -1602,11 +1605,11 @@ function highlightJS(codeBlock, input) {
 				(['interface', 'protected'].indexOf(input.substr(i, 9)) != -1 && !/\w/.test(input[i + 9] || '') && (l = 9)) ||
 				(['implements'].indexOf(input.substr(i, 10)) != -1 && !/\w/.test(input[i + 10] || '') && (l = 10))
 			)) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var keyword = document.createElement('span');
 			keyword.className = 'keyword reserved';
-			keyword.appendChild(document.createTextNode(input.substr(i, l)));
+			keyword.appendChild(createZWSTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
 		} else if (beforeWord && (
@@ -1624,15 +1627,15 @@ function highlightJS(codeBlock, input) {
 				(['speechSynthesis'].indexOf(input.substr(i, 15)) != -1 && !/\w/.test(input[i + 15] || '') && (l = 15)) ||
 				(['devicePixelRatio', 'applicationCache'].indexOf(input.substr(i, 16)) != -1 && !/\w/.test(input[i + 16] || '') && (l = 16))
 			)) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var keyword = document.createElement('span');
 			keyword.className = 'browser';
-			keyword.appendChild(document.createTextNode(input.substr(i, l)));
+			keyword.appendChild(createZWSTextNode(input.substr(i, l)));
 			codeBlock.appendChild(keyword);
 			i += l - 1;
 		} else if (input.substr(i, 8) == 'function' && !/\w/.test(input[i - 1] || ' ')) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var node,
 				nodeNum = codeBlock.childNodes.length,
@@ -1648,7 +1651,7 @@ function highlightJS(codeBlock, input) {
 						} else {
 							var str = node.nodeValue;
 							for (var j = str.length - 1; j >= 0; j--) {
-								if (/[\S]/.test(str[j])) {
+								if (/[^\s\u200B]/.test(str[j])) {
 									endNode = node.splitText(j + 1);
 									nodeNum++;
 									break;
@@ -1672,7 +1675,7 @@ function highlightJS(codeBlock, input) {
 					} else {
 						var str = node.nodeValue;
 						for (var j = str.length - 1; j >= 0; j--) {
-							if (foundName && /[\s=(]/.test(str[j])) {
+							if (foundName && /[\s\u200B=(]/.test(str[j])) {
 								fnameNodes.push(node.splitText(j + 1));
 								var fname = document.createElement('span');
 								fname.className = 'function-name';
@@ -1687,16 +1690,16 @@ function highlightJS(codeBlock, input) {
 				} else if (node.className == 'equals') {
 					foundEquals = true;
 					nodeNum++;
-				} else if (/\S/.test(node.textContent)) break;
+				} else if (/[^\s\u200B]/.test(node.textContent)) break;
 			}
 			var funcKeyword = document.createElement('span');
 			funcKeyword.className = 'keyword';
-			funcKeyword.appendChild(document.createTextNode('function'));
+			funcKeyword.appendChild(createZWSTextNode('function'));
 			i += 7;
 			while ((c = input[++i]) && /\s/.test(c)) {
 				chunk += c;
 				if (c == '\n') {
-					funcKeyword.appendChild(document.createTextNode(chunk));
+					funcKeyword.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					var linenum = document.createElement('span');
 					linenum.className = 'line';
@@ -1704,12 +1707,12 @@ function highlightJS(codeBlock, input) {
 					funcKeyword.appendChild(linenum);
 				}
 			}
-			funcKeyword.appendChild(document.createTextNode(chunk));
+			funcKeyword.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			if (input[i] == '*') {
 				var star = document.createElement('span');
 				star.className = 'generator-star';
-				star.appendChild(document.createTextNode('*'));
+				star.appendChild(createZWSTextNode('*'));
 				funcKeyword.appendChild(star);
 			} else i--;
 			codeBlock.appendChild(funcKeyword);
@@ -1719,39 +1722,39 @@ function highlightJS(codeBlock, input) {
 				lineComment;
 			while ((c = input[++i]) && (c != '(' || comment)) {
 				if (!comment && c == '/' && input[i + 1] == '*') {
-					fname.appendChild(document.createTextNode(chunk));
+					fname.appendChild(createZWSTextNode(chunk));
 					chunk = c + input[++i];
 					comment = document.createElement('span');
 					comment.className = 'inline-comment';
 					lineComment = false;
 				} else if (!comment && c == '/' && input[i + 1] == '/') {
-					fname.appendChild(document.createTextNode(chunk));
+					fname.appendChild(createZWSTextNode(chunk));
 					chunk = c + input[++i];
 					comment = document.createElement('span');
 					comment.className = 'inline-comment';
 					lineComment = true;
 				} else if (!lineComment && c == '\n') {
-					(fname || comment).appendChild(document.createTextNode(chunk + '\n'));
+					(fname || comment).appendChild(createZWSTextNode(chunk + '\n'));
 					chunk = '';
 					var linenum = document.createElement('span');
 					linenum.className = 'line';
 					linenum.dataset.linenum = ++line;
 					(fname || comment).appendChild(linenum);
 				} else if (comment && !lineComment && input.substr(i, 2) == '*/') {
-					comment.appendChild(document.createTextNode(chunk + '*/'));
+					comment.appendChild(createZWSTextNode(chunk + '*/'));
 					chunk = '';
 					fname.appendChild(comment);
 					comment = false;
 					i++;
 				} else if (lineComment && c == '\n') {
-					comment.appendChild(document.createTextNode(chunk));
+					comment.appendChild(createZWSTextNode(chunk));
 					chunk = '';
 					fname.appendChild(comment);
 					comment = lineComment = false;
 					i--;
 				} else chunk += c;
 			}
-			fname.appendChild(document.createTextNode(chunk));
+			fname.appendChild(createZWSTextNode(chunk));
 			codeBlock.appendChild(fname);
 			chunk = '';
 			if (input[i] != '(') {
@@ -1760,25 +1763,25 @@ function highlightJS(codeBlock, input) {
 			} else {
 				var paren = document.createElement('span');
 				paren.className = 'punctuation';
-				paren.appendChild(document.createTextNode('('));
+				paren.appendChild(createZWSTextNode('('));
 				codeBlock.appendChild(paren);
 				while ((c = input[++i]) && c != ')') {
 					if (c == '/') break;
 					if (c == ',') {
 						var arg = document.createElement('span');
 						arg.className = 'argument';
-						arg.appendChild(document.createTextNode(chunk));
+						arg.appendChild(createZWSTextNode(chunk));
 						codeBlock.appendChild(arg);
 						chunk = '';
 						var comma = document.createElement('span');
 						comma.className = 'punctuation';
-						comma.appendChild(document.createTextNode(','));
+						comma.appendChild(createZWSTextNode(','));
 						codeBlock.appendChild(comma);
 					} else chunk += c;
 				}
 				var arg = document.createElement('span');
 				arg.className = 'argument';
-				arg.appendChild(document.createTextNode(chunk));
+				arg.appendChild(createZWSTextNode(chunk));
 				codeBlock.appendChild(arg);
 				chunk = '';
 				if (c == '/') {
@@ -1786,7 +1789,7 @@ function highlightJS(codeBlock, input) {
 				} else if (c) {
 					var paren = document.createElement('span');
 					paren.className = 'punctuation';
-					paren.appendChild(document.createTextNode(')'));
+					paren.appendChild(createZWSTextNode(')'));
 					codeBlock.appendChild(paren);
 				} else {
 					warnings.push([i, 'Unclosed argument list.']);
@@ -1794,7 +1797,7 @@ function highlightJS(codeBlock, input) {
 				}
 			}
 		} else if (c == '(') {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var lastChunk = codeBlock.lastChild.nodeValue;
 			if (lastChunk) {
@@ -1806,66 +1809,66 @@ function highlightJS(codeBlock, input) {
 			}
 			var charspan = document.createElement('span');
 			charspan.className = 'punctuation';
-			charspan.appendChild(document.createTextNode('('));
+			charspan.appendChild(createZWSTextNode('('));
 			codeBlock.appendChild(charspan);
 			if (inVarDec[0]) inVarDec[0].parens++;
 		} else if (input.substr(i, 2) == '=>') {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator';
-			operator.appendChild(document.createTextNode('=>'));
+			operator.appendChild(createZWSTextNode('=>'));
 			codeBlock.appendChild(operator);
 			i++;
 		} else if (['++', '--', '*=', '/=', '%=', '+=', '-=', '&=', '|=', '^='].indexOf(input.substr(i, 2)) != -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator assigns';
-			operator.appendChild(document.createTextNode(input.substr(i, 2)));
+			operator.appendChild(createZWSTextNode(input.substr(i, 2)));
 			codeBlock.appendChild(operator);
 			i++;
 		} else if (input.substr(i, 4) == '>>>=') {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator assigns';
-			operator.appendChild(document.createTextNode(input.substr(i, 4)));
+			operator.appendChild(createZWSTextNode(input.substr(i, 4)));
 			codeBlock.appendChild(operator);
 			i += 3;
 		} else if (input.substr(i, 3) == '<<=' || input.substr(i, 3) == '>>=') {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator assigns';
-			operator.appendChild(document.createTextNode(input.substr(i, 3)));
+			operator.appendChild(createZWSTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
 		} else if (input.substr(i, 3) == '===' || input.substr(i, 3) == '!==' || (input.substr(i, 3) == '>>>' && input[i + 3] != '=')) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator';
-			operator.appendChild(document.createTextNode(input.substr(i, 3)));
+			operator.appendChild(createZWSTextNode(input.substr(i, 3)));
 			codeBlock.appendChild(operator);
 			i += 2;
 		} else if (['<=', '>=', '==', '!=', '<<', '>>', '&&', '||'].indexOf(input.substr(i, 2)) != -1 && ['=', '<', '>'].indexOf(input[i + 2]) == -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator';
-			operator.appendChild(document.createTextNode(input.substr(i, 2)));
+			operator.appendChild(createZWSTextNode(input.substr(i, 2)));
 			codeBlock.appendChild(operator);
 			i++;
 		} else if ('?:+-*/%&|^!~'.indexOf(c) != -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var operator = document.createElement('span');
 			operator.className = 'operator';
-			operator.appendChild(document.createTextNode(c));
+			operator.appendChild(createZWSTextNode(c));
 			codeBlock.appendChild(operator);
 		} else if (beforeWord && /\d/.test(c)) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var start = i;
 			if (c == '0' && input[i + 1] != '.' && (c = input[++i])) {
@@ -1878,7 +1881,7 @@ function highlightJS(codeBlock, input) {
 				} else if (/[\d\w]/.test(c)) warnings.push([i, 'Bad number literal.']);
 				var num = document.createElement('span');
 				num.className = 'number';
-				num.appendChild(document.createTextNode(input.substring(start, i--)));
+				num.appendChild(createZWSTextNode(input.substring(start, i--)));
 				codeBlock.appendChild(num);
 			} else {
 				while ('0123456789.'.indexOf(input[i]) != -1) i++;
@@ -1890,16 +1893,16 @@ function highlightJS(codeBlock, input) {
 				}
 				var num = document.createElement('span');
 				num.className = 'number';
-				num.appendChild(document.createTextNode(input.substring(start, i)));
+				num.appendChild(createZWSTextNode(input.substring(start, i)));
 				codeBlock.appendChild(num);
 				i--;
 			}
 		} else if ('=.,;)[]{}'.indexOf(c) != -1) {
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			var charspan = document.createElement('span');
 			charspan.className = ({'=': 'equals', '.': 'dot'})[c] || 'punctuation';
-			charspan.appendChild(document.createTextNode(c));
+			charspan.appendChild(createZWSTextNode(c));
 			codeBlock.appendChild(charspan);
 			if (inVarDec[0]) {
 				if (Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
@@ -1932,7 +1935,7 @@ function highlightJS(codeBlock, input) {
 				if (c == ';') inVarDec.shift();
 			}
 		} else if (c == '\n') {
-			codeBlock.appendChild(document.createTextNode(chunk + '\n'));
+			codeBlock.appendChild(createZWSTextNode(chunk + '\n'));
 			chunk = '';
 			var linenum = document.createElement('span');
 			linenum.className = 'line';
@@ -1940,18 +1943,18 @@ function highlightJS(codeBlock, input) {
 			codeBlock.appendChild(linenum);
 		} else if (/\S/.test(c) && inVarDec[0] && !inVarDec[0].equals && Math.max(inVarDec[0].parens, inVarDec[0].brackets, inVarDec[0].braces) == 0) {
 			var newvar;
-			codeBlock.appendChild(document.createTextNode(chunk));
+			codeBlock.appendChild(createZWSTextNode(chunk));
 			chunk = '';
 			if (codeBlock.lastChild.className == 'newvar') newvar = codeBlock.lastChild;
 			else {
 				newvar = document.createElement('span');
 				newvar.className = 'newvar';
 			}
-			newvar.appendChild(document.createTextNode(c));
+			newvar.appendChild(createZWSTextNode(c));
 			codeBlock.appendChild(newvar);
 		} else chunk += c;
 	}
-	codeBlock.appendChild(document.createTextNode(chunk + '\xa0'));
+	codeBlock.appendChild(createZWSTextNode(chunk + '\xa0'));
 	codeBlock.dataset.line = Math.floor(Math.log10(line));
 	var lines = input.split('\n');
 	for (var i = 0; i < warnings.length; i++) {

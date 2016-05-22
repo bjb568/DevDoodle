@@ -13,13 +13,14 @@ module.exports = o(function*(req, res, user) {
 				{private: false},
 				{user: user.name}
 			]
-		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
+		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, program) {
 			if (err) throw err;
-			if (data) {
+			if (program) {
 				res.write('<div class="program">');
-				res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
-				if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>');
-				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>');
+				res.write('<h2 class="title"><a href="' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + program.user + '">' + program.user + '</a></small></h2>');
+				if (program.type == 0) res.write('<div><code class="blk small">' + html(program.code) + '</code></div>');
+				if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
+				else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
 				res.write('</div> ');
 			} else {
 				res.write('</div>');
@@ -51,27 +52,41 @@ module.exports = o(function*(req, res, user) {
 			}
 		}));
 	} else if (req.url.pathname == '/dev/new/canvas') {
-		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/canvas.css" />'});
+		yield respondPage('Canvas Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/canvas.css" />'});
 		res.write(
-			(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/canvas.html', yield)).toString())
 			.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
 			.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-			.replace(/<section id="meta">[^]+<\/section>/, '')
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
-				['$mine', '$id', '$op-name', '$rep', '$title', '$code'],
-				['', '0', '', '0', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$code'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/dev/new/html') {
-		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/html.css" />'});
+		yield respondPage('HTML Playground', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/html.css" />'});
 		res.write(
-			(yield fs.readFile('./html/dev/html.html', yield)).toString()
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/html.html', yield)).toString())
 			.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-			.replace(/<section id="meta">[^]+<\/section>/, '')
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
-				['$id', '$title', '$html', '$css', '$js'],
-				['', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$html', '$css', '$js'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.html || '') : '', req.url.query ? html(req.url.query.css || '') : '', req.url.query ? html(req.url.query.js || '') : '']
+			)
+		);
+		res.end(yield fs.readFile('html/a/foot.html', yield));
+	} else if (req.url.pathname == '/dev/new/text') {
+		yield respondPage('New Plain Text', user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/dev/program.css" />'});
+		res.write(
+			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/text.html', yield)).toString())
+			.replace(/<section id="meta"[^]+?<\/section>/, '')
+			.replace('Fork</a>', 'Save</a>')
+			.replaceAll(
+				['$mine', '$id', '$op-name', '$rep', '$title', '$raw-title', '$code', '$css'],
+				['', '0', '', '0', 'New Program', 'New Program', req.url.query ? html(req.url.query.code || '') : '']
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
@@ -113,9 +128,7 @@ module.exports = o(function*(req, res, user) {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield,
 				{
 					clean: true,
-					inhead: '<link rel="stylesheet" href="/dev/' +
-						(program.type == 1 ? 'canvas' : 'html') +
-						'.css" />'
+					inhead: '<link rel="stylesheet" href="/dev/program.css" />' + (program.type ? ('<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />') : '')
 				}
 			);
 			let vote = (yield dbcs.votes.findOne({
@@ -129,7 +142,7 @@ module.exports = o(function*(req, res, user) {
 				if (comment) commentstr += new Comment(comment).toString(user);
 				else {
 					let forks = '';
-					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
+					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {try {
 						if (err) throw err;
 						if (forkFrom) {
 							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
@@ -137,21 +150,22 @@ module.exports = o(function*(req, res, user) {
 						} else {
 							res.write(
 								(
-									program.type == 1 ?
-										(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-											.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-											.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-											.replaceAll(
-												'$code',
-												html(program.code)
-											)
-										: (yield fs.readFile('./html/dev/html.html', yield)).toString()
-											.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-											.replaceAll(
-												['$html', '$css', '$js'],
-												[html(program.html), html(program.css), html(program.js)]
-											)
-								).replaceAll(
+									(yield fs.readFile('./html/dev/program.html', yield)).toString() + (
+										!program.type ? (yield fs.readFile('./html/dev/text.html', yield)).toString().replaceAll('$code', html(program.code))
+										: program.type == 1 ?
+											(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
+												.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+												.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
+												.replaceAll('$code', html(program.code))
+											: (yield fs.readFile('./html/dev/html.html', yield)).toString()
+												.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+												.replaceAll(
+													['$html', '$css', '$js'],
+													[html(program.html), html(program.css), html(program.js)]
+												)
+									)
+								).replace('/dev/program.js', '/dev/program.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/program.js', yield)))
+								.replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
 								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
@@ -175,7 +189,7 @@ module.exports = o(function*(req, res, user) {
 								).replace('$forks', forks.length ? '<h2>Forks</h2><ul>' + forks + '</ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
-						}
+						}} catch (e) {console.log(e);}
 					}));
 				}
 			});
