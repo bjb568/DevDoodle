@@ -203,7 +203,7 @@ module.exports = o(function*(req, res, user) {
 							}
 							revnum++;
 						} else {
-							res.write('<p>Origionally posted <time datetime="' + new Date(question.time).toISOString() + '"></time>.</p>');
+							res.write('<p>Originally posted <time datetime="' + new Date(question.time).toISOString() + '"></time>.</p>');
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
 					}));
