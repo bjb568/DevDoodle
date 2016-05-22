@@ -66,7 +66,7 @@ code { padding: 0.15em }
 .private { color: #a4f }
 .disabled, a.disabled:hover, a.disabled:active { color: #999 }
 small, a.small, a.grey, .c-sig > *, .c-sig, footer, #nav a, h1 a, h2 a, h3 a, h4 a, h5 a, h6 a, .user a, .c-sig a, .ctrls a { text-decoration: none }
-small, a.small, footer, .ctrls a { font-size: 0.85em }
+small, .small, footer, .ctrls a { font-size: 0.85em }
 small { font-weight: normal }
 abbr { border-bottom: 1px dashed #222 }
 .reference { color: #080 }

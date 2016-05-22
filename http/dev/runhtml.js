@@ -30,7 +30,6 @@ if (navigator.userAgent.indexOf('Mobile') == -1) {
 	blinkTimeout = setTimeout(blink, 500);
 } else caret.hidden = true;
 function run() {
-	if (save && !save.classList.contains('progress')) save.classList.toggle('modified', JSON.stringify([htmle.value, css.value, js.value]) != JSON.stringify(savedValue));
 	var outputBlob = new Blob([
 		'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Output frame</title></head><body>' + htmle.value + '<style>' + html(css.value) + '</style><script>alert=prompt=confirm=null;' + html(js.value) + '</script></body></html>'
 	], {type: 'application/xhtml+xml'});
@@ -78,6 +77,7 @@ htmlCont.classList.toggle('collapsed', !htmle.value);
 cssCont.classList.toggle('collapsed', !css.value);
 jsCont.classList.toggle('collapsed', !js.value);
 function handleTAInput() {
+	if (save && !save.classList.contains('progress')) save.classList.toggle('modified', !canUnload());
 	var cursorPos, oldCaret;
 	if (htmle.value != lastValue[0]) {
 		highlightHTML(htmlDisplay, htmle.value);

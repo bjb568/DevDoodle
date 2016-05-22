@@ -13,13 +13,14 @@ module.exports = o(function*(req, res, user) {
 				{private: false},
 				{user: user.name}
 			]
-		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, data) {
+		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, program) {
 			if (err) throw err;
-			if (data) {
+			if (program) {
 				res.write('<div class="program">');
-				res.write('<h2 class="title"><a href="' + data._id + '">' + html(data.title || 'Untitled') + typeIcons[data.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + data.user + '">' + data.user + '</a></small></h2>');
-				if (data.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(data.code) + '"></iframe></div>');
-				else if (data.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(data.html) + '" data-css="' + html(data.css) + '" data-js="' + html(data.js) + '"></iframe></div>');
+				res.write('<h2 class="title"><a href="' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + program.user + '">' + program.user + '</a></small></h2>');
+				if (program.type == 0) res.write('<div><code class="blk small">' + html(program.code) + '</code></div>');
+				if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
+				else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
 				res.write('</div> ');
 			} else {
 				res.write('</div>');
@@ -141,7 +142,7 @@ module.exports = o(function*(req, res, user) {
 				if (comment) commentstr += new Comment(comment).toString(user);
 				else {
 					let forks = '';
-					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
+					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {try {
 						if (err) throw err;
 						if (forkFrom) {
 							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
@@ -188,7 +189,7 @@ module.exports = o(function*(req, res, user) {
 								).replace('$forks', forks.length ? '<h2>Forks</h2><ul>' + forks + '</ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
-						}
+						}} catch (e) {console.log(e);}
 					}));
 				}
 			});
