@@ -113,7 +113,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (answer) {
 						let question = yield dbcs.questions.findOne({_id: answer.question}, yield);
-						res.write('<li><a href="/qa/' + question._id + '">' + question.title + '</a></li>');
+						res.write('<li><a href="/qa/' + question._id + '#a' + answer._id + '">' + question.title + '</a></li>');
 						answers++;
 						cursor.nextObject(answerHandler);
 					} else {

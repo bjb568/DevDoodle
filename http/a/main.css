@@ -58,7 +58,10 @@ ul { padding-left: 2em }
 .hglt, .desc, .comment, article { background: rgba(255, 255, 255, 0.4) }
 .shglt, #content, #sidebar, #footer { background: rgba(255, 255, 255, 0.8) }
 code, iframe { background: #fff }
-code { padding: 0.15em }
+code {
+	padding: 0.15em;
+	font-size: 0.85em;
+}
 .mono, .ctrls { font-family: monospace }
 .ctrls a { padding: 0 0.15em }
 .grey, a.small, .c-sig, .ctrls a { color: #444 }
@@ -144,7 +147,6 @@ li {
 	background: transparent;
 	font-family: monospace;
 	white-space: pre-wrap;
-	font-size: 0.85em;
 	line-height: 1.2;
 	resize: none;
 	outline: none;

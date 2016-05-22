@@ -2,7 +2,7 @@
 document.getElementById('mailform').onsubmit = function(e) {
 	e.preventDefault();
 	request('/api/me/changemail', function(res) {
-		if (res.indexOf('Error:') == 0) return alert(res);
+		if (res.indexOf('Error') == 0) return alert(res);
 		var mail = document.getElementById('mail');
 		mail.hidden = document.getElementById('mailedit').hidden = false;
 		document.getElementById('mailinput').hidden = document.getElementById('mailsave').hidden = document.getElementById('mailcancel').hidden = true;

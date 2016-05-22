@@ -4,7 +4,7 @@ var tname = document.getElementById('name'),
 	par = document.getElementById('par');
 document.getElementById('addtag').onsubmit = function() {
 	request('/api/qa/tags/add', function(res) {
-		if (res.indexOf('Error:') == 0) return alert(res);
+		if (res.indexOf('Error') == 0) return alert(res);
 		else {
 			try {
 				res = JSON.parse(res);

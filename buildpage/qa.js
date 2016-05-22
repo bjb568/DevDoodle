@@ -83,13 +83,43 @@ module.exports = o(function*(req, res, user) {
 	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
 		let question = yield dbcs.questions.findOne({_id: parseInt(i[1])}, yield);
 		if (!question) return errorNotFound[404](req, res, user);
+		if (question.deleted) {
+			yield respondPage('[Deleted]', user, req, res, yield, {inhead: '<script src="deleted-question.js"></script>'}, 404);
+			if (question.deleted.by.length == 1 && question.deleted.by == question.user && question.user == user.name) {
+				res.write('<h1>' + html(question.title) + '</h1>');
+				res.write('<p>You deleted this <time datetime="' + new Date(question.deleted.time).toISOString() + '"></time>. ');
+				res.write('<button id="undelete">Undelete…</button></p>');
+			} else if (user.level >= 4) {
+				let deletersstr = '',
+					i = question.deleted.by.length;
+				while (i--) {
+					deletersstr += '<a href="/user/' + question.deleted.by[i] + '">' + question.deleted.by[i] + '</a>';
+					if (i == 1) deletersstr += ', and ';
+					else if (i) deletersstr += ', ';
+				}
+				res.write('<h1>' + html(question.title || 'Untitled') + ' by <a href="/user/' + question.user + '">' + question.user + '</a></h1>');
+				res.write('<p>This question was deleted <time datetime="' + new Date(question.deleted.time).toISOString() + '"></time> by ' + deletersstr + '. ');
+				res.write('<button id="undelete">Undelete…</button></p>');
+			} else {
+				res.write(
+					'This question was deleted <time datetime="' + new Date(question.deleted.time).toISOString() + '"></time> ' +
+					(
+						question.deleted.by.length == 1 && question.deleted.by == question.user ?
+							'voluntarily by its owner'
+							: 'for moderation reasons'
+					) +
+					'.'
+				);
+			}
+			return res.end(yield fs.readFile('html/a/foot.html', yield));
+		}
 		let history = typeof req.url.query.history == 'string';
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
 		);
-		let revcursor = dbcs.posthistory.find({q: question._id}),
-			revcount = yield revcursor.sort({time: -1}).count(yield);
+		let revcursor = dbcs.posthistory.find({q: question._id}).sort({time: -1}),
+		revcount = yield revcursor.count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
 			res.write('<h2>Current Revision</h2>');
@@ -115,7 +145,17 @@ module.exports = o(function*(req, res, user) {
 						if (err) throw err;
 						if (item) {
 							res.write('<h2>Revision ' + (revcount - revnum) + ': ' + item.event + '</h2>');
-							res.write('<p class="indt">Replaced <time datetime="' + new Date(item.time).toISOString() + '"></time> by <a href="/user/' + item.user + '" target="_blank">' + item.user + '</a></p>');
+							let deletersstr = '';
+							if (item.user) deletersstr = '<a href="/user/' + item.user + '" target="_blank">' + item.user + '</a>';
+							else if (item.by && (question.user == user.name || user.level >= 4)) {console.log('a');
+								let i = item.by.length;
+								while (i--) {
+									deletersstr += '<a href="/user/' + item.by[i] + '">' + item.by[i] + '</a>';
+									if (i == 1) deletersstr += ', and ';
+									else if (i) deletersstr += ', ';
+								}console.log('b');
+							}
+							res.write('<p class="indt"><time datetime="' + new Date(item.time).toISOString() + '"></time>' + (deletersstr ? ' by ' + deletersstr : '') + '</p>');
 							if (item.event == 'edit') {
 								let writeDiff = function(o, n) {
 									let d = diff.diffWordsWithSpace(o, n);
@@ -160,7 +200,7 @@ module.exports = o(function*(req, res, user) {
 								res.write('</div>');
 								res.write('</article>');
 								prev = item;
-							} else res.write('<p class="red">Unknown event.</p>');
+							}
 							revnum++;
 						} else {
 							res.write('<p>Origionally posted <time datetime="' + new Date(question.time).toISOString() + '"></time>.</p>');
