@@ -11,16 +11,6 @@ var	htmle = document.getElementById('html'),
 	restart = document.getElementById('restart'),
 	savedValue = [htmle.value, css.value, js.value],
 	lastValue = savedValue;
-function insertNodeAtPosition(node, refNode, pos) {
-	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
-	else {
-		for (var i = 0; i < refNode.childNodes.length; i++) {
-			var chNode = refNode.childNodes[i];
-			if (chNode.textContent.length <= pos && i != refNode.childNodes.length - 1) pos -= chNode.textContent.length;
-			else return insertNodeAtPosition(node, chNode, pos);
-		}
-	}
-}
 highlightHTML(htmlDisplay, htmle.value);
 htmlCont.dataset.line = htmlDisplay.dataset.line;
 htmle.style.height = htmlDisplay.offsetHeight + 'px';
@@ -140,7 +130,7 @@ function handleTAInput() {
 		var caret = document.createElement('span');
 		caret.id = 'caret';
 		caret.appendChild(document.createTextNode('\xA0'));
-		insertNodeAtPosition(caret, cssDisplay, cursorPos);
+		insertNodeAtPosition(caret, cssDisplay, cursorPos * 2);
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
@@ -177,7 +167,15 @@ function handleTAInput() {
 	}
 	lastValue = newValue;
 }
-addEventListener('keypress', soonHandleTAInput);
+addEventListener('keypress', function(e) {
+	requestAnimationFrame(function() {
+		handleTAInput();
+		if (e.which == 13) {
+			var caret = document.getElementById('caret');
+			if (caret) taCont.scrollTop = Math.max(taCont.scrollTop, caret.getBoundingClientRect().top + caret.offsetHeight + 8 - caret.parentNode.getBoundingClientRect().top - taCont.offsetHeight);
+		}
+	});
+});
 addEventListener('keyup', soonHandleTAInput);
 addEventListener('keydown', soonHandleTAInput);
 addEventListener('mousedown', soonHandleTAInput);

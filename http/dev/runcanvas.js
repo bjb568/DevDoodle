@@ -1,15 +1,5 @@
 'use strict';
 var canvasJS = document.getElementById('canvas-js').value;
-function insertNodeAtPosition(node, refNode, pos) {
-	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
-	else {
-		for (var i = 0; i < refNode.childNodes.length; i++) {
-			var chNode = refNode.childNodes[i];
-			if (chNode.textContent.length <= pos && i != refNode.childNodes.length - 1) pos -= chNode.textContent.length;
-			else return insertNodeAtPosition(node, chNode, pos);
-		}
-	}
-}
 var code = document.getElementById('code'),
 	codeDisplay = document.getElementById('code-display'),
 	taCont = document.getElementById('ta-cont'),
@@ -72,7 +62,7 @@ function handleTAInput() {
 		var caret = document.createElement('span');
 		caret.id = 'caret';
 		caret.appendChild(document.createTextNode('\xA0'));
-		insertNodeAtPosition(caret, codeDisplay, cursorPos);
+		insertNodeAtPosition(caret, codeDisplay, cursorPos * 2);
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
@@ -80,7 +70,15 @@ function handleTAInput() {
 	runTimeout = setTimeout(run, 200);
 }
 handleTAInput();
-addEventListener('keypress', soonHandleTAInput);
+addEventListener('keypress', function(e) {
+	requestAnimationFrame(function() {
+		handleTAInput();
+		if (e.which == 13) {
+			var caret = document.getElementById('caret');
+			if (caret) taCont.scrollTop = Math.max(taCont.scrollTop, caret.getBoundingClientRect().top + caret.offsetHeight + 8 - caret.parentNode.getBoundingClientRect().top - taCont.offsetHeight);
+		}
+	});
+});
 addEventListener('keyup', soonHandleTAInput);
 addEventListener('keydown', soonHandleTAInput);
 addEventListener('mousedown', soonHandleTAInput);

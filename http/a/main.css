@@ -136,9 +136,9 @@ li {
 	border: 1px solid #fff;
 }
 .code, .code-display, #code, #code-display {
+	word-break: break-all;
 	display: block;
-	padding: 0;
-	margin: 2px;
+	margin: 2px 2px 0;
 	color: #fff;
 	background: transparent;
 	font-family: monospace;
@@ -148,7 +148,7 @@ li {
 	resize: none;
 	outline: none;
 	border: none;
-	padding-left: 4px;
+	padding: 0 0 4px 4px;
 }
 .code-display.static {
 	min-height: 0;
