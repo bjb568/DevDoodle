@@ -55,3 +55,21 @@ npm:
 dependancies:
 
 	npm update
+
+## Certs
+
+DevDoodle uses [Let's Encrypt](https://letsencrypt.org) certs. These certs last 90 days. HPKP is cached for 30 days. Since there should always be 2 available valid certs, a new one must be generated every 45 days. The certs should be switched 31 days after the new one is generated.
+
+2016-03-31 — 2016-06-29 Last cert
+2016-05-15 — 2016-08-13 Current cert
+2016-06-29 — 2016-09-27 Next cert
+
+Certificate renewal is done with:
+
+	certbot certonly --cert-path ...
+
+Certs are in `/etc/letsencrypt/live`.
+
+To generate the hash [for HPKP](https://developer.mozilla.org/en-US/docs/Web/Security/Public_Key_Pinning):
+
+	openssl x509 -in my-certificate.crt -pubkey -noout | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64

@@ -2,7 +2,7 @@
 	"rules": {
 		"color-hex-case": "lower",
 		"color-no-invalid-hex": true,
-		"font-family-name-quotes": "single-unless-keyword",
+		"font-family-name-quotes": "always-unless-keyword",
 		"font-weight-notation": "named-where-possible",
 		"function-calc-no-unspaced-operator": true,
 		"function-comma-newline-after": "never-multi-line",
@@ -15,7 +15,7 @@
 		"function-parentheses-newline-inside": "never-multi-line",
 		"function-parentheses-space-inside": "never",
 		"function-url-data-uris": "never",
-		"function-url-quotes": "single",
+		"function-url-quotes": "always",
 		"function-whitespace-after": "always",
 		"number-leading-zero": "always",
 		"number-max-precision": 3,

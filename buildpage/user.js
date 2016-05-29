@@ -138,6 +138,7 @@ module.exports = o(function*(req, res, user) {
 							if (program) {
 								res.write('<div class="program">');
 								res.write('<h2 class="title"><a href="/dev/' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a></h2>');
+								if (program.type == 0) res.write('<div><code class="blk small">' + html(program.code) + '</code></div>');
 								if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
 								else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
 								res.write('</div> ');

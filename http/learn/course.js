@@ -104,7 +104,7 @@ function handleTAInput() {
 		var caret = document.createElement('span');
 		caret.id = 'caret';
 		caret.appendChild(document.createTextNode('\xA0'));
-		insertNodeAtPosition(caret, htmlDisplay, cursorPos);
+		insertNodeAtPosition(caret, htmlDisplay, cursorPos * 2);
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}

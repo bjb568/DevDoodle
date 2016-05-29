@@ -534,8 +534,71 @@ let serverHandler = o(function*(req, res) {
 			res.write('<p>HTTP error when connecting to GitHub: ' + e + ' ' + tryagain + '</p>');
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		}));
+	} else if (req.url.pathname == '/login/new') {
+		if (req.method != 'POST') return res.writeHead(405) || res.end('Method not allowed. Use POST.');
+		let post = '';
+		req.on('data', function(data) {
+			if (req.abort) return;
+			post += data;
+			if (post.length > 1e4) {
+				res.writeHead(413);
+				res.end('Error: Request entity too large.');
+				req.abort = true;
+			}
+		});
+		req.on('end', o(function*() {
+			if (req.abort) return;
+			post = querystring.parse(post);
+			if (!tempVerificationTokens[post.token]) return errorForbidden(req, res, user, 'Invalid verification token.');
+			let errors = [];
+			if (!post.name) errors.push('Name is a required field.');
+			if (!post.mail) errors.push('Email address is a required field.');
+			if (post.name.length > 16) errors.push('Name must be no longer than 16 characters.');
+			if (post.name.length < 3) errors.push('Name must be at least 3 characters long.');
+			if (!post.name.match(/^[a-zA-Z0-9-]+$/)) errors.push('Name may only contain alphanumeric characters and dashes.');
+			if (post.name.indexOf(/---/) != -1) errors.push('Name may not contain a sequence of 3 dashes.');
+			if (post.mail.length > 4096) errors.push('Email address must be no longer than 4096 characters.');
+			if (yield dbcs.users.findOne({name: post.name}, yield)) errors.push('Name has already been taken.');
+			if (errors.length) {
+				yield respondPage('Create Login', user, req, res, yield);
+				res.write(
+					(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
+					.replace('$errors', errorsHTML(errors))
+					.replace('$verification-token', post.token || '')
+					.replace('$name', post.name || '')
+					.replace('$mail', post.mail || '')
+				);
+				return res.end(yield fs.readFile('html/a/foot.html', yield));
+			}
+			let idToken = crypto.randomBytes(128).toString('base64'),
+				idCookie = cookie.serialize('id', idToken, {
+					path: '/',
+					expires: new Date(new Date().setDate(new Date().getDate() + 30)),
+					httpOnly: true,
+					secure: config.secureCookies
+				});
+			user = {
+				name: post.name,
+				mail: post.mail,
+				pic: tempVerificationTokens[post.token].pic,
+				githubID: tempVerificationTokens[post.token].githubID,
+				githubName: tempVerificationTokens[post.token].githubName,
+				joined: new Date().getTime(),
+				rep: 0,
+				level: 1,
+				cookie: [{
+					token: idToken,
+					created: new Date().getTime()
+				}]
+			};
+			dbcs.users.insert(user);
+			delete tempVerificationTokens[post.token];
+			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
+			res.write('An account for you has been created. You are now logged in.');
+			res.end(yield fs.readFile('html/a/foot.html', yield));
+		}));
 	} else if (req.url.pathname == '/notifs') {
-		if (!user.name) return errorForbidden(req, res, 'You must be logged in to view your notifications.');
+		if (!user) return errorForbidden(req, res, user, 'You must be logged in to view your notifications.');
 		yield respondPage('Notifications', user, req, res, yield);
 		res.write('<h1>Notifications</h1>');
 		res.write('<ul id="notifs">');

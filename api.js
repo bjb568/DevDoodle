@@ -452,7 +452,7 @@ module.exports = o(function*(req, res, user, post) {
 		res.end('Location: #a' + id);
 	} else if (req.url.pathname == '/program/save') {
 		let type = parseInt(req.url.query.type);
-		if (type !== 1 && type !== 2) return res.writeHead(400) || res.end('Error: Invalid program type.');
+		if (type !== 0 && type !== 1 && type !== 2) return res.writeHead(400) || res.end('Error: Invalid program type.');
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to save a program.');
 		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
 		let id = i ? parseInt(i[1]) : 0,
@@ -490,12 +490,11 @@ module.exports = o(function*(req, res, user, post) {
 					private: false,
 					_id: id
 				};
-			if (type == 1) tprogram.code = (post.code || '').toString();
-			else if (type == 2) {
+			if (type == 2) {
 				tprogram.html = (post.html || '').toString();
 				tprogram.css = (post.css || '').toString();
 				tprogram.js = (post.js || '').toString();
-			}
+			} else tprogram.code = (post.code || '').toString();
 			if (program) {
 				tprogram.fork = program._id;
 				tprogram.title = 'Fork of ' + (program.title || 'Untitled').substr(0, 84);

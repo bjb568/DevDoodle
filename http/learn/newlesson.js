@@ -56,7 +56,7 @@ function handleCodeTAInput() {
 		var caret = document.createElement('span');
 		caret.id = 'caret';
 		caret.appendChild(document.createTextNode('\xA0'));
-		insertNodeAtPosition(caret, codeDisplay, cursorPos);
+		insertNodeAtPosition(caret, codeDisplay, cursorPos * 2);
 		clearTimeout(blinkTimeout);
 		blinkTimeout = setTimeout(blink, 500);
 	}
