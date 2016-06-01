@@ -3,6 +3,10 @@
 		"path": "./html/legal/tos.html",
 		"title": "Terms of Use"
 	},
+	"/legal/privacy": {
+		"path": "./html/legal/privacy.html",
+		"title": "Privacy Policy"
+	},
 	"/formatting": {
 		"path": "./html/formatting.html",
 		"title": "Formatting",
