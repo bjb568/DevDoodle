@@ -142,7 +142,7 @@ module.exports = o(function*(req, res, user) {
 				if (comment) commentstr += new Comment(comment).toString(user);
 				else {
 					let forks = '';
-					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {try {
+					dbcs.programs.find({fork: program._id}).each(o(function*(err, forkFrom) {
 						if (err) throw err;
 						if (forkFrom) {
 							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
@@ -189,7 +189,7 @@ module.exports = o(function*(req, res, user) {
 								).replace('$forks', forks.length ? '<h2>Forks</h2><ul>' + forks + '</ul>' : '')
 							);
 							res.end(yield fs.readFile('html/a/foot.html', yield));
-						}} catch (e) {console.log(e);}
+						}
 					}));
 				}
 			});

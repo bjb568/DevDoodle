@@ -96,7 +96,7 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 			try {
 				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
 			} catch (e) {
-				console.log(e);
+				console.error(e);
 			}
 		}
 	}
@@ -507,7 +507,7 @@ let serverHandler = o(function*(req, res) {
 							};
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
-					} catch (e) {console.log(e);
+					} catch (e) {
 						yield respondPage('Login Error', user, req, res, yield, {}, 500);
 						res.write('<h1>Login Error</h1>');
 						res.write('<p>An invalid response was recieved from the GitHub API. ' + tryagain + '</p>');
