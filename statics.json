@@ -19,6 +19,10 @@
 		"title": "Create Room",
 		"inhead": "<link rel=\"stylesheet\" href=\"chat.css\" />"
 	},
+	"/qa/tips/": {
+		"path": "./html/qa/tips/tips.html",
+		"title": "Tips"
+	},
 	"/dev/new/": {
 		"path": "./html/dev/new.html",
 		"title": "New",
