@@ -48,6 +48,8 @@ body {
 .bmar, .max-width, .error, .half, #notifs li { margin-bottom: 0.4em }
 .indt { margin-left: 2em }
 ul { padding-left: 2em }
+.check-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgZmlsbD0iIzBjMCI+PHBhdGggZD0iTTIsNiA0LDggMTAsMiAxMSwzIDQsMTAgMSw3Ii8+PC9zdmc+') }
+.cross-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgZmlsbD0iI2YwMCI+PHBhdGggZD0iTTEsMiAxMCwxMSAxMSwxMCAyLDEiLz48cGF0aCBkPSJNMTEsMiAyLDExIDEsMTAgMTAsMSIvPjwvc3ZnPg==') }
 .pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 0.25em }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }

@@ -14,7 +14,6 @@
 		"function-name-case": "lower",
 		"function-parentheses-newline-inside": "never-multi-line",
 		"function-parentheses-space-inside": "never",
-		"function-url-data-uris": "never",
 		"function-url-quotes": "always",
 		"function-whitespace-after": "always",
 		"number-leading-zero": "always",

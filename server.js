@@ -96,7 +96,7 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 			try {
 				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
 			} catch (e) {
-				console.log(e);
+				console.error(e);
 			}
 		}
 	}
@@ -124,7 +124,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + "; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
-			"img-src " + (config.HTTP2 ? 'https:' : 'http:');
+			"img-src " + (config.HTTP2 ? 'https:' : 'http:') + " data:";
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
@@ -507,7 +507,7 @@ let serverHandler = o(function*(req, res) {
 							};
 							res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
-					} catch (e) {console.log(e);
+					} catch (e) {
 						yield respondPage('Login Error', user, req, res, yield, {}, 500);
 						res.write('<h1>Login Error</h1>');
 						res.write('<p>An invalid response was recieved from the GitHub API. ' + tryagain + '</p>');

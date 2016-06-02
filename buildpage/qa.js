@@ -147,13 +147,13 @@ module.exports = o(function*(req, res, user) {
 							res.write('<h2>Revision ' + (revcount - revnum) + ': ' + item.event + '</h2>');
 							let deletersstr = '';
 							if (item.user) deletersstr = '<a href="/user/' + item.user + '" target="_blank">' + item.user + '</a>';
-							else if (item.by && (question.user == user.name || user.level >= 4)) {console.log('a');
+							else if (item.by && (question.user == user.name || user.level >= 4)) {
 								let i = item.by.length;
 								while (i--) {
 									deletersstr += '<a href="/user/' + item.by[i] + '">' + item.by[i] + '</a>';
 									if (i == 1) deletersstr += ', and ';
 									else if (i) deletersstr += ', ';
-								}console.log('b');
+								}
 							}
 							res.write('<p class="indt"><time datetime="' + new Date(item.time).toISOString() + '"></time>' + (deletersstr ? ' by ' + deletersstr : '') + '</p>');
 							if (item.event == 'edit') {
