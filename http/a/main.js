@@ -413,15 +413,17 @@ function updateTimes() {
 	}
 }
 
+function markreadRequest() {
+	request('/api/me/clearnotifs', function(res) {
+		if (res != 'Success') return alert(res);
+		document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2)').classList.remove('unread');
+		document.getElementById('notifs').innerHTML = '';
+	});
+}
+
 addEventListener('DOMContentLoaded', function() {
 	var markread = document.getElementById('markread');
-	if (markread) markread.onclick = function() {
-		request('/api/me/clearnotifs', function(res) {
-			if (res != 'Success') return alert(res);
-			document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2)').classList.remove('unread');
-			document.getElementById('notifs').innerHTML = '';
-		});
-	};
+	if (markread) markread.addEventListener('click', markreadRequest);
 	var e = document.getElementsByTagName('textarea'),
 		i = e.length;
 	while (i--) {
@@ -485,6 +487,8 @@ document.addEventListener('visibilitychange', function() {
 		request('/api/me/notif', function(res) {
 			document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2)').classList.toggle('unread', res);
 			document.getElementById('notifs').innerHTML = res;
+			var markread = document.getElementById('markread');
+			if (markread) markread.addEventListener('click', markreadRequest);
 		});
 	}
 });
