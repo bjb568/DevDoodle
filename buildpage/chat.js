@@ -15,7 +15,7 @@ module.exports = o(function*(req, res, user) {
 				res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>');
 				res.write(markdown(doc.desc));
 				roomnames[doc._id] = doc.name;
-				if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
+				if (doc.type == 'P' || doc.type == 'R') publicRooms.push(doc._id);
 			} else {
 				res.write('<hr />');
 				res.write('<small>');
