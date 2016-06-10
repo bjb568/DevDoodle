@@ -40,6 +40,10 @@ module.exports = o(function*(req, res, user) {
 			} else res.end(yield fs.readFile('html/a/foot.html', yield));
 		});
 		cursor.nextObject(questionSummaryHandler);
+	} else if (req.url.pathname == '/qa/search/') {
+		yield respondPage('Search', user, req, res, yield);
+		res.write(yield fs.readFile('./html/qa/search.html', yield));
+		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
