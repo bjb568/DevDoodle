@@ -125,7 +125,7 @@ module.exports = o(function*(req, res, user, post) {
 			_id: id
 		});
 		res.writeHead(200);
-		res.end('Location: /chat/' + i);
+		res.end('Location: /chat/' + id);
 	} else if (req.url.pathname == '/chat/inviteuser') {
 		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
 		let room = yield dbcs.chatrooms.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
