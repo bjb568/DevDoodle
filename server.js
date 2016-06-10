@@ -59,13 +59,16 @@ global.site = {
 };
 global.typeIcons = {
 	P: '',
-	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16">' +
+	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Read-Only</title>' +
 			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
 		'</svg>',
-	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 -2 10 16" width="10" height="16">' +
+	PP: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Private Program; URL is hidden</title>' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
+		'</svg>',
+	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 -2 10 16" width="10" height="16"><title>Private</title>' +
 			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
 		'</svg>',
-	M: ' <span class="diamond private">♦</span>'
+	M: ' <span class="diamond private" title="Moderator-Only">♦</span>'
 };
 global.html = essentials.html;
 global.inlineMarkdown = essentials.inlineMarkdown;

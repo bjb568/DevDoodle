@@ -168,7 +168,7 @@ module.exports = o(function*(req, res, user) {
 								.replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								).replace('$title', html(program.title || 'Untitled') + typeIcons.PP.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
 								.replaceAll('$raw-title', html(program.title || 'Untitled'))
 								.replace('$comments', commentstr).replaceAll(
 									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],
