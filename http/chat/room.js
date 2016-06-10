@@ -1,7 +1,7 @@
 'use strict';
 var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
-	roomID = location.pathname.match(/\d+/)[0],
+	roomID = location.pathname.substr(6),
 	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	rawdesc = document.getElementById('descedit').value,

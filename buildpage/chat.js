@@ -15,7 +15,7 @@ module.exports = o(function*(req, res, user) {
 				res.write('<h2 class="title"><a href="' + doc._id + '">' + doc.name + typeIcons[doc.type] + '</a></h2>');
 				res.write(markdown(doc.desc));
 				roomnames[doc._id] = doc.name;
-				if (doc.type == 'P' || doc.type == 'R' || doc.type == 'M') publicRooms.push(doc._id);
+				if (doc.type == 'P' || doc.type == 'R') publicRooms.push(doc._id);
 			} else {
 				res.write('<hr />');
 				res.write('<small>');
@@ -63,8 +63,8 @@ module.exports = o(function*(req, res, user) {
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
-	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
-		let doc = yield dbcs.chatrooms.findOne({_id: parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/chat\/([a-zA-Z\d_!@]+)$/)) {
+		let doc = yield dbcs.chatrooms.findOne({_id: i[1]}, yield);
 		if (!doc) return errorNotFound(req, res, user);
 		if (req.url.query && typeof(req.url.query.access) == 'string') {
 			if (!doc.invited.includes(user.name)) return errorForbidden(req, res, user, 'You don\'t have permission to control access to this room.');

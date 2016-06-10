@@ -90,8 +90,8 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
-		let program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/dev\/([a-zA-Z\d_!@]+)$/)) {
+		let program = yield dbcs.programs.findOne({_id: i[1]}, yield);
 		if (!program) return errorNotFound(req, res, user);
 		let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield);
 		if (program.deleted) {
@@ -168,7 +168,7 @@ module.exports = o(function*(req, res, user) {
 								.replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
-								).replace('$title', html(program.title || 'Untitled') + typeIcons.R.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
+								).replace('$title', html(program.title || 'Untitled') + typeIcons.PP.replace('viewBox', program.private ? 'viewBox' : 'hidden="" viewBox'))
 								.replaceAll('$raw-title', html(program.title || 'Untitled'))
 								.replace('$comments', commentstr).replaceAll(
 									['$mine', '$rep', '$op-name', '$op-rep', '$op-pic'],

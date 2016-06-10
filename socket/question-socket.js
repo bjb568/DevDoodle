@@ -1,7 +1,7 @@
 'use strict';
 let socketUtil = require('../sockets.js').util;
 module.exports = o(function*(tws, wss, i) {
-	if (!(yield dbcs.questions.findOne({_id: tws.question = parseInt(i[1])}, yield))) return tws.trysend(JSON.stringify({
+	if (!(yield dbcs.questions.findOne({_id: tws.question = i[1]}, yield))) return tws.trysend(JSON.stringify({
 		event: 'err',
 		body: 'Question not found.'
 	}));
@@ -46,7 +46,7 @@ module.exports = o(function*(tws, wss, i) {
 				body: 'Invalid language.'
 			}));
 			dbcs.posthistory.insert({
-				q: question._id,
+				question: question._id,
 				event: 'edit',
 				user: tws.user.name,
 				comment: message.comment.substr(0, 288),
@@ -54,7 +54,7 @@ module.exports = o(function*(tws, wss, i) {
 				title: question.title,
 				lang: question.lang,
 				description: question.description,
-				question: question.question,
+				qquestion: question.question,
 				code: question.code,
 				type: question.type,
 				tags: question.tags
@@ -138,7 +138,7 @@ module.exports = o(function*(tws, wss, i) {
 				event: 'err',
 				body: 'Comment length may not exceed 720 characters.'
 			}));
-			let id = ((yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+			let id = generateID();
 			let tcomment = {
 				_id: id,
 				body: message.body,
@@ -146,7 +146,7 @@ module.exports = o(function*(tws, wss, i) {
 				time: new Date().getTime(),
 				question: tws.question
 			};
-			if (!isNaN(parseInt(message.answer))) tcomment.answer = parseInt(message.answer);
+			tcomment.answer = message.answer.toString();
 			dbcs.comments.insert(tcomment);
 			for (let i in wss.clients) {
 				if (wss.clients[i].question == tws.question) {

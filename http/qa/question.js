@@ -1,7 +1,7 @@
 'use strict';
 var myRep = parseInt(document.getElementById('rep').value),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
-	id = parseInt(location.href.match(/\d+/)[0]),
+	id = location.pathname.substr(4),
 	langs = JSON.parse(document.getElementById('langs').value),
 	langsug = document.getElementById('langsug'),
 	lang = document.getElementById('lang-edit'),
