@@ -29,11 +29,11 @@ module.exports.init = function(server) {
 		};
 		if (tws.upgradeReq.url == '/test') {
 			testSocket(tws, wss);
-		} else if ((i = tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)/))) {
 			chatSocket(tws, wss, i);
-		} else if ((i = tws.upgradeReq.url.match(/\/dev\/([a-zA-Z\d!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/dev\/([a-zA-Z\d_!@]+)/))) {
 			programSocket(tws, wss, i);
-		} else if ((i = tws.upgradeReq.url.match(/\/q\/([a-zA-Z\d!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/q\/([a-zA-Z\d_!@]+)/))) {
 			questionSocket(tws, wss, i);
 		} else tws.trysend(JSON.stringify({
 			event: 'err',

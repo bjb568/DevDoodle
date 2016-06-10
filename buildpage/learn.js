@@ -13,7 +13,7 @@ module.exports = o(function*(req, res, user) {
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
-	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d!@]+)\/$/)) {
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)\/$/)) {
 		let post = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 		if (!post) return errorNotFound(req, res, user);
 		yield respondPage(post.title, user, req, res, yield);
@@ -30,7 +30,7 @@ module.exports = o(function*(req, res, user) {
 			res.write(yield addVersionNonces('<script src="/learn/my-course-slides.js" async=""></script>', req.url.pathname, yield));
 		}
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d!@]+)\/(\d+)$/)) {
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)\/(\d+)$/)) {
 		let lesson = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 		if (!lesson) return errorNotFound(req, res, user);
 		let post = lesson.content[--i[2]];

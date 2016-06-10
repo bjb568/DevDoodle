@@ -84,7 +84,7 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/qa\/([a-zA-Z\d!@]+)$/)) {
+	} else if (i = req.url.pathname.match(/^\/qa\/([a-zA-Z\d_!@]+)$/)) {
 		let question = yield dbcs.questions.findOne({_id: i[1]}, yield);
 		if (!question) return errorNotFound(req, res, user);
 		if (question.deleted) {
