@@ -258,6 +258,7 @@ const buildpageServers = [
 	['/mod/', require('./buildpage/mod.js')],
 	['/', require('./buildpage/home.js')]
 ];
+const sitemapServer = require('./buildpage/sitemap.js');
 let apiServer = require('./api.js');
 
 let cache = {},
@@ -611,7 +612,8 @@ let serverHandler = o(function*(req, res) {
 		);
 		res.write('</ul>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (req.url.pathname.includes('.')) {
+	} else if (req.url.pathname == '/sitemap.xml') sitemapServer(req, res);
+	else if (req.url.pathname.includes('.')) {
 		let stats;
 		try {
 			stats = yield fs.stat('./http/' + req.url.pathname, yield);

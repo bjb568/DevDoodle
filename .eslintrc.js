@@ -82,7 +82,7 @@ module.exports = {
 		"keyword-spacing": ["error"],
 		"linebreak-style": ["error"],
 		"max-depth": ["error", 8],
-		"max-nested-callbacks": ["error", 4],
+		"max-nested-callbacks": ["error", 5],
 		"max-statements-per-line": ["error", {"max": 2}],
 		"new-cap": ["error"],
 		"new-parens": ["error"],
