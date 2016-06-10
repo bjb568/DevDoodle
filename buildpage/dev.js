@@ -90,8 +90,8 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/dev\/(\d+)$/)) {
-		let program = yield dbcs.programs.findOne({_id: i = parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/dev\/([a-zA-Z\d!@]+)$/)) {
+		let program = yield dbcs.programs.findOne({_id: i[1]}, yield);
 		if (!program) return errorNotFound(req, res, user);
 		let forkedFrom = yield dbcs.programs.findOne({_id: program.fork || 0}, yield);
 		if (program.deleted) {

@@ -1,20 +1,5 @@
 'use strict';
-String.prototype.replaceAll = function(find, replace) {
-	if (typeof find == 'string') return this.split(find).join(replace);
-	let t = this, i, j;
-	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
-	return t;
-};
-String.prototype.repeat = function(num) {
-	return new Array(++num).join(this);
-};
-Number.prototype.bound = function(l, h) {
-	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
-};
-
-global.o = require('yield-yield');
-global.config = require('./config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
-
+require('./utility/essentials.js');
 require('colors');
 let http = require('http'),
 	https = require('https'),
@@ -28,8 +13,8 @@ let http = require('http'),
 	querystring = require('querystring'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
-	essentials = require('./utility/essentials.js'),
 	mongo = require('mongodb').MongoClient;
+global.dbcs = {};
 const usedDBCs = [
 	'users',
 	'questions',
@@ -46,35 +31,6 @@ const usedDBCs = [
 	'votes',
 	'lessons'
 ];
-
-global.site = {
-	name: 'DevDoodle',
-	titles: {
-		learn: 'Courses',
-		dev: 'Programs',
-		qa: 'Q&amp;A',
-		chat: 'Chat',
-		mod: 'Moderation'
-	}
-};
-global.typeIcons = {
-	P: '',
-	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Read-Only</title>' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
-		'</svg>',
-	PP: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Private Program; URL is hidden</title>' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
-		'</svg>',
-	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 -2 10 16" width="10" height="16"><title>Private</title>' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
-		'</svg>',
-	M: ' <span class="diamond private" title="Moderator-Only">♦</span>'
-};
-global.html = essentials.html;
-global.inlineMarkdown = essentials.inlineMarkdown;
-global.markdown = essentials.markdown;
-global.mime = essentials.mime;
-global.dbcs = {};
 
 global.githubAuth = '{}';
 try {
@@ -370,7 +326,7 @@ let serverHandler = o(function*(req, res) {
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+						let id = generateID();
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,

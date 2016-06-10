@@ -84,9 +84,9 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
-		let question = yield dbcs.questions.findOne({_id: parseInt(i[1])}, yield);
-		if (!question) return errorNotFound[404](req, res, user);
+	} else if (i = req.url.pathname.match(/^\/qa\/([a-zA-Z\d!@]+)$/)) {
+		let question = yield dbcs.questions.findOne({_id: i[1]}, yield);
+		if (!question) return errorNotFound(req, res, user);
 		if (question.deleted) {
 			yield respondPage('[Deleted]', user, req, res, yield, {inhead: '<script src="deleted-question.js"></script>'}, 404);
 			if (question.deleted.by.length == 1 && question.deleted.by == question.user && question.user == user.name) {
@@ -122,7 +122,7 @@ module.exports = o(function*(req, res, user) {
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
 		);
-		let revcursor = dbcs.posthistory.find({q: question._id}).sort({time: -1}),
+		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
 		revcount = yield revcursor.count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
@@ -188,7 +188,7 @@ module.exports = o(function*(req, res, user) {
 								res.write('</details>');
 								res.write('<h2>Core Question:</h2>');
 								res.write('<code class="blk">');
-								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
+								writeDiff(item.qquestion + '\nType: ' + item.type, prev.qquestion + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
 								let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));

@@ -1,7 +1,7 @@
 'use strict';
 if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = (document.getElementById('mine') || {}).value == '1',
-	id = parseInt((document.getElementById('id') || {}).value),
+	id = (document.getElementById('id') || {}).value,
 	opName = (document.getElementById('user') || {}).value,
 	myRep = parseInt((document.getElementById('rep') || {}).value),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,

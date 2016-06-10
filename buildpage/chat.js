@@ -63,8 +63,8 @@ module.exports = o(function*(req, res, user) {
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
-	} else if (i = req.url.pathname.match(/^\/chat\/(\d+)$/)) {
-		let doc = yield dbcs.chatrooms.findOne({_id: parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/chat\/([a-zA-Z\d!@]+)$/)) {
+		let doc = yield dbcs.chatrooms.findOne({_id: i[1]}, yield);
 		if (!doc) return errorNotFound(req, res, user);
 		if (req.url.query && typeof(req.url.query.access) == 'string') {
 			if (!doc.invited.includes(user.name)) return errorForbidden(req, res, user, 'You don\'t have permission to control access to this room.');
