@@ -127,7 +127,7 @@ if (document.getElementById('meta')) {
 					edit.value = title.textContent;
 				} else if (res == 'Success') {
 					edit.hidden = true;
-					document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
+					document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' · Programs · DevDoodle';
 					if (!edit.value) edit.value = 'Untitled';
 					title.hidden = false;
 				} else alert('Unknown error. Response was: ' + res);
