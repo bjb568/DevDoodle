@@ -26,23 +26,23 @@ module.exports = function(req, res) {
 		res.write('</url>');
 	}
 	for (let page of pages) writePage(page);
-	dbcs.lessons.find({}, {content: true}).each(function(err, lesson) {
+	dbcs.lessons.find({}, {content: true, updated: true}).each(function(err, lesson) {
 		if (err) throw err;
 		if (lesson) {
-			writePage({loc: '/learn/unoff/' + lesson._id + '/', changefreq: 'daily', priority: 0.4});
+			writePage({loc: '/learn/unoff/' + lesson._id + '/', changefreq: 'daily', lastmod: new Date(lesson.updated), priority: 0.4});
 			for (let n = 1; n <= lesson.content.length; n++) writePage({loc: '/learn/unoff/' + lesson._id + '/' + n, changefreq: 'daily', priority: 0.3});
 		} else dbcs.programs.find({
 			deleted: {$exists: false},
 			private: false
-		}, {_id: true}).each(function(err, program) {
+		}, {updated: true}).each(function(err, program) {
 			if (err) throw err;
-			if (program) writePage({loc: '/dev/' + program._id, changefreq: 'daily', priority: 0.3});
+			if (program) writePage({loc: '/dev/' + program._id, changefreq: 'daily', lastmod: new Date(program.updated), priority: 0.3});
 			else dbcs.questions.find({deleted: {$exists: false}}, {_id: true}).each(function(err, question) {
 				if (err) throw err;
 				if (question) writePage({loc: '/qa/' + question._id, changefreq: 'daily', priority: 0.3});
 				else dbcs.chatrooms.find({type: {$in: ['P', 'R']}}, {_id: true}).each(function(err, room) {
 					if (err) throw err;
-					if (room) writePage({loc: '/chat/' + room._id, changefreq: 'daily', priority: 0.2});
+					if (room) writePage({loc: '/chat/' + room._id, changefreq: 'hourly', priority: 0.2});
 					else dbcs.users.find({}, {name: true}).each(function(err, duser) {
 						if (err) throw err;
 						if (duser) writePage({loc: '/user/' + duser.name, changefreq: 'daily', priority: 0.4});
