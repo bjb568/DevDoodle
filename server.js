@@ -322,7 +322,8 @@ let serverHandler = o(function*(req, res) {
 									validate: post.validate || '',
 									html: post.html || ''
 								}
-							}
+							},
+							$set: {updated: new Date().getTime()}
 						});
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
