@@ -14,7 +14,7 @@ module.exports = function(req, res) {
 		['/learn/', '/learn/web/', '/learn/ssj/', '/learn/debug/', '/learn/quality/', '/dev/new/', '/dev/new/html', '/dev/new/canvas', '/dev/new/text', '/dev/docs/', '/dev/docs/shapes/line-func', '/dev/docs/shapes/rect-func', '/dev/docs/shapes/point-func', '/dev/docs/shapes/ellipse-func', '/dev/docs/text/text-func', '/dev/docs/text/textalign-func', '/dev/docs/text/font-func', '/dev/docs/fill/fill-func', '/dev/docs/fill/stroke-func', '/dev/docs/fill/bg-func', '/dev/docs/fill/strokewidth-func', '/dev/docs/fill/rgb-func', '/dev/docs/fill/hsl-func', '/dev/docs/fill/trans-none', '/dev/docs/draw/draw-loop', '/dev/docs/draw/framerate', '/dev/docs/mouse/mousex-y', '/dev/docs/mouse/mousepressed', '/dev/docs/keyboard/keycodes', '/dev/docs/keyboard/key', '/dev/docs/math/global-math', '/dev/docs/math/rand-func', '/dev/docs/math/number-proto-bound', '/dev/docs/console/print-func', '/dev/docs/console/resetlog-func', '/dev/docs/canvas/size-func', '/dev/docs/canvas/width-height', '/dev/docs/canvas/canvas-ctx', '/qa/ask']
 	];
 	let freqs = ['hourly', 'daily', 'weekly', 'monthly'];
-	let pages = [];
+	let pages = [{loc: '/formatting', changefreq: 'monthly', priority: 0.1}];
 	for (let a in locs) for (let n in locs[a]) pages.push({loc: locs[a][n], changefreq: freqs[a]});
 	for (let learnLoc in learnLocs) for (let n = 1; n <= learnLocs[learnLoc]; n++) pages.push({loc: '/learn/' + learnLoc + '/' + n, changefreq: 'monthly'});
 	function writePage(page) {
