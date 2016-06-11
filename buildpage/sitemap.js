@@ -1,5 +1,6 @@
 'use strict';
 module.exports = function(req, res) {
+	res.writeHead(200, {'Content-Type': 'application/xml; charset=utf-8'});
 	res.write('<?xml version="1.0" encoding="UTF-8"?>');
 	res.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
 	let learnLocs = {
@@ -18,7 +19,7 @@ module.exports = function(req, res) {
 	for (let learnLoc in learnLocs) for (let n = 1; n <= learnLocs[learnLoc]; n++) pages.push({loc: '/learn/' + learnLoc + '/' + n, changefreq: 'monthly'});
 	function writePage(page) {
 		res.write('<url>');
-		res.write('<loc>' + page.loc + '</loc>');
+		res.write('<loc>' + (config.HTTP2 ? "https://" : "http://") + req.headers.host + page.loc + '</loc>');
 		if (page.lastmod) res.write('<lastmod>' + page.lastmod.toISOString() + '</lastmod>');
 		if (page.changefreq) res.write('<changefreq>' + page.changefreq + '</changefreq>');
 		if (page.priority) res.write('<priority>' + page.priority + '</priority>');
