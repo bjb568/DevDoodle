@@ -2,7 +2,7 @@
 let fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname != '/') return errorNotFound(req, res, user);
-	yield respondPage('', user, req, res, yield);
+	yield respondPage('', user, req, res, yield, {description: 'DevDoodle is a developer network where you can learn languages, create and share your own programs, and ask and answer questions.'});
 	res.write(yield fs.readFile('./html/home.html', yield));
 	res.write('<section class="resp-block">');
 	res.write('<h2 class="underline">Questions</h2>');
