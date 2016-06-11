@@ -66,10 +66,11 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	let query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	let inhead = header.inhead || '',
+	let inhead = (header.inhead || '') + (header.description ? '<meta name="description" content="' + header.description + '" />' : ''),
 		huser = header.user,
 		clean = header.clean;
 	delete header.inhead;
+	delete header.description;
 	delete header.user;
 	delete header.clean;
 	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
