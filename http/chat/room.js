@@ -449,7 +449,7 @@ socket.onmessage = function(e) {
 		if (!document.getElementById('ts').hidden) tsMode = true;
 		if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	} else if (data.event == 'info-update') {
-		document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
+		document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' · Chat · DevDoodle';
 		document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
 	} else if (data.event == 'notice') {
 		alert(data.body || 'Error: No notice body specified.');

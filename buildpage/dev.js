@@ -39,7 +39,13 @@ module.exports = o(function*(req, res, user) {
 				recent: {created: -1},
 				update: {updated: -1}
 			};
-		dbcs.programs.find({deleted: {$exists: false}}).sort(sortDict[sort] || sortDict.default).limit(720).each(o(function*(err, data) {
+		dbcs.programs.find({
+			deleted: {$exists: false},
+			$or: [
+				{private: false},
+				{user: user.name}
+			]
+		}).sort(sortDict[sort] || sortDict.default).limit(720).each(o(function*(err, data) {
 			if (err) throw err;
 			if (data) liststr += '<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>';
 			else {
