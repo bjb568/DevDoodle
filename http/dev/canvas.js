@@ -28,7 +28,7 @@ addEventListener('keypress', function(e) {
 	handleTA();
 });
 //var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || null; //3D, anyone?
-var none = 'transparent', trans = none,
+var trans = 'transparent', none = trans,
 	enabledFullScreen = false,
 	suppressKeyboard = false,
 	requestEnableFullScreen = new Error('No fullscreen capability'),
@@ -84,14 +84,14 @@ function hsl(h, s, l, a) {
 	return 'hsla(' + round(h) + ',' + round(s) + '%,' + round(l) + '%,' + (a === undefined ? 1 : a) + ')';
 }
 function fill(color, g, b) {
-	ctx.fillStyle = trans;
+	ctx.fillStyle = none;
 	if (color >= 0) {
 		if (b >= 0) ctx.fillStyle = rgb(color, g, b);
 		else ctx.fillStyle = rgb(color, color, color);
 	} else ctx.fillStyle = color;
 }
 function stroke(color, g, b) {
-	ctx.strokeStyle = trans;
+	ctx.strokeStyle = none;
 	if (color >= 0) {
 		if (b >= 0) ctx.strokeStyle = rgb(color, g, b);
 		else ctx.strokeStyle = rgb(color, color, color);

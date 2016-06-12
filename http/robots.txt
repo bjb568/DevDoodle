@@ -1,2 +1,3 @@
+Sitemap: https://devdoodle.net/sitemap.xml
 User-agent: *
 Disallow: /api/
