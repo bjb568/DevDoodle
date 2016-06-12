@@ -2,30 +2,30 @@
 <div id="main" class="row">
 	<div id="ta-cont">
 		<textarea id="code" autofocus="" autocapitalize="none" autocomplete="off" spellcheck="false">/**
- * trans is used to set the default fill, stroke, and background and none is to make shapes have a transparent fill and stroke.
+ * none is used to set the default fill, stroke, and background and trans is to make shapes have a transparent fill and stroke.
 */
 
-//You can set a default fill with the trans variable.
-trans = "#50A070";
-//You must call bg(), fill(), and stroke() after setting trans for trans to work. For now, we're going to just call bg().
+//You can set a default fill with the none variable.
+none = "#50A070";
+//You must call bg(), fill(), and stroke() after setting none for none to work. For now, we're going to just call bg().
 bg();
 
-//trans can also be set in the middle of the program.
+//none can also be set in the middle of the program.
 trans = "#AAEEAA";
 fill();
 stroke();
 rect(50, 50, 100, 100);
-//The fill can still be set, but trans is the default.
+//The fill can still be set, but none is the default.
 fill(0, 17, 0);
 rect(200, 50, 100, 100);
 //To set it back to the default, call fill with no arguments again.
 fill();
 rect(50, 200, 100, 100);
 
-//If you don't set trans, the default background, fill, and stroke becomes none ("transparent").
-fill(none);
+//If you don't set none, the default background, fill, and stroke becomes trans ("transparent").
+fill(trans);
 rect(200, 200, 100, 100);
-//Note: You should not set none to a different value. It is meant to be kept as "transparent".
+//Note: You should not set trans to a different value. It is meant to be kept as "transparent".
 
 /** See also:
  * fill([shade] [r, g, b] [color]): http://devdoodle.net/dev/docs/fill/fill-func
