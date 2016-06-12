@@ -66,7 +66,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	let query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	let inhead = (header.inhead || '') + (header.description ? '<meta name="description" content="' + header.description + '" />' : ''),
+	let inhead = (header.inhead || '') + (header.description ? '<meta name="description" content="' + html(header.description) + '" />' : ''),
 		huser = header.user,
 		clean = header.clean;
 	delete header.inhead;
@@ -255,7 +255,8 @@ let serverHandler = o(function*(req, res) {
 	if (i = statics[req.url.pathname]) {
 		yield respondPage(i.title, user, req, res, yield, {
 			clean: i.clean,
-			inhead: i.inhead
+			inhead: i.inhead,
+			description: i.description
 		});
 		res.write(
 			(yield addVersionNonces((yield fs.readFile(i.path, yield)).toString(), req.url.pathname, yield))
