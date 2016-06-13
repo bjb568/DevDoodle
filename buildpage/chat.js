@@ -3,7 +3,7 @@ let fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/chat/') {
-		yield respondPage('', user, req, res, yield);
+		yield respondPage('', user, req, res, yield, {description: 'Communicate with fellow developers using DevDoodle\'s multi-room real-time chat.'});
 		res.write('<h1>Chat Rooms</h1>');
 		let roomnames = [],
 			publicRooms = [];
@@ -88,7 +88,10 @@ module.exports = o(function*(req, res, user) {
 		} else {
 			if (doc.type == 'N' && !doc.invited.includes(user.name)) return errorForbidden(req, res, user, 'You have not been invited to this private room.');
 			if (doc.type == 'M' && (!user || user.level < 5)) return errorForbidden(req, res, user, 'You must be a moderator to join this room.');
-			yield respondPage(doc.name, user, req, res, yield, {inhead: '<link rel="stylesheet" href="chat.css" />'});
+			yield respondPage(doc.name, user, req, res, yield, {
+				description: doc.desc,
+				inhead: '<link rel="stylesheet" href="chat.css" />'}
+			);
 			let isInvited = doc.type == 'P' || doc.invited.includes(user.name);
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('./html/chat/room.html', yield)).toString(), req.url.pathname, yield))

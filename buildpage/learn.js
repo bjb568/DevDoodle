@@ -3,7 +3,10 @@ let fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/learn/') {
-		yield respondPage('', user, req, res, yield, {inhead: '<link rel="stylesheet" href="learn.css" />'});
+		yield respondPage('', user, req, res, yield, {
+			description: 'Learn a new technology — front-end web, server side javascript, or a new skill like debugging or code quality.',
+			inhead: '<link rel="stylesheet" href="learn.css" />'
+		});
 		let lessonstr = '';
 		dbcs.lessons.find().each(o(function*(err, lesson) {
 			if (err) throw err;
@@ -35,7 +38,11 @@ module.exports = o(function*(req, res, user) {
 		if (!lesson) return errorNotFound(req, res, user);
 		let post = lesson.content[--i[2]];
 		if (!post) return errorNotFound(req, res, user);
-		yield respondPage(post.title, user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+		yield respondPage(post.title, user, req, res, yield, {
+			description: post.sbody.toMetaDescription(),
+			clean: true,
+			inhead: '<link rel="stylesheet" href="/learn/course.css" />'
+		});
 		let isLast = i[2] == lesson.content.length - 1;
 		res.write(
 			(yield addVersionNonces((yield fs.readFile('./html/learn/lesson.html', yield)).toString(), req.url.pathname, yield))
