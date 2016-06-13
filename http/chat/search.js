@@ -6,7 +6,7 @@ var username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2
 	roomlist = document.getElementById('roomlist'),
 	results = document.getElementById('results');
 if (username == 'Log\xa0in') username = false;
-room.addEventListener('keyup', function(e) {
+room.addEventListener('keydown', function(e) {
 	var sel = roomlist.getElementsByClassName('selected');
 	if (e.which == 40) {
 		if (sel.length) {
