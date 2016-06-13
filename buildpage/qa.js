@@ -120,7 +120,10 @@ module.exports = o(function*(req, res, user) {
 		let history = typeof req.url.query.history == 'string';
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
-			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
+			user, req, res, yield, {
+				description: question.description.toMetaDescription(),
+				inhead: '<link rel="stylesheet" href="question.css" />'
+			}
 		);
 		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
 		revcount = yield revcursor.count(yield);

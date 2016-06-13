@@ -8,6 +8,23 @@ String.prototype.replaceAll = function(find, replace) {
 String.prototype.repeat = function(num) {
 	return new Array(++num).join(this);
 };
+String.prototype.toMetaDescription = function() {
+	const max = 150;
+	const min = 100;
+	let ret = '',
+		rem = this,
+		l = 0,
+		s = ['\n', '!', '?', '.', ';', ':', ',', ')', '(', ' '];
+	while (ret.length < max && l < s.length && rem) {
+		let chunk = rem.split(s[l])[0];
+		if (chunk.length < max - ret.length) {
+			rem = rem.substr(chunk.length + 1);
+			ret = (ret + chunk + s[l]).replace(/\s+/g, ' ');
+		} else if (ret.length > min) break;
+		else l++;
+	}
+	return ret;
+};
 Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
