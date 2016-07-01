@@ -14,4 +14,4 @@ script:
   - snyk test
   - nsp check
   - eslint ./
-  - stylelint ./*/*.css ./*/*/*.css -v
+  - stylelint ./*/*.css ./*/*/*.css -f verbose
