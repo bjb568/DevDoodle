@@ -19,7 +19,7 @@
 		"number-leading-zero": "always",
 		"number-max-precision": 3,
 		"number-no-trailing-zeros": true,
-		"number-zero-length-no-unit": true,
+		"length-zero-no-unit": true,
 		"string-no-newline": true,
 		"string-quotes": "single",
 		"unit-case": "lower",
