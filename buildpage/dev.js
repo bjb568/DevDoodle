@@ -146,7 +146,8 @@ module.exports = o(function*(req, res, user) {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield, {
 				description: (program.code || program.html).toMetaDescription(),
 				clean: true,
-				inhead: '<link rel="stylesheet" href="/dev/program.css" />' + (program.type ? ('<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />') : '')
+				inhead: '<link rel="stylesheet" href="/dev/program.css" />' + (program.type ? ('<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />') : ''),
+				pageType: 'SoftwareSourceCode'
 			});
 			let vote = (yield dbcs.votes.findOne({
 				user: user.name,

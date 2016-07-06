@@ -68,11 +68,13 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	if (!header) header = {};
 	let inhead = (header.inhead || '') + (header.description ? '<meta name="description" content="' + html(header.description) + '" />' : ''),
 		huser = header.user,
-		clean = header.clean;
+		clean = header.clean,
+		pageType = header.pageType;
 	delete header.inhead;
 	delete header.description;
 	delete header.user;
 	delete header.clean;
+	delete header.pageType;
 	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (typeof header['Cache-Control'] != 'string') header['Cache-Control'] = 'no-cache';
 	if (typeof header['X-Frame-Options'] != 'string') header['X-Frame-Options'] = 'DENY';
@@ -139,6 +141,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			).replace(
 				'$inhead',
 				(clean ? '<link rel="stylesheet" href="/a/clean.css" />' : '') + inhead
+			).replace(
+				'id="content"',
+				pageType ? 'id="content" typeof="' + pageType + '"' : 'id="content"'
 			).replace(
 				'$bnotifs',
 				(user && user.unread) ? ' class="unread"' : ''

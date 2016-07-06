@@ -1,4 +1,4 @@
-<h1><span id="title">$lang: $title</span><input id="title-edit" value="$title" maxlength="144" hidden="" /></h1>
+<h1><span id="title" property="headline">$lang: $title</span><input id="title-edit" value="$title" maxlength="144" hidden="" /></h1>
 <div id="question" class="hglt pad br">
 	<div class="ctrl pad lft">
 		<a href="" title="This question is clear, answerable, and useful to the community."><svg class="blk up" id="q-up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
@@ -8,7 +8,7 @@
 		<a id="q-delete" class="ctrlicon delbtn" href="" title="Delete…">✕</a>
 	</div>
 	<div id="q-content">
-		<div id="q-body">
+		<div id="q-body" property="text">
 			$description
 			<code class="blk">$code</code>
 			<p><strong>$question</strong></p>
@@ -19,11 +19,11 @@
 				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a id="q-hist" href="?history" class="grey">History ($revcount)</a></small>
 			</div>
 			<div class="rit">
-				<div>Asked <time datetime="$askdate"></time> by</div>
-				<div class="user user-$op-name">
-					<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" />
+				<div>Asked <time datetime="$askdate" property="dateCreated"></time> by</div>
+				<div class="user user-$op-name" property="author" typeof="Person">
+					<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" property="image" />
 					<div>
-						<a href="/user/$op-name">$op-name</a>
+						<a href="/user/$op-name" property="name uri">$op-name</a>
 						<small class="rep">$op-rep</small>
 					</div>
 				</div>
