@@ -122,7 +122,8 @@ module.exports = o(function*(req, res, user) {
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {
 				description: question.description.toMetaDescription(),
-				inhead: '<link rel="stylesheet" href="question.css" />'
+				inhead: '<link rel="stylesheet" href="question.css" />',
+				pageType: 'Question'
 			}
 		);
 		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
@@ -225,10 +226,12 @@ module.exports = o(function*(req, res, user) {
 				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
 				count = yield cursor.count(yield);
 			let answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
-				answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
+				answerstr = '<h2><span property="answerCount">' + count + '</span> Answer' + (count == 1 ? '' : 's') + '</h2>',
+				answerNum = 0;
 			let answerHandler = o(function*(err, answer) {
 				if (err) throw err;
 				if (answer) {
+					answerNum++;
 					let answerVote = (yield dbcs.votes.findOne({
 						user: user.name,
 						answer: answer._id
@@ -241,6 +244,7 @@ module.exports = o(function*(req, res, user) {
 						else {
 							answerstr +=
 								answerTemplate
+								.replace('suggestedAnswer', answerNum == 1 && answer.score > 1 ? 'suggestedAnswer acceptedAnswer' : 'suggestedAnswer')
 								.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 								.replaceAll(
 									['$id', '$user', '$op-rep', '$op-pic'],

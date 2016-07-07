@@ -7,9 +7,9 @@ function commentToString(comment, user) {
 	let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
 		endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|div|>).)+?>)+$/) || [{length: 0}])[0].length;
 	commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
-		'<span class="c-sig">' +
-			'-<a href="/user/' + comment.user + '">' + comment.user + '</a>,' +
-			' <a href="#c' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time></a>' +
+		'<span class="c-sig" property="comment" typeof="Comment">' +
+			'-<a href="/user/' + comment.user + '" property="author">' + comment.user + '</a>,' +
+			' <a href="#c' + comment._id + '" title="Permalink" property="uri"><time datetime="' + new Date(comment.time).toISOString() + '" property="dateCreated"></time></a>' +
 		'</span>' +
 		commentBody.substring(commentBody.length - endTagsLength);
 	return (
