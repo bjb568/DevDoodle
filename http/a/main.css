@@ -17,6 +17,9 @@ body {
 	-moz-box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
 }
+/* stylelint-disable declaration-no-important */
+.preload * { transition: none !important }
+/* stylelint-enable */
 ::-webkit-input-placeholder {
 	color: #555;
 	font-size: 0.85em;

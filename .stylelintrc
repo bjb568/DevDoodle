@@ -82,7 +82,7 @@
 		"at-rule-semicolon-newline-after": "always",
 		"comment-empty-line-before": "never",
 		"comment-whitespace-inside": "always",
-		"comment-word-blacklist": ["/./"],
+		"comment-word-blacklist": ["/^((?!\\bstylelint\\b)[\\s\\S])*$/"],
 		"indentation": "tab",
 		"max-empty-lines": 0,
 		"no-duplicate-selectors": true,
