@@ -143,6 +143,12 @@ for (var i = 0; i < commentForms.length; i++) {
 		this.firstElementChild.value = '';
 		this.lastElementChild.onclick();
 	};
+	commentForms[i].firstElementChild.addEventListener('input', pingsugHandler);
+	commentForms[i].firstElementChild.addEventListener('keypress', pingsugCancelHandler);
+	commentForms[i].firstElementChild.addEventListener('keydown', pingsugCancelHandler);
+	commentForms[i].previousElementSibling.firstElementChild.addEventListener('input', pingsugHandler);
+	commentForms[i].previousElementSibling.firstElementChild.addEventListener('keypress', pingsugCancelHandler);
+	commentForms[i].previousElementSibling.firstElementChild.addEventListener('keydown', pingsugCancelHandler);
 }
 var cResetBtns = document.getElementsByClassName('c-reset');
 for (var i = 0; i < cResetBtns.length; i++) {

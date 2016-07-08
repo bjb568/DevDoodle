@@ -484,28 +484,7 @@ addEventListener('popstate', function(event) {
 	if (socket.readyState != 1) location.reload();
 });
 if (ta) {
-	ta.addEventListener('input', function() {
-		var before = ta.value.substr(0, ta.selectionStart),
-			str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
-			list = document.getElementById('pingsug'),
-			c;
-		while (c = list.firstChild) list.removeChild(c);
-		if (str[0] == '@') {
-			for (var i = users.length - 1; i >= 0; i--) {
-				if (users[i].substr(0, str.length - 1) == str.substr(1)) {
-					var span = document.createElement('span');
-					span.appendChild(document.createTextNode(users[i]));
-					span.onclick = function() {
-						var before = ta.value.substr(0, ta.selectionStart).lastIndexOf('@') + 1;
-						ta.value = ta.value.substr(0, before) + this.textContent + ta.value.substr(ta.selectionStart);
-						ta.focus();
-						ta.selectionEnd = ta.selectionStart = before + this.textContent.length;
-					};
-					list.appendChild(span);
-				}
-			}
-		}
-	});
+	ta.addEventListener('input', pingsugHandler);
 	ta.onkeypress = ta.onkeydown = function(e) {
 		if (e.which == 13 && !e.shiftKey && !e.metaKey) {
 			e.preventDefault();
@@ -605,16 +584,10 @@ if (ta) {
 			btn.textContent = 'Send';
 			this.value = '';
 			cont.scrollTop = cont.scrollHeight;
-		} else if (e.which == 9) {
-			e.preventDefault();
-			this.noHandle = true;
-			var list = document.getElementById('pingsug');
-			if (!list.firstChild) return;
-			var before = this.value.substr(0, this.selectionStart).lastIndexOf('@') + 1;
-			this.value = this.value.substr(0, before) + list.firstChild.textContent + ' ' + this.value.substr(this.selectionStart);
-			this.selectionEnd = this.selectionStart = before + list.firstChild.textContent.length + 1;
 		}
 	};
+	ta.addEventListener('keypress', pingsugCancelHandler);
+	ta.addEventListener('keydown', pingsugCancelHandler);
 }
 function send() {
 	var list = document.getElementById('pingsug'),
