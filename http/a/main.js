@@ -448,6 +448,9 @@ addEventListener('DOMContentLoaded', function() {
 	});
 	applyProgramIframes();
 });
+addEventListener('load', function() {
+	document.body.classList.remove('preload');
+});
 
 function applyProgramIframes() {
 	var e = document.getElementsByClassName('html-program'),

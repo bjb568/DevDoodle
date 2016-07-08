@@ -3,14 +3,7 @@
 	flex-direction: column;
 }
 #outputbox, #output, .ta-cont, #right { flex-grow: 1 }
-.ta-cont {
-	margin: 2px 0;
-	flex-basis: 0;
-}
-.collapsed {
-	flex-basis: 3em;
-	flex-grow: 0.1;
-}
+.ta-cont { margin: 2px 0 }
 #js-cont { margin-bottom: 0 }
 #outputbox { margin-bottom: 2px }
 @media (max-width: 699px) {
@@ -35,4 +28,14 @@
 		width: 50%;
 	}
 	#right { margin-left: 0.5em }
+	.ta-cont {
+		flex-basis: 0;
+		transition: flex-grow 0.5s;
+		flex-grow: 4;
+	}
+	.collapsed {
+		min-height: 3em;
+		flex-grow: 0.4;
+	}
+	.focused:not(.collapsed) { flex-grow: 8 }
 }
