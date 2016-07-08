@@ -22,7 +22,7 @@ module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/qa/') {
 		yield respondPage('', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
-		let cursor = dbcs.questions.find().sort({hotness: -1, time: -1}).limit(288);
+		let cursor = dbcs.questions.find({deleted: {$exists: false}}).sort({hotness: -1, time: -1}).limit(288);
 		let questionSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
 			if (question) {
@@ -40,6 +40,10 @@ module.exports = o(function*(req, res, user) {
 			} else res.end(yield fs.readFile('html/a/foot.html', yield));
 		});
 		cursor.nextObject(questionSummaryHandler);
+	} else if (req.url.pathname == '/qa/search/') {
+		yield respondPage('Search', user, req, res, yield);
+		res.write(yield fs.readFile('./html/qa/search.html', yield));
+		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
@@ -80,9 +84,9 @@ module.exports = o(function*(req, res, user) {
 			)
 		);
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/qa\/(\d+)$/)) {
-		let question = yield dbcs.questions.findOne({_id: parseInt(i[1])}, yield);
-		if (!question) return errorNotFound[404](req, res, user);
+	} else if (i = req.url.pathname.match(/^\/qa\/([a-zA-Z\d_!@]+)$/)) {
+		let question = yield dbcs.questions.findOne({_id: i[1]}, yield);
+		if (!question) return errorNotFound(req, res, user);
 		if (question.deleted) {
 			yield respondPage('[Deleted]', user, req, res, yield, {inhead: '<script src="deleted-question.js"></script>'}, 404);
 			if (question.deleted.by.length == 1 && question.deleted.by == question.user && question.user == user.name) {
@@ -116,9 +120,13 @@ module.exports = o(function*(req, res, user) {
 		let history = typeof req.url.query.history == 'string';
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
-			user, req, res, yield, {inhead: '<link rel="stylesheet" href="question.css" />'}
+			user, req, res, yield, {
+				description: question.description.toMetaDescription(),
+				inhead: '<link rel="stylesheet" href="question.css" />',
+				pageType: 'Question'
+			}
 		);
-		let revcursor = dbcs.posthistory.find({q: question._id}).sort({time: -1}),
+		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
 		revcount = yield revcursor.count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
@@ -184,7 +192,7 @@ module.exports = o(function*(req, res, user) {
 								res.write('</details>');
 								res.write('<h2>Core Question:</h2>');
 								res.write('<code class="blk">');
-								writeDiff(item.question + '\nType: ' + item.type, prev.question + '\nType: ' + prev.type);
+								writeDiff(item.qquestion + '\nType: ' + item.type, prev.qquestion + '\nType: ' + prev.type);
 								res.write('</code>');
 								res.write('<div class="bumar tag-diff">');
 								let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));
@@ -218,10 +226,12 @@ module.exports = o(function*(req, res, user) {
 				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
 				count = yield cursor.count(yield);
 			let answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
-				answerstr = '<h2>' + count + ' Answer' + (count == 1 ? '' : 's') + '</h2>';
+				answerstr = '<h2><span property="answerCount">' + count + '</span> Answer' + (count == 1 ? '' : 's') + '</h2>',
+				answerNum = 0;
 			let answerHandler = o(function*(err, answer) {
 				if (err) throw err;
 				if (answer) {
+					answerNum++;
 					let answerVote = (yield dbcs.votes.findOne({
 						user: user.name,
 						answer: answer._id
@@ -234,6 +244,7 @@ module.exports = o(function*(req, res, user) {
 						else {
 							answerstr +=
 								answerTemplate
+								.replace('suggestedAnswer', answerNum == 1 && answer.score > 1 ? 'suggestedAnswer acceptedAnswer' : 'suggestedAnswer')
 								.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 								.replaceAll(
 									['$id', '$user', '$op-rep', '$op-pic'],

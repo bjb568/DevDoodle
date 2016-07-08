@@ -29,11 +29,11 @@ module.exports.init = function(server) {
 		};
 		if (tws.upgradeReq.url == '/test') {
 			testSocket(tws, wss);
-		} else if ((i = tws.upgradeReq.url.match(/\/chat\/(\d+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)/))) {
 			chatSocket(tws, wss, i);
-		} else if ((i = tws.upgradeReq.url.match(/\/dev\/(\d+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/dev\/([a-zA-Z\d_!@]+)/))) {
 			programSocket(tws, wss, i);
-		} else if ((i = tws.upgradeReq.url.match(/\/q\/(\d+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/q\/([a-zA-Z\d_!@]+)/))) {
 			questionSocket(tws, wss, i);
 		} else tws.trysend(JSON.stringify({
 			event: 'err',
@@ -75,7 +75,7 @@ module.exports.util = {
 			event: 'err',
 			body: 'You must have 20 reputation to vote on comments.'
 		}));
-		let id = parseInt(message.id),
+		let id = message.id.toString(),
 			post = yield dbcs.comments.findOne({
 				_id: id,
 				deleted: {$exists: false}
@@ -114,7 +114,7 @@ module.exports.util = {
 			event: 'err',
 			body: 'You must be logged in to vote on comments.'
 		}));
-		let id = parseInt(message.id),
+		let id = message.id.toString(),
 			post = yield dbcs.comments.findOne({
 				_id: id,
 				deleted: {$exists: false}

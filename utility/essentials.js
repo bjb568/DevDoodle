@@ -1,4 +1,37 @@
 'use strict';
+String.prototype.replaceAll = function(find, replace) {
+	if (typeof find == 'string') return this.split(find).join(replace);
+	let t = this, i, j;
+	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
+	return t;
+};
+String.prototype.repeat = function(num) {
+	return new Array(++num).join(this);
+};
+String.prototype.toMetaDescription = function() {
+	const max = 150;
+	const min = 100;
+	let ret = '',
+		rem = this,
+		l = 0,
+		s = ['\n', '!', '?', '.', ';', ':', ',', ')', '(', ' '];
+	while (ret.length < max && l < s.length && rem) {
+		let chunk = rem.split(s[l])[0];
+		if (chunk.length < max - ret.length) {
+			rem = rem.substr(chunk.length + 1);
+			ret = (ret + chunk + s[l]).replace(/\s+/g, ' ');
+		} else if (ret.length > min) break;
+		else l++;
+	}
+	return ret;
+};
+Number.prototype.bound = function(l, h) {
+	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
+};
+global.o = require('yield-yield');
+global.config = require('../config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
+
+const crypto = require('crypto');
 function html(input) {
 	return input.toString().replaceAll(['&', '<', '>', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&gt;', '&quot;', '&#9;', '&#10;', '']);
 }
@@ -238,19 +271,43 @@ function markdown(input) {
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
 }
+function generateID() {
+	return crypto.randomBytes(21).toString('base64').replaceAll(['+', '/'], ['!', '_']);
+}
 
-module.exports = {
-	html,
-	spanMarkdown,
-	inlineMarkdown,
-	markdown,
-	mime: {
-		'.html': 'text/html',
-		'.css': 'text/css',
-		'.js': 'text/javascript',
-		'.png': 'image/png',
-		'.svg': 'image/svg+xml',
-		'.mp3': 'audio/mpeg',
-		'.ico': 'image/x-icon'
+global.site = {
+	name: 'DevDoodle',
+	titles: {
+		learn: 'Courses',
+		dev: 'Programs',
+		qa: 'Q&amp;A',
+		chat: 'Chat',
+		mod: 'Moderation'
 	}
+};
+global.typeIcons = {
+	P: '',
+	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Read-Only</title>' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
+		'</svg>',
+	PP: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16"><title>Private Program; URL is hidden</title>' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
+		'</svg>',
+	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 -2 10 16" width="10" height="16"><title>Private</title>' +
+			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
+		'</svg>',
+	M: ' <span class="diamond private" title="Moderator-Only">♦</span>'
+};
+global.html = html;
+global.inlineMarkdown = inlineMarkdown;
+global.markdown = markdown;
+global.generateID = generateID;
+global.mime = {
+	'.html': 'text/html',
+	'.css': 'text/css',
+	'.js': 'text/javascript',
+	'.png': 'image/png',
+	'.svg': 'image/svg+xml',
+	'.mp3': 'audio/mpeg',
+	'.ico': 'image/x-icon'
 };

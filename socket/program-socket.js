@@ -1,7 +1,7 @@
 'use strict';
 let socketUtil = require('../sockets.js').util;
 module.exports = o(function*(tws, wss, i) {
-	let program = yield dbcs.programs.findOne({_id: tws.program = parseInt(i[1])}, yield);
+	let program = yield dbcs.programs.findOne({_id: tws.program = i[1]}, yield);
 	if (!program) return tws.trysend(JSON.stringify({
 		event: 'err',
 		body: 'Program not found.'
@@ -34,7 +34,7 @@ module.exports = o(function*(tws, wss, i) {
 				event: 'err',
 				body: 'Comment length may not exceed 720 characters.'
 			}));
-			let id = ((yield dbcs.comments.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+			let id = generateID();
 			dbcs.comments.insert({
 				_id: id,
 				body: message.body,

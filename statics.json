@@ -1,221 +1,260 @@
 {
 	"/legal/tos": {
 		"path": "./html/legal/tos.html",
-		"title": "Terms of Use"
+		"title": "Terms of Use",
+		"description": "By creating an account on DevDoodle, you agree to be bound by these terms of use."
 	},
 	"/legal/privacy": {
 		"path": "./html/legal/privacy.html",
-		"title": "Privacy Policy"
+		"title": "Privacy Policy",
+		"description": "Personally identifiable information is only collected by DevDoodle when it is provided directly by a user posting to the site."
 	},
 	"/formatting": {
 		"path": "./html/formatting.html",
 		"title": "Formatting",
-		"inhead": "<link rel=\"stylesheet\" href=\"formatting.css\" />"
+		"inhead": "<link rel=\"stylesheet\" href=\"formatting.css\" />",
+		"description": "Our markdown-inspired formatting parser allows you to add formatting to your post such as emphasis and code."
 	},
 	"/about": {
 		"path": "./html/about.html",
 		"title": "About",
 		"clean": true,
-		"inhead": "<link rel=\"stylesheet\" href=\"about.css\" />"
+		"inhead": "<link rel=\"stylesheet\" href=\"about.css\" />",
+		"description": "DevDoodle is a free universal repository of programming knowledge for programmers of all languages."
 	},
 	"/chat/newroom": {
 		"path": "./html/chat/create-room.html",
 		"title": "Create Room",
-		"inhead": "<link rel=\"stylesheet\" href=\"chat.css\" />"
+		"inhead": "<link rel=\"stylesheet\" href=\"chat.css\" />",
+		"description": "Create a new chatroom on DevDoodle."
 	},
 	"/qa/tips/": {
 		"path": "./html/qa/tips/tips.html",
-		"title": "Tips"
+		"title": "Tips",
+		"description": "DevDoodle does Q&A a bit different from other sites — it's important to understand the differences in our Q&A model to be successful using it."
 	},
 	"/dev/new/": {
 		"path": "./html/dev/new.html",
 		"title": "New",
-		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />"
+		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "Create a new HTML5 canvas, XHTML, or plain text program."
 	},
 	"/dev/docs/": {
 		"path": "./html/dev/docs.html",
-		"title": "Docs"
+		"title": "Docs",
+		"description": "Documentation for canvas.js, DevDoodle's HTML5 canvas library, which includes additional built-in functions and features."
 	},
 	"/dev/docs/shapes/line-func": {
 		"path": "./html/dev/docs/shapes/line-func.html",
 		"title": "line(x1, y1, x2, y2) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The line() function draws a line on the canvas based on the 2 coordinates passed to it.",
 		"clean": true
 	},
 	"/dev/docs/shapes/rect-func": {
 		"path": "./html/dev/docs/shapes/rect-func.html",
 		"title": "rect(x, y, h, w) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The rect() function draws a rectangle based on a top-left corner coordinate, width, and height passed by arguments.",
 		"clean": true
 	},
 	"/dev/docs/shapes/point-func": {
 		"path": "./html/dev/docs/shapes/point-func.html",
 		"title": "point(x,y) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The point() function draws a point with size specified by strokeWidth() at the coordinates passed into it.",
 		"clean": true
 	},
 	"/dev/docs/shapes/ellipse-func": {
 		"path": "./html/dev/docs/shapes/ellipse-func.html",
 		"title": "ellipse(cx, cy, rx, ry) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The ellipse() function draws ovals (and circles) on the canvas with a center and horizontal and vertical radii according to the arguments are passed in.",
 		"clean": true
 	},
 	"/dev/docs/text/text-func": {
 		"path": "./html/dev/docs/text/text-func.html",
 		"title": "text(x, y, t) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The text() function draws text on the canvas at the coordinates passed into the function.",
 		"clean": true
 	},
 	"/dev/docs/text/textalign-func": {
 		"path": "./html/dev/docs/text/textalign-func.html",
 		"title": "textAlign(h, v) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The textAlign() function aligns the text, specifying where (relative to the point passed into text()) the text will be drawn.",
 		"clean": true
 	},
 	"/dev/docs/text/font-func": {
 		"path": "./html/dev/docs/text/font-func.html",
 		"title": "font(f) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The font() function sets the font of text drawn on the canvas. The string passed to font is in the same format as the font CSS property.",
 		"clean": true
 	},
 	"/dev/docs/fill/fill-func": {
 		"path": "./html/dev/docs/fill/fill-func.html",
 		"title": "fill([shade] [r, g, b] [color]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The fill() function is used to set the fill of shapes and text to be drawn on the canvas.",
 		"clean": true
 	},
 	"/dev/docs/fill/stroke-func": {
 		"path": "./html/dev/docs/fill/stroke-func.html",
 		"title": "stroke([shade] [r, g, b] [color]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The stroke() function is used to set the stroke of shapes and text and the color of lines to be drawn on the canvas.",
 		"clean": true
 	},
 	"/dev/docs/fill/bg-func": {
 		"path": "./html/dev/docs/fill/bg-func.html",
 		"title": "bg([shade] [r, g, b] [color]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The bg() function draws a background on the (entire) canvas.",
 		"clean": true
 	},
 	"/dev/docs/fill/strokewidth-func": {
 		"path": "./html/dev/docs/fill/strokewidth-func.html",
 		"title": "strokeWidth(w) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The strokeWidth() function is used to set the stroke width of shapes, lines, and text.",
 		"clean": true
 	},
 	"/dev/docs/fill/rgb-func": {
 		"path": "./html/dev/docs/fill/rgb-func.html",
 		"title": "rgb(r, g, b[, a]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The rgb() function(red, green, blue) returns a string containing the CSS color that can then be passed to functions like fill and stroke.",
 		"clean": true
 	},
 	"/dev/docs/fill/hsl-func": {
 		"path": "./html/dev/docs/fill/hsl-func.html",
 		"title": "hsl(r, g, b[, a]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The hsl() function(hue, saturation, lightness) returns a string containing the CSS color that can then be passed to functions like fill and stroke.",
 		"clean": true
 	},
 	"/dev/docs/fill/trans-none": {
 		"path": "./html/dev/docs/fill/trans-none.html",
 		"title": "trans and none · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The hsl() function(hue, saturation, lightness) returns a string containing the CSS color that can then be passed to functions like fill and stroke.",
 		"clean": true
 	},
 	"/dev/docs/draw/draw-loop": {
 		"path": "./html/dev/docs/draw/draw-loop.html",
 		"title": "draw() loop · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "none is used to set the default fill, stroke, and background; trans is to make shapes have a transparent fill and stroke.",
 		"clean": true
 	},
 	"/dev/docs/draw/framerate": {
 		"path": "./html/dev/docs/draw/framerate.html",
 		"title": "frameRate · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "frameRate is the number of times the draw loop is called every second.",
 		"clean": true
 	},
 	"/dev/docs/mouse/mousex-y": {
 		"path": "./html/dev/docs/mouse/mousex-y.html",
 		"title": "mouseX and mouseY · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The mouseX and mouseY variables store how many pixels the mouse is from the top-left corner of the canvas horizontally and vertically, respectively.",
 		"clean": true
 	},
 	"/dev/docs/mouse/mousepressed": {
 		"path": "./html/dev/docs/mouse/mousepressed.html",
 		"title": "mousePressed · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "mousePressed stores whether or not the mouse is currently being pressed on the canvas.",
 		"clean": true
 	},
 	"/dev/docs/keyboard/keycodes": {
 		"path": "./html/dev/docs/keyboard/keycodes.html",
 		"title": "keyCodes object · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "keyCodes is an object (not an array) that keeps track of what keys are and aren't being pressed.",
 		"clean": true
 	},
 	"/dev/docs/keyboard/key": {
 		"path": "./html/dev/docs/keyboard/key.html",
 		"title": "key variable · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "key contains the characters entered in the last draw() loop.",
 		"clean": true
 	},
 	"/dev/docs/math/global-math": {
 		"path": "./html/dev/docs/math/global-math.html",
 		"title": "Globally-scoped Math · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "All properties and methods of Math in addition to some added functions are applied to the global scope.",
 		"clean": true
 	},
 	"/dev/docs/math/rand-func": {
 		"path": "./html/dev/docs/math/rand-func.html",
 		"title": "rand([x[, y]]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The rand() function returns a pseudorandom number with bounds based on the arguments passed in.",
 		"clean": true
 	},
 	"/dev/docs/math/number-proto-bound": {
 		"path": "./html/dev/docs/math/number-proto-bound.html",
 		"title": "Number.prototype.bound(l[, h]) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "In the DevDoodle Canvas Library, all numbers have a .bound() method that constrains that number to an upper and lower bound.",
 		"clean": true
 	},
 	"/dev/docs/console/print-func": {
 		"path": "./html/dev/docs/console/print-func.html",
 		"title": "print(input) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The print() function prints text to the console under the canvas.",
 		"clean": true
 	},
 	"/dev/docs/console/resetlog-func": {
 		"path": "./html/dev/docs/console/resetlog-func.html",
 		"title": "resetLog() · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The resetLog() function clears the console that's under the canvas. It takes no arguments.",
 		"clean": true
 	},
 	"/dev/docs/canvas/size-func": {
 		"path": "./html/dev/docs/size/size-func.html",
 		"title": "size(x, y) · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "The size() function sets the size of the canvas. Invoking it clears the canvas.",
 		"clean": true
 	},
 	"/dev/docs/canvas/width-height": {
 		"path": "./html/dev/docs/size/width-height.html",
 		"title": "width and height variables · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "width and height store the dedimensions of the canvas.",
 		"clean": true
 	},
 	"/dev/docs/canvas/canvas-ctx": {
 		"path": "./html/dev/docs/canvas/canvas-ctx.html",
 		"title": "canvas and ctx · Docs",
 		"inhead": "<link rel=\"stylesheet\" href=\"/dev/docs.css\" />",
+		"description": "Advanced canvas functionality can be accesed thru canvas, which represents the canvas element, and ctx, which represents the 2D canvas context.",
 		"clean": true
 	},
 	"/learn/api/": {
 		"path": "./html/learn/api/api.html",
-		"title": "Course Creation APIs"
+		"title": "Course Creation APIs",
+		"description": "APIs used when creating courses, for example Input Validation."
 	},
 	"/learn/api/validation": {
 		"path": "./html/learn/api/validation.html",
-		"title": "Validation API"
+		"title": "Validation API",
+		"description": "Use the validate() function to give a user using your course feedback when they submit their code."
 	},
 	"/learn/web/": {
 		"path": "./html/learn/web/web.html",
 		"title": "Web",
-		"inhead": "<link rel=\"stylesheet\" href=\"../learn.css\" />"
+		"inhead": "<link rel=\"stylesheet\" href=\"../learn.css\" />",
+		"description": "Learn (X)HTML, CSS, and (vanilla) JavaScript web development with progressive enhancement."
 	},
 	"/learn/ssj/": {
 		"path": "./html/learn/ssj/ssj.html",

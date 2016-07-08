@@ -1,7 +1,7 @@
 'use strict';
 var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
-	roomID = location.pathname.match(/\d+/)[0],
+	roomID = location.pathname.substr(6),
 	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	rawdesc = document.getElementById('descedit').value,
@@ -449,7 +449,7 @@ socket.onmessage = function(e) {
 		if (!document.getElementById('ts').hidden) tsMode = true;
 		if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	} else if (data.event == 'info-update') {
-		document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' | Chat | DevDoodle';
+		document.title = (document.getElementById('name').textContent = document.getElementById('nameedit').value = data.name) + ' · Chat · DevDoodle';
 		document.getElementById('desc').innerHTML = markdown(document.getElementById('descedit').value = rawdesc = data.desc);
 	} else if (data.event == 'notice') {
 		alert(data.body || 'Error: No notice body specified.');

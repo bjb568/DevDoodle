@@ -1889,7 +1889,8 @@ function highlightJS(codeBlock, input) {
 			} else {
 				while ('0123456789.'.indexOf(input[i]) != -1) i++;
 				if ((input[i] || '').toLowerCase() == 'e') {
-					if ('+-'.indexOf(input[i])) i++;
+					i++;
+					if ('+-'.indexOf(input[i]) != -1) i++;
 					if ('0123456789'.indexOf(input[i]) == -1) warnings.push([i, 'No exponent found after "e".']);
 					else i++;
 					while ('0123456789.'.indexOf(input[i]) != -1) i++;

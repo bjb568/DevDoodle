@@ -7,7 +7,7 @@ function markdownEscape(input) {
 	});
 }
 module.exports = o(function*(tws, wss, i) {
-	let room = yield dbcs.chatrooms.findOne({_id: tws.room = parseInt(i[1])}, yield);
+	let room = yield dbcs.chatrooms.findOne({_id: tws.room = i[1]}, yield);
 	if (!room) return tws.trysend(JSON.stringify({
 		event: 'err',
 		body: 'Room not found.'
@@ -35,7 +35,7 @@ module.exports = o(function*(tws, wss, i) {
 				{deleted: {$exists: false}},
 				{user: tws.user.name}
 			],
-			_id: {$gt: i = parseInt(tws.upgradeReq.url.match(/\/chat\/(\d+)(\/(\d+))?/)[3]) || 0}
+			_id: {$gt: i = parseInt(tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)(\/(\d+))?/)[3]) || 0}
 		}).count(yield),
 		ts = after > 92 && i,
 		skip = Math.max(0, ts ? count - after - 18 : count - 92);
