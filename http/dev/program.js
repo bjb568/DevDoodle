@@ -9,6 +9,7 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	privitize = document.getElementById('privitize'),
 	isPrivate = document.getElementById('is-private'),
 	edit = document.getElementById('edit-title'),
+	commentForm = document.getElementById('comment'),
 	editCommentForm = document.getElementById('editcomment'),
 	editCommentTA = document.getElementById('comment-edit-ta'),
 	editingComment,
@@ -19,7 +20,12 @@ var mine = (document.getElementById('mine') || {}).value == '1',
 	blinkTimeout,
 	onbeforeunload = function() {
 		return canUnload() ? null : 'You have unsaved code.';
-	};
+	},
+	users = [];
+document.querySelectorAll('[typeof=\'Person\'] [property~=\'name\'], .comment [property~=\'author\']').forEach(function(el) {
+	var user = el.firstChild.nodeValue;
+	if (!users.includes(user) && user != username) users.push(user);
+});
 function insertNodeAtPosition(node, refNode, pos) {
 	if (typeof(refNode.nodeValue) == 'string') refNode.parentNode.insertBefore(node, refNode.nodeValue.length == 1 ? refNode : refNode.splitText(pos));
 	else {
@@ -174,12 +180,12 @@ if (document.getElementById('meta')) {
 		}, 'val=' + (this.classList.contains('clkd') ? 0 : -1));
 	};
 	document.getElementById('addcomment').onclick = function() {
-		setTimeout(function() {
+		requestAnimationFrame(function() {
 			document.getElementById('commentta').focus();
-		}, 0);
+		});
 	};
 	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
-	document.getElementById('comment').onsubmit = function(e) {
+	commentForm.onsubmit = function(e) {
 		e.preventDefault();
 		if (this.firstElementChild.mdValidate(true)) return;
 		socket.send(JSON.stringify({
@@ -189,6 +195,12 @@ if (document.getElementById('meta')) {
 		document.getElementById('commentta').value = '';
 		document.getElementById('c-reset').onclick();
 	};
+	commentForm.children[1].addEventListener('input', pingsugHandler);
+	commentForm.children[1].addEventListener('keypress', pingsugCancelHandler);
+	commentForm.children[1].addEventListener('keydown', pingsugCancelHandler);
+	commentForm.previousElementSibling.children[1].addEventListener('input', pingsugHandler);
+	commentForm.previousElementSibling.children[1].addEventListener('keypress', pingsugCancelHandler);
+	commentForm.previousElementSibling.children[1].addEventListener('keydown', pingsugCancelHandler);
 	document.getElementById('c-reset').onclick = function() {
 		var scrlTop = document.body.scrollTop;
 		location.hash = '';
@@ -319,7 +331,7 @@ function upvoteComment() {
 	this.title = this.classList.toggle('clkd') ? 'Unvote' : 'This comment is useful.';
 	socket.send(JSON.stringify({
 		event: this.classList.contains('clkd') ? 'comment-vote' : 'comment-unvote',
-		id: parseInt(this.parentNode.parentNode.id.substr(1))
+		id: this.parentNode.parentNode.id.substr(1)
 	}));
 }
 function editComment() {
@@ -329,7 +341,7 @@ function editComment() {
 	if (editCommentForm.hidden = s) editingComment = false;
 	else {
 		this.parentNode.parentNode.classList.add('editing');
-		editingComment = parseInt(this.parentNode.parentNode.id.substr(1));
+		editingComment = this.parentNode.parentNode.id.substr(1);
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
 		request('/api/comment/' + editingComment + '/body', function(res) {
@@ -343,10 +355,10 @@ function editComment() {
 	}
 }
 function deleteComment() {
-	if (confirm('Do you want to delete this comment?')) socket.send(JSON.stringify({event: 'comment-delete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
+	if (confirm('Do you want to delete this comment?')) socket.send(JSON.stringify({event: 'comment-delete', id: this.parentNode.parentNode.id.substr(1)}));
 }
 function undeleteComment() {
-	if (confirm('Do you want to undelete this comment?')) socket.send(JSON.stringify({event: 'comment-undelete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
+	if (confirm('Do you want to undelete this comment?')) socket.send(JSON.stringify({event: 'comment-undelete', id: this.parentNode.parentNode.id.substr(1)}));
 }
 function createComment(data) {
 	var div = document.createElement('div');
@@ -389,7 +401,7 @@ function createComment(data) {
 	}
 	var comments = document.getElementById('comments');
 	for (var i = 0; i < comments.children.length; i++) {
-		if (parseInt(comments.children[i].id.substr(1)) > data.id) return comments.insertBefore(div, comments.children[i]);
+		if (new Date(comments.children[i].querySelector('.c-sig time').dateTime).getTime() > data.time) return comments.insertBefore(div, comments.children[i]);
 	}
 	comments.appendChild(div);
 }

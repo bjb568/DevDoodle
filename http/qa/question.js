@@ -9,7 +9,7 @@ var myRep = parseInt(document.getElementById('rep').value),
 	editCommentTA = document.getElementById('comment-edit-ta'),
 	editingComment,
 	users = [];
-document.querySelectorAll('[typeof=\'Person\'] [property=\'name\'], .comment [property=\'author\']').forEach(function(el) {
+document.querySelectorAll('[typeof=\'Person\'] [property~=\'name\'], .comment [property~=\'author\']').forEach(function(el) {
 	var user = el.firstChild.nodeValue;
 	if (!users.includes(user) && user != username) users.push(user);
 });
@@ -110,14 +110,14 @@ document.getElementById('q-delete').onclick = function() {
 	}
 };
 document.getElementById('edit-tags').onchange = function() {
-	setTimeout(function() {
+	requestAnimationFrame(function() {
 		var arr = [],
 			els = document.getElementById('edit-tags').querySelectorAll(':checked');
 		for (var i = 0; i < els.length; i++) {
 			arr.push(els[i].id.substr(3));
 		}
 		document.getElementById('edit-tags-input').value = arr.join(',');
-	}, 0);
+	});
 };
 document.getElementById('answerform').addEventListener('submit', function(e) {
 	e.preventDefault();

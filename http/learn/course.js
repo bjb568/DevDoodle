@@ -115,19 +115,19 @@ function handleTAInput() {
 	lastValue = htmle.value;
 }
 addEventListener('keypress', function() {
-	setTimeout(handleTAInput, 0);
+	requestAnimationFrame(handleTAInput);
 });
 addEventListener('keyup', function() {
-	setTimeout(handleTAInput, 0);
+	requestAnimationFrame(handleTAInput);
 });
 addEventListener('keydown', function() {
-	setTimeout(handleTAInput, 0);
+	requestAnimationFrame(handleTAInput);
 });
 addEventListener('mousedown', function() {
-	setTimeout(handleTAInput, 0);
+	requestAnimationFrame(handleTAInput);
 });
 addEventListener('mousemove', function() {
-	setTimeout(handleTAInput, 0);
+	requestAnimationFrame(handleTAInput);
 });
 addEventListener('input', handleTAInput);
 htmle.onfocus = function() {

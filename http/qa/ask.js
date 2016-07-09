@@ -269,14 +269,14 @@ form.onsubmit = function(e) {
 	}
 };
 tags.onchange = function() {
-	setTimeout(function() {
+	requestAnimationFrame(function() {
 		var arr = [],
 			els = tags.querySelectorAll(':checked');
 		for (var i = 0; i < els.length; i++) {
 			arr.push(els[i].id.substr(3));
 		}
 		document.getElementById('tags-input').value = arr.join();
-	}, 0);
+	});
 };
 document.getElementById('step4').onchange = function() {
 	document.getElementById('showpreview').disabled = !tags.querySelector(':checked');
