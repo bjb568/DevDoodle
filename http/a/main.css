@@ -42,7 +42,7 @@ body {
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
-.noumar, :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(article):not(small):not(blockquote) > :first-child:not(span):not(textarea), .comment > :last-child { margin-top: 0 }
+.noumar, :matches(.pad, .resp-block, .program) h2:first-child, .comment > :matches(:first-child, :last-child) { margin-top: 0 }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .sumar, :not(img) + .desc, .blk, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 3px }
 .umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), .connection-error, #footer, #sidebar { margin-top: 4px }
@@ -51,8 +51,8 @@ body {
 .bmar, .max-width, .error, .half, #notifs li { margin-bottom: 0.4em }
 .indt { margin-left: 2em }
 ul { padding-left: 2em }
-.check-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgZmlsbD0iIzBjMCI+PHBhdGggZD0iTTIsNiA0LDggMTAsMiAxMSwzIDQsMTAgMSw3Ii8+PC9zdmc+') }
-.cross-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgZmlsbD0iI2YwMCI+PHBhdGggZD0iTTEsMiAxMCwxMSAxMSwxMCAyLDEiLz48cGF0aCBkPSJNMTEsMiAyLDExIDEsMTAgMTAsMSIvPjwvc3ZnPg==') }
+.check-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iIzBiMCI+PHBhdGggZD0iTTIuNSw5LjUgNSwxMiAxMy41LDMuNSAxNSw1IDUsMTUgMSwxMSIgLz48L3N2Zz4=') }
+.cross-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2YwMCI+PHBhdGggZD0iTTIsNSAxMywxNiAxNCwxNSAzLDQiIC8+PHBhdGggZD0iTTE0LDUgMywxNiAyLDE1IDEzLDQiIC8+PC9zdmc+') }
 .pad, .notice, a.center-text.blk, .desc, #content, #sidebar, #footer, .error, .popup, code.blk, .comment { padding: 0.25em }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
@@ -172,7 +172,6 @@ li {
 .code-display, #code-display {
 	width: calc(100% - 4px);
 	border-left: 1px solid #444;
-	padding-right: 1px;
 }
 #caret {
 	position: absolute;
@@ -314,11 +313,11 @@ code .browser { color: #9bd }
 	background: rgba(255, 128, 128, 0.95);
 }
 .comment.deleted[id^=c]::before { left: 74px }
-#pingsug {
+#pingsug, .pingsug {
 	position: absolute;
 	margin-top: -1.2em;
 }
-#pingsug span {
+#pingsug span, .pingsug span {
 	background: #ffa;
 	padding: 0.2em;
 	margin: 0 0.15em;
@@ -331,7 +330,7 @@ code .browser { color: #9bd }
 .ctrls :hover { color: #00f }
 .ctrls .star:hover { color: #880 }
 .ctrls .red:hover { color: #f00 }
-.ctrls :first-child.clkd { text-shadow: 1px 1px 1px #000; color: #e80 }
+.ctrls :first-child.clkd { color: #e80 }
 .ctrls :nth-child(2):not(:last-child).clkd { color: #0e0 }
 .ctrls :last-child { font-size: 0.9em }
 .tag {
@@ -496,6 +495,7 @@ h1 {
 	line-height: 1;
 	padding-bottom: 1px;
 	vertical-align: bottom;
+	margin-top: 0;
 }
 .comment h1, hr { border-bottom: none }
 .title { border: none }

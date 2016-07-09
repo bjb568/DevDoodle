@@ -47,8 +47,8 @@ module.exports = o(function*(req, res, user, post) {
 		if (newmail.length > 256) return res.writeHead(400) || res.end('Error: Email address length may not exceed 256 characters.');
 		dbcs.users.update({name: user.name}, {$set: {mail: newmail}});
 		res.writeHead(200);
-	} else if (i = req.url.pathname.match(/^\/comment\/(\d+)\/body$/)) {
-		let doc = yield dbcs.comments.findOne({_id: parseInt(i[1])}, {body: true}, yield);
+	} else if (i = req.url.pathname.match(/^\/comment\/([a-zA-Z\d_!@]+)\/body$/)) {
+		let doc = yield dbcs.comments.findOne({_id: i[1]}, {body: true}, yield);
 		if (!doc) return res.writeHead(404) || res.end('Error: Invalid comment id.');
 		if (doc.deleted) return res.writeHead(403) || res.end('Error: Comment has been deleted.');
 		res.writeHead(200);

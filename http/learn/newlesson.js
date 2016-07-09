@@ -62,19 +62,19 @@ function handleCodeTAInput() {
 	}
 }
 code.addEventListener('keypress', function() {
-	setTimeout(handleCodeTAInput, 0);
+	requestAnimationFrame(handleCodeTAInput);
 });
 code.addEventListener('keyup', function() {
-	setTimeout(handleCodeTAInput, 0);
+	requestAnimationFrame(handleCodeTAInput);
 });
 code.addEventListener('keydown', function() {
-	setTimeout(handleCodeTAInput, 0);
+	requestAnimationFrame(handleCodeTAInput);
 });
 code.addEventListener('mousedown', function() {
-	setTimeout(handleCodeTAInput, 0);
+	requestAnimationFrame(handleCodeTAInput);
 });
 addEventListener('mousemove', function() {
-	setTimeout(handleCodeTAInput, 0);
+	requestAnimationFrame(handleCodeTAInput);
 });
 code.addEventListener('input', handleCodeTAInput);
 code.addEventListener('focus', function() {

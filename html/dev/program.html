@@ -1,4 +1,4 @@
-<span class="sctrls"><a href="" title="This comment is useful."><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a><a href="" title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a><a href="" title="Edit" class="ctrl">✎</a><a href="" title="Delete…" class="ctrl red">✕</a><a href="" title="Undelete…" class="ctrl">↑</a></span>
+<span class="sctrls"><a title="This comment is useful."><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a><a title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a><a title="Edit" class="ctrl">✎</a><a title="Delete…" class="ctrl red">✕</a><a title="Undelete…" class="ctrl">↑</a></span>
 <section id="meta" class="nodisplay">
 	<div class="rit user user-$op-name" property="author" typeof="Person">
 		<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" property="image" />
@@ -10,17 +10,19 @@
 	Created <time datetime="$created" property="dateCreated"></time>, Updated <time id="updated" datetime="$updated" property="dateModified"></time>. This program is $private
 	$forked
 	<div class="umar">
-		<a class="ctrl" href="" title="This is an interesting program."><svg id="up" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23" /></svg></a>
-		<a class="ctrl" href="" title="This is not an interesting program."><svg id="dn" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="11,23 1,1 21,1" /></svg></a>
-		<a class="ctrl" href="" title="This program is inappropriate."><svg id="fl" width="20" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+		<a class="ctrl" title="This is an interesting program."><svg id="up" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="11,1 1,23 21,23" /></svg></a>
+		<a class="ctrl" title="This is not an interesting program."><svg id="dn" width="22" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="11,23 1,1 21,1" /></svg></a>
+		<a class="ctrl" title="This program is inappropriate."><svg id="fl" width="20" height="24" xmlns="http://www.w3.org/2000/svg"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
 	</div>
 	<div id="comments" class="umar">$comments</div>
 	<form id="editcomment" class="umar" hidden="">
+		<div class="pingsug"></div>
 		<textarea id="comment-edit-ta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Edit</button>
 		<button type="reset" id="c-edit-reset">Cancel</button>
 	</form>
 	<form id="comment" class="target umar">
+		<div class="pingsug"></div>
 		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Post</button>
 		<button type="reset" id="c-reset">Cancel</button>

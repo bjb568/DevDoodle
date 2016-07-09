@@ -16,11 +16,11 @@ function commentToString(comment, user) {
 		'<div id="c' + comment._id + '" class="comment' + (comment.deleted ? ' deleted' : '') + '">' +
 		'<span class="score" data-score="' + (comment.votes || []).length + '">' + (comment.votes || []).length + '</span>' +
 		'<span class="sctrls">' +
-			'<a' + (user.rep >= 50 ? '' : ' hidden=""') + (voted ? ' class="clkd" title="Unvote"' : ' href="" title="This comment is useful."') + '><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a>' +
-			'<a' + (user.rep >= 50 ? '' : ' hidden=""') + ' href="" title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a>' +
-			'<a href="" title="Edit" class="ctrl" ' + (user.name == comment.user ? '' : ' hidden=""') + '>✎</a>' +
-			'<a href="" title="Delete…" class="ctrl red" ' + (user.name == comment.user && !comment.deleted ? '' : ' hidden=""') + '>✕</a>' +
-			'<a href="" title="Undelete…" class="ctrl" ' + (user.name == comment.user && comment.deleted ? '' : ' hidden=""') + '>↑</a>' +
+			'<a' + (user.rep >= 50 ? '' : ' hidden=""') + (voted ? ' class="clkd" title="Unvote"' : ' title="This comment is useful."') + '><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a>' +
+			'<a' + (user.rep >= 50 ? '' : ' hidden=""') + ' title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a>' +
+			'<a title="Edit" class="ctrl" ' + (user.name == comment.user ? '' : ' hidden=""') + '>✎</a>' +
+			'<a title="Delete…" class="ctrl red" ' + (user.name == comment.user && !comment.deleted ? '' : ' hidden=""') + '>✕</a>' +
+			'<a title="Undelete…" class="ctrl" ' + (user.name == comment.user && comment.deleted ? '' : ' hidden=""') + '>↑</a>' +
 		'</span>' +
 		commentBody + '</div>'
 	);

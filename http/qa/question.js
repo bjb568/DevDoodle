@@ -7,7 +7,12 @@ var myRep = parseInt(document.getElementById('rep').value),
 	lang = document.getElementById('lang-edit'),
 	editCommentForm = document.getElementById('editcomment'),
 	editCommentTA = document.getElementById('comment-edit-ta'),
-	editingComment;
+	editingComment,
+	users = [];
+document.querySelectorAll('[typeof=\'Person\'] [property~=\'name\'], .comment [property~=\'author\']').forEach(function(el) {
+	var user = el.firstChild.nodeValue;
+	if (!users.includes(user) && user != username) users.push(user);
+});
 function handleLocationUpdate() {
 	var e = document.getElementById(location.hash.substr(1)),
 		f;
@@ -37,9 +42,10 @@ document.getElementById('cancel-edit').onclick = function() {
 var addCommentBtns = document.getElementsByClassName('addcomment');
 for (var i = 0; i < addCommentBtns.length; i++) {
 	addCommentBtns[i].onclick = function() {
-		var e = this;
+		var e = this, previousScrollY = scrollY;
 		requestAnimationFrame(function() {
-			e.previousElementSibling.firstElementChild.focus();
+			e.previousElementSibling.children[1].focus();
+			scrollTo(0, previousScrollY);
 		});
 	};
 }
@@ -104,14 +110,14 @@ document.getElementById('q-delete').onclick = function() {
 	}
 };
 document.getElementById('edit-tags').onchange = function() {
-	setTimeout(function() {
+	requestAnimationFrame(function() {
 		var arr = [],
 			els = document.getElementById('edit-tags').querySelectorAll(':checked');
 		for (var i = 0; i < els.length; i++) {
 			arr.push(els[i].id.substr(3));
 		}
 		document.getElementById('edit-tags-input').value = arr.join(',');
-	}, 0);
+	});
 };
 document.getElementById('answerform').addEventListener('submit', function(e) {
 	e.preventDefault();
@@ -133,16 +139,22 @@ var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') +
 for (var i = 0; i < commentForms.length; i++) {
 	commentForms[i].onsubmit = function(e) {
 		e.preventDefault();
-		if (this.firstElementChild.mdValidate(true)) return;
+		if (this.children[1].mdValidate(true)) return;
 		var el = this;
 		socket.send(JSON.stringify({
 			event: 'comment',
-			body: el.firstElementChild.value,
-			answer: parseInt(el.dataset.answer)
+			body: el.children[1].value,
+			answer: el.dataset.answer
 		}));
-		this.firstElementChild.value = '';
+		this.children[1].value = '';
 		this.lastElementChild.onclick();
 	};
+	commentForms[i].children[1].addEventListener('input', pingsugHandler);
+	commentForms[i].children[1].addEventListener('keypress', pingsugCancelHandler);
+	commentForms[i].children[1].addEventListener('keydown', pingsugCancelHandler);
+	commentForms[i].previousElementSibling.children[1].addEventListener('input', pingsugHandler);
+	commentForms[i].previousElementSibling.children[1].addEventListener('keypress', pingsugCancelHandler);
+	commentForms[i].previousElementSibling.children[1].addEventListener('keydown', pingsugCancelHandler);
 }
 var cResetBtns = document.getElementsByClassName('c-reset');
 for (var i = 0; i < cResetBtns.length; i++) {
@@ -165,7 +177,7 @@ var cEditForm = document.getElementsByClassName('editcommentform');
 for (var i = 0; i < cEditForm.length; i++) {
 	cEditForm[i].onsubmit = function(e) {
 		e.preventDefault();
-		if (this.firstElementChild.mdValidate(true)) return;
+		if (this.children[1].mdValidate(true)) return;
 		socket.send(JSON.stringify({
 			event: 'comment-edit',
 			id: editingComment,
@@ -180,7 +192,7 @@ function upvoteComment() {
 	this.title = this.classList.toggle('clkd') ? 'Unvote' : 'This comment is useful.';
 	socket.send(JSON.stringify({
 		event: this.classList.contains('clkd') ? 'comment-vote' : 'comment-unvote',
-		id: parseInt(this.parentNode.parentNode.id.substr(1))
+		id: this.parentNode.parentNode.id.substr(1)
 	}));
 }
 function editComment() {
@@ -191,7 +203,7 @@ function editComment() {
 	if ((editCommentForm = document.getElementById('editcomment' + idSuffix)).hidden = s) editingComment = false;
 	else {
 		this.parentNode.parentNode.classList.add('editing');
-		editingComment = parseInt(this.parentNode.parentNode.id.substr(1));
+		editingComment = this.parentNode.parentNode.id.substr(1);
 		editCommentTA = document.getElementById('comment-edit-ta' + idSuffix);
 		editCommentTA.value = '';
 		editCommentTA.placeholder = 'Loading…';
@@ -206,10 +218,10 @@ function editComment() {
 	}
 }
 function deleteComment() {
-	if (confirm('Do you want to delete this comment?')) socket.send(JSON.stringify({event: 'comment-delete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
+	if (confirm('Do you want to delete this comment?')) socket.send(JSON.stringify({event: 'comment-delete', id: this.parentNode.parentNode.id.substr(1)}));
 }
 function undeleteComment() {
-	if (confirm('Do you want to undelete this comment?')) socket.send(JSON.stringify({event: 'comment-undelete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
+	if (confirm('Do you want to undelete this comment?')) socket.send(JSON.stringify({event: 'comment-undelete', id: this.parentNode.parentNode.id.substr(1)}));
 }
 function createComment(data) {
 	var div = document.createElement('div');
@@ -252,7 +264,7 @@ function createComment(data) {
 	}
 	var comments = document.getElementById(data.answer ? 'comments-' + data.answer : 'comments');
 	for (var i = 0; i < comments.children.length; i++) {
-		if (parseInt(comments.children[i].id.substr(1)) > data.id) return comments.insertBefore(div, comments.children[i]);
+		if (new Date(comments.children[i].querySelector('.c-sig time').dateTime).getTime() > data.time) return comments.insertBefore(div, comments.children[i]);
 	}
 	comments.appendChild(div);
 }
@@ -392,7 +404,7 @@ for (var i = 0; i < answers.length; i++) {
 	answers[i].getElementsByClassName('up')[0].onclick = function() {
 		var up = this.firstChild,
 			dn = this.nextElementSibling.firstChild,
-			id = parseInt(this.parentNode.parentNode.id.substr(1));
+			id = this.parentNode.parentNode.id.substr(1);
 		request('/api/answer/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
@@ -407,7 +419,7 @@ for (var i = 0; i < answers.length; i++) {
 	answers[i].getElementsByClassName('dn')[0].onclick = function() {
 		var up = this.previousElementSibling.firstChild,
 			dn = this.firstChild,
-			id = parseInt(this.parentNode.parentNode.id.substr(1));
+			id = this.parentNode.parentNode.id.substr(1);
 		request('/api/answer/vote', function(res) {
 			if (res.indexOf('Error') == 0) alert(res);
 			else if (res == 'Success') {
