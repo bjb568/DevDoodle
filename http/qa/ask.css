@@ -11,7 +11,8 @@ aside {
 	padding: 0.3em;
 	border-radius: 0.25em;
 }
-aside, fieldset:not(:first-of-type), #form > div { margin-top: 0.5em }
+aside h2 { margin-top: 0 }
+aside:not(:first-of-type), fieldset:not(:first-of-type), #form > div { margin-top: 0.5em }
 @media (min-width: 900px) {
 	#form > :not(aside) { flex: 1 1 calc(90% - 40ch) }
 	#form {
@@ -23,7 +24,7 @@ aside, fieldset:not(:first-of-type), #form > div { margin-top: 0.5em }
 		width: calc(10% + 36ch);
 		margin-right: 0.4em;
 	}
-	aside, fieldset:not(:first-of-type), #form > div { margin-top: 1.5em }
+	aside:not(:first-of-type), fieldset:not(:first-of-type), #form > div { margin-top: 1.5em }
 }
 #duplist, aside { font-size: 0.93em }
 @media (max-width: 750px) {

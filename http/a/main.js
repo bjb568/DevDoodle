@@ -8,6 +8,9 @@ String.prototype.replaceAll = function(find, replace) {
 String.prototype.repeat = function(num) {
 	return new Array(++num).join(this);
 };
+if (!Array.prototype.includes) Array.prototype.includes = function(item) {
+	return this.indexOf(item) != -1;
+};
 Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
@@ -408,7 +411,7 @@ function pingsugHandler() {
 	var ta = this,
 		before = ta.value.substr(0, ta.selectionStart),
 		str = before.substr(-(before.match(/[\w-@]+$/) || [{length: 1}])[0].length),
-		list = document.getElementById('pingsug') || this.parentNode.parentNode.getElementsByClassName('pingsug')[0],
+		list = document.getElementById('pingsug') || this.parentNode.getElementsByClassName('pingsug')[0],
 		c;
 	while (c = list.firstChild) list.removeChild(c);
 	if (str[0] == '@') {

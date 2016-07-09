@@ -1,11 +1,11 @@
 <h1><span id="title" property="headline">$lang: $title</span><input id="title-edit" value="$title" maxlength="144" hidden="" /></h1>
 <div id="question" class="hglt pad br">
 	<div class="ctrl pad lft">
-		<a href="" title="This question is clear, answerable, and useful to the community."><svg class="blk up" id="q-up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
-		<a href="" title="This question needs improvement or is not useful."><svg class="blk dn" id="q-dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
-		<a href="" title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg" width="20" height="24"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+		<a title="This question is clear, answerable, and useful to the community."><svg class="blk up" id="q-up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
+		<a title="This question needs improvement or is not useful."><svg class="blk dn" id="q-dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
+		<a title="This question has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg" width="20" height="24"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
 		<a id="med" class="ctrlicon editbtn" href="#edit" title="Edit">✎</a>
-		<a id="q-delete" class="ctrlicon delbtn" href="" title="Delete…">✕</a>
+		<a id="q-delete" class="ctrlicon delbtn" title="Delete…">✕</a>
 	</div>
 	<div id="q-content">
 		<div id="q-body" property="text">
@@ -57,15 +57,17 @@
 		</div>
 	</form>
 </div>
-<span class="sctrls"><a href="" title="This comment is useful."><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a><a href="" title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a><a href="" title="Edit" class="ctrl">✎</a><a href="" title="Delete…" class="ctrl red">✕</a><a href="" title="Undelete…" class="ctrl">↑</a></span>
+<span class="sctrls"><a title="This comment is useful."><svg class="up" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="7,-1 0,11 5,11 5,16 9,16 9,11 14,11" /></svg></a><a title="This comment is inappropriate."><svg class="fl" width="18" height="20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 13,0 13,8 4,8 4,16 0,16" /></svg></a><a title="Edit" class="ctrl">✎</a><a title="Delete…" class="ctrl red">✕</a><a title="Undelete…" class="ctrl">↑</a></span>
 <div class="indt umar">
 	<div id="comments" class="comments">$qcommentstr</div>
 	<form id="editcomment" class="editcommentform umar" hidden="">
+		<div class="pingsug"></div>
 		<textarea id="comment-edit-ta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Edit</button>
 		<button type="reset" class="c-edit-reset">Cancel</button>
 	</form>
 	<form id="comment" class="commentform target umar">
+		<div class="pingsug"></div>
 		<textarea id="commentta" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
 		<button type="submit">Post</button>
 		<button type="reset" class="c-reset" id="c-reset">Cancel</button>
