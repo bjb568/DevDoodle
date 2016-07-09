@@ -1,7 +1,7 @@
 'use strict';
 if (location.href.indexOf('/dev/new/') != -1) document.documentElement.classList.add('new-program');
 var mine = (document.getElementById('mine') || {}).value == '1',
-	id = parseInt((document.getElementById('id') || {}).value),
+	id = (document.getElementById('id') || {}).value,
 	opName = (document.getElementById('user') || {}).value,
 	myRep = parseInt((document.getElementById('rep') || {}).value),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
@@ -127,7 +127,12 @@ if (document.getElementById('meta')) {
 					edit.value = title.textContent;
 				} else if (res == 'Success') {
 					edit.hidden = true;
-					document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' | Programs | DevDoodle';
+					var svg = title.getElementsByTagName('svg')[0];
+					document.title = (title.textContent = edit.value.substr(0, 92) || 'Untitled') + ' · Programs · DevDoodle';
+					if (svg) {
+						title.appendChild(document.createTextNode(' '));
+						title.appendChild(svg);
+					}
 					if (!edit.value) edit.value = 'Untitled';
 					title.hidden = false;
 				} else alert('Unknown error. Response was: ' + res);

@@ -3,7 +3,10 @@ let fs = require('fs');
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/learn/') {
-		yield respondPage('', user, req, res, yield, {inhead: '<link rel="stylesheet" href="learn.css" />'});
+		yield respondPage('', user, req, res, yield, {
+			description: 'Learn a new technology — front-end web, server side javascript, or a new skill like debugging or code quality.',
+			inhead: '<link rel="stylesheet" href="learn.css" />'
+		});
 		let lessonstr = '';
 		dbcs.lessons.find().each(o(function*(err, lesson) {
 			if (err) throw err;
@@ -13,8 +16,8 @@ module.exports = o(function*(req, res, user) {
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
-	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/$/)) {
-		let post = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)\/$/)) {
+		let post = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 		if (!post) return errorNotFound(req, res, user);
 		yield respondPage(post.title, user, req, res, yield);
 		res.write('<h1><span id="title">' + html(post.title) + '</span> <input type="text" id="edit-title" hidden="" value="' + html(post.title) + '" /> <small><a id="save">Save</a></small></h1>');
@@ -30,12 +33,16 @@ module.exports = o(function*(req, res, user) {
 			res.write(yield addVersionNonces('<script src="/learn/my-course-slides.js" async=""></script>', req.url.pathname, yield));
 		}
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/(\d+)\/(\d+)$/)) {
-		let lesson = yield dbcs.lessons.findOne({_id: parseInt(i[1])}, yield);
+	} else if (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)\/(\d+)$/)) {
+		let lesson = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 		if (!lesson) return errorNotFound(req, res, user);
 		let post = lesson.content[--i[2]];
 		if (!post) return errorNotFound(req, res, user);
-		yield respondPage(post.title, user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
+		yield respondPage(post.title, user, req, res, yield, {
+			description: post.sbody.toMetaDescription(),
+			clean: true,
+			inhead: '<link rel="stylesheet" href="/learn/course.css" />'
+		});
 		let isLast = i[2] == lesson.content.length - 1;
 		res.write(
 			(yield addVersionNonces((yield fs.readFile('./html/learn/lesson.html', yield)).toString(), req.url.pathname, yield))

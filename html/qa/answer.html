@@ -1,47 +1,49 @@
-<div id="a$id" class="answer hglt pad br">
-	<div class="ctrl pad lft">
-		<a class="up" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
-		<a class="dn" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
-		<a class="fl" title="This answer has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg" width="20" height="24"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
-		<a class="ctrlicon editbtn" href="#edit-$id" title="Edit">✎</a>
-		<a class="ctrlicon delbtn" title="Delete">✕</a>
-	</div>
-	<div class="a-content">
-		<div class="a-body">$body-markdown</div>
-		<div class="clearfix">
-			<div class="rit">
-				<div>Answered <time datetime="$time"></time> by</div>
-				<div class="user user-$user">
-					<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" />
-					<div>
-						<a href="/user/$user">$user</a>
-						<small class="rep">$op-rep</small>
+<div property="suggestedAnswer" typeof="Answer">
+	<div id="a$id" class="answer hglt pad br">
+		<div class="ctrl pad lft">
+			<a class="up" href="" title="This answers the question well."><svg class="blk up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
+			<a class="dn" href="" title="This is not useful."><svg class="blk dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
+			<a class="fl" href="" title="This answer has an issue that needs to be addressed."><svg class="blk fl" xmlns="http://www.w3.org/2000/svg" width="20" height="24"><polygon points="1,1 19,1 19,11 5,11 5,23 1,23" /></svg></a>
+			<a class="ctrlicon editbtn" href="#edit-$id" title="Edit">✎</a>
+			<a class="ctrlicon delbtn" href="" title="Delete">✕</a>
+		</div>
+		<div class="a-content">
+			<div class="a-body" property="text">$body-markdown</div>
+			<div class="clearfix">
+				<div class="rit">
+					<div>Answered <time datetime="$time" property="dateCreated"></time> by</div>
+					<div class="user user-$user" property="author" typeof="Person">
+						<img src="$op-pic" alt="profile picture for $op-name" width="40" height="40" property="image" />
+						<div>
+							<a href="/user/$user" property="name uri">$user</a>
+							<small class="rep">$op-rep</small>
+						</div>
 					</div>
 				</div>
+				<small class="blk sumar lft"><a href="#a$id" class="grey" title="Permalink">#</a> <line /> <a href="?history=$id" class="grey">History</a></small>
 			</div>
-			<small class="blk sumar lft"><a href="#a$id" class="grey" title="Permalink">#</a> <line /> <a href="?history=$id" class="grey">History</a></small>
 		</div>
+		<form class="a-edit indt" hidden="">
+			<textarea rows="24" minlength="144">$body-html</textarea>
+			<div>
+				<button type="submit">Submit Edit</button>
+				<button type="reset" class="cancel-edit">Cancel</button>
+			</div>
+		</form>
 	</div>
-	<form class="a-edit indt" hidden="">
-		<textarea rows="24" minlength="144">$body-html</textarea>
-		<div>
-			<button type="submit">Submit Edit</button>
-			<button type="reset" class="cancel-edit">Cancel</button>
-		</div>
-	</form>
-</div>
-<div class="indt umar">
-	<div id="comments-$id" class="comments">$commentstr</div>
-	<div class="pingsug"></div>
-	<form id="editcomment-$id" class="editcommentform umar" hidden="">
-		<textarea id="comment-edit-ta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
-		<button type="submit">Edit</button>
-		<button type="reset" class="c-edit-reset">Cancel</button>
-	</form>
-	<form id="comment-$id" class="commentform target umar" data-answer="$id">
-		<textarea id="commentta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
-		<button type="submit">Post</button>
-		<button type="reset" class="c-reset" id="c-reset-$id">Cancel</button>
-	</form>
-	<a class="addcomment small" href="#comment-$id">Add comment</a>
+	<div class="indt umar">
+		<div id="comments-$id" class="comments">$commentstr</div>
+		<div class="pingsug"></div>
+		<form id="editcomment-$id" class="editcommentform umar" hidden="">
+			<textarea id="comment-edit-ta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+			<button type="submit">Edit</button>
+			<button type="reset" class="c-edit-reset">Cancel</button>
+		</form>
+		<form id="comment-$id" class="commentform target umar" data-answer="$id">
+			<textarea id="commentta-$id" placeholder="Ask for clarification or suggest improvements." class="fullwidth" rows="4"></textarea>
+			<button type="submit">Post</button>
+			<button type="reset" class="c-reset" id="c-reset-$id">Cancel</button>
+		</form>
+		<a class="addcomment small" href="#comment-$id">Add comment</a>
+	</div>
 </div>

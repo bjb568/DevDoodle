@@ -72,7 +72,7 @@ code.blk:empty { display: none }
 .ctrlicon:active { background: #ddd }
 .editbtn, .editbtn:hover { color: #0b0 }
 .editbtn:visited { color: #090 }
-.delbtn, .delbtn:hover { color: #f00 }
+.delbtn, .delbtn:hover, .delbtn:visited { color: #f00 }
 .commentform:target + .addcomment { display: none }
 #answer, #answerta { z-index: 1 }
 #answerta:focus + #answertips, #answertips:hover {
@@ -89,7 +89,7 @@ code.blk:empty { display: none }
 	opacity: 0;
 	transition: opacity 0.2s ease-out;
 }
-.answer:not(:first-of-type) { margin-top: 8px }
+[typeof='Answer'] { margin-top: 0.5em }
 .tag-diff .tag { background: #aaa }
 .tag-diff del .tag { background: #faa }
 .tag-diff ins .tag { background: #afa }

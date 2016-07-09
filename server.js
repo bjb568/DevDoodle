@@ -1,20 +1,5 @@
 'use strict';
-String.prototype.replaceAll = function(find, replace) {
-	if (typeof find == 'string') return this.split(find).join(replace);
-	let t = this, i, j;
-	while (typeof(i = find.shift()) == 'string' && typeof(j = replace.shift()) == 'string') t = t.replaceAll(i || '', j || '');
-	return t;
-};
-String.prototype.repeat = function(num) {
-	return new Array(++num).join(this);
-};
-Number.prototype.bound = function(l, h) {
-	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
-};
-
-global.o = require('yield-yield');
-global.config = require('./config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
-
+require('./utility/essentials.js');
 require('colors');
 let http = require('http'),
 	https = require('https'),
@@ -28,8 +13,8 @@ let http = require('http'),
 	querystring = require('querystring'),
 	cookie = require('cookie'),
 	crypto = require('crypto'),
-	essentials = require('./utility/essentials.js'),
 	mongo = require('mongodb').MongoClient;
+global.dbcs = {};
 const usedDBCs = [
 	'users',
 	'questions',
@@ -46,32 +31,6 @@ const usedDBCs = [
 	'votes',
 	'lessons'
 ];
-
-global.site = {
-	name: 'DevDoodle',
-	titles: {
-		learn: 'Courses',
-		dev: 'Programs',
-		qa: 'Q&amp;A',
-		chat: 'Chat',
-		mod: 'Moderation'
-	}
-};
-global.typeIcons = {
-	P: '',
-	R: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 0 10 16" width="10" height="16">' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="4" /><rect x="0" y="5" width="2" height="1" /><rect x="0" y="9" width="10" height="7" />' +
-		'</svg>',
-	N: ' <svg xmlns="http://www.w3.org/2000/svg" fill="#a4f" viewBox="0 -2 10 16" width="10" height="16">' +
-			'<path d="M 9 5 a 4 4 0 0 0 -8 0" stroke-width="2px" stroke="#a4f" fill="none" /><rect x="8" y="5" width="2" height="2" /><rect x="0" y="5" width="2" height="2" /><rect x="0" y="7" width="10" height="7" />' +
-		'</svg>',
-	M: ' <span class="diamond private">♦</span>'
-};
-global.html = essentials.html;
-global.inlineMarkdown = essentials.inlineMarkdown;
-global.markdown = essentials.markdown;
-global.mime = essentials.mime;
-global.dbcs = {};
 
 global.githubAuth = '{}';
 try {
@@ -107,12 +66,15 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 	let query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
 	if (!header) header = {};
-	let inhead = header.inhead || '',
+	let inhead = (header.inhead || '') + (header.description ? '<meta name="description" content="' + html(header.description) + '" />' : ''),
 		huser = header.user,
-		clean = header.clean;
+		clean = header.clean,
+		pageType = header.pageType;
 	delete header.inhead;
+	delete header.description;
 	delete header.user;
 	delete header.clean;
+	delete header.pageType;
 	if (typeof header['Content-Type'] != 'string') header['Content-Type'] = 'application/xhtml+xml; charset=utf-8';
 	if (typeof header['Cache-Control'] != 'string') header['Cache-Control'] = 'no-cache';
 	if (typeof header['X-Frame-Options'] != 'string') header['X-Frame-Options'] = 'DENY';
@@ -127,7 +89,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			"img-src " + (config.HTTP2 ? 'https:' : 'http:') + " data:";
 	}
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="zX/Henv5b1MtyAvwRb8xIssDu3ddQ6LAO55xFWFoO04="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="ejGCe4vNvtmyeednip7O2VR4WM+HJsew9VlyUl5Y1KY="; pin-sha256="xgp6JyeUhDb/K8kpcuufOjq4qmulv8tHomfmKnrq9+E="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
@@ -179,6 +141,9 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			).replace(
 				'$inhead',
 				(clean ? '<link rel="stylesheet" href="/a/clean.css" />' : '') + inhead
+			).replace(
+				'id="content"',
+				pageType ? 'id="content" typeof="' + pageType + '"' : 'id="content"'
 			).replace(
 				'$bnotifs',
 				(user && user.unread) ? ' class="unread"' : ''
@@ -255,6 +220,7 @@ const buildpageServers = [
 	['/mod/', require('./buildpage/mod.js')],
 	['/', require('./buildpage/home.js')]
 ];
+const sitemapServer = require('./buildpage/sitemap.js');
 let apiServer = require('./api.js');
 
 let cache = {},
@@ -294,7 +260,8 @@ let serverHandler = o(function*(req, res) {
 	if (i = statics[req.url.pathname]) {
 		yield respondPage(i.title, user, req, res, yield, {
 			clean: i.clean,
-			inhead: i.inhead
+			inhead: i.inhead,
+			description: i.description
 		});
 		res.write(
 			(yield addVersionNonces((yield fs.readFile(i.path, yield)).toString(), req.url.pathname, yield))
@@ -361,12 +328,13 @@ let serverHandler = o(function*(req, res) {
 									validate: post.validate || '',
 									html: post.html || ''
 								}
-							}
+							},
+							$set: {updated: new Date().getTime()}
 						});
 						res.writeHead(303, {Location: 'unoff/' + lesson._id + '/'});
 						res.end();
 					} else {
-						let id = ((yield dbcs.lessons.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+						let id = generateID();
 						dbcs.lessons.insert({
 							_id: id,
 							user: user.name,
@@ -423,6 +391,12 @@ let serverHandler = o(function*(req, res) {
 		res.write('<a class="button larger" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.r == 'ask' ? '/qa/ask' : req.headers.referer || '') + '"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 120 120"><path d="M60 1.103C26.653 1.103-0.388 28.138-0.388 61.491 -0.388 88.171 16.915 110.807 40.909 118.792 43.927 119.351 45.035 117.482 45.035 115.887 45.035 114.448 44.979 109.69 44.953 104.644 28.153 108.297 24.608 97.519 24.608 97.519 21.861 90.54 17.903 88.683 17.903 88.683 12.424 84.935 18.316 85.012 18.316 85.012 24.38 85.438 27.573 91.236 27.573 91.236 32.959 100.467 41.7 97.798 45.146 96.255 45.689 92.353 47.253 89.688 48.98 88.18 35.567 86.654 21.467 81.475 21.467 58.336 21.467 51.744 23.826 46.356 27.689 42.127 27.062 40.606 24.995 34.464 28.275 26.146 28.275 26.146 33.346 24.524 44.885 32.337 49.702 30.999 54.868 30.328 60 30.304 65.132 30.328 70.302 30.999 75.128 32.337 86.654 24.524 91.718 26.146 91.718 26.146 95.005 34.464 92.938 40.606 92.311 42.127 96.183 46.356 98.525 51.744 98.525 58.336 98.525 81.531 84.398 86.637 70.951 88.132 73.117 90.006 75.047 93.681 75.047 99.315 75.047 107.395 74.978 113.898 74.978 115.887 74.978 117.495 76.064 119.377 79.125 118.785 103.107 110.791 120.388 88.163 120.388 61.491 120.388 28.138 93.351 1.103 60 1.103" fill="#161514" /></svg> <span>Log in with GitHub</span></a>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname == '/login/github') {
+		if (!req.url.query.code) {
+			yield respondPage('Login Error', user, req, res, yield, {}, 400);
+			res.write('<h1>Login Error</h1>');
+			res.write(errorsHTML(['No authentication code was recieved.']));
+			return res.end(yield fs.readFile('html/a/foot.html', yield));
+		}
 		let tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
 		let ghReq = https.request({
 			hostname: 'github.com',
@@ -608,7 +582,8 @@ let serverHandler = o(function*(req, res) {
 		);
 		res.write('</ul>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
-	} else if (req.url.pathname.includes('.')) {
+	} else if (req.url.pathname == '/sitemap.xml') sitemapServer(req, res);
+	else if (req.url.pathname.includes('.')) {
 		let stats;
 		try {
 			stats = yield fs.stat('./http/' + req.url.pathname, yield);

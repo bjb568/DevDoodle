@@ -77,7 +77,7 @@ module.exports = o(function*(req, res, user, post) {
 				let criteria = {$text: {$search: post.search}};
 				if (!user || user.level < 4) criteria.deleted = {$exists: false};
 				if (post.user) criteria.user = post.user;
-				if (post.room) criteria.room = parseInt(post.room);
+				if (post.room) criteria.room = post.room;
 				let sort = {
 					text: {score: {$meta: 'textScore'}},
 					recent: {_id: -1},
@@ -103,8 +103,8 @@ module.exports = o(function*(req, res, user, post) {
 		});
 	} else if (req.url.pathname == '/chat/changeroomtype') {
 		if (!['P', 'R', 'N', 'M'].includes(post.type)) return res.writeHead(400) || res.end('Error: Invalid room type.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
-		let room = yield dbcs.chatrooms.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/([a-zA-Z\d_!@]+)/);
+		let room = yield dbcs.chatrooms.findOne({_id: i[1]}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
 		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to change the room type.');
 		dbcs.chatrooms.update({_id: room._id}, {$set: {type: post.type}});
@@ -116,7 +116,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!['P', 'R', 'N', 'M'].includes(post.type)) res.writeHead(400) || res.end('Error: Invalid room type.');
 		if (post.name.length > 92) return res.writeHead(400) || res.end('Error: Name length may not exceed 92 characters.');
 		if (post.desc.length > 800) return res.writeHead(400) || res.end('Error: Description length may not exceed 800 characters.');
-		let id = ((yield dbcs.chatrooms.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+		let id = generateID();
 		dbcs.chatrooms.insert({
 			name: post.name,
 			desc: post.desc,
@@ -125,10 +125,10 @@ module.exports = o(function*(req, res, user, post) {
 			_id: id
 		});
 		res.writeHead(200);
-		res.end('Location: /chat/' + i);
+		res.end('Location: /chat/' + id);
 	} else if (req.url.pathname == '/chat/inviteuser') {
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
-		let room = yield dbcs.chatrooms.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/([a-zA-Z\d_!@]+)/);
+		let room = yield dbcs.chatrooms.findOne({_id: i[1]}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
 		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
 		let invUser = yield dbcs.users.findOne({name: post.user}, yield);
@@ -141,8 +141,8 @@ module.exports = o(function*(req, res, user, post) {
 			rep: invUser.rep
 		}));
 	} else if (req.url.pathname == '/chat/uninviteuser') {
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/(\d+)/);
-		let room = yield dbcs.chatrooms.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/chat\/([a-zA-Z\d_!@]+)/);
+		let room = yield dbcs.chatrooms.findOne({_id: i[1]}, yield);
 		if (!room) return res.writeHead(400) || res.end('Error: Invalid room id.');
 		if (!room.invited.includes(user.name)) return res.writeHead(403) || res.end('Error: You don\'t have permission to invite users to this room.');
 		if (!room.invited.includes(post.user)) return res.writeHead(409) || res.end('Error: ' + post.user + ' has not been invited.');
@@ -153,7 +153,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/delv$/)) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to cast deletion votes.');
 		if (user.level < 2) return res.writeHead(403) || res.end('Error: You must be a level 2 moderator to cast delete votes.');
-		let msg = yield dbcs.chat.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		let msg = yield dbcs.chat.findOne({_id: parseInt(i[1])}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
 		if (user.level >= 4 && !msg.deleted) {
 			dbcs.chat.update({_id: msg._id}, {$set: {deleted: 2}});
@@ -198,7 +198,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/nanv$/)) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to dispute flags.');
 		if (user.level < 2) return res.writeHead(403) || res.end('Error: You must be a level 2 moderator to dispute flags.');
-		let msg = yield dbcs.chat.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		let msg = yield dbcs.chat.findOne({_id: parseInt(i[1])}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
 		if (user.level >= 4 && msg.deleted) {
 			dbcs.chat.update({_id: msg._id}, {$set: {deleted: 0}});
@@ -245,7 +245,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (user.level < 2) return res.writeHead(403) || res.end('Error: You must be a level 2 moderator to add review comments.');
 		if (!post.body) return res.writeHead(400) || res.end('Error: Please enter a comment body.');
 		if (post.body.length > 2000) return res.writeHead(400) || res.end('Error: Comment length may not exceed 2000 characters.');
-		let msg = yield dbcs.chat.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		let msg = yield dbcs.chat.findOne({_id: i[1]}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
 		if (post.mod && (msg.reviewers || []).includes(user.name)) return res.writeHead(403) || res.end('Error: You have already reviewed this post.');
 		if (post.mod && msg.mod) return res.writeHead(403) || res.end('Error: This post is already mod-only. You may still leave a regular comment.');
@@ -289,7 +289,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (i = req.url.pathname.match(/^\/chat\/msg\/(\d+)\/rskip$/)) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to skip in review.');
 		if (user.level < 2) return res.writeHead(403) || res.end('Error: You must be a level 2 moderator to skip in review.');
-		let msg = yield dbcs.chat.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		let msg = yield dbcs.chat.findOne({_id: i[1]}, yield);
 		if (!msg) return res.writeHead(400) || res.end('Error: Invalid message id.');
 		dbcs.chat.update({_id: msg._id}, {$push: {reviewers: user.name}});
 		res.writeHead(204);
@@ -305,7 +305,7 @@ module.exports = o(function*(req, res, user, post) {
 		}
 		let tag = yield dbcs.qtags.findOne({lang: post.lang}, yield);
 		if (!tag) return res.writeHead(400) || res.end('Error: Invalid language.');
-		let id = ((yield dbcs.questions.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+		let id = generateID();
 		dbcs.questions.insert({
 			_id: id,
 			title: post.title.substr(0, 144),
@@ -327,12 +327,12 @@ module.exports = o(function*(req, res, user, post) {
 		res.end('Location: /qa/' + id);
 	} else if (req.url.pathname == '/question/delete') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to delete questions.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
-		let question = yield dbcs.questions.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/([a-zA-Z\d_!@]+)/);
+		let question = yield dbcs.questions.findOne({_id: i[1]}, yield);
 		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
 		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own questions.');
 		dbcs.posthistory.insert({
-			q: question._id,
+			question: question._id,
 			event: 'delete',
 			by: [user.name],
 			time: new Date().getTime()
@@ -349,12 +349,12 @@ module.exports = o(function*(req, res, user, post) {
 		res.end();
 	} else if (req.url.pathname == '/question/undelete') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to undelete questions.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/);
-		let question = yield dbcs.questions.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/([a-zA-Z\d_!@]+)/);
+		let question = yield dbcs.questions.findOne({_id: i[1]}, yield);
 		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
 		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own questions.');
 		dbcs.posthistory.insert({
-			q: question._id,
+			question: question._id,
 			event: 'undelete',
 			by: [user.name],
 			time: new Date().getTime()
@@ -383,7 +383,7 @@ module.exports = o(function*(req, res, user, post) {
 			score: {$gte: 6}
 		}).count(yield);
 		if (count < 8 && user.level < 3) return res.writeHead(403) || res.end('Error: You must either be a level 3 moderator or have a bronze ' + post.lang + ' tag badge to create a new tag.');
-		let parent = yield dbcs.qtags.findOne({_id: parseInt(post.par)}, yield),
+		let parent = yield dbcs.qtags.findOne({_id: post.par}, yield),
 			newTag = {
 				name: post.name.substr(0, 48),
 				lang: post.lang.substr(0, 48)
@@ -418,10 +418,10 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to answer a question.');
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
 		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
-		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/(\d+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
-		let qid = parseInt(i[1]),
+		if (!(i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/([a-zA-Z\d_!@]+)/))) return res.writeHead(400) || res.end('Error: Bad referer.');
+		let qid = i[1],
 			question = yield dbcs.questions.findOne({_id: qid}, yield),
-			id = ((yield dbcs.answers.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+			id = generateID();
 		dbcs.answers.insert({
 			_id: id,
 			question: qid,
@@ -454,8 +454,8 @@ module.exports = o(function*(req, res, user, post) {
 		let type = parseInt(req.url.query.type);
 		if (type !== 0 && type !== 1 && type !== 2) return res.writeHead(400) || res.end('Error: Invalid program type.');
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to save a program.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
-		let id = i ? parseInt(i[1]) : 0,
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/);
+		let id = i[1],
 			program = yield dbcs.programs.findOne({_id: id}, yield);
 		if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
 			if (type == 2) {
@@ -478,7 +478,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.writeHead(204);
 			res.end();
 		} else {
-			let id = ((yield dbcs.programs.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1,
+			let id = generateID(),
 				tprogram = {
 					type,
 					user: user.name,
@@ -505,8 +505,8 @@ module.exports = o(function*(req, res, user, post) {
 		}
 	} else if (req.url.pathname == '/program/edit-title') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a program title.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
-		let program = yield dbcs.programs.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/);
+		let program = yield dbcs.programs.findOne({_id: i[1]}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user.toString() != user.name.toString()) return res.writeHead(403) || res.end('Error: You may rename only your own programs.');
 		dbcs.programs.update({_id: program._id}, {$set: {title: post.title.substr(0, 92)}});
@@ -518,11 +518,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (post.val !== 0 && post.val !== 1 && post.val !== -1) return res.writeHead(400) || res.end('Error: Invalid vote value.');
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in and have 15 reputation to vote.');
 		if (user.rep < 15) return res.writeHead(403) || res.end('Error: You must have 15 reputation to vote.');
-		let id = parseInt(post.id);
-		if (!id) {
-			i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/(?:dev|qa)\/(\d+)/);
-			id = i ? parseInt(i[1]) : 0;
-		}
+		let id = post.id || (url.parse(req.headers.referer || '').pathname || '').match(/^\/(?:dev|qa)\/([a-zA-Z\d_!@]+)/)[1];
 		let pType = req.url.pathname == '/program/vote' ? 'program' : req.url.pathname == '/question/vote' ? 'question' : 'answer',
 			doc = yield dbcs[pType + 's'].findOne({_id: id}, yield);
 		if (!doc) return res.writeHead(400) || res.end('Error: Invalid post id.');
@@ -565,8 +561,8 @@ module.exports = o(function*(req, res, user, post) {
 		res.end();
 	} else if (req.url.pathname == '/program/delete') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to delete programs.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
-		let program = yield dbcs.programs.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/);
+		let program = yield dbcs.programs.findOne({_id: i[1]}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own programs.');
 		dbcs.programs.update({_id: program._id}, {
@@ -581,8 +577,8 @@ module.exports = o(function*(req, res, user, post) {
 		res.end();
 	} else if (req.url.pathname == '/program/undelete') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to undelete programs.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/(\d+)/);
-		let program = yield dbcs.programs.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/);
+		let program = yield dbcs.programs.findOne({_id: i[1]}, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own programs.');
 		dbcs.programs.update({_id: program._id}, {
@@ -593,8 +589,8 @@ module.exports = o(function*(req, res, user, post) {
 		res.end();
 	} else if (req.url.pathname == '/lesson/edit-title') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a lesson title.');
-		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/(\d+)/);
-		let lesson = yield dbcs.lessons.findOne({_id: i ? parseInt(i[1]) : 0}, yield);
+		i = (url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)/);
+		let lesson = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 		if (!lesson) return res.writeHead(400) || res.end('Error: Invalid lesson id.');
 		if (lesson.user.toString() != user.name.toString()) return res.writeHead(204) || res.end('Error: You may rename only your own lessons.');
 		dbcs.lessons.update({_id: lesson._id}, {$set: {title: post.title.substr(0, 92)}});
