@@ -42,9 +42,10 @@ document.getElementById('cancel-edit').onclick = function() {
 var addCommentBtns = document.getElementsByClassName('addcomment');
 for (var i = 0; i < addCommentBtns.length; i++) {
 	addCommentBtns[i].onclick = function() {
-		var e = this;
+		var e = this, previousScrollY = scrollY;
 		requestAnimationFrame(function() {
 			e.previousElementSibling.children[1].focus();
+			scrollTo(0, previousScrollY);
 		});
 	};
 }
