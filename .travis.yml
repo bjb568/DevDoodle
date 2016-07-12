@@ -8,7 +8,7 @@ install:
   - npm install -g snyk
   - npm install -g nsp
   - npm install -g eslint
-  - npm install -g stylelint@6.6.0
+  - npm install -g stylelint
 script:
   - npm test
   - snyk test
