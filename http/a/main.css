@@ -42,7 +42,7 @@ body {
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
-.noumar, :matches(.pad, .resp-block, .program) h2:first-child, .comment > :matches(:first-child, :last-child) { margin-top: 0 }
+.noumar, .pad h2:first-child, .resp-block h2:first-child, .program h2:first-child, .comment > :first-child, .comment > :last-child { margin-top: 0 }
 .nomar, body, input, .comment .hover *, fieldset, textarea, .error * { margin: 0 }
 .sumar, :not(img) + .desc, .blk, form *, .comment > blockquote:nth-child(2), .comment > pre:nth-child(2) { margin-top: 3px }
 .umar, :not(.row):not(.flex):not(.resp-flex) > section:not(:first-child), article:not(:first-child), form:not([action='/search/']), .connection-error, #footer, #sidebar { margin-top: 4px }
@@ -312,7 +312,7 @@ code .browser { color: #9bd }
 	top: 0; right: 0; bottom: 0; left: 0;
 	background: rgba(255, 128, 128, 0.95);
 }
-.comment.deleted[id^=c]::before { left: 74px }
+.comment.deleted[id^='c']::before { left: 74px }
 #pingsug, .pingsug {
 	position: absolute;
 	margin-top: -1.2em;
@@ -346,7 +346,7 @@ code .browser { color: #9bd }
 	color: #000;
 	background: #cfc;
 }
-input[type=text].large, input[type=search].large, input[type=password].large { font-size: 1.3em }
+input[type='text'].large, input[type='search'].large, input[type='password'].large { font-size: 1.3em }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {
 	border-left: 2px solid #f90;
@@ -552,8 +552,8 @@ a.blk:active { color: #00f }
 .button.larger span { vertical-align: bottom }
 a svg { vertical-align: middle }
 .button svg { margin-right: 0.35em }
-input[type=text], input[type=email], input[type=password] { width: 18em }
-input[type=text], input[type=email], input[type=number], input[type=search], input[type=password], textarea {
+input[type='text'], input[type='email'], input[type='password'] { width: 18em }
+input[type='text'], input[type='email'], input[type='number'], input[type='search'], input[type='password'], textarea {
 	font-family: 'Helvetica';
 	font-size: 1rem;
 }
@@ -667,7 +667,6 @@ body > * { flex-shrink: 0 }
 	line-height: 1.9em;
 	padding: 0 0.2em;
 }
-#nav a:note(#logo) { white-space: pre }
 #nav span { padding: 0 4px }
 #nav nav {
 	margin: 0 4px;
