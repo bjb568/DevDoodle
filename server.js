@@ -551,7 +551,7 @@ let serverHandler = o(function*(req, res) {
 					httpOnly: true,
 					secure: config.secureCookies
 				});
-			user = {
+			dbcs.users.insert({
 				name: post.name,
 				mail: post.mail,
 				pic: tempVerificationTokens[post.token].pic,
@@ -564,12 +564,10 @@ let serverHandler = o(function*(req, res) {
 					token: idToken,
 					created: new Date().getTime()
 				}]
-			};
-			dbcs.users.insert(user);
+			});
 			delete tempVerificationTokens[post.token];
-			yield respondPage('Account Created', user, req, res, yield, {'Set-Cookie': idCookie});
-			res.write('An account for you has been created. You are now logged in.');
-			res.end(yield fs.readFile('html/a/foot.html', yield));
+			res.writeHead(303, {'Set-Cookie': idCookie, Location: '/user/' + post.name + '?r=new'});
+			res.end();
 		}));
 	} else if (req.url.pathname == '/notifs') {
 		if (!user) return errorForbidden(req, res, user, 'You must be logged in to view your notifications.');

@@ -81,6 +81,7 @@ module.exports = o(function*(req, res, user) {
 		}
 		yield respondPage(dispUser.name, user, req, res, yield);
 		let questions = 0;
+		if (req.url.query.r == 'new') res.write('<div class="success">You are now logged in under this new account.</div>');
 		res.write('<h1 class="clearfix"><a href="/user/" title="User List">←</a> ' + dispUser.name + (me ? ' <small><a href="/user/' + user.name + '/changepass">Change Password</a> <line /> <a id="logout">Log out</a></small>' : '') + '</h1>');
 		res.write('<img id="profpic" class="lft" src="' + dispUser.pic + '" alt="profile picture for ' + dispUser.name + '" />');
 		res.write('<div>');
