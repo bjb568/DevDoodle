@@ -101,6 +101,14 @@ abbr { border-bottom: 1px dashed #222 }
 	flex-wrap: wrap;
 }
 .flexcont > * { flex-grow: 1 }
+.question-previews > h2 {
+	width: 100%;
+	flex-shrink: 0;
+}
+.question-preview {
+	width: 600px;
+	margin-right: 1em;
+}
 .highlight {
 	color: #fff;
 	background: #000;
@@ -524,7 +532,6 @@ a.red:active { color: #c00 }
 .error a:active { color: #cc0 }
 .err {
 	position: absolute;
-	padding: 0.5em;
 	width: 18em;
 	background: #f00;
 	z-index: 1;
