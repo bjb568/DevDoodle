@@ -52,6 +52,7 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 	for (let i = 0; i < str.length; i++) {
 		if (str.substr(i).match(/^\.[A-z]{1,8}"/)) {
 			while (str[i] && str[i] != '"') i++;
+			if (str.includes(':') || str.includes('devdoodle.net')) continue;
 			try {
 				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
 			} catch (e) {
