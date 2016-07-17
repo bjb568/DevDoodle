@@ -53,7 +53,8 @@ body {
 ul { padding-left: 2em }
 .check-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iIzBiMCI+PHBhdGggZD0iTTIuNSw5LjUgNSwxMiAxMy41LDMuNSAxNSw1IDUsMTUgMSwxMSIgLz48L3N2Zz4=') }
 .cross-list { list-style: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2YwMCI+PHBhdGggZD0iTTIsNSAxMywxNiAxNCwxNSAzLDQiIC8+PHBhdGggZD0iTTE0LDUgMywxNiAyLDE1IDEzLDQiIC8+PC9zdmc+') }
-.pad, .error, .notice, .success, a.center-text.blk, .desc, #content, #sidebar, #footer, .popup, code.blk, .comment { padding: 0.25em }
+.pad, .error, .notice, .success, a.center-text.blk, .desc, #content, #sidebar, #footer, code.blk, .comment { padding: 0.25em }
+.popup, .err { padding: 0.5em }
 .noborder, iframe { border: none }
 .scrl { overflow: auto }
 .scrlx { overflow-x: auto }
