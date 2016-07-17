@@ -101,7 +101,7 @@ abbr { border-bottom: 1px dashed #222 }
 	flex-wrap: wrap;
 }
 .flexcont > * { flex-grow: 1 }
-.question-previews > h2 {
+.flexcont > h2 {
 	width: 100%;
 	flex-shrink: 0;
 }
