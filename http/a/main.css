@@ -177,6 +177,7 @@ li {
 	z-index: 1;
 	color: transparent;
 	min-height: calc(100% - 2px);
+	overflow: hidden;
 }
 .code-display, #code-display {
 	width: calc(100% - 4px);
