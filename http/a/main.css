@@ -35,7 +35,7 @@ body {
 .inline, summary * { display: inline }
 [hidden], .nodisplay, .target:not(:target), #content > .sctrls { display: none }
 .rel, .comment, .spoiler { position: relative }
-.abs, .ctrls, #footer { position: absolute }
+.abs, .ctrls { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
 .fullheight, html, body { height: 100% }
 .maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
