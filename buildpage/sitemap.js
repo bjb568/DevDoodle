@@ -17,7 +17,7 @@ module.exports = function(req, res) {
 	let freqs = ['hourly', 'daily', 'weekly', 'monthly', 'yearly'];
 	let pages = [];
 	for (let a in locs) for (let n in locs[a]) pages.push({loc: locs[a][n], changefreq: freqs[a], priority: a == 4 ? 0.1 : 0.5});
-	for (let learnLoc in learnLocs) for (let n = 1; n <= learnLocs[learnLoc]; n++) pages.push({loc: '/learn/' + learnLoc + '/' + n + '/', changefreq: 'monthly'});
+	for (let learnLoc in learnLocs) for (let n = 1; n <= learnLocs[learnLoc]; n++) pages.push({loc: '/learn/' + learnLoc + '/' + n, changefreq: 'monthly'});
 	function writePage(page) {
 		res.write('<url>');
 		res.write('<loc>' + (config.HTTP2 ? "https://" : "http://") + req.headers.host + page.loc + '</loc>');

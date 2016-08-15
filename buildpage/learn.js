@@ -60,10 +60,10 @@ module.exports = o(function*(req, res, user) {
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	} else if (req.url.pathname.match(/^\/learn\/[\w-]+\/[\w-]+\/$/)) {
 		res.writeHead(303, {
-			Location: '1/'
+			Location: '1'
 		});
 		res.end();
-	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)\/$/)) {
+	} else if (i = req.url.pathname.match(/^\/learn\/([\w-]+)\/([\w-]+)\/(\d+)$/)) {
 		let data;
 		try {
 			data = yield addVersionNonces((yield fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', yield)).toString(), req.url.pathname, yield);
