@@ -21,6 +21,13 @@ HTMLElement.prototype.insertAfter = function(newEl, refEl) {
 	else refEl.parentNode.appendChild(newEl);
 };
 
+function removeHash(hist) {
+	var scrlTop = document.body.scrollTop;
+	location.hash = '';
+	if (hist) history.replaceState('', document.title, window.location.pathname);
+	document.body.scrollTop = scrlTop;
+}
+
 function html(input) {
 	return input.toString().replaceAll(['&', '<', '>', '"', '\t', '\n', '\b'], ['&amp;', '&lt;', '&gt;', '&quot;', '&#9;', '&#10;', '']);
 }

@@ -13,6 +13,19 @@ document.querySelectorAll('[typeof=\'Person\'] [property~=\'name\'], .comment [p
 	var user = el.firstChild.nodeValue;
 	if (!users.includes(user) && user != username) users.push(user);
 });
+function closeAnswerEditForm(e) {
+	this.onclick = null;
+	e.preventDefault();
+	removeHash();
+	var editForm = this.parentNode.parentNode.getElementsByClassName('a-edit')[0];
+	editForm.hidden = true;
+	editForm.previousElementSibling.hidden = false;
+}
+function closeQuestionEditForm(e) {
+	if (this instanceof Element) this.onclick = null;
+	if (e) e.preventDefault();
+	document.getElementById('cancel-edit').onclick();
+}
 function handleLocationUpdate() {
 	var e = document.getElementById(location.hash.substr(1)),
 		f;
@@ -25,19 +38,23 @@ function handleLocationUpdate() {
 		document.getElementById('title-edit').hidden = 0;
 		document.getElementById('q-content').hidden = 1;
 		document.getElementById('q-desc-edit').focus();
-		document.getElementById('med').href = '#';
-	} else if (!document.getElementById('q-edit').hidden) document.getElementById('cancel-edit').onclick();
+		document.getElementById('med').onclick = closeQuestionEditForm;
+	} else if (location.hash.indexOf('#edit-') == 0) {
+		var editForm = document.getElementById('a' + location.hash.substr(6)).getElementsByClassName('a-edit')[0];
+		editForm.hidden = false;
+		editForm.previousElementSibling.hidden = true;
+		editForm.parentNode.getElementsByClassName('editbtn')[0].onclick = closeAnswerEditForm;
+	}
 }
 addEventListener('load', handleLocationUpdate);
 addEventListener('hashchange', handleLocationUpdate);
 document.getElementById('cancel-edit').onclick = function() {
-	location.hash = '';
+	removeHash();
 	document.body.classList.remove('q-editing');
 	document.getElementById('q-edit').hidden = 1;
 	document.getElementById('title').hidden = 0;
 	document.getElementById('title-edit').hidden = 1;
 	document.getElementById('q-content').hidden = 0;
-	document.getElementById('med').href = '#edit';
 };
 var addCommentBtns = document.getElementsByClassName('addcomment');
 for (var i = 0; i < addCommentBtns.length; i++) {
@@ -159,10 +176,7 @@ for (var i = 0; i < commentForms.length; i++) {
 var cResetBtns = document.getElementsByClassName('c-reset');
 for (var i = 0; i < cResetBtns.length; i++) {
 	cResetBtns[i].onclick = function() {
-		var scrlTop = document.body.scrollTop;
-		location.hash = '';
-		history.replaceState('', document.title, window.location.pathname);
-		document.body.scrollTop = scrlTop;
+		removeHash(true);
 	};
 }
 var cEditResetBtns = document.getElementsByClassName('c-edit-reset');
@@ -277,7 +291,7 @@ socket.onmessage = function(e) {
 		return alert('JSON Error. Response was: ' + e.data);
 	}
 	if (data.event == 'q-edit') {
-		if (location.hash == '#edit') location.hash = '';
+		if (location.hash == '#edit') closeQuestionEditForm();
 		document.getElementById('title').firstChild.nodeValue =
 			(document.getElementById('lang-edit').value = data.lang) +
 			': ' +
