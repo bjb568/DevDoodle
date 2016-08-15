@@ -62,7 +62,7 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 	}
 	cb(null, str);
 });
-global.respondPage = o(function*(title, user, req, res, callback, header, status) {
+global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 	if (title) title = html(title);
 	let query = req.url.query,
 		cookies = cookie.parse(req.headers.cookie || '');
@@ -170,7 +170,7 @@ global.respondPage = o(function*(title, user, req, res, callback, header, status
 			yield
 		)
 	);
-	callback();
+	cb();
 });
 global.errorForbidden = function(req, res, user, msg) {
 	respondPage('403', user, req, res, o(function*() {
