@@ -1,5 +1,6 @@
 'use strict';
-let fs = require('fs');
+let fs = require('fs'),
+	Question = require('../utility/question.js');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname != '/') return errorNotFound(req, res, user);
 	yield respondPage('', user, req, res, yield, {description: 'DevDoodle is a developer network where you can learn languages, create and share your own programs, and ask and answer questions.'});
@@ -11,7 +12,7 @@ module.exports = o(function*(req, res, user) {
 		if (err) throw err;
 		if (question) {
 			res.write('<div class="question-preview">');
-			res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="qa/' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+			res.write('<h2 class="title">' + Question.answerCount(question.answers) + ' <a href="qa/' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
 			res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
 			let tagstr = '';
 			dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {

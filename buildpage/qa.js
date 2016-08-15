@@ -1,7 +1,8 @@
 'use strict';
 let fs = require('fs'),
 	diff = require('diff'),
-	Comment = require('../utility/comment.js');
+	Comment = require('../utility/comment.js'),
+	Question = require('../utility/question.js');
 function writeTagRecursive(tlang, tag, res) {
 	res.write('<li id="' + tag._id + '">');
 	res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
@@ -28,7 +29,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) throw err;
 			if (question) {
 				res.write('<div class="question-preview">');
-				res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+				res.write('<h2 class="title">' + Question.answerCount(question.answers) + ' <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
 				res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
 				let tagstr = '';
 				dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
