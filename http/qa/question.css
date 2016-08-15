@@ -89,6 +89,7 @@ code.blk:empty { display: none }
 	opacity: 0;
 	transition: opacity 0.2s ease-out;
 }
+#answertips h3 { margin-top: 0 }
 [typeof='Answer'] { margin-top: 0.5em }
 .tag-diff .tag { background: #aaa }
 .tag-diff del .tag { background: #faa }
