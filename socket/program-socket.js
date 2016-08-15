@@ -2,38 +2,20 @@
 let socketUtil = require('../sockets.js').util;
 module.exports = o(function*(tws, wss, i) {
 	let program = yield dbcs.programs.findOne({_id: tws.program = i[1]}, yield);
-	if (!program) return tws.trysend(JSON.stringify({
-		event: 'err',
-		body: 'Program not found.'
-	}));
+	if (!program) return tws.sendError('Program not found.');
 	tws.on('message', o(function*(message, raw) {
 		console.log(message);
 		try {
 			message = JSON.parse(message);
 		} catch (e) {
-			return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'JSON error.'
-			}));
+			return tws.sendError('JSON error.');
 		}
 		if (message.event == 'comment') {
-			if (!tws.user.name) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must be logged in and have 20 reputation to comment.'
-			}));
-			if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must have 20 reputation to comment.'
-			}));
+			if (!tws.user.name) return tws.sendError('You must be logged in and have 20 reputation to comment.');
+			if (tws.user.rep < 20) return tws.sendError('You must have 20 reputation to comment.');
 			message.body = message.body.toString();
-			if (!message.body) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Comment body not submitted.'
-			}));
-			if (message.body.length > 720) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Comment length may not exceed 720 characters.'
-			}));
+			if (!message.body) return tws.sendError('Comment body not submitted.');
+			if (message.body.length > 720) return tws.sendError('Comment length may not exceed 720 characters.');
 			let id = generateID();
 			dbcs.comments.insert({
 				_id: id,
@@ -101,10 +83,7 @@ module.exports = o(function*(tws, wss, i) {
 				if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
 			}
 		} else if (message.event == 'privitize') {
-			if (typeof message.private != 'boolean') return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Invalid value for private.'
-			}));
+			if (typeof message.private != 'boolean') return tws.sendError('Invalid value for private.');
 			dbcs.programs.update({_id: program._id}, {$set: {private: message.private}});
 			let toSend = JSON.stringify({
 				event: 'privitize',
@@ -113,9 +92,6 @@ module.exports = o(function*(tws, wss, i) {
 			for (let i in wss.clients) {
 				if (wss.clients[i].program == tws.program) wss.clients[i].trysend(toSend);
 			}
-		} else tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Invalid event type.'
-		}));
+		} else tws.sendError('Invalid event type.');
 	}));
 });

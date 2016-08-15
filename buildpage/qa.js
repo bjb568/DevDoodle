@@ -1,7 +1,8 @@
 'use strict';
 let fs = require('fs'),
 	diff = require('diff'),
-	Comment = require('../utility/comment.js');
+	Comment = require('../utility/comment.js'),
+	Question = require('../utility/question.js');
 function writeTagRecursive(tlang, tag, res) {
 	res.write('<li id="' + tag._id + '">');
 	res.write('<a class="small" href="#' + tag._id + '">#' + tag._id + '</a> ' + tag.name);
@@ -28,7 +29,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) throw err;
 			if (question) {
 				res.write('<div class="question-preview">');
-				res.write('<h2 class="title"><i class="answer-count">' + question.answers + '</i> <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
+				res.write('<h2 class="title">' + Question.answerCount(question.answers) + ' <a href="' + question._id + '">' + html(question.lang) + ': ' + html(question.title) + '</a></h2>');
 				res.write('<blockquote class="limited">' + markdown(question.description) + '</blockquote>');
 				let tagstr = '';
 				dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
@@ -226,9 +227,11 @@ module.exports = o(function*(req, res, user) {
 				question: question._id
 			}, yield)) || {val: 0},
 				op = yield dbcs.users.findOne({name: question.user}, yield),
-				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
-				count = yield cursor.count(yield);
-			let answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
+				answerQuery = {question: question._id};
+			if (!(user.level > 3 && question.user == user.name) && !(user.level > 4)) answerQuery['$or'] = [{deleted: {$exists: false}}, {user: user.name}];
+			let cursor = dbcs.answers.find(answerQuery).sort({score: -1}),
+				count = yield cursor.count(yield),
+				answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
 				answerstr = '<h2><span property="answerCount">' + count + '</span> Answer' + (count == 1 ? '' : 's') + '</h2>',
 				answerNum = 0;
 			let answerHandler = o(function*(err, answer) {
@@ -247,6 +250,7 @@ module.exports = o(function*(req, res, user) {
 						else {
 							answerstr +=
 								answerTemplate
+								.replace(' class=""', answer.deleted ? ' class="deleted"' : ' class=""')
 								.replace('suggestedAnswer', answerNum == 1 && answer.score > 1 ? 'suggestedAnswer acceptedAnswer' : 'suggestedAnswer')
 								.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 								.replaceAll(

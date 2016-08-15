@@ -304,13 +304,13 @@ function mdValidateBody() {
 }
 addEventListener('input', mdValidateBody);
 
-function request(uri, callback, params) {
+function request(uri, cb, params) {
 	var i = new XMLHttpRequest();
 	i.open('POST', uri, true);
 	i.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	i.send(params);
 	i.onload = function() {
-		callback(this.status == 204 ? 'Success' : this.responseText);
+		cb(this.status == 204 ? 'Success' : this.responseText);
 	};
 	return i;
 }
