@@ -107,7 +107,7 @@ document.getElementById('q-edit').onsubmit = function(e) {
 	e.preventDefault();
 	socket.send(JSON.stringify({
 		event: 'q-edit',
-		comment: document.getElementById('q-edit-comment').value,
+		comment: document.getElementById('q-edit-summary').value,
 		title: document.getElementById('title-edit').value,
 		lang: document.getElementById('lang-edit').value,
 		description: document.getElementById('q-desc-edit').value,
@@ -307,7 +307,7 @@ socket.onmessage = function(e) {
 		document.getElementById('tags').innerHTML = data.tags;
 		document.getElementById('edit-tags').innerHTML = data.editTags;
 		document.getElementById('edit-tags-input').value = data.rawEditTags;
-		document.getElementById('q-edit-comment').value = '';
+		document.getElementById('q-edit-summary').value = '';
 		var hist = document.getElementById('q-hist').firstChild;
 		hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
 	} else if (data.event == 'answer-delete') {
