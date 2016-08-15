@@ -1,0 +1,47 @@
+Emphasis - Basic Elements
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+			<h2>Emphasis</h2>
+			<p>Sometimes when we're writing, we want to give a <em>bit</em> more <strong>emphasis</strong> to our words. With HTML there are two tags for that:</p>
+			<ul>
+				<li><code>&lt;em>&lt;/em></code> for <strong>em</strong>phasis, usually rendered as italic</li>
+				<li><code>&lt;strong>&lt;/strong></code> for <strong>strong</strong> emphasis, usually rendered as bold</li>
+			</ul>
+			<p>To move on, use first the <code>&lt;em></code> element, then the <code>&lt;strong></code> element. Both can contain any text you want.</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="#">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls"><a href="../5/" class="lft">Back</a> <a href="#" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<div id="html" class="ta-cont">
+			<textarea id="html-ta" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>Kittehs! :3&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>&lt;/p>
+	&lt;/body>
+&lt;/html></textarea>
+			<code id="html-display" class="code-display"></code>
+		</div>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	var em = document.getElementsByTagName('em')[0];
+	if (!em) return {msg: 'Did you add the `&lt;em>` element correctly? Remember to include both the start tag and the end tag.'};
+	var strong = document.getElementsByTagName('strong')[0];
+	if (!strong) return {msg: 'Did you add the `&lt;strong>` element correctly? Remember to include both the start tag and the end tag.'};
+	if (em.parentNode.tagName == 'strong' || strong.parentNode.tagName == 'em') return {msg: 'Did you add the elements correctly? Add one after the other, so the first\'s end tag goes before the second\'s start tag.'};
+}</textarea>
+<script src="/learn/course.js" async=""></script>
