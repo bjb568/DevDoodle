@@ -296,6 +296,8 @@ socket.onmessage = function(e) {
 		document.getElementById('q-edit-comment').value = '';
 		var hist = document.getElementById('q-hist').firstChild;
 		hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
+	} else if (data.event == 'answer-delete') {
+		document.getElementById('a' + data.id).parentNode.classList.add('deleted');
 	} else if (data.event == 'comment-add') {
 		var div = document.createElement('div');
 		createComment(data);
@@ -430,6 +432,12 @@ for (var i = 0; i < answers.length; i++) {
 				up.classList.remove('clkd');
 			} else alert('Unknown error. Response was: ' + res);
 		}, 'id=' + id + '&val=' + (dn.classList.contains('clkd') ? 0 : -1));
+	};
+	answers[i].getElementsByClassName('delbtn')[0].onclick = function() {
+		socket.send(JSON.stringify({
+			event: 'answer-delete',
+			id: this.parentNode.parentNode.id.substr(1)
+		}));
 	};
 }
 var e = document.getElementById('edit-tags').getElementsByTagName('label');

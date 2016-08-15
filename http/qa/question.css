@@ -61,7 +61,7 @@ code.blk:empty { display: none }
 .ctrlicon:not([hidden]) { display: block }
 .ctrlicon {
 	margin: 4px -3px;
-	padding-top: 1px; padding-left: 5px;
+	padding-top: 1.5px; padding-left: 5px;
 	height: 25px; width: 25px;
 	font-size: 20px; font-weight: bold;
 	text-decoration: none;
@@ -89,7 +89,24 @@ code.blk:empty { display: none }
 	opacity: 0;
 	transition: opacity 0.2s ease-out;
 }
-[typeof='Answer'] { margin-top: 0.5em }
 .tag-diff .tag { background: #aaa }
 .tag-diff del .tag { background: #faa }
 .tag-diff ins .tag { background: #afa }
+[typeof='Answer'] {
+	position: relative;
+	margin-top: 0.5em;
+}
+[typeof='Answer']::after {
+	content: 'This answer has been deleted.';
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 36px;
+	z-index: 1;
+	background: rgba(255, 128, 128, 0.95);
+	text-align: center;
+	padding: 1em;
+	transition: opacity 0.5s;
+}
+[typeof='Answer']:not(.deleted)::after {
+	opacity: 0;
+	pointer-events: none;
+}
