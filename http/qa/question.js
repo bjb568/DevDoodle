@@ -21,6 +21,13 @@ function closeAnswerEditForm(e) {
 	editForm.hidden = true;
 	editForm.previousElementSibling.hidden = false;
 }
+function cancelAnswerEdit() {
+	var editForm = this.parentNode.parentNode;
+	editForm.parentNode.getElementsByClassName('editbtn')[0].onclick = null;
+	removeHash();
+	editForm.hidden = true;
+	editForm.previousElementSibling.hidden = false;
+}
 function closeQuestionEditForm(e) {
 	if (this instanceof Element) this.onclick = null;
 	if (e) e.preventDefault();
@@ -56,6 +63,21 @@ document.getElementById('cancel-edit').onclick = function() {
 	document.getElementById('title-edit').hidden = 1;
 	document.getElementById('q-content').hidden = 0;
 };
+document.getElementsByClassName('cancel-edit').forEach(function(el) {
+	el.addEventListener('click', cancelAnswerEdit);
+});
+document.getElementsByClassName('a-edit').forEach(function(el) {
+	console.log(el);
+	el.addEventListener('submit', function(e) {
+		e.preventDefault();
+		socket.send(JSON.stringify({
+			event: 'answer-edit',
+			id: el.parentNode.id.substr(1),
+			body: el.firstElementChild.value,
+			comment: el.getElementsByTagName('input')[0].value
+		}));
+	});
+});
 var addCommentBtns = document.getElementsByClassName('addcomment');
 for (var i = 0; i < addCommentBtns.length; i++) {
 	addCommentBtns[i].onclick = function() {
@@ -310,6 +332,13 @@ socket.onmessage = function(e) {
 		document.getElementById('q-edit-summary').value = '';
 		var hist = document.getElementById('q-hist').firstChild;
 		hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
+	} else if (data.event == 'answer-edit') {
+		var answer = document.getElementById('a' + data.id);
+		answer.children[1].firstElementChild.innerHTML = markdown(data.body);
+		answer.children[1].hidden = false;
+		answer.children[2].hidden = true;
+		answer.getElementsByClassName('a-edit-summary')[0].value = '';
+		removeHash();
 	} else if (data.event == 'answer-delete') {
 		document.getElementById('a' + data.id).parentNode.classList.add('deleted');
 	} else if (data.event == 'comment-add') {

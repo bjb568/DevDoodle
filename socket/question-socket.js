@@ -10,10 +10,11 @@ module.exports = o(function*(tws, wss, i) {
 			return tws.sendError('JSON error.');
 		}
 		if (message.event == 'q-edit') {
-			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
+			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 			if (tws.user.level < 3 && question.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
 			if (!message.title || !message.lang || !message.description || !message.question || !message.type || !message.tags) return tws.sendError('Edit missing required fields.');
+			if (message.description.toString().length < 144) return tws.sendError('Description must be at least 144 characters long.');
 			if (!questionTypes.hasOwnProperty(message.type)) return tws.sendError('Invalid type parameter.');
 			let tags = message.tags.split(',');
 			for (let i = 0; i < tags.length; i++) {
@@ -25,7 +26,7 @@ module.exports = o(function*(tws, wss, i) {
 				question: question._id,
 				event: 'edit',
 				user: tws.user.name,
-				comment: message.comment.substr(0, 288),
+				comment: (message.comment || '').toString().substr(0, 288),
 				time: new Date().getTime(),
 				title: question.title,
 				lang: question.lang,
@@ -39,9 +40,9 @@ module.exports = o(function*(tws, wss, i) {
 				$set: {
 					title: message.title.substr(0, 144),
 					lang: message.lang,
-					description: message.description,
-					question: message.question.substr(0, 144),
-					code: message.code,
+					description: message.description.toString(),
+					question: message.question.toString().substr(0, 144),
+					code: message.code.toString(),
 					type: message.type,
 					tags
 				}
@@ -96,6 +97,30 @@ module.exports = o(function*(tws, wss, i) {
 					});
 				}
 			});
+		} else if (message.event == 'answer-edit') {
+			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
+			let answer = yield dbcs.answers.findOne({_id: message.id}, yield);
+			if (!answer) return tws.sendError('Invalid answer id.');
+			if (tws.user.level < 3 && answer.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
+			if (!message.body) return tws.sendError('Edit missing required fields.');
+			if (message.body.toString().length < 144) return tws.sendError('Body must be at least 144 characters long.');
+			dbcs.posthistory.insert({
+				answer: answer._id,
+				event: 'edit',
+				user: tws.user.name,
+				comment: (message.comment || '').toString().substr(0, 288),
+				time: new Date().getTime(),
+				body: answer.body.toString()
+			});
+			dbcs.answers.update({_id: answer._id}, {$set: {body: message.body.toString()}});
+			let toSend = JSON.stringify({
+				event: 'answer-edit',
+				id: answer._id,
+				body: message.body.toString()
+			});
+			for (let i in wss.clients) {
+				if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
+			}
 		} else if (message.event == 'answer-delete') {
 			if (!tws.user.name) return tws.sendError('You must be logged in to delete answers.');
 			let answer = yield dbcs.answers.findOne({_id: message.id}, yield);

@@ -30,7 +30,7 @@ body {
 	0%, 30% { background: #f70 }
 }
 :not(.target):target { animation: target 1s }
-.blk, img.center, textarea { display: block }
+.blk, .edit-summary, img.center, textarea { display: block }
 .ib { display: inline-block }
 .inline, summary * { display: inline }
 [hidden], .nodisplay, .target:not(:target), #content > .sctrls { display: none }
