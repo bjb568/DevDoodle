@@ -329,7 +329,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to delete questions.');
 		let question = yield Question.getByReferer(req);
 		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
-		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own questions.');
+		if (question.user != user.name && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own questions.');
 		dbcs.posthistory.insert({
 			question: question._id,
 			event: 'delete',
@@ -350,7 +350,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to undelete questions.');
 		let question = yield Question.getByReferer(req);
 		if (!question) return res.writeHead(400) || res.end('Error: Invalid question id.');
-		if (question.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own questions.');
+		if (question.user != user.name && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own questions.');
 		dbcs.posthistory.insert({
 			question: question._id,
 			event: 'undelete',
@@ -454,7 +454,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to save a program.');
 		let id = ((url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/) || [])[1],
 			program = yield dbcs.programs.findOne({_id: id}, yield);
-		if (id && !req.url.query.fork && program && program.user.toString() == user.name.toString()) {
+		if (id && !req.url.query.fork && program && program.user == user.name) {
 			if (type == 2) {
 				dbcs.programs.update({_id: id}, {
 					$set: {
@@ -504,7 +504,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a program title.');
 		let program = yield Program.getByReferer(req, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() != user.name.toString()) return res.writeHead(403) || res.end('Error: You may rename only your own programs.');
+		if (program.user != user.name) return res.writeHead(403) || res.end('Error: You may rename only your own programs.');
 		dbcs.programs.update({_id: program._id}, {$set: {title: post.title.substr(0, 92)}});
 		res.writeHead(204);
 		res.end();
@@ -518,7 +518,7 @@ module.exports = o(function*(req, res, user, post) {
 		let pType = req.url.pathname == '/program/vote' ? 'program' : req.url.pathname == '/question/vote' ? 'question' : 'answer',
 			doc = yield dbcs[pType + 's'].findOne({_id: id}, yield);
 		if (!doc) return res.writeHead(400) || res.end('Error: Invalid post id.');
-		if (doc.user.toString() == user.name.toString()) return res.writeHead(403) || res.end('Error: You may not vote for your own ' + pType + '.');
+		if (doc.user == user.name) return res.writeHead(403) || res.end('Error: You may not vote for your own ' + pType + '.');
 		let vQuery = {user: user.name};
 		vQuery[pType] = id;
 		let current = yield dbcs.votes.findOne(vQuery, yield);
@@ -559,7 +559,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to delete programs.');
 		let program = yield Program.getByReferer(req, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own programs.');
+		if (program.user != user.name && user.level < 4) return res.writeHead(403) || res.end('Error: You may delete only your own programs.');
 		dbcs.programs.update({_id: program._id}, {
 			$set: {
 				deleted: {
@@ -574,7 +574,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to undelete programs.');
 		let program = yield Program.getByReferer(req, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
-		if (program.user.toString() != user.name.toString() && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own programs.');
+		if (program.user != user.name && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own programs.');
 		dbcs.programs.update({_id: program._id}, {
 			$unset: {deleted: 1},
 			$set: {private: true}
@@ -585,7 +585,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a lesson title.');
 		let lesson = yield dbcs.lessons.findOne({_id: ((url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)/) || [])[1]}, yield);
 		if (!lesson) return res.writeHead(400) || res.end('Error: Invalid lesson id.');
-		if (lesson.user.toString() != user.name.toString()) return res.writeHead(204) || res.end('Error: You may rename only your own lessons.');
+		if (lesson.user != user.name) return res.writeHead(204) || res.end('Error: You may rename only your own lessons.');
 		dbcs.lessons.update({_id: lesson._id}, {$set: {title: post.title.substr(0, 92)}});
 		res.writeHead(204);
 		res.end();
