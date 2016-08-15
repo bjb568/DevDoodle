@@ -129,11 +129,11 @@ module.exports = o(function*(tws, wss, i) {
 				event: 'err',
 				body: 'You must have 20 reputation to comment.'
 			}));
-			message.body = message.body.toString();
 			if (!message.body) return tws.trysend(JSON.stringify({
 				event: 'err',
 				body: 'Comment body not submitted.'
 			}));
+			message.body = message.body.toString();
 			if (message.body.length > 720) return tws.trysend(JSON.stringify({
 				event: 'err',
 				body: 'Comment length may not exceed 720 characters.'
@@ -146,7 +146,7 @@ module.exports = o(function*(tws, wss, i) {
 				time: new Date().getTime(),
 				question: tws.question
 			};
-			tcomment.answer = message.answer.toString();
+			tcomment.answer = (message.answer || '').toString();
 			dbcs.comments.insert(tcomment);
 			for (let i in wss.clients) {
 				if (wss.clients[i].question == tws.question) {
