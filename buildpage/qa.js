@@ -227,9 +227,11 @@ module.exports = o(function*(req, res, user) {
 				question: question._id
 			}, yield)) || {val: 0},
 				op = yield dbcs.users.findOne({name: question.user}, yield),
-				cursor = dbcs.answers.find({question: question._id}).sort({score: -1}),
-				count = yield cursor.count(yield);
-			let answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
+				answerQuery = {question: question._id};
+			if (!(user.level > 3 && question.user == user.name) && !(user.level > 4)) answerQuery['$or'] = [{deleted: {$exists: false}}, {user: user.name}];
+			let cursor = dbcs.answers.find(answerQuery).sort({score: -1}),
+				count = yield cursor.count(yield),
+				answerTemplate = (yield fs.readFile('./html/qa/answer.html', yield)).toString(),
 				answerstr = '<h2><span property="answerCount">' + count + '</span> Answer' + (count == 1 ? '' : 's') + '</h2>',
 				answerNum = 0;
 			let answerHandler = o(function*(err, answer) {
@@ -248,6 +250,7 @@ module.exports = o(function*(req, res, user) {
 						else {
 							answerstr +=
 								answerTemplate
+								.replace(' class=""', answer.deleted ? ' class="deleted"' : ' class=""')
 								.replace('suggestedAnswer', answerNum == 1 && answer.score > 1 ? 'suggestedAnswer acceptedAnswer' : 'suggestedAnswer')
 								.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 								.replaceAll(

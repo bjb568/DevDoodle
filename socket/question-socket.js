@@ -96,6 +96,33 @@ module.exports = o(function*(tws, wss, i) {
 					});
 				}
 			});
+		} else if (message.event == 'answer-delete') {
+			if (!tws.user.name) return tws.sendError('You must be logged in to delete answers.');
+			let answer = yield dbcs.answers.findOne({_id: message.id}, yield);
+			if (!answer) return tws.sendError('Invalid answer id.');
+			if (answer.user != tws.user.name && tws.user.level < 4) return tws.sendError('You may delete only your own answers.');
+			dbcs.posthistory.insert({
+				answer: answer._id,
+				event: 'delete',
+				by: [tws.user.name],
+				time: new Date().getTime()
+			});
+			dbcs.answers.update({_id: answer._id}, {
+				$set: {
+					deleted: {
+						by: [tws.user.name],
+						time: new Date().getTime()
+					}
+				}
+			});
+			for (let i in wss.clients) {
+				if (wss.clients[i].question == tws.question) {
+					wss.clients[i].sendj({
+						event: 'answer-delete',
+						id: answer._id
+					});
+				}
+			}
 		} else if (message.event == 'comment') {
 			if (!tws.user.name) return tws.sendError('You must be logged in and have 20 reputation to comment.');
 			if (tws.user.rep < 20) return tws.sendError('You must have 20 reputation to comment.');
