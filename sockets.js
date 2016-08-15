@@ -27,6 +27,14 @@ module.exports.init = function(server) {
 				tws.send(msg);
 			} catch (e) {}
 		};
+		tws.sendj = function(msg) {
+			tws.trysend(JSON.stringify(msg));
+		};
+		tws.sendError = function(error, options) {
+			let obj = {event: 'err', body: error};
+			for (let n in options) obj[n] = options[n];
+			tws.sendj(obj);
+		};
 		if (tws.upgradeReq.url == '/test') {
 			testSocket(tws, wss);
 		} else if ((i = tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)/))) {
@@ -35,23 +43,14 @@ module.exports.init = function(server) {
 			programSocket(tws, wss, i);
 		} else if ((i = tws.upgradeReq.url.match(/\/q\/([a-zA-Z\d_!@]+)/))) {
 			questionSocket(tws, wss, i);
-		} else tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Invalid upgrade URL.'
-		}));
+		} else tws.sendError('Invalid upgrade URL.');
 	}));
 };
 module.exports.util = {
 	commentEdit: o(function*(message, tws, cb) {
 		let post = yield dbcs.comments.findOne({_id: message.id}, yield);
-		if (!post) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Comment not found.'
-		}));
-		if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You may edit only your own comments.'
-		}));
+		if (!post) return tws.sendError('Comment not found.');
+		if (post.user != tws.user.name) return tws.sendError('You may edit only your own comments.');
 		if (post.body == message.body) return;
 		dbcs.commenthistory.insert({
 			message: post._id,
@@ -67,34 +66,18 @@ module.exports.util = {
 		}));
 	}),
 	commentVote: o(function*(message, tws, cb) {
-		if (!tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You must be logged in and have 20 reputation to vote on comments.'
-		}));
-		if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You must have 20 reputation to vote on comments.'
-		}));
+		if (!tws.user.name) return tws.sendError('You must be logged in and have 20 reputation to vote on comments.');
+		if (tws.user.rep < 20) return tws.sendError('You must have 20 reputation to vote on comments.');
 		let id = message.id.toString(),
 			post = yield dbcs.comments.findOne({
 				_id: id,
 				deleted: {$exists: false}
 			}, yield);
-		if (!post) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Invalid comment id.'
-		}));
+		if (!post) return tws.sendError('Invalid comment id.');
 		for (let i in post.votes) {
-			if (post.votes[i].user == tws.user.name) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You already voted on this comment.'
-			}));
+			if (post.votes[i].user == tws.user.name) return tws.sendError('You already voted on this comment.');
 		}
-		if (post.user == tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You may not vote on your own comments.',
-			commentUnvote: id
-		}));
+		if (post.user == tws.user.name) return tws.sendError('You may not vote on your own comments.', {commentUnvote: id});
 		dbcs.comments.update({_id: id}, {
 			$push: {
 				votes: {
@@ -110,27 +93,18 @@ module.exports.util = {
 		}));
 	}),
 	commentUnvote: o(function*(message, tws, cb) {
-		if (!tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You must be logged in to vote on comments.'
-		}));
+		if (!tws.user.name) return tws.sendError('You must be logged in to vote on comments.');
 		let id = message.id.toString(),
 			post = yield dbcs.comments.findOne({
 				_id: id,
 				deleted: {$exists: false}
 			}, yield);
-		if (!post) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Invalid comment id.'
-		}));
+		if (!post) return tws.sendError('Invalid comment id.');
 		let err = true;
 		for (let i in post.votes) {
 			if (post.votes[i].user == tws.user.name) err = false;
 		}
-		if (err) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You haven\'t voted on this comment.'
-		}));
+		if (err) return tws.sendError('You haven\'t voted on this comment.');
 		dbcs.comments.update({_id: id}, {$pull: {votes: {user: tws.user.name}}});
 		cb(null, JSON.stringify({
 			event: 'comment-scorechange',
@@ -140,14 +114,8 @@ module.exports.util = {
 	}),
 	commentDelete: o(function*(message, tws, cb) {
 		let post = yield dbcs.comments.findOne({_id: message.id}, yield);
-		if (!post) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Comment not found.'
-		}));
-		if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You may delete only your own comments.'
-		}));
+		if (!post) return tws.sendError('Comment not found.');
+		if (post.user != tws.user.name) return tws.sendError('You may delete only your own comments.');
 		dbcs.commenthistory.insert({
 			message: post._id,
 			event: 'delete',
@@ -162,14 +130,8 @@ module.exports.util = {
 	}),
 	commentUndelete: o(function*(message, tws, cb) {
 		let post = yield dbcs.comments.findOne({_id: message.id}, yield);
-		if (!post) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Comment not found.'
-		}));
-		if (post.user != tws.user.name) return tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'You may undelete only your own comments.'
-		}));
+		if (!post) return tws.sendError('Comment not found.');
+		if (post.user != tws.user.name) return tws.sendError('You may undelete only your own comments.');
 		dbcs.commenthistory.insert({
 			message: post._id,
 			event: 'undelete',

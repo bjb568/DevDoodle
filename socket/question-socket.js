@@ -1,50 +1,26 @@
 'use strict';
 let socketUtil = require('../sockets.js').util;
 module.exports = o(function*(tws, wss, i) {
-	if (!(yield dbcs.questions.findOne({_id: tws.question = i[1]}, yield))) return tws.trysend(JSON.stringify({
-		event: 'err',
-		body: 'Question not found.'
-	}));
+	if (!(yield dbcs.questions.findOne({_id: tws.question = i[1]}, yield))) return tws.sendError('Question not found.');
 	tws.on('message', o(function*(message, raw) {
 		console.log(message);
 		try {
 			message = JSON.parse(message);
 		} catch (e) {
-			return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'JSON error.'
-			}));
+			return tws.sendError('JSON error.');
 		}
 		if (message.event == 'q-edit') {
 			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
-			if (!tws.user.name) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must be logged in to edit posts.'
-			}));
-			if (tws.user.level < 3 && question.user != tws.user.name) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must have level 3 moderator tools to edit posts other than your own.'
-			}));
-			if (!message.title || !message.lang || !message.description || !message.question || !message.type || !message.tags) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Edit missing required fields.'
-			}));
-			if (!questionTypes.hasOwnProperty(message.type)) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Invalid type parameter.'
-			}));
+			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
+			if (tws.user.level < 3 && question.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
+			if (!message.title || !message.lang || !message.description || !message.question || !message.type || !message.tags) return tws.sendError('Edit missing required fields.');
+			if (!questionTypes.hasOwnProperty(message.type)) return tws.sendError('Invalid type parameter.');
 			let tags = message.tags.split(',');
 			for (let i = 0; i < tags.length; i++) {
-				if (!(tags[i] = parseInt(tags[i]))) return tws.trysend(JSON.stringify({
-					event: 'err',
-					body: 'Invalid tag list.'
-				}));
+				if (!(tags[i] = parseInt(tags[i]))) return tws.sendError('Invalid tag list.');
 			}
 			let tag = yield dbcs.qtags.findOne({lang: message.lang}, yield);
-			if (!tag) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Invalid language.'
-			}));
+			if (!tag) return tws.sendError('Invalid language.');
 			dbcs.posthistory.insert({
 				question: question._id,
 				event: 'edit',
@@ -121,23 +97,11 @@ module.exports = o(function*(tws, wss, i) {
 				}
 			});
 		} else if (message.event == 'comment') {
-			if (!tws.user.name) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must be logged in and have 20 reputation to comment.'
-			}));
-			if (tws.user.rep < 20) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'You must have 20 reputation to comment.'
-			}));
-			if (!message.body) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Comment body not submitted.'
-			}));
+			if (!tws.user.name) return tws.sendError('You must be logged in and have 20 reputation to comment.');
+			if (tws.user.rep < 20) return tws.sendError('You must have 20 reputation to comment.');
+			if (!message.body) return tws.sendError('Comment body not submitted.');
 			message.body = message.body.toString();
-			if (message.body.length > 720) return tws.trysend(JSON.stringify({
-				event: 'err',
-				body: 'Comment length may not exceed 720 characters.'
-			}));
+			if (message.body.length > 720) return tws.sendError('Comment length may not exceed 720 characters.');
 			let id = generateID();
 			let tcomment = {
 				_id: id,
@@ -150,13 +114,13 @@ module.exports = o(function*(tws, wss, i) {
 			dbcs.comments.insert(tcomment);
 			for (let i in wss.clients) {
 				if (wss.clients[i].question == tws.question) {
-					wss.clients[i].trysend(JSON.stringify({
+					wss.clients[i].sendj({
 						event: 'comment-add',
 						body: message.body,
 						user: tws.user.name,
 						answer: tcomment.answer,
 						id
-					}));
+					});
 				}
 			}
 			let matches = (message.body + ' ').match(/@([a-zA-Z0-9-]{3,16})\W/g) || [];
@@ -211,9 +175,6 @@ module.exports = o(function*(tws, wss, i) {
 			for (let i in wss.clients) {
 				if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
 			}
-		} else tws.trysend(JSON.stringify({
-			event: 'err',
-			body: 'Invalid event type.'
-		}));
+		} else tws.sendError('Invalid event type.');
 	}));
 });
