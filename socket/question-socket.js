@@ -13,7 +13,7 @@ module.exports = o(function*(tws, wss, i) {
 			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
 			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
 			if (tws.user.level < 3 && question.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
-			if (!message.title || !message.lang || !message.description || !message.question || !message.type || !message.tags) return tws.sendError('Edit missing required fields.');
+			if (!message.title || !message.lang || !message.description || !message.qquestion || !message.type || !message.tags) return tws.sendError('Edit missing required fields.');
 			if (message.description.toString().length < 144) return tws.sendError('Description must be at least 144 characters long.');
 			if (!questionTypes.hasOwnProperty(message.type)) return tws.sendError('Invalid type parameter.');
 			let tags = message.tags.split(',');
@@ -31,7 +31,7 @@ module.exports = o(function*(tws, wss, i) {
 				title: question.title,
 				lang: question.lang,
 				description: question.description,
-				qquestion: question.question,
+				qquestion: question.qquestion,
 				code: question.code,
 				type: question.type,
 				tags: question.tags
@@ -41,7 +41,7 @@ module.exports = o(function*(tws, wss, i) {
 					title: message.title.substr(0, 144),
 					lang: message.lang,
 					description: message.description.toString(),
-					question: message.question.toString().substr(0, 144),
+					qquestion: message.qquestion.toString().substr(0, 144),
 					code: message.code.toString(),
 					type: message.type,
 					tags
@@ -83,7 +83,7 @@ module.exports = o(function*(tws, wss, i) {
 								title: message.title.substr(0, 144),
 								lang: message.lang,
 								description: message.description,
-								question: message.question.substr(0, 144),
+								qquestion: message.qquestion.substr(0, 144),
 								code: message.code,
 								type: message.type,
 								tags: tagstr,
