@@ -36,7 +36,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (tag) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 					else {
-						res.write('<p class="underline qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+						res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						res.write('</div>');
 						cursor.nextObject(questionSummaryHandler);
 					}
