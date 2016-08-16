@@ -133,7 +133,7 @@ document.getElementById('q-edit').onsubmit = function(e) {
 		title: document.getElementById('title-edit').value,
 		lang: document.getElementById('lang-edit').value,
 		description: document.getElementById('q-desc-edit').value,
-		question: document.getElementById('q-question-edit').value,
+		qquestion: document.getElementById('q-question-edit').value,
 		code: document.getElementById('q-code-edit').value,
 		type: document.getElementById('edit-type').value,
 		tags: document.getElementById('edit-tags-input').value
@@ -321,7 +321,7 @@ socket.onmessage = function(e) {
 		document.getElementById('q-body').innerHTML =
 			markdown(document.getElementById('q-desc-edit').value = data.description) +
 			'<code class="blk">' + html(document.getElementById('q-code-edit').value = data.code) + '</code>' +
-			'<p><strong>' + inlineMarkdown(document.getElementById('q-question-edit').value = data.question) + '</strong></p>';
+			'<p><strong>' + inlineMarkdown(document.getElementById('q-question-edit').value = data.qquestion) + '</strong></p>';
 		var options = document.getElementById('edit-type').options;
 		for (var i = 0; i < options.length; i++) {
 			if (options[i].value == data.type) options[i].selected = true;

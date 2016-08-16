@@ -144,7 +144,7 @@ module.exports = o(function*(req, res, user) {
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else {
 			yield respondPage(program.title || 'Untitled', user, req, res, yield, {
-				description: (program.code || program.html).toMetaDescription(),
+				description: (program.code || program.html + '\n' + program.css + '\n' + program.js).toMetaDescription(),
 				clean: true,
 				inhead: '<link rel="stylesheet" href="/dev/program.css" />' + (program.type ? ('<link rel="stylesheet" href="/dev/' + (program.type == 1 ? 'canvas' : 'html') + '.css" />') : ''),
 				pageType: 'SoftwareSourceCode'

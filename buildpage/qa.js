@@ -36,7 +36,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (tag) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 					else {
-						res.write('<p class="underline qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+						res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						res.write('</div>');
 						cursor.nextObject(questionSummaryHandler);
 					}
@@ -121,17 +121,17 @@ module.exports = o(function*(req, res, user) {
 			}
 			return res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
-		let history = typeof req.url.query.history == 'string';
+		let history = typeof req.url.query.history == 'string',
+			revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
+			revcount = yield revcursor.count(yield);
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {
-				description: question.description.toMetaDescription(),
+				description: ((history ? revcount + ' revision' + (revcount == 1 ? '' : 's') + ': ' : '') + question.description).toMetaDescription(),
 				inhead: '<link rel="stylesheet" href="question.css" />',
 				pageType: 'Question'
 			}
 		);
-		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
-		revcount = yield revcursor.count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
 			res.write('<h2>Current Revision</h2>');
@@ -140,7 +140,7 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h1 class="nomar">' + html(question.lang) + ': ' + html(question.title) + '</h1>');
 			res.write('<h2>Body</h2> <code class="blk">' + html(question.description) + '</code>');
 			res.write('<h2>Code</h2> <code class="blk">' + html(question.code) + '</code>');
-			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.question) + '\nType: ' + question.type + '</code>');
+			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.qquestion) + '\nType: ' + question.type + '</code>');
 			res.write('<div class="umar">');
 			let langTags = [];
 			dbcs.qtags.find().each(function(err, tag) {
@@ -308,10 +308,10 @@ module.exports = o(function*(req, res, user) {
 										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
 										.replaceAll(
 											['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
-											[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.question), html(question.code), question.type]
+											[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.qquestion), html(question.code), question.type]
 										).replaceAll(
 											['$description', '$question'],
-											[markdown(question.description), inlineMarkdown(question.question)]
+											[markdown(question.description), inlineMarkdown(question.qquestion)]
 										).replaceAll(
 											['$edit-tags', '$raw-edit-tags'],
 											[tageditstr, question.tags.join(',')]
