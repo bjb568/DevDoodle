@@ -441,10 +441,10 @@ fieldset {
 	flex-direction: column;
 	width: 250px;
 	max-width: 512px;
-	height: 250px;
+	max-height: 250px;
 	margin: 0 0.3em 0.3em 0;
 }
-.lim-programs .program { height: 200px }
+.lim-programs .program { max-height: 200px }
 .program .title { flex-shrink: 0 }
 .program div {
 	display: flex;
