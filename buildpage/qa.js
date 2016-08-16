@@ -121,17 +121,17 @@ module.exports = o(function*(req, res, user) {
 			}
 			return res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
-		let history = typeof req.url.query.history == 'string';
+		let history = typeof req.url.query.history == 'string',
+			revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
+			revcount = yield revcursor.count(yield);
 		yield respondPage(
 			(history ? 'History of "' : question.lang + ': ') + question.title + (history ? '"' : ''),
 			user, req, res, yield, {
-				description: question.description.toMetaDescription(),
+				description: ((history ? revcount + ' revision' + (revcount == 1 ? '' : 's') + ': ' : '') + question.description).toMetaDescription(),
 				inhead: '<link rel="stylesheet" href="question.css" />',
 				pageType: 'Question'
 			}
 		);
-		let revcursor = dbcs.posthistory.find({question: question._id}).sort({time: -1}),
-		revcount = yield revcursor.count(yield);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
 			res.write('<h2>Current Revision</h2>');
