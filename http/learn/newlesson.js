@@ -50,7 +50,7 @@ function handleCodeTAInput() {
 	}
 	var cursorPos = code.whichSelection ? code.selectionEnd : code.selectionStart;
 	var oldCaret = document.getElementById('caret');
-	if (cursorPos != code.lastCursorPos || !oldCaret) {
+	if (navigator.userAgent.indexOf('Mobile') == -1 && code == document.activeElement && (cursorPos != code.lastCursorPos || !oldCaret)) {
 		code.lastCursorPos = cursorPos;
 		if (oldCaret) oldCaret.parentNode.removeChild(oldCaret);
 		var caret = document.createElement('span');
