@@ -27,7 +27,7 @@ h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
 #text a:visited { color: #444 }
 #text a:hover { color: #15f }
 #text a:active { color: #02d }
-#text-inner, #cntrls { padding: 0 0.4em }
+#text-inner { padding: 0 0.4em }
 #text-inner input { margin: 0 }
 @media (max-width: 800px) {
 	#html { flex-grow: 3 }
@@ -45,7 +45,18 @@ h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
 	#html { margin-right: 0.4em }
 	#html, #output { flex: 1 1 0 }
 }
-#cntrls { padding: 0.1em 0.4em }
+#cntrls > :not(button):not(form) {
+	text-align: center;
+	background: #fff;
+	margin: 0 2px;
+	text-decoration: none;
+}
+#cntrls button {
+	margin-left: 0.8em;
+	margin-right: 0.8em;
+}
+#cntrls > :first-child:not(button) { margin-left: 0 }
+#cntrls > :last-child:not(button) { margin-right: 0 }
 #cntrls form {
 	display: inline-block;
 	margin: 0;
@@ -67,7 +78,7 @@ h1, h2, h3, h4, h5, h6, #text code:not(#validator-display) { color: #000 }
 	#cntrls {
 		position: absolute;
 		left: 0; bottom: 0;
-		width: 100%; height: 1.5em;
+		width: 100%;
 		background: #ccc;
 	}
 }
