@@ -5,7 +5,7 @@ function commentToString(comment, user) {
 		voted;
 	for (let i in votes) if (votes[i].user == user.name) voted = true;
 	let commentBody = (user ? markdown(comment.body + ' ').replace(new RegExp('@' + user.name + '(\\W)', 'g'), '<span class="mention">@' + user.name + '</span>$1') : markdown(comment.body)),
-		endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|div|>).)+?>)+$/) || [{length: 0}])[0].length;
+		endTagsLength = (commentBody.match(/(<\/(p|ul|ol|li)+?>)+$/) || [{length: 0}])[0].length;
 	commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 		'<span class="c-sig" property="comment" typeof="Comment">' +
 			'-<a href="/user/' + comment.user + '" property="author">' + comment.user + '</a>,' +

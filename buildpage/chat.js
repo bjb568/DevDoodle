@@ -32,7 +32,7 @@ module.exports = o(function*(req, res, user) {
 					if (err) throw err;
 					if (comment) {
 						let commentBody = markdown(comment.body),
-							endTagsLength = (commentBody.match(/(<\/((?!blockquote|code|a|img|div|>).)+?>)+$/) || [{length: 0}])[0].length;
+							endTagsLength = (commentBody.match(/(<\/(p|ul|ol|li)+?>)+$/) || [{length: 0}])[0].length;
 						commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 							'<span class="c-sig">' +
 								'-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
