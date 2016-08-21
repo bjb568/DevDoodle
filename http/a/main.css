@@ -11,7 +11,9 @@ body {
 	line-height: 1.2;
 	display: flex;
 	flex-direction: column;
+	min-height: 100%;
 }
+#footer { top: 100% }
 * {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
@@ -34,10 +36,10 @@ body {
 .ib { display: inline-block }
 .inline, summary * { display: inline }
 [hidden], .nodisplay, .target:not(:target), #content > .sctrls { display: none }
-.rel, .comment, .spoiler { position: relative }
-.abs, .ctrls { position: absolute }
+.rel, .comment, .spoiler, body { position: relative }
+.abs, .ctrls, .iframe-16-9 iframe, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
-.fullheight, html, body { height: 100% }
+.fullheight, .iframe-16-9 iframe, html { height: 100% }
 .maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
@@ -91,10 +93,6 @@ abbr { border-bottom: 1px dashed #222 }
 	position: relative;
 	height: 0;
 	padding-bottom: 56.25%;
-}
-.iframe-16-9 iframe {
-	position: absolute;
-	height: 100%;
 }
 .flexcont {
 	display: flex;
