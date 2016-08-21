@@ -85,9 +85,7 @@ abbr { border-bottom: 1px dashed #222 }
 .green { color: #0b0 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
-.column-small { -webkit-column-width: 10em; -moz-column-width: 10em; column-width: 10em }
-.column-medium { -webkit-column-width: 16em; -moz-column-width: 16em; column-width: 16em }
-.column-large { -webkit-column-width: 24em; -moz-column-width: 24em; column-width: 24em }
+.column-medium { -webkit-column-width: calc(15em + 10vh); -moz-column-width: calc(15em + 10vh); column-width: calc(15em + 10vh) }
 .max-width { max-width: 448px }
 .iframe-16-9 {
 	position: relative;
