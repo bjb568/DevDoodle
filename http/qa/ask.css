@@ -91,7 +91,13 @@ fieldset, aside, #preview { transition: opacity 0.5s }
 	z-index: 1;
 	background: #ddd;
 }
-#preview h1 small { cursor: pointer }
+#preview h1 { margin-right: 0.5em }
+#preview h1 small {
+	cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
 .tint::after {
 	content: '';
 	display: block; position: fixed;

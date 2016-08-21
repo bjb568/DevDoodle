@@ -296,7 +296,7 @@ module.exports = o(function*(req, res, user, post) {
 		res.end();
 	} else if (req.url.pathname == '/question/add') {
 		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to ask a question.');
-		if (!post.title || !post.lang || !post.description || !post.question || !post.type || !post.tags) return res.writeHead(400) || res.end('Error: Missing required field.');
+		if (!post.title || !post.lang || !post.description || !post.qquestion || !post.type || !post.tags) return res.writeHead(400) || res.end('Error: Missing required field.');
 		if (post.description.length < 144) return res.writeHead(400) || res.end('Error: Description must be at least 144 characters long.');
 		if (!questionTypes.hasOwnProperty(post.type)) return res.writeHead(400) || res.end('Error: Invalid type parameter.');
 		let tags = post.tags.split(),
@@ -312,7 +312,7 @@ module.exports = o(function*(req, res, user, post) {
 			title: post.title.substr(0, 144),
 			lang: post.lang,
 			description: post.description,
-			question: post.question.substr(0, 288),
+			qquestion: post.qquestion.substr(0, 288),
 			code: post.code,
 			type: post.type,
 			tags,

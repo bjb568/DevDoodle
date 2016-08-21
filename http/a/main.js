@@ -341,7 +341,7 @@ function textareaHandler(e, s) {
 		end: 0
 	}];
 	if (!this.hIndex) this.hIndex = 0;
-	if (!s && e.which == 9) {
+	if (!s && e.which == 9 && !e.ctrlKey && !e.altKey && !e.metaKey) {
 		if (this.selectionStart == this.selectionEnd) {
 			if (e.shiftKey) {
 				var cS = this.selectionEnd - 1;
