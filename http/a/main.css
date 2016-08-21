@@ -11,7 +11,9 @@ body {
 	line-height: 1.2;
 	display: flex;
 	flex-direction: column;
+	min-height: 100%;
 }
+#footer { top: 100% }
 * {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
@@ -34,10 +36,10 @@ body {
 .ib { display: inline-block }
 .inline, summary * { display: inline }
 [hidden], .nodisplay, .target:not(:target), #content > .sctrls { display: none }
-.rel, .comment, .spoiler { position: relative }
-.abs, .ctrls { position: absolute }
+.rel, .comment, .spoiler, body { position: relative }
+.abs, .ctrls, .iframe-16-9 iframe, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
-.fullheight, html, body { height: 100% }
+.fullheight, .iframe-16-9 iframe, html { height: 100% }
 .maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
@@ -83,18 +85,12 @@ abbr { border-bottom: 1px dashed #222 }
 .green { color: #0b0 }
 .large { font-size: 1.2em }
 .larger, .ctrls { font-size: 1.4em }
-.column-small { -webkit-column-width: 10em; -moz-column-width: 10em; column-width: 10em }
-.column-medium { -webkit-column-width: 16em; -moz-column-width: 16em; column-width: 16em }
-.column-large { -webkit-column-width: 24em; -moz-column-width: 24em; column-width: 24em }
+.column-medium { -webkit-column-width: calc(15em + 10vh); -moz-column-width: calc(15em + 10vh); column-width: calc(15em + 10vh) }
 .max-width { max-width: 448px }
 .iframe-16-9 {
 	position: relative;
 	height: 0;
 	padding-bottom: 56.25%;
-}
-.iframe-16-9 iframe {
-	position: absolute;
-	height: 100%;
 }
 .flexcont {
 	display: flex;
