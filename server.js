@@ -384,6 +384,41 @@ let serverHandler = o(function*(req, res) {
 			res.writeHead(405);
 			res.end('Method not allowed. Use GET or POST.');
 		}
+	} else if (req.method == 'POST' && (i = req.url.pathname.match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)\/(\d+)$/))) {
+		let post = '';
+		req.on('data', function(data) {
+			if (req.abort) return;
+			post += data;
+			if (data.length > 1e6) {
+				res.writeHead(413);
+				res.end('Error: Request entity too large.');
+				req.abort = true;
+			}
+		});
+		req.on('end', o(function*() {
+			if (req.abort) return;
+			post = querystring.parse(post);
+			if (!user) return errorForbidden(req, res, user, 'You must be logged in to edit a lesson.');
+			let lesson = yield dbcs.lessons.findOne({_id: i[1]}, yield);
+			if (!lesson) return errorNotFound(req, res, user);
+			if (lesson.user != user.name && !(user.level >= 4)) return errorForbidden(req, res, user, 'You may edit only your own lessons.');
+			let slide = lesson.content[--i[2]];
+			if (!slide) return errorNotFound(req, res, user);
+			slide.stitle = post.stitle || 'Untitled';
+			slide.sbody = post.sbody || '';
+			slide.validate = post.validate || '';
+			slide.html = post.html || '';
+			dbcs.lessons.update({_id: lesson._id}, {
+				$set: {
+					updated: new Date().getTime(),
+					content: lesson.content,
+					title: post.title || 'Untitled'
+				}
+			});
+			console.log({Location: '/learn/unoff/' + lesson._id + '/' + ++i[2]});
+			res.writeHead(303, {Location: '/learn/unoff/' + lesson._id + '/' + i[2]});
+			res.end();
+		}));
 	} else if (req.url.pathname == '/login/') {
 		yield respondPage('Login', user, req, res, yield, {inhead: '<meta name="robots" content="noindex" />'});
 		res.write('<h1>Login</h1>');
