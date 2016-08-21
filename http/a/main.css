@@ -516,6 +516,7 @@ h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), 
 	font-family: 'Verdana';
 }
 .underline, h1, aside h2 { border-bottom: 1px solid #aaa }
+#sidebar h2 { border-bottom: none }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
 h1 {
 	font-size: 1.5em;
