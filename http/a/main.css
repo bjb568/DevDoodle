@@ -442,10 +442,8 @@ fieldset {
 	flex-grow: 1;
 	overflow: auto;
 }
-.program iframe { flex-grow: 1 }
-.programs {
-	max-height: 1000px;
-}
+.program iframe { flex-basis: 100vh }
+.programs { max-height: 1000px }
 .lim-programs { max-height: 600px }
 @media (min-width: 650px) {
 	.program { width: 300px }
@@ -454,8 +452,8 @@ fieldset {
 	.program { width: 320px }
 }
 @media (min-width: 800px) {
-	.program { height: 300px }
-	.lim-programs .program { height: 250px }
+	.program { max-height: 300px }
+	.lim-programs .program { max-height: 250px }
 	.programs { max-height: 1200px }
 	.lim-programs { max-height: 750px }
 }
