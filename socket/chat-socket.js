@@ -20,7 +20,7 @@ module.exports = o(function*(tws, wss, i) {
 			{user: tws.user.name}
 		]
 	}).count(yield),
-		after = dbcs.chat.find({
+		after = yield dbcs.chat.find({
 			room: tws.room,
 			$or: [
 				{deleted: {$exists: false}},
