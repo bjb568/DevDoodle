@@ -184,7 +184,7 @@ global.errorNotFound = function(req, res, user) {
 	respondPage('404', user, req, res, o(function*() {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	}), {}, 404);
 };
@@ -692,11 +692,11 @@ console.log('Connecting to mongodb…'.cyan);
 let server;
 mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	if (err) throw err;
-	db.createCollection('questions', function(err, collection) {
+	db.createCollection('questions', o(function*(err, collection) {
 		if (err) throw err;
-		db.createIndex('questions', {description: 'text'}, {}, function() {});
+		yield db.createIndex('questions', {'$**': 'text'}, {weights: {title: 3, qquestion: 1.5}}, yield);
 		dbcs.questions = collection;
-	});
+	}));
 	db.createCollection('chat', function(err, collection) {
 		if (err) throw err;
 		db.createIndex('chat', {body: 'text'}, {}, function() {});

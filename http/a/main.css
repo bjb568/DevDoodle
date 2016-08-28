@@ -40,7 +40,7 @@ body {
 .abs, .ctrls, .iframe-16-9 iframe, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
 .fullheight, .iframe-16-9 iframe, html { height: 100% }
-.maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
+.maxwidth, img, input, code.blk, .flexcont > *, #mailinput { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }

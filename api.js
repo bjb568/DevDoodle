@@ -400,6 +400,7 @@ module.exports = o(function*(req, res, user, post) {
 			otherlang = [];
 		res.writeHead(200);
 		dbcs.questions.find({
+			deleted: {$exists: false},
 			$text: {$search: post.search}
 		}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(8).each(function(err, question) {
 			if (err) throw err;

@@ -17,7 +17,7 @@ module.exports = o(function*(req, res, user) {
 			let tagstr = '';
 			dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
 				if (err) throw err;
-				if (tag) tagstr += '<a href="qa/search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
+				if (tag) tagstr += '<a href="qa/?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 				else {
 					res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 					res.write('</div>');
