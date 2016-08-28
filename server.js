@@ -113,6 +113,16 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 	if ((user = huser || user) && user.name) data = data.replace(/<a id="github-button".+?<\/a>/, '<a href="/user/' + user.name + '"$bnotifs><span>' + user.name + '</span></a>');
 	let dirs = req.url.pathname.split('/');
 	if (dirs[1] == 'dev' || dirs[1] == 'qa') data = data.replace('id="nav"', 'id="nav" class="sub"');
+	let modCount;
+	if (user && user.level > 1) {
+		let query = {
+			reviewing: {$exists: true},
+			reviewers: {$ne: user.name},
+			user: {$ne: user.name}
+		};
+		if (user.level < 4) query.mod = {$exists: false};
+		modCount = (yield dbcs.chat.find(query).count(yield));
+	}
 	res.write(
 		yield addVersionNonces(
 			data.replace(
@@ -164,7 +174,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 				: ''
 			).replace(
 				'<a href="/mod/"><span>Mod</span></a>',
-				user && user.level > 1 ? '<a href="/mod/"><span>Mod</span></a>' : ''
+				user && user.level > 1 ? '<a href="/mod/"><span>Mod' + (modCount ? ' (' + modCount + ')' : '') + '</span></a>' : ''
 			),
 			req.url.pathname,
 			yield
