@@ -1,11 +1,13 @@
-<h1>Program list</h1>
-Sort by
-<select id="sort">
-	<option value="hot">Hot</option>
-	<option value="votes">Votes</option>
-	<option value="upvotes">Upvotes</option>
-	<option value="recent">Recent</option>
-	<option value="update">Last Update</option>
-</select>
-<ol>$list</ol>
-<script src="../search.js" async=""></script>
+<h1>Programs <small><a href="new/">New Program</a></small></h1>
+<form id="form" class="bmar">
+	<label class="blk">Sort by
+	<select id="sort" name="sort">
+		<option value="hot">Hot</option>
+		<option value="votes">Votes</option>
+		<option value="upvotes">Upvotes</option>
+		<option value="recent">Recent</option>
+		<option value="update">Last Update</option>
+	</select></label>
+	<label class="blk"><input name="preview" type="checkbox" checked="" /> Show previews</label>
+</form>
+<script src="search.js" async=""></script>

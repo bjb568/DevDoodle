@@ -4,59 +4,53 @@ let fs = require('fs'),
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/dev/') {
-		yield respondPage('', user, req, res, yield, {description: 'Hot programs on DevDoodle — written with canvas.js or XHTML.'});
-		res.write('<h1>Programs <small><a href="new/">New Program</a></small></h1>');
-		res.write('<div class="flexcont programs">');
-		dbcs.programs.find({
-			deleted: {$exists: false},
-			$or: [
-				{private: false},
-				{user: user.name}
-			]
-		}).sort({hotness: -1, updated: -1}).limit(15).each(o(function*(err, program) {
-			if (err) throw err;
-			if (program) {
-				res.write('<div class="program">');
-				res.write('<h2 class="title"><a href="' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + program.user + '">' + program.user + '</a></small></h2>');
-				if (program.type == 0) res.write('<div><code class="blk small">' + html(program.code) + '</code></div>');
-				if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
-				else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
-				res.write('</div> ');
-			} else {
-				res.write('</div>');
-				res.write('<a href="search/" class="center-text blk">See more</a>');
-				res.end(yield fs.readFile('html/a/foot.html', yield));
-			}
-		}));
-	} else if (req.url.pathname == '/dev/search/') {
 		yield respondPage('Search', user, req, res, yield, {description: 'Sortable list of programs on DevDoodle — written with canvas.js or XHTML.'});
-		let liststr = '',
-			sort = (req.url.query || {}).sort || 'hot',
+		let sort = (req.url.query || {}).sort || 'hot',
 			sortDict = {
 				default: {hotness: -1, recent: -1},
 				votes: {score: -1, recent: -1},
 				upvotes: {upvotes: -1, score: -1, hotness: -1, recent: -1},
 				recent: {created: -1},
 				update: {updated: -1}
-			};
-		dbcs.programs.find({
+			},
+			condensed = parseInt(req.url.query.preview) == 0;
+		res.write(
+			(yield addVersionNonces((yield fs.readFile('./html/dev/search.html', yield)).toString(), req.url.pathname, yield))
+			.replace('"' + sort + '"', '"' + sort + '" selected=""')
+			.replace(' checked=""', condensed ? '' : ' checked=""')
+		);
+		let query = {
 			deleted: {$exists: false},
 			$or: [
 				{private: false},
 				{user: user.name}
 			]
-		}).sort(sortDict[sort] || sortDict.default).limit(720).each(o(function*(err, data) {
-			if (err) throw err;
-			if (data) liststr += '<li><a href="../' + data._id + '">' + html(data.title || 'Untitled') + '</a> by <a href="/user/' + data.user + '">' + data.user + '</a></li>';
-			else {
-				res.write(
-					(yield addVersionNonces((yield fs.readFile('./html/dev/search.html', yield)).toString(), req.url.pathname, yield))
-					.replace('$list', liststr)
-					.replace('"' + sort + '"', '"' + sort + '" selected=""')
-				);
-				res.end(yield fs.readFile('html/a/foot.html', yield));
-			}
-		}));
+		};
+		if (condensed) {
+			res.write('<ol>');
+			dbcs.programs.find(query, {user: true, title: true}).sort(sortDict[sort] || sortDict.default).limit(720).each(o(function*(err, program) {
+				if (err) throw err;
+				if (program) res.write('<li><a href="../' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> by <a href="/user/' + program.user + '">' + program.user + '</a></li>');
+				else res.end('</ol>' + (yield fs.readFile('html/a/foot.html', yield)));
+			}));
+		} else {
+			res.write('<div class="flexcont programs">');
+			dbcs.programs.find(query).sort(sortDict[sort] || sortDict.default).limit(15).each(o(function*(err, program) {
+				if (err) throw err;
+				if (program) {
+					res.write('<div class="program">');
+					res.write('<h2 class="title"><a href="' + program._id + '">' + html(program.title || 'Untitled') + typeIcons[program.private ? 'R' : 'P'] + '</a> <small>-<a href="/user/' + program.user + '">' + program.user + '</a></small></h2>');
+					if (program.type == 0) res.write('<div><code class="blk small">' + html(program.code) + '</code></div>');
+					if (program.type == 1) res.write('<div><iframe sandbox="allow-scripts" class="canvas-program" data-code="' + html(program.code) + '"></iframe></div>');
+					else if (program.type == 2) res.write('<div><iframe sandbox="allow-scripts" class="html-program" data-html="' + html(program.html) + '" data-css="' + html(program.css) + '" data-js="' + html(program.js) + '"></iframe></div>');
+					res.write('</div> ');
+				} else {
+					res.write('</div>');
+					res.write('<a href="search/" class="center-text blk">See more</a>');
+					res.end(yield fs.readFile('html/a/foot.html', yield));
+				}
+			}));
+		}
 	} else if (req.url.pathname == '/dev/new/canvas') {
 		yield respondPage('Canvas Playground', user, req, res, yield, {
 			description: 'Create a new program using canvas.js, DevDoodle\'s HTML5 canvas library, to save and share on DevDoodle.',
