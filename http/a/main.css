@@ -689,7 +689,7 @@ body > * { flex-shrink: 0 }
 #nav a {
 	color: #ddd;
 	font-size: 0.95rem;
-	line-height: 1.9em;
+	line-height: 2em;
 	padding: 0 0.2em;
 }
 #nav span { padding: 0 4px }
@@ -721,7 +721,7 @@ body > * { flex-shrink: 0 }
 }
 #notifs:empty { display: none }
 #nav a.active > span { font-weight: bold }
-@media (max-width: 375px) {
+@media (max-width: 319px) {
 	#nav #logo {
 		height: 2rem;
 		margin-bottom: 4px;
@@ -732,13 +732,8 @@ body > * { flex-shrink: 0 }
 		min-width: 40%;
 		display: inline-block;
 	}
-	#nav.sub div { display: inline }
-	#nav .active nav + spacer::after {
-		content: '\a';
-		white-space: pre;
-	}
 }
-@media (min-width: 376px) and (max-width: 839px) {
+@media (min-width: 320px) and (max-width: 839px) {
 	#nav {
 		text-align: right;
 		margin-top: 2px;
@@ -751,17 +746,28 @@ body > * { flex-shrink: 0 }
 	}
 	#nav > div:last-of-type { margin-left: 6px }
 	#nav form { margin: 3px 0 }
-	#nav form input { max-width: 18em }
+	#nav form input { max-width: 14em }
+	#nav div:not(:first-child) { display: inline-block }
 }
-@media (min-width: 376px) and (max-width: 499px) {
+@media (max-width: 549px) {
 	#nav.sub div { display: inline }
+	spacer { display: none }
+	#nav .active nav + spacer { display: inline }
 	#nav .active nav + spacer::after {
 		content: '\a';
 		white-space: pre;
 	}
 	#nav form { width: 100% }
 }
-@media (min-width: 480px) {
+@media (min-width: 480px) and (max-width: 839px) {
+	#nav div:nth-of-type(2) { flex-grow: 1 }
+}
+@media (min-width: 550px) {
+	#nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
 	#nav a { display: inline-block }
 	#nav:not(.sub) {
 		display: flex;
@@ -769,18 +775,8 @@ body > * { flex-shrink: 0 }
 		justify-content: center;
 	}
 	#nav form {
-		flex-basis: 10em;
+		flex-basis: 100%;
 		flex-grow: 1;
-	}
-}
-@media (min-width: 480px) and (max-width: 839px) {
-	#nav div:nth-of-type(2) { flex-grow: 1 }
-}
-@media (min-width: 645px) {
-	#nav {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
 	}
 }
 @media (max-width: 839px) {
@@ -803,7 +799,9 @@ body > * { flex-shrink: 0 }
 	#nav {
 		background: #000;
 		text-align: right;
+		flex-wrap: nowrap;
 	}
+	#nav > div { flex-shrink: 0 }
 	#nav > a { transition: background 0.15s }
 	#nav a:not(.unread):hover { background: #33a }
 	#nav .active, #nav a:not(.unread):active { background: #119 }
@@ -826,6 +824,7 @@ body > * { flex-shrink: 0 }
 	#nav form {
 		line-height: 36px;
 		margin: 0;
+		flex-basis: 10em;
 		max-width: 24em;
 	}
 	#nav > div > a, #nav div { position: relative }
@@ -835,7 +834,7 @@ body > * { flex-shrink: 0 }
 		top: 100%; left: 0;
 		margin: 0;
 		overflow: hidden;
-		max-height: 108px;
+		max-height: 72px;
 		transition: max-height 0.2s;
 		box-shadow: 1px 1px 8px #000;
 		text-align: left;
