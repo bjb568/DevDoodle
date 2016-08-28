@@ -24,7 +24,6 @@ module.exports = o(function*(req, res, user) {
 		yield respondPage(req.url.query.q ? 'Search' : '', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
 		res.write('<form><input type="text" name="q" class="fullwidth" placeholder="Search Questions" value="' + html(req.url.query.q || '') + '" autofocus="" /></form>');
-		res.write('<div class="flexcont">');
 		let qQuery = {deleted: {$exists: false}};
 		if (req.url.query.q) {
 			let words = [], tags = [];
@@ -42,6 +41,7 @@ module.exports = o(function*(req, res, user) {
 		let cursor = dbcs.questions.find(qQuery, qQuery.$text ? {score: {$meta: 'textScore'}} : {}).sort(qQuery.$text ? {score: {$meta: 'textScore'}} : {hotness: -1, time: -1}).limit(288),
 			count = yield cursor.count(yield);
 		res.write('<p><small>' + count + ' question' + (count == 1 ? '' : 's') + ' found.</small></p>');
+		res.write('<div class="flexcont">');
 		let qSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
 			if (question) {
