@@ -111,7 +111,7 @@ module.exports = o(function*(req, res, user) {
 										: '<p>Posting in a non-public room is by invitation only.</p>'
 								)
 						)
-						: '<p id="loginmsg">You must be <a href="/login/" title="Log in or register">logged in</a> and have 30 reputation to chat.</p>')
+						: '<p id="loginmsg">You must be <a href="/login/">logged in</a> and have 30 reputation to chat.</p>')
 				.replace(
 					' $options',
 					typeIcons[doc.type].replace('width="10" height="16"', 'width="13" height="21"') +

@@ -335,6 +335,7 @@ module.exports = o(function*(req, res, user) {
 											['$askdate', '$op-name', '$op-rep', '$op-pic'],
 											[new Date(question.time).toISOString(), op.name, op.rep.toString(), op.pic]
 										).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+										.replace('<form id="answerform"', user.name ? '<form id="answerform"' : 'You must be <a href="/login/" title="Log in">logged in</a> to answer questions. <form hidden="" id="answerform"')
 									);
 									res.end(yield fs.readFile('html/a/foot.html', yield));
 								}
