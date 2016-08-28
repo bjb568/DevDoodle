@@ -295,7 +295,7 @@ module.exports = o(function*(req, res, user, post) {
 		res.writeHead(204);
 		res.end();
 	} else if (req.url.pathname == '/question/add') {
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to ask a question.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to ask questions.');
 		if (!post.title || !post.lang || !post.description || !post.qquestion || !post.type || !post.tags) return res.writeHead(400) || res.end('Error: Missing required field.');
 		if (post.description.length < 144) return res.writeHead(400) || res.end('Error: Description must be at least 144 characters long.');
 		if (!questionTypes.hasOwnProperty(post.type)) return res.writeHead(400) || res.end('Error: Invalid type parameter.');
@@ -375,13 +375,13 @@ module.exports = o(function*(req, res, user, post) {
 			n++;
 		});
 	} else if (req.url.pathname == '/qa/tags/add') {
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to create a new tag.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to create new tags.');
 		if (!post.name || !post.lang) return res.writeHead(400) || res.end('Error: Name and language are required fields.');
 		let count = yield dbcs.answers.find({
 			user: user.name,
 			score: {$gte: 6}
 		}).count(yield);
-		if (count < 8 && user.level < 3) return res.writeHead(403) || res.end('Error: You must either be a level 3 moderator or have a bronze ' + post.lang + ' tag badge to create a new tag.');
+		if (count < 8 && user.level < 3) return res.writeHead(403) || res.end('Error: You must either be a level 3 moderator or have a bronze ' + post.lang + ' tag badge to create new tags.');
 		let parent = yield dbcs.qtags.findOne({_id: post.par}, yield),
 			newTag = {
 				name: post.name.substr(0, 48),
@@ -400,6 +400,7 @@ module.exports = o(function*(req, res, user, post) {
 			otherlang = [];
 		res.writeHead(200);
 		dbcs.questions.find({
+			deleted: {$exists: false},
 			$text: {$search: post.search}
 		}, {score: {$meta: 'textScore'}}).sort({score: {$meta: 'textScore'}}).limit(8).each(function(err, question) {
 			if (err) throw err;
@@ -414,7 +415,7 @@ module.exports = o(function*(req, res, user, post) {
 			} else res.end(JSON.stringify(samelang.concat(otherlang)));
 		});
 	} else if (req.url.pathname == '/answer/add') {
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to answer a question.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to answer questions.');
 		if (!post.body) return res.writeHead(400) || res.end('Error: Missing body.');
 		if (post.body.length < 144) return res.writeHead(400) || res.end('Error: Body must be at least 144 characters long.');
 		let qid = ((url.parse(req.headers.referer || '').pathname || '').match(/^\/qa\/([a-zA-Z\d_!@]+)/) || [])[1],
@@ -452,7 +453,7 @@ module.exports = o(function*(req, res, user, post) {
 	} else if (req.url.pathname == '/program/save') {
 		let type = parseInt(req.url.query.type);
 		if (type !== 0 && type !== 1 && type !== 2) return res.writeHead(400) || res.end('Error: Invalid program type.');
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to save a program.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to save programs.');
 		let id = ((url.parse(req.headers.referer || '').pathname || '').match(/^\/dev\/([a-zA-Z\d_!@]+)/) || [])[1],
 			program = yield dbcs.programs.findOne({_id: id}, yield);
 		if (id && !req.url.query.fork && program && program.user == user.name) {
@@ -502,7 +503,7 @@ module.exports = o(function*(req, res, user, post) {
 			res.end('Location: /dev/' + id);
 		}
 	} else if (req.url.pathname == '/program/edit-title') {
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a program title.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change program titles.');
 		let program = yield Program.getByReferer(req, yield);
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user != user.name) return res.writeHead(403) || res.end('Error: You may rename only your own programs.');
@@ -583,7 +584,7 @@ module.exports = o(function*(req, res, user, post) {
 		res.writeHead(204);
 		res.end();
 	} else if (req.url.pathname == '/lesson/edit-title') {
-		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change a lesson title.');
+		if (!user) return res.writeHead(403) || res.end('Error: You must be logged in to change lesson titles.');
 		let lesson = yield dbcs.lessons.findOne({_id: ((url.parse(req.headers.referer || '').pathname || '').match(/^\/learn\/unoff\/([a-zA-Z\d_!@]+)/) || [])[1]}, yield);
 		if (!lesson) return res.writeHead(400) || res.end('Error: Invalid lesson id.');
 		if (lesson.user != user.name) return res.writeHead(204) || res.end('Error: You may rename only your own lessons.');

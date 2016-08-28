@@ -21,11 +21,28 @@ function writeTagRecursive(tlang, tag, res) {
 module.exports = o(function*(req, res, user) {
 	let i;
 	if (req.url.pathname == '/qa/') {
-		yield respondPage('', user, req, res, yield);
+		yield respondPage(req.url.query.q ? 'Search' : '', user, req, res, yield);
 		res.write('<h1>Questions <small><a href="ask" title="Requires login">New Question</a>' + (user.level >= 3 ? ' <line /> <a href="tags">Tags</a>' : '') + '</small></h1>');
+		res.write('<form><input type="text" name="q" class="fullwidth" placeholder="Search Questions" value="' + html(req.url.query.q || '') + '" autofocus="" /></form>');
+		let qQuery = {deleted: {$exists: false}};
+		if (req.url.query.q) {
+			let words = [], tags = [];
+			req.url.query.q.split(/"/).forEach(function(chunk, i) {
+				if (i % 2) return words.push(chunk);
+				chunk.split(/\s+/).forEach(function(chunk) {
+					let m = chunk.match(/^\[\[(\d+)\]\]$/);
+					if (m) tags.push(parseInt(m[1]));
+					else words.push(chunk);
+				});
+			});
+			if (words.length) qQuery.$text = {$search: words.join(' ')};
+			if (tags.length) qQuery.tags = {$all: tags};
+		}
+		let cursor = dbcs.questions.find(qQuery, qQuery.$text ? {score: {$meta: 'textScore'}} : {}).sort(qQuery.$text ? {score: {$meta: 'textScore'}} : {hotness: -1, time: -1}).limit(288),
+			count = yield cursor.count(yield);
+		res.write('<p><small>' + count + ' question' + (count == 1 ? '' : 's') + ' found.</small></p>');
 		res.write('<div class="flexcont">');
-		let cursor = dbcs.questions.find({deleted: {$exists: false}}).sort({hotness: -1, time: -1}).limit(288);
-		let questionSummaryHandler = o(function*(err, question) {
+		let qSummaryHandler = o(function*(err, question) {
 			if (err) throw err;
 			if (question) {
 				res.write('<div class="question-preview">');
@@ -34,20 +51,16 @@ module.exports = o(function*(req, res, user) {
 				let tagstr = '';
 				dbcs.qtags.find({_id: {$in: question.tags}}).each(function(err, tag) {
 					if (err) throw err;
-					if (tag) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
+					if (tag) tagstr += '<a href="?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 					else {
-						res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
+						res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="/qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						res.write('</div>');
-						cursor.nextObject(questionSummaryHandler);
+						cursor.nextObject(qSummaryHandler);
 					}
 				});
 			} else res.end('</div>' + (yield fs.readFile('html/a/foot.html', yield)));
 		});
-		cursor.nextObject(questionSummaryHandler);
-	} else if (req.url.pathname == '/qa/search/') {
-		yield respondPage('Search', user, req, res, yield);
-		res.write(yield fs.readFile('./html/qa/search.html', yield));
-		res.end(yield fs.readFile('html/a/foot.html', yield));
+		cursor.nextObject(qSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
@@ -147,7 +160,7 @@ module.exports = o(function*(req, res, user) {
 				if (err) throw err;
 				if (tag) langTags[tag._id] = tag.name;
 				else {
-					let tagify = tag => '<a href="search?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>';
+					let tagify = tag => '<a href="./?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>';
 					for (let i = 0; i < question.tags.length; i++) res.write(tagify(question.tags[i]) + ' ');
 					res.write('</div>');
 					res.write('</article>');
@@ -278,7 +291,7 @@ module.exports = o(function*(req, res, user) {
 								if (err) throw err;
 								if (tag) {
 									tlang.push(tag);
-									if (question.tags.includes(tag._id)) tagstr += '<a href="search?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
+									if (question.tags.includes(tag._id)) tagstr += '<a href="./?q=%5B%5B' + tag._id + '%5D%5D" class="tag">' + tag.name + '</a> ';
 								} else {
 									let writeFormTagRecursive = function(tag) {
 										tageditstr += '<label><input type="checkbox" id="tag' + tag._id + '"' + (question.tags.includes(tag._id) ? ' checked=""' : '') + ' /> ' + tag.name + '</label>';

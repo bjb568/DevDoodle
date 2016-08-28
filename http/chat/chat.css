@@ -4,7 +4,6 @@
 label .md-err { margin-left: 10ch }
 label + .red { padding-left: 1ch }
 #content {
-	height: 0;
 	display: flex;
 	flex-direction: column;
 }

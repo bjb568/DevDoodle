@@ -40,7 +40,7 @@ body {
 .abs, .ctrls, .iframe-16-9 iframe, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }
 .fullheight, .iframe-16-9 iframe, html { height: 100% }
-.maxwidth, img, input, code.blk, #mailinput { max-width: 100% }
+.maxwidth, img, input, code.blk, .flexcont > *, #mailinput { max-width: 100% }
 .lft, .user > * { float: left }
 .rit, .user, h1 small, h2 small, .c-sig { float: right }
 .nofloat { float: none }
@@ -442,10 +442,8 @@ fieldset {
 	flex-grow: 1;
 	overflow: auto;
 }
-.program iframe { flex-grow: 1 }
-.programs {
-	max-height: 1000px;
-}
+.program iframe { flex-basis: 100vh }
+.programs { max-height: 1000px }
 .lim-programs { max-height: 600px }
 @media (min-width: 650px) {
 	.program { width: 300px }
@@ -454,8 +452,8 @@ fieldset {
 	.program { width: 320px }
 }
 @media (min-width: 800px) {
-	.program { height: 300px }
-	.lim-programs .program { height: 250px }
+	.program { max-height: 300px }
+	.lim-programs .program { max-height: 250px }
 	.programs { max-height: 1200px }
 	.lim-programs { max-height: 750px }
 }
@@ -516,6 +514,7 @@ h1:not(.title), h2:not(.title), h3:not(.title), h4:not(.title), h5:not(.title), 
 	font-family: 'Verdana';
 }
 .underline, h1, aside h2 { border-bottom: 1px solid #aaa }
+#sidebar h2 { border-bottom: none }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit }
 h1 {
 	font-size: 1.5em;
@@ -690,7 +689,7 @@ body > * { flex-shrink: 0 }
 #nav a {
 	color: #ddd;
 	font-size: 0.95rem;
-	line-height: 1.9em;
+	line-height: 2em;
 	padding: 0 0.2em;
 }
 #nav span { padding: 0 4px }
@@ -722,7 +721,7 @@ body > * { flex-shrink: 0 }
 }
 #notifs:empty { display: none }
 #nav a.active > span { font-weight: bold }
-@media (max-width: 375px) {
+@media (max-width: 319px) {
 	#nav #logo {
 		height: 2rem;
 		margin-bottom: 4px;
@@ -733,13 +732,8 @@ body > * { flex-shrink: 0 }
 		min-width: 40%;
 		display: inline-block;
 	}
-	#nav.sub div { display: inline }
-	#nav .active nav + spacer::after {
-		content: '\a';
-		white-space: pre;
-	}
 }
-@media (min-width: 376px) and (max-width: 839px) {
+@media (min-width: 320px) and (max-width: 839px) {
 	#nav {
 		text-align: right;
 		margin-top: 2px;
@@ -752,17 +746,28 @@ body > * { flex-shrink: 0 }
 	}
 	#nav > div:last-of-type { margin-left: 6px }
 	#nav form { margin: 3px 0 }
-	#nav form input { max-width: 18em }
+	#nav form input { max-width: 14em }
+	#nav div:not(:first-child) { display: inline-block }
 }
-@media (min-width: 376px) and (max-width: 499px) {
+@media (max-width: 549px) {
 	#nav.sub div { display: inline }
+	spacer { display: none }
+	#nav .active nav + spacer { display: inline }
 	#nav .active nav + spacer::after {
 		content: '\a';
 		white-space: pre;
 	}
 	#nav form { width: 100% }
 }
-@media (min-width: 480px) {
+@media (min-width: 480px) and (max-width: 839px) {
+	#nav div:nth-of-type(2) { flex-grow: 1 }
+}
+@media (min-width: 550px) {
+	#nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
 	#nav a { display: inline-block }
 	#nav:not(.sub) {
 		display: flex;
@@ -770,18 +775,8 @@ body > * { flex-shrink: 0 }
 		justify-content: center;
 	}
 	#nav form {
-		flex-basis: 10em;
+		flex-basis: 100%;
 		flex-grow: 1;
-	}
-}
-@media (min-width: 480px) and (max-width: 839px) {
-	#nav div:nth-of-type(2) { flex-grow: 1 }
-}
-@media (min-width: 645px) {
-	#nav {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
 	}
 }
 @media (max-width: 839px) {
@@ -804,7 +799,9 @@ body > * { flex-shrink: 0 }
 	#nav {
 		background: #000;
 		text-align: right;
+		flex-wrap: nowrap;
 	}
+	#nav > div { flex-shrink: 0 }
 	#nav > a { transition: background 0.15s }
 	#nav a:not(.unread):hover { background: #33a }
 	#nav .active, #nav a:not(.unread):active { background: #119 }
@@ -827,6 +824,7 @@ body > * { flex-shrink: 0 }
 	#nav form {
 		line-height: 36px;
 		margin: 0;
+		flex-basis: 10em;
 		max-width: 24em;
 	}
 	#nav > div > a, #nav div { position: relative }
@@ -836,7 +834,7 @@ body > * { flex-shrink: 0 }
 		top: 100%; left: 0;
 		margin: 0;
 		overflow: hidden;
-		max-height: 108px;
+		max-height: 72px;
 		transition: max-height 0.2s;
 		box-shadow: 1px 1px 8px #000;
 		text-align: left;

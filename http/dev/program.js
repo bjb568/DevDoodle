@@ -249,7 +249,7 @@ if (document.getElementById('meta')) {
 			msg.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body));
 			var currentNode = msg;
 			while (!sig.parentNode) {
-				if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+				if (!currentNode.lastElementChild || ['p', 'ul', 'ol', 'li'].indexOf(currentNode.lastElementChild.tagName) == -1) currentNode.appendChild(sig);
 				else currentNode = currentNode.lastElementChild;
 			}
 			if (msgCtrls) msg.insertBefore(msgCtrls, msg.firstChild);
@@ -396,7 +396,7 @@ function createComment(data) {
 	sig.appendChild(permalink);
 	var currentNode = div;
 	while (!sig.parentNode) {
-		if (!currentNode.lastElementChild || ['blockquote', 'code', 'a', 'img', 'div'].indexOf(currentNode.lastElementChild.tagName) != -1) currentNode.appendChild(sig);
+		if (!currentNode.lastElementChild || ['p', 'ul', 'ol', 'li'].indexOf(currentNode.lastElementChild.tagName) == -1) currentNode.appendChild(sig);
 		else currentNode = currentNode.lastElementChild;
 	}
 	var comments = document.getElementById('comments');

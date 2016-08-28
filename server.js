@@ -184,7 +184,7 @@ global.errorNotFound = function(req, res, user) {
 	respondPage('404', user, req, res, o(function*() {
 		res.write('<h1>Error 404 :(</h1>');
 		res.write('<p>The requested file could not be found. If you found a broken link, please <a href="mailto:support@devdoodle.net">let us know</a>.</p>');
-		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search/?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
+		res.write('<p><a href="javascript:history.go(-1)">Go back</a>, <a href="/search?q=' + encodeURIComponent(req.url.pathname.replaceAll('/', ' ')) + '">Search</a>.</p>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
 	}), {}, 404);
 };
@@ -315,7 +315,7 @@ let serverHandler = o(function*(req, res) {
 				if (req.abort) return;
 				post = querystring.parse(post);
 				if (parseInt(req.url.query.submit)) {
-					if (!user) return errorForbidden(req, res, user, 'You must be logged in to submit a lesson.');
+					if (!user) return errorForbidden(req, res, user, 'You must be logged in to submit lessons.');
 					let lesson = yield dbcs.lessons.findOne({
 						user: user.name,
 						title: post.title || 'Untitled'
@@ -398,7 +398,7 @@ let serverHandler = o(function*(req, res) {
 		req.on('end', o(function*() {
 			if (req.abort) return;
 			post = querystring.parse(post);
-			if (!user) return errorForbidden(req, res, user, 'You must be logged in to edit a lesson.');
+			if (!user) return errorForbidden(req, res, user, 'You must be logged in to edit lessons.');
 			let lesson = yield dbcs.lessons.findOne({_id: i[1]}, yield);
 			if (!lesson) return errorNotFound(req, res, user);
 			if (lesson.user != user.name && !(user.level >= 4)) return errorForbidden(req, res, user, 'You may edit only your own lessons.');
@@ -422,7 +422,7 @@ let serverHandler = o(function*(req, res) {
 	} else if (req.url.pathname == '/login/') {
 		yield respondPage('Login', user, req, res, yield, {inhead: '<meta name="robots" content="noindex" />'});
 		res.write('<h1>Login</h1>');
-		if (req.url.query.r == 'ask') res.write('<div class="notice">You must be logged in to ask a question.</div>');
+		if (req.url.query.r == 'ask') res.write('<div class="notice">You must be logged in to ask questions.</div>');
 		if (user) res.write('<p>You are signed in as <a href="/user/' + user.name + '">' + user.name + '</a>.</p>');
 		res.write('<a class="button larger" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.r == 'ask' ? '/qa/ask' : req.headers.referer || '') + '"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 120 120"><path d="M60 1.103C26.653 1.103-0.388 28.138-0.388 61.491 -0.388 88.171 16.915 110.807 40.909 118.792 43.927 119.351 45.035 117.482 45.035 115.887 45.035 114.448 44.979 109.69 44.953 104.644 28.153 108.297 24.608 97.519 24.608 97.519 21.861 90.54 17.903 88.683 17.903 88.683 12.424 84.935 18.316 85.012 18.316 85.012 24.38 85.438 27.573 91.236 27.573 91.236 32.959 100.467 41.7 97.798 45.146 96.255 45.689 92.353 47.253 89.688 48.98 88.18 35.567 86.654 21.467 81.475 21.467 58.336 21.467 51.744 23.826 46.356 27.689 42.127 27.062 40.606 24.995 34.464 28.275 26.146 28.275 26.146 33.346 24.524 44.885 32.337 49.702 30.999 54.868 30.328 60 30.304 65.132 30.328 70.302 30.999 75.128 32.337 86.654 24.524 91.718 26.146 91.718 26.146 95.005 34.464 92.938 40.606 92.311 42.127 96.183 46.356 98.525 51.744 98.525 58.336 98.525 81.531 84.398 86.637 70.951 88.132 73.117 90.006 75.047 93.681 75.047 99.315 75.047 107.395 74.978 113.898 74.978 115.887 74.978 117.495 76.064 119.377 79.125 118.785 103.107 110.791 120.388 88.163 120.388 61.491 120.388 28.138 93.351 1.103 60 1.103" fill="#161514" /></svg> <span>Log in with GitHub</span></a>');
 		res.end(yield fs.readFile('html/a/foot.html', yield));
@@ -692,11 +692,11 @@ console.log('Connecting to mongodb…'.cyan);
 let server;
 mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	if (err) throw err;
-	db.createCollection('questions', function(err, collection) {
+	db.createCollection('questions', o(function*(err, collection) {
 		if (err) throw err;
-		db.createIndex('questions', {description: 'text'}, {}, function() {});
+		yield db.createIndex('questions', {'$**': 'text'}, {weights: {title: 3, qquestion: 1.5}}, yield);
 		dbcs.questions = collection;
-	});
+	}));
 	db.createCollection('chat', function(err, collection) {
 		if (err) throw err;
 		db.createIndex('chat', {body: 'text'}, {}, function() {});

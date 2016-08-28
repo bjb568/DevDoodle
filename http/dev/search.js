@@ -1,4 +1,4 @@
 'use strict';
-document.getElementById('sort').onchange = function() {
-	window.location.href = '?sort=' + this.value;
+document.getElementById('form').onchange = function() {
+	window.location.href = '?sort=' + document.getElementsByName('sort')[0].value + '&preview=' + (document.getElementsByName('preview')[0].checked ? 1 : 0);
 };
