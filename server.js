@@ -41,9 +41,17 @@ try {
 }
 githubAuth = JSON.parse(githubAuth);
 
+function compressStatic(data, pn) {
+	pn = path.extname(pn);
+	if (pn == '.js') return uglifyJS.minify(data.toString(), {fromString: true}).code;
+	if (pn == '.css') return new CleanCSS().minify(data).styles;
+	return data;
+}
+
 global.getVersionNonce = o(function*(pn, file, cb) {
 	try {
-		return cb(null, crypto.createHash('md5').update(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield)).digest('hex'));
+		let data = compressStatic(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield), file);
+		return cb(null, crypto.createHash('sha512').update(data).digest('base64'));
 	} catch (e) {
 		return cb(e);
 	}
@@ -52,11 +60,13 @@ global.addVersionNonces = o(function*(str, pn, cb) {
 	for (let i = 0; i < str.length; i++) {
 		if (str.substr(i).match(/^\.[A-z]{1,8}"/)) {
 			while (str[i] && str[i] != '"') i++;
-			if (str.includes(':') || str.includes('devdoodle.net')) continue;
+			let path = str.substr(0, i).match(/"[^"]+?$/)[0].substr(1);
+			if (path.includes(':') || path.includes('devdoodle.net')) continue;
 			try {
-				str = str.substr(0, i) + '?v=' + (yield getVersionNonce(pn, str.substr(0, i).match(/"[^"]+?$/)[0].substr(1), yield)) + str.substr(i);
+				let hash = yield getVersionNonce(pn, path, yield);
+				str = str.substr(0, i) + '?v=' + hash + '" integrity="sha512-' + hash + str.substr(i);
 			} catch (e) {
-				console.error(e);
+				return cb(e);
 			}
 		}
 	}
@@ -652,12 +662,7 @@ let serverHandler = o(function*(req, res) {
 				} catch (e) {
 					return;
 				}
-				switch (path.extname(req.url.pathname)) {
-					case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
-					break;
-					case '.css': data = new CleanCSS().minify(data).styles;
-					break;
-				}
+				data = compressStatic(data, req.url.pathname);
 				cache[req.url.pathname] = {
 					raw: data,
 					gzip: data == cache[req.url.pathname].raw ? cache[req.url.pathname].gzip : yield zlib.gzip(data, yield),
@@ -672,12 +677,7 @@ let serverHandler = o(function*(req, res) {
 			} catch (e) {
 				return errorNotFound(req, res, user);
 			}
-			switch (path.extname(req.url.pathname)) {
-				case '.js': data = uglifyJS.minify(data.toString(), {fromString: true}).code;
-				break;
-				case '.css': data = new CleanCSS().minify(data).styles;
-				break;
-			}
+			data = compressStatic(data, req.url.pathname);
 			cache[req.url.pathname] = {
 				raw: data,
 				gzip: yield zlib.gzip(data, yield),
