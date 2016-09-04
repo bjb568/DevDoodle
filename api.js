@@ -12,7 +12,7 @@ let url = require('url'),
 module.exports = o(function*(req, res, user, post) {
 	let i;
 	if (req.url.pathname == '/logout') {
-		res.writeHead(303, {
+		res.writeHead(200, {
 			'Set-Cookie': cookie.serialize('id', '', {
 				path: '/',
 				expires: new Date(new Date().setDate(new Date().getDate() - 30)),
