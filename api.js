@@ -382,7 +382,7 @@ module.exports = o(function*(req, res, user, post) {
 			score: {$gte: 6}
 		}).count(yield);
 		if (count < 8 && user.level < 3) return res.writeHead(403) || res.end('Error: You must either be a level 3 moderator or have a bronze ' + post.lang + ' tag badge to create new tags.');
-		let parent = yield dbcs.qtags.findOne({_id: post.par}, yield),
+		let parent = yield dbcs.qtags.findOne({_id: parseInt(post.par)}, yield),
 			newTag = {
 				name: post.name.substr(0, 48),
 				lang: post.lang.substr(0, 48)
