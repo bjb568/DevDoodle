@@ -440,7 +440,7 @@ let serverHandler = o(function*(req, res) {
 		if (!req.url.query.code) {
 			yield respondPage('Login Error', user, req, res, yield, {}, 400);
 			res.write('<h1>Login Error</h1>');
-			res.write(errorsHTML(['No authentication code was recieved.']));
+			res.write(errorsHTML(['No authentication code was received.']));
 			return res.end(yield fs.readFile('html/a/foot.html', yield));
 		}
 		let tryagain = '<a xmlns="http://www.w3.org/1999/xhtml" href="https://github.com/login/oauth/authorize?client_id=' + githubAuth.client_id + '&amp;state=' + encodeURIComponent(req.url.query.state) + '">Try again.</a>';
@@ -461,7 +461,7 @@ let serverHandler = o(function*(req, res) {
 				if (data.error) {
 					yield respondPage('Login Error', user, req, res, yield, {}, 500);
 					res.write('<h1>Login Error</h1>');
-					res.write('<p>An error was recieved from GitHub. ' + tryagain + '</p>');
+					res.write('<p>An error was received from GitHub. ' + tryagain + '</p>');
 					res.write(errorsHTML([data.error + ': ' + data.error_description]));
 					return res.end(yield fs.readFile('html/a/foot.html', yield));
 				}
@@ -483,7 +483,7 @@ let serverHandler = o(function*(req, res) {
 						if (apiData.error) {
 							yield respondPage('Login Error', user, req, res, yield, {}, 500);
 							res.write('<h1>Login Error</h1>');
-							res.write('<p>An error was recieved from the GitHub API. ' + tryagain + '</p>');
+							res.write('<p>An error was received from the GitHub API. ' + tryagain + '</p>');
 							res.write(errorsHTML([apiData.error + ': ' + apiData.error_description]));
 							return res.end(yield fs.readFile('html/a/foot.html', yield));
 						}
@@ -530,7 +530,7 @@ let serverHandler = o(function*(req, res) {
 					} catch (e) {
 						yield respondPage('Login Error', user, req, res, yield, {}, 500);
 						res.write('<h1>Login Error</h1>');
-						res.write('<p>An invalid response was recieved from the GitHub API. ' + tryagain + '</p>');
+						res.write('<p>An invalid response was received from the GitHub API. ' + tryagain + '</p>');
 						res.end(yield fs.readFile('html/a/foot.html', yield));
 					}
 				}));
@@ -543,7 +543,7 @@ let serverHandler = o(function*(req, res) {
 			} catch (e) {
 				yield respondPage('Login Error', user, req, res, yield, {}, 500);
 				res.write('<h1>Login Error</h1>');
-				res.write('<p>An invalid response was recieved from GitHub. ' + tryagain + '</p>');
+				res.write('<p>An invalid response was received from GitHub. ' + tryagain + '</p>');
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
