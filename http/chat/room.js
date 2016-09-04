@@ -179,7 +179,7 @@ socket.onmessage = function(e) {
 		sig.appendChild(document.createTextNode(', '));
 		var permalink = document.createElement('a');
 		permalink.title = 'Permalink';
-		permalink.appendChild(agot(data.time || new Date().getTime()));
+		permalink.appendChild(agot(data.time));
 		permalink.href = '#' + (div.id = data.id);
 		sig.appendChild(permalink);
 		var currentNode = div;
@@ -279,7 +279,7 @@ socket.onmessage = function(e) {
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
-			permalink.appendChild(agot(data.time || new Date().getTime()));
+			permalink.appendChild(agot(data.time));
 			permalink.href = '#' + (div.id = data.id);
 			sig.appendChild(permalink);
 			var currentNode = div;
@@ -351,7 +351,7 @@ socket.onmessage = function(e) {
 			sig.appendChild(document.createTextNode(', '));
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
-			permalink.appendChild(agot(data.time || new Date().getTime()));
+			permalink.appendChild(agot(data.time));
 			permalink.href = '#' + data.id;
 			sig.appendChild(permalink);
 			var currentNode = div;

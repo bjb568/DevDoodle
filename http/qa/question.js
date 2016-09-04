@@ -290,7 +290,7 @@ function createComment(data) {
 	sig.appendChild(a);
 	sig.appendChild(document.createTextNode(', '));
 	var permalink = document.createElement('a');
-	permalink.appendChild(agot(data.time || new Date().getTime()));
+	permalink.appendChild(agot(data.time));
 	permalink.href = '#' + (div.id = 'c' + data.id);
 	sig.appendChild(permalink);
 	var currentNode = div;

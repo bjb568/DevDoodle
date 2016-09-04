@@ -329,7 +329,7 @@ function ago(od) {
 function agot(d) {
 	var time = document.createElement('time');
 	time.textContent = ago(d);
-	time.setAttribute('datetime', new Date(d).toISOString());
+	time.setAttribute('datetime', new Date(d || new Date()).toISOString());
 	return time;
 }
 
