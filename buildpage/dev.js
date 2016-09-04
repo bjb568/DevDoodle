@@ -58,8 +58,11 @@ module.exports = o(function*(req, res, user) {
 			inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/canvas.css" />'
 		});
 		res.write(
-			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/canvas.html', yield)).toString())
-			.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
+			(yield addVersionNonces(
+				(yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/canvas.html', yield)).toString(),
+				req.url.pathname,
+				yield
+			))
 			.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
 			.replace(/<section id="meta"[^]+?<\/section>/, '')
 			.replace('Fork</a>', 'Save</a>')
@@ -76,8 +79,11 @@ module.exports = o(function*(req, res, user) {
 			inhead: '<link rel="stylesheet" href="/dev/program.css" /><link rel="stylesheet" href="/dev/html.css" />'
 		});
 		res.write(
-			((yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/html.html', yield)).toString())
-			.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
+			(yield addVersionNonces(
+				(yield fs.readFile('./html/dev/program.html', yield)).toString() + (yield fs.readFile('./html/dev/html.html', yield)).toString(),
+				req.url.pathname,
+				yield
+			))
 			.replace(/<section id="meta"[^]+?<\/section>/, '')
 			.replace('Fork</a>', 'Save</a>')
 			.replaceAll(
@@ -160,23 +166,23 @@ module.exports = o(function*(req, res, user) {
 							if (forkFrom.deleted && !forkFrom.deleted.by.includes(user.name) && forkFrom.user != user.name && (!user.name || user.level < 3)) return;
 							forks += '<li><a href="' + forkFrom._id + '"' + (forkFrom.deleted ? ' class="red"' : '') + '>' + html(forkFrom.title || 'Untitled') + '</a> by <a href="/user/' + forkFrom.user + '">' + forkFrom.user + '</a></li>';
 						} else {
-							res.write(
-								(
-									(yield fs.readFile('./html/dev/program.html', yield)).toString() + (
-										!program.type ? (yield fs.readFile('./html/dev/text.html', yield)).toString().replaceAll('$code', html(program.code))
-										: program.type == 1 ?
-											(yield fs.readFile('./html/dev/canvas.html', yield)).toString()
-												.replace('/dev/runcanvas.js', '/dev/runcanvas.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runcanvas.js', yield)))
-												.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield)))
-												.replaceAll('$code', html(program.code))
-											: (yield fs.readFile('./html/dev/html.html', yield)).toString()
-												.replace('/dev/runhtml.js', '/dev/runhtml.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/runhtml.js', yield)))
-												.replaceAll(
-													['$html', '$css', '$js'],
-													[html(program.html), html(program.css), html(program.js)]
-												)
+							let addData = o(function*(data, cb) {
+								cb(null,
+									!program.type ? data.replaceAll('$code', html(program.code))
+									: program.type == 1 ? data.replace('$canvasjs', html(yield fs.readFile('./http/dev/canvas.js', yield))).replaceAll('$code', html(program.code))
+									: data.replaceAll(
+										['$html', '$css', '$js'],
+										[html(program.html), html(program.css), html(program.js)]
 									)
-								).replace('/dev/program.js', '/dev/program.js?v=' + (yield getVersionNonce(req.url.pathname, '/dev/program.js', yield)))
+								);
+							});
+							res.write(
+								(yield addData(yield addVersionNonces(
+									((yield fs.readFile('./html/dev/program.html', yield)).toString()) +
+									((yield fs.readFile('./html/dev/' + (!program.type ? 'text' : program.type == 1 ? 'canvas' : 'html') + '.html', yield)).toString()),
+									req.url.pathname,
+									yield
+								), yield))
 								.replaceAll(
 									['$id', '$created', '$updated'],
 									[program._id.toString(), new Date(program.created).toISOString(), new Date(program.updated).toISOString()]
