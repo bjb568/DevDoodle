@@ -468,11 +468,14 @@ function markreadRequest() {
 
 addEventListener('DOMContentLoaded', function() {
 	console.log(localStorage.sideDiff);
-	document.getElementById('side-by-side-diff').checked = localStorage.sideDiff;
-	document.getElementById('side-by-side-diff').addEventListener('click', function() {
-		if (this.checked) localStorage.sideDiff = '1';
-		else delete localStorage.sideDiff;
-	});
+	var sbsd = document.getElementById('side-by-side-diff');
+	if (sbsd) {
+		sbsd.checked = localStorage.sideDiff;
+		sbsd.addEventListener('click', function() {
+			if (this.checked) localStorage.sideDiff = '1';
+			else delete localStorage.sideDiff;
+		});
+	}
 	var markread = document.getElementById('markread');
 	if (markread) markread.addEventListener('click', markreadRequest);
 	var e = document.getElementsByTagName('textarea'),
