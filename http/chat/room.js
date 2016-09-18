@@ -33,14 +33,12 @@ ctrlsStar.textContent = '★';
 ctrlsStar.title = 'This message is interesting.';
 ctrlsStar.className = 'star';
 ctrlsStar.onclick = function() {
-	socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id)}));
+	socket.send(JSON.stringify({event: this.classList.contains('clkd') ? 'unstar' : 'star', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
 	this.classList.toggle('clkd');
 };
 ctrlsLink.textContent = '#';
-ctrlsLink.title = 'Open message history';
-ctrlsLink.onclick = function() {
-	open('message/' + this.parentNode.parentNode.id);
-};
+ctrlsLink.title = 'Open message history in a new tab';
+ctrlsLink.target = '_blank';
 ctrlsEdit.textContent = '✎';
 ctrlsEdit.title = 'Edit';
 ctrlsEdit.onclick = function() {
@@ -78,12 +76,12 @@ ctrlsDelete.textContent = '✕';
 ctrlsDelete.title = 'Delete…';
 ctrlsDelete.className = 'red';
 ctrlsDelete.onclick = function() {
-	socket.send(JSON.stringify({event: 'delete', id: parseInt(this.parentNode.parentNode.id)}));
+	socket.send(JSON.stringify({event: 'delete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
 };
 ctrlsUndelete.textContent = '↑';
 ctrlsUndelete.title = 'Undelete…';
 ctrlsUndelete.onclick = function() {
-	socket.send(JSON.stringify({event: 'undelete', id: parseInt(this.parentNode.parentNode.id)}));
+	socket.send(JSON.stringify({event: 'undelete', id: parseInt(this.parentNode.parentNode.id.substr(1))}));
 };
 ctrlsFlag.textContent = '⚑';
 ctrlsFlag.title = 'This message is inappropriate.';
@@ -93,7 +91,7 @@ ctrlsFlag.onclick = function() {
 	if (!flagtext) return;
 	socket.send(JSON.stringify({
 		event: 'flag',
-		id: parseInt(this.parentNode.parentNode.id),
+		id: parseInt(this.parentNode.parentNode.id.substr(1)),
 		body: flagtext
 	}));
 };
@@ -150,8 +148,8 @@ socket.onmessage = function(e) {
 	}
 	if (tsMode && ['star', 'unstar'].indexOf(data.event) == -1) return;
 	if (data.event == 'init' || data.event == 'add') {
-		source[data.id] = data.body;
-		if (document.getElementById(data.id)) return;
+		source['m' + data.id] = data.body;
+		if (document.getElementById('m' + data.id)) return;
 		if (users.indexOf(data.user) != -1) users.splice(users.indexOf(data.user), 1);
 		if (data.name != username) users.push(data.user);
 		var div = document.createElement('div');
@@ -180,7 +178,7 @@ socket.onmessage = function(e) {
 		var permalink = document.createElement('a');
 		permalink.title = 'Permalink';
 		permalink.appendChild(agot(data.time));
-		permalink.href = '#' + (div.id = data.id);
+		permalink.href = '#' + (div.id = 'm' + data.id);
 		sig.appendChild(permalink);
 		var currentNode = div;
 		while (!sig.parentNode) {
@@ -189,7 +187,7 @@ socket.onmessage = function(e) {
 		}
 		var tCtrls = ctrls.cloneNode(true);
 		tCtrls.children[0].onclick = ctrlsStar.onclick;
-		tCtrls.children[1].onclick = ctrlsLink.onclick;
+		tCtrls.children[1].href = 'message/' + data.id;
 		tCtrls.children[2].onclick = ctrlsEdit.onclick;
 		tCtrls.children[3].onclick = ctrlsDelete.onclick;
 		tCtrls.children[4].onclick = ctrlsUndelete.onclick;
@@ -203,7 +201,7 @@ socket.onmessage = function(e) {
 		if (username) div.appendChild(tCtrls);
 		if (data.event == 'init') {
 			var after = 0;
-			while (e = cont.children[after] && e.id < data.id) after++;
+			while (e = cont.children[after] && e.id && parseInt(e.id.substr(1)) < data.id) after++;
 			cont.insertBefore(div, cont.children[after]);
 			cont.scrollTop += div.offsetHeight + 3;
 		} else cont.appendChild(div);
@@ -214,8 +212,8 @@ socket.onmessage = function(e) {
 		cont.onscroll();
 		if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
 	} else if (data.event == 'edit') {
-		source[data.id] = data.body;
-		var msg = document.getElementById(data.id);
+		source['m' + data.id] = data.body;
+		var msg = document.getElementById('m' + data.id);
 		if (!msg) return;
 		var sig = msg.getElementsByClassName('c-sig')[0],
 			msgCtrls = msg.getElementsByClassName('ctrls')[0];
@@ -236,7 +234,7 @@ socket.onmessage = function(e) {
 			};
 		}
 	} else if (data.event == 'delete') {
-		var msg = document.getElementById(data.id);
+		var msg = document.getElementById('m' + data.id);
 		if (!msg) return;
 		if (msg.getElementsByClassName('c-sig')[0].getElementsByTagName('a')[0].textContent == username) {
 			msg.classList.add('deleted');
@@ -248,7 +246,7 @@ socket.onmessage = function(e) {
 			if (msgCtrls[3]) msgCtrls[4].hidden = false;
 		} else msg.parentNode.removeChild(msg);
 	} else if (data.event == 'undelete') {
-		var msg = document.getElementById(data.id);
+		var msg = document.getElementById('m' + data.id);
 		if (msg) {
 			msg.classList.remove('deleted');
 			var msgCtrls = msg.getElementsByClassName('ctrls')[0];
@@ -257,8 +255,8 @@ socket.onmessage = function(e) {
 			msgCtrls[0].hidden = false;
 			if (msgCtrls[3]) msgCtrls[3].hidden = false;
 			if (msgCtrls[3]) msgCtrls[4].hidden = true;
-		} else if (data.id > cont.firstChild.id) {
-			source[data.id] = data.body;
+		} else if (data.id > parseInt(cont.firstChild.id.substr(1))) {
+			source['m' + data.id] = data.body;
 			if (users.indexOf(data.user) != -1) users.splice(users.indexOf(data.user), 1);
 			if (data.name != username) users.push(data.user);
 			var div = document.createElement('div');
@@ -280,7 +278,7 @@ socket.onmessage = function(e) {
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
 			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + (div.id = data.id);
+			permalink.href = '#' + (div.id = 'm' + data.id);
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
@@ -289,7 +287,7 @@ socket.onmessage = function(e) {
 			}
 			var tCtrls = ctrls.cloneNode(true);
 			tCtrls.children[0].onclick = ctrlsStar.onclick;
-			tCtrls.children[1].onclick = ctrlsLink.onclick;
+			tCtrls.children[1].href = 'message/' + data.id;
 			tCtrls.children[2].onclick = ctrlsEdit.onclick;
 			tCtrls.children[3].onclick = ctrlsDelete.onclick;
 			tCtrls.children[4].onclick = ctrlsUndelete.onclick;
@@ -303,7 +301,7 @@ socket.onmessage = function(e) {
 			if (username) div.appendChild(tCtrls);
 			for (var i = 0; i <= cont.children.length; i++) {
 				if (i == cont.children.length) cont.appendChild(div);
-				else if (parseInt(cont.children[i].id) > data.id) {
+				else if (parseInt(cont.children[i].id.substr(1)) > data.id) {
 					cont.insertBefore(div, cont.children[i]);
 					break;
 				}
@@ -313,10 +311,10 @@ socket.onmessage = function(e) {
 			if (data.event == 'add' && document.hidden) document.title = '(' + ++unread + ') ' + title;
 		}
 	} else if (data.event == 'selfstar') {
-		if (e = document.getElementById(data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
+		if (e = document.getElementById('m' + data.id)) e.getElementsByClassName('ctrls')[0].firstChild.classList.add('clkd');
 	} else if (data.event == 'star') {
 		var f;
-		if ((e = document.getElementById(data.id)) && (f = document.getElementById(data.id + 's'))) {
+		if ((e = document.getElementById('m' + data.id)) && (f = document.getElementById('m' + data.id + 's'))) {
 			e = e.getElementsByClassName('starcount')[0];
 			e.removeChild(e.firstChild);
 			e.appendChild(document.createTextNode(++e.dataset.count + '★'));
@@ -327,14 +325,14 @@ socket.onmessage = function(e) {
 		} else {
 			var li = document.createElement('li'),
 				div = document.createElement('div');
-				e = document.getElementById(data.id);
+				e = document.getElementById('m' + data.id);
 			if (e && !data.board) {
 				e = e.getElementsByClassName('starcount')[0];
 				e.removeChild(e.firstChild);
 				e.appendChild(document.createTextNode(++e.dataset.count + '★'));
 			}
 			if (data.stars == 1) return;
-			div.id = data.id + 's';
+			div.id = 'm' + data.id + 's';
 			div.classList.add('comment');
 			div.innerHTML = (username ? markdown(data.body + ' ').replace(new RegExp('@' + username + '(\\W)', 'g'), '<span class="mention">@' + username + '</span>$1') : markdown(data.body)).replaceAll('<a', '<a target="_blank"');
 			var sig = document.createElement('span');
@@ -352,7 +350,7 @@ socket.onmessage = function(e) {
 			var permalink = document.createElement('a');
 			permalink.title = 'Permalink';
 			permalink.appendChild(agot(data.time));
-			permalink.href = '#' + data.id;
+			permalink.href = '#m' + data.id;
 			sig.appendChild(permalink);
 			var currentNode = div;
 			while (!sig.parentNode) {
@@ -364,13 +362,13 @@ socket.onmessage = function(e) {
 			else starwall.appendChild(li);
 		}
 	} else if (data.event == 'unstar') {
-		if (e = document.getElementById(data.id)) {
+		if (e = document.getElementById('m' + data.id)) {
 			e = e.getElementsByClassName('starcount')[0];
 			e.removeChild(e.firstChild);
 			var count = --e.dataset.count;
 			e.appendChild(document.createTextNode(count + '★'));
 		}
-		if (e = document.getElementById(data.id + 's')) {
+		if (e = document.getElementById('m' + data.id + 's')) {
 			if (count < 2) return e.parentNode.parentNode.removeChild(e.parentNode);
 			e = e.getElementsByClassName('starcount')[0];
 			e.dataset.count--;
@@ -644,8 +642,8 @@ addEventListener('hashchange', function(e) {
 	if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	if (hashchangeready) {
 		var hash = parseInt(e.newURL.split('#', 2)[1]);
-		if (hash && !document.getElementById(hash)) {
-			request('/api/chat/msg/' + hash, function(res) {
+		if (hash && hash[0] == 'm' && !document.getElementById(hash)) {
+			request('/api/chat/msg/' + hash.substr(1), function(res) {
 				try {
 					res = JSON.parse(res);
 					if (res.room == roomID) location.reload();

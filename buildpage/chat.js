@@ -36,7 +36,7 @@ module.exports = o(function*(req, res, user) {
 						commentBody = commentBody.substring(0, commentBody.length - endTagsLength) +
 							'<span class="c-sig">' +
 								'-<a href="/user/' + comment.user + '">' + comment.user + '</a>, ' +
-								'<a href="' + comment.room + '#' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a>' +
+								'<a href="' + comment.room + '#m' + comment._id + '" title="Permalink"><time datetime="' + new Date(comment.time).toISOString() + '"></time> in ' + roomnames[comment.room] + '</a>' +
 							'</span>' +
 							commentBody.substring(commentBody.length - endTagsLength);
 						res.write('<div class="comment">' + commentBody + '</div>');
@@ -128,7 +128,7 @@ module.exports = o(function*(req, res, user) {
 		let revisions = 0,
 			events;
 		res.write('<h1>Message #' + doc._id + '</h1>');
-		res.write('<p><a href="/chat/' + doc.room + '#' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>');
+		res.write('<p><a href="/chat/' + doc.room + '#m' + doc._id + '" title="See message in room">Posted <time datetime="' + new Date(doc.time).toISOString() + '"></time></a> by <a href="/user/' + doc.user + '">' + doc.user + '</a></p>');
 		res.write('<p>Current revision:</p>');
 		res.write('<blockquote><pre class="nomar">' + html(doc.body) + '</pre></blockquote>');
 		dbcs.chathistory.find({message: doc._id}).sort({time: 1}).each(o(function*(err, data) {

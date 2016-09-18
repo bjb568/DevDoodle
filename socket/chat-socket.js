@@ -172,7 +172,7 @@ module.exports = o(function*(tws, wss, i) {
 						$push: {
 							notifs: {
 								type: 'Chat message',
-								on: (yield dbcs.chatrooms.findOne({_id: tws.room}, yield)).name.link('/chat/' + tws.room + '#' + id),
+								on: (yield dbcs.chatrooms.findOne({_id: tws.room}, yield)).name.link('/chat/' + tws.room + '#m' + id),
 								body: message.body,
 								from: tws.user.name,
 								unread: true,
@@ -224,7 +224,7 @@ module.exports = o(function*(tws, wss, i) {
 			dbcs.chat.update({_id: post._id}, changes);
 			tws.sendj({
 				event: 'notice',
-				body: 'Post #' + message.id + ' flagged.'
+				body: 'Message #' + message.id + ' flagged.'
 			});
 		} else if (message.event == 'delete') {
 			let post = yield dbcs.chat.findOne({_id: message.id}, yield);
