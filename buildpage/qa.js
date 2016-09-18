@@ -147,6 +147,7 @@ module.exports = o(function*(req, res, user) {
 		);
 		if (history) {
 			res.write('<h1><a href="' + question._id + '">←</a> History of "' + html(question.title) + '"</h1>');
+			res.write('<input type="checkbox" id="side-by-side-diff" /> <label for="side-by-side-diff">Show diffs side by side</label>');
 			res.write('<h2>Current Revision</h2>');
 			res.write('<p class="indt">Owned by <strong><a href="/user/' + question.user + '">' + question.user + '</a></strong>.</p>');
 			res.write('<article class="pad indt">');
@@ -182,35 +183,52 @@ module.exports = o(function*(req, res, user) {
 							}
 							res.write('<p class="indt"><time datetime="' + new Date(item.time).toISOString() + '"></time>' + (deletersstr ? ' by ' + deletersstr : '') + '</p>');
 							if (item.event == 'edit') {
-								let writeDiff = function(o, n) {
-									let d = diff.diffWordsWithSpace(o, n);
+								let writeDiff = function(d) {
 									for (let i = 0; i < d.length; i++) {
 										if (d[i].added) res.write('<ins>' + html(d[i].value) + '</ins>');
 										else if (d[i].removed) res.write('<del>' + html(d[i].value) + '</del>');
 										else res.write(html(d[i].value));
 									}
 								};
+								let writeDiffA = function(d) {
+									for (let i = 0; i < d.length; i++) {
+										if (d[i].removed) res.write('<del>' + html(d[i].value) + '</del>');
+										else if (!d[i].added) res.write(html(d[i].value));
+									}
+								};
+								let writeDiffB = function(d) {
+									for (let i = 0; i < d.length; i++) {
+										if (d[i].added) res.write('<ins>' + html(d[i].value) + '</ins>');
+										else if (!d[i].removed) res.write(html(d[i].value));
+									}
+								};
+								let writeFullDiff = function(o, n, prop) {
+									let d = diff.diffWordsWithSpace(prop ? o[prop] : o, prop ? n[prop] : n);
+									res.write('<code class="blk inline-diff">');
+									writeDiff(d);
+									res.write('</code>');
+									res.write('<code class="blk side-diff-a">');
+									writeDiffA(d);
+									res.write('</code>');
+									res.write('<code class="blk side-diff-b">');
+									writeDiffB(d);
+									res.write('</code>');
+								};
 								res.write('<blockquote><i>' + inlineMarkdown(item.comment) + '</i></blockquote>');
 								res.write('<article class="pad indt">');
 								res.write('<h1 class="noumar">');
-								writeDiff(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title);
+								writeDiff(diff.diffWordsWithSpace(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title));
 								res.write('</h1>');
 								res.write(item.description == prev.description ? '<details>' : '<details open="">');
 								res.write('<summary><h2>Body</h2></summary>');
-								res.write('<code class="blk">');
-								writeDiff(item.description, prev.description);
-								res.write('</code>');
+								writeFullDiff(item, prev, 'description');
 								res.write('</details>');
 								res.write(item.code == prev.code ? '<details>' : '<details open="">');
 								res.write('<summary><h2>Code</h2></summary>');
-								res.write('<code class="blk">');
-								writeDiff(item.code, prev.code);
-								res.write('</code>');
+								writeFullDiff(item, prev, 'code');
 								res.write('</details>');
 								res.write('<h2>Core Question:</h2>');
-								res.write('<code class="blk">');
-								writeDiff(item.qquestion + '\nType: ' + item.type, prev.qquestion + '\nType: ' + prev.type);
-								res.write('</code>');
+								writeFullDiff(item.qquestion + '\nType: ' + item.type, prev.qquestion + '\nType: ' + prev.type);
 								res.write('<div class="bumar tag-diff">');
 								let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));
 								for (let i = 0; i < d.length; i++) {
