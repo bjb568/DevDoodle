@@ -157,7 +157,7 @@ module.exports = o(function*(req, res, user) {
 			res.write('<h2>Core Question:</h2> <code class="blk">' + html(question.qquestion) + '\nType: ' + question.type + '</code>');
 			res.write('<div class="umar">');
 			let langTags = [];
-			dbcs.qtags.find().each(function(err, tag) {
+			dbcs.qtags.find({}, {name: true}).each(function(err, tag) {
 				if (err) throw err;
 				if (tag) langTags[tag._id] = tag.name;
 				else {
@@ -214,7 +214,7 @@ module.exports = o(function*(req, res, user) {
 									writeDiffB(d);
 									res.write('</code>');
 								};
-								res.write('<blockquote><i>' + inlineMarkdown(item.comment) + '</i></blockquote>');
+								res.write('<blockquote>' + inlineMarkdown(item.comment) + '</blockquote>');
 								res.write('<article class="pad indt">');
 								res.write('<h1 class="noumar">');
 								writeDiff(diff.diffWordsWithSpace(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title));
@@ -314,7 +314,7 @@ module.exports = o(function*(req, res, user) {
 							let tagstr = '',
 								tlang = [],
 								tageditstr = '';
-							dbcs.qtags.find({lang: question.lang}).each(o(function*(err, tag) {
+							dbcs.qtags.find({lang: question.lang}).each(function(err, tag) {
 								if (err) throw err;
 								if (tag) {
 									tlang.push(tag);
@@ -340,42 +340,57 @@ module.exports = o(function*(req, res, user) {
 											i = -1;
 										}
 									}
-									res.write(
-										(yield addVersionNonces((yield fs.readFile('./html/qa/question.html', yield)).toString(), req.url.pathname, yield))
-										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
-										.replace(revcount ? '$revcount' : ' ($revcount)', revcount || '')
-										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
-										.replace('edit-pending-notice', (
-											yield dbcs.posthistory.findOne({
-												question: question._id,
-												event: 'edit-suggestion',
-												user: user.name,
-												reviewing: {$exists: true}
-											}, yield)
-										) ? 'edit-pending-notice' : 'edit-pending-notice" hidden="')
-										.replace('edit-notice', user.level >= 3 || user.name == question.user ? 'edit-notice" hidden="' : 'edit-notice')
-										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
-										.replaceAll(
-											['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
-											[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.qquestion), html(question.code), question.type]
-										).replaceAll(
-											['$description', '$question'],
-											[markdown(question.description), inlineMarkdown(question.qquestion)]
-										).replaceAll(
-											['$edit-tags', '$raw-edit-tags'],
-											[tageditstr, question.tags.join(',')]
-										).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
-											['$qcommentstr', '$answers', '$tags', '$rep'],
-											[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
-										).replaceAll(
-											['$askdate', '$op-name', '$op-rep', '$op-pic'],
-											[new Date(question.time).toISOString(), op.name, op.rep.toString(), op.pic]
-										).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
-										.replace('<form id="answerform"', user.name ? '<form id="answerform"' : 'You must be <a href="/login/" title="Log in">logged in</a> to answer questions. <form hidden="" id="answerform"')
-									);
-									res.end(yield fs.readFile('html/a/foot.html', yield));
+									let revieweventstr = '';
+									dbcs.posthistory.find({
+										event: 'edit-suggestion',
+										question: question._id,
+										reviewing: {$exists: true}
+									}).each(o(function*(err, historyevent) {
+										if (err) throw err;
+										if (historyevent) {
+											revieweventstr += '<li>' +
+												'Pending edit by <a href="/user/' + historyevent.user + '">' + historyevent.user + '</a>' +
+												' submitted <time datetime="' + new Date(historyevent.time).toISOString() + '"></time></li>';
+										} else {
+											res.write(
+												(yield addVersionNonces((yield fs.readFile('./html/qa/question.html', yield)).toString(), req.url.pathname, yield))
+												.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
+												.replace(revcount ? '$revcount' : ' ($revcount)', revcount || '')
+												.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+												.replace('edit-pending-notice', (
+													yield dbcs.posthistory.findOne({
+														question: question._id,
+														event: 'edit-suggestion',
+														user: user.name,
+														reviewing: {$exists: true}
+													}, yield)
+												) ? 'edit-pending-notice' : 'edit-pending-notice" hidden="')
+												.replace('edit-notice', user.level >= 3 || user.name == question.user ? 'edit-notice" hidden="' : 'edit-notice')
+												.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
+												.replace('$review-events', revieweventstr)
+												.replaceAll(
+													['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],
+													[question._id.toString(), html(question.title), html(question.lang), html(question.description), html(question.qquestion), html(question.code), question.type]
+												).replaceAll(
+													['$description', '$question'],
+													[markdown(question.description), inlineMarkdown(question.qquestion)]
+												).replaceAll(
+													['$edit-tags', '$raw-edit-tags'],
+													[tageditstr, question.tags.join(',')]
+												).replace('option value="' + question.type + '"', 'option value="' + question.type + '" selected=""').replaceAll(
+													['$qcommentstr', '$answers', '$tags', '$rep'],
+													[commentstr, answerstr, tagstr, (user.rep || 0).toString()]
+												).replaceAll(
+													['$askdate', '$op-name', '$op-rep', '$op-pic'],
+													[new Date(question.time).toISOString(), op.name, op.rep.toString(), op.pic]
+												).replace('id="mdl"', user.name == op.name ? 'id="mdl"' : 'id="mdl" hidden=""')
+												.replace('<form id="answerform"', user.name ? '<form id="answerform"' : 'You must be <a href="/login/" title="Log in">logged in</a> to answer questions. <form hidden="" id="answerform"')
+											);
+											res.end(yield fs.readFile('html/a/foot.html', yield));
+										}
+									}));
 								}
-							}));
+							});
 						}
 					});
 				}

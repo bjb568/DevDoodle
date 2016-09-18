@@ -339,12 +339,12 @@ socket.onmessage = function(e) {
 		li.appendChild(document.createElement('a'));
 		li.lastChild.appendChild(document.createTextNode(data.user));
 		li.lastChild.href = '/user/' + data.user;
-		li.appendChild(' submitted ');
+		li.appendChild(document.createTextNode(' submitted '));
 		li.appendChild(agot());
 		document.getElementById('review-events').appendChild(li);
 	} else if (data.event == 'edit-suggestion-received') {
 		closeQuestionEditForm();
-		document.getElementById('question').getElementByClassName('edit-pending-notice')[0].hidden = false;
+		document.getElementById('question').getElementsByClassName('edit-pending-notice')[0].hidden = false;
 	} else if (data.event == 'answer-edit') {
 		var answer = document.getElementById('a' + data.id);
 		answer.children[1].firstElementChild.innerHTML = markdown(data.body);

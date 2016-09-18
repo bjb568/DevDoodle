@@ -1,0 +1,24 @@
+<section id="a$id">
+	<h2><a href="#a$id">#</a>$id</h2>
+	<div class="indt">
+		<blockquote>$comment</blockquote>
+		$diff
+		<div class="actions"><div class="side-diff-a nohide center-text"><a>Use original</a></div><div class="side-diff-b nohide center-text"><a>Use suggestion</a></div></div>
+	</div>
+	<form class="edit-original indt" hidden=""><!-- Modify this to work with both questions and answers -->
+		<textarea rows="24" minlength="144">$body-html</textarea>
+		<label class="edit-summary"><strong>Edit Summary:</strong> <input type="text" class="a-edit-summary fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></label>
+		<div class="bumar">
+			<button type="submit">Submit Edit</button>
+			<button type="reset" class="cancel-edit">Cancel</button>
+		</div>
+	</form>
+	<form class="edit-suggestion indt" hidden="">
+		<textarea rows="24" minlength="144">$body-html</textarea>
+		<label class="edit-summary"><strong>Edit Summary:</strong> <input type="text" class="a-edit-summary fullwidth" placeholder="explain what you changed and why" maxlength="288" required="" /></label>
+		<div class="bumar">
+			<button type="submit">Submit Edit</button>
+			<button type="reset" class="cancel-edit">Cancel</button>
+		</div>
+	</form>
+</section>

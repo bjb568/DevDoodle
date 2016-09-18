@@ -34,7 +34,7 @@ body {
 :not(.target):target { animation: target 1s }
 .blk, .edit-summary, img.center, textarea { display: block }
 .inline, summary * { display: inline }
-[hidden], .nodisplay, .target:not(:target), #content > .sctrls, #side-by-side-diff:checked ~ * .inline-diff, #side-by-side-diff:not(:checked) ~ * .side-diff-a, #side-by-side-diff:not(:checked) ~ * .side-diff-b { display: none }
+[hidden], .nodisplay, .target:not(:target), #content > .sctrls, #side-by-side-diff:checked ~ * .inline-diff, #side-by-side-diff:not(:checked) ~ * .side-diff-a:not(.nohide), #side-by-side-diff:not(:checked) ~ * .side-diff-b:not(.nohide) { display: none }
 .rel, .comment, .spoiler, body { position: relative }
 .abs, .ctrls, .iframe-16-9 iframe, #footer { position: absolute }
 .fullwidth, input[type='text'].fullwidth, input[type='email'].fullwidth, input[type='password'].fullwidth, .ta-cont, #ta-cont, .iframe-16-9, .iframe-16-9 iframe, #footer { width: 100% }

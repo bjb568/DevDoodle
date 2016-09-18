@@ -17,8 +17,7 @@ body { color: #eee }
 .comment.editing { background: #8cf }
 .c-sig > * { color: #ccc }
 blockquote { border-left: 2px solid #fa0 }
-.diamond, h1, h2, h3, h4, h5, h6, code { color: #fff }
-a, .ctrl, a.blk { color: #fff }
+a:not(.tag), .ctrl, a.blk, .diamond, h1, h2, h3, h4, h5, h6, code { color: #fff }
 a:visited { color: #ccc }
 a:hover, .ctrl:hover { color: #4ee }
 a:active, .ctrl:active { color: #faa }
@@ -27,3 +26,5 @@ a:active, .ctrl:active { color: #faa }
 .user a:active { color: #02d }
 a.blk:hover, a.blk:active { background: #222 }
 a.blk:hover:not(:active) { color: #ff2 }
+del { background: #800 }
+ins { background: #060 }

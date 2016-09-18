@@ -1,5 +1,6 @@
 'use strict';
-let fs = require('fs');
+let fs = require('fs'),
+	diff = require('diff');
 module.exports = o(function*(req, res, user) {
 	if (req.url.pathname == '/mod/') {
 		yield respondPage('', user, req, res, yield);
@@ -80,5 +81,101 @@ module.exports = o(function*(req, res, user) {
 				res.end(yield fs.readFile('html/a/foot.html', yield));
 			}
 		}));
+	} else if (req.url.pathname == '/mod/edit-suggestions') {
+		yield respondPage('Suggested Edits', user, req, res, yield, {
+			inhead: '<link rel="stylesheet" href="mod.css" />',
+			clean: true
+		});
+		res.write('<h1>Suggested Edits</h1>');
+		if (!user.name) return res.write('<p>You must be logged in and have level 3 moderator tools to access this queue.</p>') && res.end(yield fs.readFile('html/a/foot.html', yield));
+		if (user.level < 3) return res.write('<p>You must have level 3 moderator tools to access this queue.</p>') && res.end(yield fs.readFile('html/a/foot.html', yield));
+		let query = {
+			event: 'edit-suggestion',
+			reviewing: {$exists: true},
+			reviewers: {$ne: user.name},
+			user: {$ne: user.name}
+		};
+		res.write('<div id="posts">');
+		let answerEditHTML = (yield fs.readFile('./html/mod/suggested-edit.html', yield)).toString(),
+			langTags = [];
+		dbcs.qtags.find({}, {name: true}).each(function(err, tag) {
+			if (err) throw err;
+			if (tag) langTags[tag._id] = tag.name;
+			else {
+				let tagify = tag => '<a href="./?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>',
+					printedCheckbox = false;
+				dbcs.posthistory.find(query).sort({reviewing: 1}).each(o(function*(err, historyevent) {
+					if (err) throw err;
+					if (historyevent) {
+						if (!printedCheckbox) res.write('<input type="checkbox" id="side-by-side-diff" /> <label for="side-by-side-diff">Show diffs side by side</label>');
+						printedCheckbox = true;
+						let diffstr = '',
+							prev = historyevent.proposedEdit,
+							item = historyevent;
+						let writeDiff = function(d) {
+							for (let i = 0; i < d.length; i++) {
+								if (d[i].added) diffstr += '<ins>' + html(d[i].value) + '</ins>';
+								else if (d[i].removed) diffstr += '<del>' + html(d[i].value) + '</del>';
+								else diffstr += html(d[i].value);
+							}
+						};
+						let writeDiffA = function(d) {
+							for (let i = 0; i < d.length; i++) {
+								if (d[i].removed) diffstr += '<del>' + html(d[i].value) + '</del>';
+								else if (!d[i].added) diffstr += html(d[i].value);
+							}
+						};
+						let writeDiffB = function(d) {
+							for (let i = 0; i < d.length; i++) {
+								if (d[i].added) diffstr += '<ins>' + html(d[i].value) + '</ins>';
+								else if (!d[i].removed) diffstr += html(d[i].value);
+							}
+						};
+						let writeFullDiff = function(o, n, prop) {
+							let d = diff.diffWordsWithSpace(prop ? o[prop] : o, prop ? n[prop] : n);
+							diffstr += '<code class="blk inline-diff">';
+							writeDiff(d);
+							diffstr += '</code>';
+							diffstr += '<code class="blk side-diff-a">';
+							writeDiffA(d);
+							diffstr += '</code>';
+							diffstr += '<code class="blk side-diff-b">';
+							writeDiffB(d);
+							diffstr += '</code>';
+						};
+						diffstr += '<h1 class="noumar">';
+						writeDiff(diff.diffWordsWithSpace(item.lang + ': ' + item.title, prev.lang + ': ' + prev.title));
+						diffstr += '</h1>';
+						diffstr += '<h2>Body</h2>';
+						writeFullDiff(item, prev, 'description');
+						diffstr += '<h2>Code</h2>';
+						writeFullDiff(item, prev, 'code');
+						diffstr += '<h2>Core Question:</h2>';
+						writeFullDiff(item.qquestion + '\nType: ' + item.type, prev.qquestion + '\nType: ' + prev.type);
+						diffstr += '<div class="bumar tag-diff">';
+						let d = diff.diffWords(item.tags.join(','), prev.tags.join(','));
+						for (let i = 0; i < d.length; i++) {
+							let t = d[i].value.split(',');
+							for (let j = 0; j < t.length; j++) {
+								if (!t[j]) continue;
+								if (d[i].added) diffstr += '<ins>' + tagify(t[j]) + '</ins> ';
+								else if (d[i].removed) diffstr += '<del>' + tagify(t[j]) + '</del> ';
+								else diffstr += tagify(t[j]) + ' ';
+							}
+						}
+						diffstr += '</div>';
+						res.write(
+							answerEditHTML.replaceAll('$id', historyevent.taskID)
+							.replace('$diff', diffstr)
+							.replace('$comment', inlineMarkdown(historyevent.comment))
+						);
+					} else {
+						res.write('</div>');
+						res.write(yield addVersionNonces('<script src="suggested-edit.js" async=""></script>', req.url.pathname, yield));
+						res.end(yield fs.readFile('html/a/foot.html', yield));
+					}
+				}));
+			}
+		});
 	} else errorNotFound(req, res, user);
 });
