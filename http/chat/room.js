@@ -89,7 +89,7 @@ ctrlsFlag.textContent = '⚑';
 ctrlsFlag.title = 'This message is inappropriate.';
 ctrlsFlag.className = 'red';
 ctrlsFlag.onclick = function() {
-	var flagtext = prompt('Describe what exactly is wrong');
+	var flagtext = prompt('Describe exactly what is wrong.');
 	if (!flagtext) return;
 	socket.send(JSON.stringify({
 		event: 'flag',
