@@ -1,5 +1,6 @@
 <h1><span id="title" property="headline">$lang: $title</span><input id="title-edit" value="$title" maxlength="144" hidden="" /></h1>
 <div id="question" class="hglt pad br">
+	<div class="notice edit-pending-notice">You have a pending edit on this question. It will be applied after it is reviewed by the community.</div>
 	<div class="ctrl pad lft">
 		<a title="This question is clear, answerable, and useful to the community."><svg class="blk up" id="q-up" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,1 1,19 19,19" /></svg></a>
 		<a title="This question needs improvement or is not useful."><svg class="blk dn" id="q-dn" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polygon points="10,19 1,1 19,1" /></svg></a>
@@ -17,6 +18,7 @@
 			<div class="lft">
 				<div id="tags">$tags</div>
 				<small class="blk sumar"><a href="#" class="grey" title="Permalink">#</a> <line /> <a id="q-hist" href="?history" class="grey">History ($revcount)</a></small>
+				<ul id="review-events"></ul>
 			</div>
 			<div class="rit">
 				<div>Asked <time datetime="$askdate" property="dateCreated"></time> by</div>
@@ -31,6 +33,7 @@
 		</div>
 	</div>
 	<form id="q-edit" hidden="">
+		<div class="notice edit-notice">Your edit will be applied after it is reviewed by the community.</div>
 		<label class="blk bmar">Language: <span class="ib rel"><input type="text" name="lang" id="lang-edit" value="$lang" required="" autocomplete="off" /><div id="langsug" hidden="" class="abs"></div></span></label>
 		<textarea id="q-desc-edit" rows="24" required="" minlength="144">$rawdesc</textarea>
 		<textarea id="q-code-edit" rows="24" class="umar">$code</textarea>

@@ -257,7 +257,7 @@ module.exports = o(function*(req, res, user) {
 					}, yield)) || {val: 0},
 						answerPoster = yield dbcs.users.findOne({name: answer.user}, yield);
 					let acstring = '';
-					dbcs.comments.find({answer: answer._id}).sort({_id: 1}).each(function(err, comment) {
+					dbcs.comments.find({answer: answer._id}).sort({_id: 1}).each(o(function*(err, comment) {
 						if (err) throw err;
 						if (comment) acstring += new Comment(comment).toString(user);
 						else {
@@ -265,6 +265,15 @@ module.exports = o(function*(req, res, user) {
 								answerTemplate
 								.replace(' class=""', answer.deleted ? ' class="deleted"' : ' class=""')
 								.replace('suggestedAnswer', answerNum == 1 && answer.score > 1 ? 'suggestedAnswer acceptedAnswer' : 'suggestedAnswer')
+								.replace('edit-pending-notice', (
+									yield dbcs.posthistory.findOne({
+										answer: answer._id,
+										event: 'edit-suggestion',
+										user: user.name,
+										reviewing: {$exists: true}
+									}, yield)
+								) ? 'edit-pending-notice' : 'edit-pending-notice" hidden="')
+								.replace('edit-notice', user.level >= 3 || user.name == answer.user ? 'edit-notice" hidden="' : 'edit-notice')
 								.replace(answerVote.val ? (answerVote.val == 1 ? '"blk up"' : '"blk dn"') : 'nomatch', (answerVote.val ? (answerVote.val == 1 ? '"blk up clkd"' : '"blk dn clkd"') : 'nomatch'))
 								.replaceAll(
 									['$id', '$user', '$op-rep', '$op-pic'],
@@ -274,7 +283,7 @@ module.exports = o(function*(req, res, user) {
 								.replace('$commentstr', acstring);
 							cursor.nextObject(answerHandler);
 						}
-					});
+					}));
 				} else {
 					let commentstr = '';
 					dbcs.comments.find({
@@ -318,6 +327,15 @@ module.exports = o(function*(req, res, user) {
 										.replace('$langs', JSON.stringify(yield dbcs.qtags.distinct('lang', {parentName: {$exists: false}}, yield)))
 										.replace(revcount ? '$revcount' : ' ($revcount)', revcount || '')
 										.replace('id="addcomment"', 'id="addcomment"' + (user.rep >= 50 ? '' : ' hidden=""'))
+										.replace('edit-pending-notice', (
+											yield dbcs.posthistory.findOne({
+												question: question._id,
+												event: 'edit-suggestion',
+												user: user.name,
+												reviewing: {$exists: true}
+											}, yield)
+										) ? 'edit-pending-notice' : 'edit-pending-notice" hidden="')
+										.replace('edit-notice', user.level >= 3 || user.name == question.user ? 'edit-notice" hidden="' : 'edit-notice')
 										.replace(vote.val ? (vote.val == 1 ? 'up" id="q-up"' : 'dn" id="q-dn"') : 'nomatch', (vote.val ? (vote.val == 1 ? 'up clkd" id="q-up"' : 'dn clkd" id="q-dn"') : 'nomatch'))
 										.replaceAll(
 											['$id', '$title', '$lang', '$rawdesc', '$rawq', '$code', '$type'],

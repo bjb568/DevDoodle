@@ -180,7 +180,7 @@ module.exports = o(function*(req, res, user, post) {
 			if (msg.nans.length == 2) changes.$set.mod = 'Controversial';
 			else {
 				changes.$set = {mod: 'Handled'};
-				changes.$unset = {reviewing: 1};
+				changes.$unset = {reviewing: true};
 			}
 			if (!msg.deleted) {
 				changes.$set = {deleted: 2};
@@ -225,7 +225,7 @@ module.exports = o(function*(req, res, user, post) {
 			if (msg.dels.length == 2) changes.$set.mod = 'Controversial';
 			else {
 				changes.$set = {mod: 'Handled'};
-				changes.$unset = {reviewing: 1};
+				changes.$unset = {reviewing: true};
 			}
 			if (msg.deleted) {
 				changes.$set = {deleted: 0};
@@ -359,7 +359,7 @@ module.exports = o(function*(req, res, user, post) {
 			time: new Date().getTime()
 		});
 		dbcs.questions.update({_id: question._id}, {
-			$unset: {deleted: 1},
+			$unset: {deleted: true},
 			$set: {private: true}
 		});
 		res.writeHead(204);
@@ -578,7 +578,7 @@ module.exports = o(function*(req, res, user, post) {
 		if (!program) return res.writeHead(400) || res.end('Error: Invalid program id.');
 		if (program.user != user.name && user.level < 4) return res.writeHead(403) || res.end('Error: You may undelete only your own programs.');
 		dbcs.programs.update({_id: program._id}, {
-			$unset: {deleted: 1},
+			$unset: {deleted: true},
 			$set: {private: true}
 		});
 		res.writeHead(204);

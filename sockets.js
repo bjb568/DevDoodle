@@ -138,7 +138,7 @@ module.exports.util = {
 			time: new Date().getTime(),
 			by: [tws.user.name]
 		});
-		dbcs.comments.update({_id: post._id}, {$unset: {deleted: 1}});
+		dbcs.comments.update({_id: post._id}, {$unset: {deleted: true}});
 		cb(null, JSON.stringify({
 			event: 'comment-undelete',
 			id: post._id,

@@ -12,7 +12,6 @@ module.exports = o(function*(tws, wss, i) {
 		if (message.event == 'q-edit') {
 			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
 			let question = yield dbcs.questions.findOne({_id: tws.question}, yield);
-			if (tws.user.level < 3 && question.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
 			if (!message.title || !message.lang || !message.description || !message.qquestion || !message.type || !message.tags) return tws.sendError('Edit missing required fields.');
 			if (message.description.toString().length < 144) return tws.sendError('Description must be at least 144 characters long.');
 			if (!questionTypes.hasOwnProperty(message.type)) return tws.sendError('Invalid type parameter.');
@@ -22,6 +21,41 @@ module.exports = o(function*(tws, wss, i) {
 			}
 			let tag = yield dbcs.qtags.findOne({lang: message.lang}, yield);
 			if (!tag) return tws.sendError('Invalid language.');
+			if (tws.user.level < 3 && question.user != tws.user.name) {
+				dbcs.posthistory.insert({
+					question: question._id,
+					event: 'edit-suggestion',
+					user: tws.user.name,
+					reviewing: new Date().getTime(),
+					comment: (message.comment || '').toString().substr(0, 288),
+					time: new Date().getTime(),
+					taskID: generateID(),
+					proposedEdit: {
+						title: message.title.substr(0, 144),
+						lang: message.lang,
+						description: message.description.toString(),
+						qquestion: message.qquestion.toString().substr(0, 144),
+						code: message.code.toString(),
+						type: message.type,
+						tags
+					},
+					title: question.title,
+					lang: question.lang,
+					description: question.description,
+					qquestion: question.qquestion,
+					code: question.code,
+					type: question.type,
+					tags: question.tags
+				});
+				let toSend = JSON.stringify({
+					event: 'edit-suggestion',
+					user: tws.user.name
+				});
+				for (let i in wss.clients) {
+					if (wss.clients[i].question == tws.question) wss.clients[i].trysend(toSend);
+				}
+				return tws.sendj({event: 'edit-suggestion-received'});
+			}
 			dbcs.posthistory.insert({
 				question: question._id,
 				event: 'edit',
@@ -140,6 +174,7 @@ module.exports = o(function*(tws, wss, i) {
 					}
 				}
 			});
+			dbcs.questions.update({_id: answer.question}, {$inc: {answers: -1}});
 			for (let i in wss.clients) {
 				if (wss.clients[i].question == tws.question) {
 					wss.clients[i].sendj({

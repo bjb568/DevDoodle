@@ -257,7 +257,7 @@ module.exports = o(function*(tws, wss, i) {
 				time: new Date().getTime(),
 				by: [tws.user.name]
 			});
-			dbcs.chat.update({_id: post._id}, {$unset: {deleted: 1}});
+			dbcs.chat.update({_id: post._id}, {$unset: {deleted: true}});
 			let toSend = JSON.stringify({
 				event: 'undelete',
 				id: post._id,

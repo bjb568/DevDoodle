@@ -49,6 +49,7 @@ function handleLocationUpdate() {
 	} else if (location.hash.indexOf('#edit-') == 0) {
 		var editForm = document.getElementById('a' + location.hash.substr(6)).getElementsByClassName('a-edit')[0];
 		editForm.hidden = false;
+		editForm.getElementsByTagName('textarea')[0].focus();
 		editForm.previousElementSibling.hidden = true;
 		editForm.parentNode.getElementsByClassName('editbtn')[0].onclick = closeAnswerEditForm;
 	}
@@ -332,6 +333,18 @@ socket.onmessage = function(e) {
 		document.getElementById('q-edit-summary').value = '';
 		var hist = document.getElementById('q-hist').firstChild;
 		hist.nodeValue = 'History (' + (1 + parseInt(hist.nodeValue.match(/\d+/) || 0)) + ')';
+	} else if (data.event == 'edit-suggestion') {
+		var li = document.createElement('li');
+		li.appendChild(document.createTextNode('Pending edit by '));
+		li.appendChild(document.createElement('a'));
+		li.lastChild.appendChild(document.createTextNode(data.user));
+		li.lastChild.href = '/user/' + data.user;
+		li.appendChild(' submitted ');
+		li.appendChild(agot());
+		document.getElementById('review-events').appendChild(li);
+	} else if (data.event == 'edit-suggestion-received') {
+		closeQuestionEditForm();
+		document.getElementById('question').getElementByClassName('edit-pending-notice')[0].hidden = false;
 	} else if (data.event == 'answer-edit') {
 		var answer = document.getElementById('a' + data.id);
 		answer.children[1].firstElementChild.innerHTML = markdown(data.body);
