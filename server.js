@@ -102,7 +102,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 	if (typeof header['X-XSS-Protection'] != 'string') header['X-XSS-Protection'] = '1; mode=block';
 	if (typeof header['X-Content-Type-Options'] != 'string') header['X-Content-Type-Options'] = 'nosniff';
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="ejGCe4vNvtmyeednip7O2VR4WM+HJsew9VlyUl5Y1KY="; pin-sha256="sTKPeGKe2k5mh2O0RLWC20GwB19WYssiZ81wvHeIrEo="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="KLobz6VOkco6/I0/GAue0G84kpL58pp8FGgCDBGD6TY="; pin-sha256="sTKPeGKe2k5mh2O0RLWC20GwB19WYssiZ81wvHeIrEo="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
