@@ -60,9 +60,10 @@ dependancies:
 
 DevDoodle uses [Let's Encrypt](https://letsencrypt.org) certs. These certs last 90 days. HPKP is cached for 30 days. Since there should always be 2 available valid certs, a new one must be generated every 45 days. The certs should be switched 31 days after the new one is generated.
 
-2016-05-15 — 2016-08-13 Last cert  
-2016-06-29 — 2016-09-27 Current cert  
-2016-08-13 — 2016-11-11 Next cert
+2016-06-29 — 2016-09-27 Last cert  
+2016-08-13 — 2016-11-11 Current cert  
+2016-09-27 — 2016-12-26 Next cert  
+2016-11-11 — 2017-02-09 Next next cert
 
 Certificate renewal is done with:
 
