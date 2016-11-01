@@ -312,7 +312,7 @@ let serverHandler = o(function*(req, res) {
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
 				.replace('$title', html(req.url.query.title || ''))
-				.replace(/\$[^\/\s"<]+/g, '')
+				.replace(/\$[^/\s"<]+/g, '')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else if (req.method == 'POST') {
