@@ -46,7 +46,6 @@ module.exports = o(function*(req, res, user) {
 					res.write('</div> ');
 				} else {
 					res.write('</div>');
-					res.write('<a href="search/" class="center-text blk">See more</a>');
 					res.end(yield fs.readFile('html/a/foot.html', yield));
 				}
 			}));

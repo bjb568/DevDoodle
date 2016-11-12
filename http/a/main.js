@@ -1,4 +1,4 @@
- 'use strict';
+'use strict';
 String.prototype.replaceAll = function(find, replace) {
 	if (typeof find == 'string') return this.split(find).join(replace);
 	var t = this, i, j;
@@ -49,16 +49,16 @@ function parseURL(url) {
 }
 function spanMarkdown(input) {
 	input = html(input);
-	while (/\^([\w\^]+)/.test(input)) input = input.replace(/\^([\w\^]+)/, '<sup>$1</sup>');
+	while (/\^([\w^]+)/.test(input)) input = input.replace(/\^([\w^]+)/, '<sup>$1</sup>');
 	return input
 		.replaceAll('\u0001', '^')
-		.replace(/\[(.+?)\|(.+?)\]/g, '<abbr title="$2">$1</abbr>')
+		.replace(/\[(.+?)\|(.+?)]/g, '<abbr title="$2">$1</abbr>')
 		.replaceAll('\u0002', '[')
-		.replace(/\[\[(\d+)\](.*?)\]/g, '<sup class="reference" title="$2">[$1]</sup>')
-		.replace(/\[\[ !\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) \]\]/g, '<img alt="$1" class="center" src="https://$2" />')
-		.replace(/!\[([^\[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
-		.replace(/\[([^\[\]]+)]\((https?:\/\/[^\s()"\[\]]+?\.[^\s"\\\[\]]+?)\)/g, '$1'.link('$2'))
-		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"\/]*)?)/g, '$1<img src="https://$2" alt="user image" />')
+		.replace(/\[\[(\d+)](.*?)]/g, '<sup class="reference" title="$2">[$1]</sup>')
+		.replace(/\[\[ !\[([^[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\) ]]/g, '<img alt="$1" class="center" src="https://$2" />')
+		.replace(/!\[([^[\]]+?)]\(https?:\/\/([^\s("\\]+?\.[^\s"\\]+?)\)/g, '<img alt="$1" src="https://$2" />')
+		.replace(/\[([^[\]]+)]\((https?:\/\/[^\s()"[\]]+?\.[^\s"\\[\]]+?)\)/g, '$1'.link('$2'))
+		.replace(/(\s|^)https?:\/\/([^\s()"]+?\.[^\s"]+?\.(svg|png|tiff|jpg|jpeg)(\?[^\s"/]*)?)/g, '$1<img src="https://$2" alt="user image" />')
 		.replace(/(\s|^)(https?:\/\/([^\s()"]+?\.[^\s"()]+))/g, function(m, p1, p2, p3) {
 			var parsed = parseURL(p2.replace('youtu.be/', 'youtube.com/watch?v='));
 			var i;
@@ -264,7 +264,7 @@ function markdown(input) {
 			return '<h' + f + '>' + inlineMarkdown(val.substr(f + 1)) + '</h' + f + '>';
 		} else if (/^[-–—]{12,}$/.test(val)) {
 			return '<hr />';
-		} else if (i = val.match(/^cite\[(\d+)\]: /)) {
+		} else if (i = val.match(/^cite\[(\d+)]: /)) {
 			return '<div><sup class="reference-list">' + i[1] + '</sup> ' + inlineMarkdown(val.substr(i[0].length)) + '</div>';
 		} else return '<p>' + inlineMarkdown(val) + '</p>';
 	}).join('');
@@ -1418,7 +1418,7 @@ function highlightJS(codeBlock, input) {
 				(
 					(
 						['number', 'regex'].indexOf((codeBlock.lastElementChild || {}).className) == -1 &&
-						/(^\s*|[+\-=!~/*%<>&|\^(;:\[,])\s*$/.test(input.substr(0, i))
+						/(^\s*|[+\-=!~/*%<>&|^(;:[,])\s*$/.test(input.substr(0, i))
 					) || (
 						codeBlock.lastElementChild &&
 						codeBlock.lastElementChild.firstChild &&

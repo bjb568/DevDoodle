@@ -48,10 +48,13 @@ function compressStatic(data, pn) {
 	return data;
 }
 
+let versionNonces = {};
+
 global.getVersionNonce = o(function*(pn, file, cb) {
 	try {
-		let data = compressStatic(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield), file);
-		return cb(null, crypto.createHash('sha512').update(data).digest('base64'));
+		let fileData = yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield);
+		if (versionNonces[fileData]) return cb(null, versionNonces[fileData]);
+		return cb(null, versionNonces[fileData] = crypto.createHash('sha512').update(compressStatic(fileData, file)).digest('base64'));
 	} catch (e) {
 		return cb(e);
 	}
@@ -309,7 +312,7 @@ let serverHandler = o(function*(req, res) {
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
 				.replace('$title', html(req.url.query.title || ''))
-				.replace(/\$[^\/\s"<]+/g, '')
+				.replace(/\$[^/\s"<]+/g, '')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else if (req.method == 'POST') {
