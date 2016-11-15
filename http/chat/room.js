@@ -641,6 +641,7 @@ document.getElementById('editform').onsubmit = function() {
 };
 var hashchangeready = !hash;
 addEventListener('hashchange', function(e) {
+	document.body.scrollTop = 0;
 	if (navigator.userAgent.indexOf('Mobile') == -1 && ta) ta.focus();
 	if (hashchangeready) {
 		var hash = parseInt(e.newURL.split('#', 2)[1]);
