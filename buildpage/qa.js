@@ -30,7 +30,7 @@ module.exports = o(function*(req, res, user) {
 			req.url.query.q.split(/"/).forEach(function(chunk, i) {
 				if (i % 2) return words.push(chunk);
 				chunk.split(/\s+/).forEach(function(chunk) {
-					let m = chunk.match(/^\[\[(\d+)\]\]$/);
+					let m = chunk.match(/^\[\[(\d+)]]$/);
 					if (m) tags.push(parseInt(m[1]));
 					else words.push(chunk);
 				});

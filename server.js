@@ -48,10 +48,13 @@ function compressStatic(data, pn) {
 	return data;
 }
 
+let versionNonces = {};
+
 global.getVersionNonce = o(function*(pn, file, cb) {
 	try {
-		let data = compressStatic(yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield), file);
-		return cb(null, crypto.createHash('sha512').update(data).digest('base64'));
+		let fileData = yield fs.readFile('http' + path.resolve(pn, pn[pn.length - 1] == '/' ? '' : '..', file), yield);
+		if (versionNonces[fileData]) return cb(null, versionNonces[fileData]);
+		return cb(null, versionNonces[fileData] = crypto.createHash('sha512').update(compressStatic(fileData, file)).digest('base64'));
 	} catch (e) {
 		return cb(e);
 	}
@@ -102,7 +105,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 	if (typeof header['X-XSS-Protection'] != 'string') header['X-XSS-Protection'] = '1; mode=block';
 	if (typeof header['X-Content-Type-Options'] != 'string') header['X-Content-Type-Options'] = 'nosniff';
 	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-	header['Public-Key-Pins'] = 'pin-sha256="ejGCe4vNvtmyeednip7O2VR4WM+HJsew9VlyUl5Y1KY="; pin-sha256="sTKPeGKe2k5mh2O0RLWC20GwB19WYssiZ81wvHeIrEo="; max-age=2592000; includeSubdomains';
+	header['Public-Key-Pins'] = 'pin-sha256="KLobz6VOkco6/I0/GAue0G84kpL58pp8FGgCDBGD6TY="; pin-sha256="sTKPeGKe2k5mh2O0RLWC20GwB19WYssiZ81wvHeIrEo="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
 		if (!header['Set-Cookie'] && new Date() - user.seen > 3600000) {
@@ -319,7 +322,7 @@ let serverHandler = o(function*(req, res) {
 			res.write(
 				(yield addVersionNonces((yield fs.readFile('html/learn/newlesson.html', yield)).toString(), req.url.pathname, yield))
 				.replace('$title', html(req.url.query.title || ''))
-				.replace(/\$[^\/\s"<]+/g, '')
+				.replace(/\$[^/\s"<]+/g, '')
 			);
 			res.end(yield fs.readFile('html/a/foot.html', yield));
 		} else if (req.method == 'POST') {
@@ -755,9 +758,9 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 		let constants = require('constants');
 		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
 		server = http2.createServer({
-			key: fs.readFileSync('../Secret/devdoodle.net.key'),
-			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
+			key: fs.readFileSync('../Secret/0000_devdoodle.net.key'),
+			cert: fs.readFileSync('../Secret/0000_devdoodle.net.crt'),
+			ca: [fs.readFileSync('../Secret/0000_devdoodle.net-chain.crt')],
 			ecdhCurve: 'secp384r1',
 			ciphers: [
 				'ECDHE-ECDSA-AES256-GCM-SHA384',

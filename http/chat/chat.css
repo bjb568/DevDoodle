@@ -13,9 +13,13 @@ label + .red { padding-left: 1ch }
 	align-items: stretch;
 	height: calc(100% - 120px);
 }
-#chat {
+#chat-outer {
 	background: #ddd;
 	flex: 1 1 0;
+}
+#chat {
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
 }
 #changetypeStat:empty { color: rgba(0, 0, 0, 0) }
 #changetypeStat:not(:empty) {
