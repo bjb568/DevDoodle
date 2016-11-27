@@ -135,7 +135,7 @@ module.exports = o(function*(tws, wss, i) {
 			if (!tws.user.name) return tws.sendError('You must be logged in to edit posts.');
 			let answer = yield dbcs.answers.findOne({_id: message.id}, yield);
 			if (!answer) return tws.sendError('Invalid answer id.');
-			if (tws.user.level < 3 && answer.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.');
+			if (tws.user.level < 3 && answer.user != tws.user.name) return tws.sendError('You must have level 3 moderator tools to edit posts other than your own.'); //TODO: add answer edit queue
 			if (!message.body) return tws.sendError('Edit missing required fields.');
 			if (message.body.toString().length < 144) return tws.sendError('Body must be at least 144 characters long.');
 			dbcs.posthistory.insert({

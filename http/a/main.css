@@ -377,6 +377,13 @@ code .browser { color: #9bd }
 	color: #000;
 	background: #cfc;
 }
+.tag:visited { color: #222 }
+.tag-diff .tag { background: #aaa }
+.tag-diff del .tag { background: #faa }
+.tag-diff ins .tag { background: #afa }
+.tag-diff del .tag::before { content: '- ' }
+.tag-diff ins .tag::before { content: '+ ' }
+.tag-diff del .tag::before, .tag-diff ins .tag::before { color: #222 }
 input[type='text'].large, input[type='search'].large, input[type='password'].large { font-size: 1.3em }
 .comment > pre, .comment > blockquote, .comment > p { margin-bottom: 0 }
 blockquote {

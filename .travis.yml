@@ -9,9 +9,11 @@ install:
   - npm install -g nsp
   - npm install -g eslint
   - npm install -g stylelint
+  - npm install -g htmlhint
 script:
   - npm test
   - snyk test
   - nsp check
-  - eslint ./
+  - htmlhint ./
   - stylelint ./*/*.css ./*/*/*.css -f verbose
+  - eslint ./

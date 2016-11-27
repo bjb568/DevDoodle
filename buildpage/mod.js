@@ -102,7 +102,7 @@ module.exports = o(function*(req, res, user) {
 			if (err) throw err;
 			if (tag) langTags[tag._id] = tag.name;
 			else {
-				let tagify = tag => '<a href="./?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>',
+				let tagify = tag => '<a href="/qa/?q=%5B%5B' + tag + '%5D%5D" class="tag">' + langTags[tag] + '</a>',
 					printedCheckbox = false;
 				dbcs.posthistory.find(query).sort({reviewing: 1}).each(o(function*(err, historyevent) {
 					if (err) throw err;

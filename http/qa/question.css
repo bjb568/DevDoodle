@@ -90,9 +90,6 @@ code.blk:empty { display: none }
 	transition: opacity 0.2s ease-out;
 }
 #answertips h3 { margin-top: 0 }
-.tag-diff .tag { background: #aaa }
-.tag-diff del .tag { background: #faa }
-.tag-diff ins .tag { background: #afa }
 [typeof='Answer'] {
 	position: relative;
 	margin-top: 0.5em;
