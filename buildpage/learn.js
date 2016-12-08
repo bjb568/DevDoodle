@@ -81,7 +81,7 @@ module.exports = o(function*(req, res, user) {
 		try {
 			data = yield addVersionNonces((yield fs.readFile('./html/learn/' + [i[1], i[2], i[3]].join('/') + '.html', yield)).toString(), req.url.pathname, yield);
 		} catch (e) {
-			errorNotFound(req, res, user);
+			return errorNotFound(req, res, user);
 		}
 		yield respondPage(data.substr(0, data.indexOf('\n')), user, req, res, yield, {clean: true, inhead: '<link rel="stylesheet" href="/learn/course.css" />'});
 		res.write(data.substr(data.indexOf('\n') + 1));

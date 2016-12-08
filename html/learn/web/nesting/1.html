@@ -1,0 +1,49 @@
+DOM - Nesting
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Nesting</h1>
+			<h2>The Document Object Model</h2>
+			<p>Each tag that we write gets downloaded and interpreted by the browser, which converts them into a tree structure called the DOM (<strong>D</strong>ocument <strong>O</strong>bject <strong>M</strong>odel). You can see the tree structure by opening the web inspector in your browser.</p>
+			<img src="/learn/courses/dom.png" />
+			<p>In an HTML file you write <em>tags</em>, but the DOM represents relationships between <em>elements</em>. An element will often have:</p>
+			<ul>
+				<li>A parent</li>
+				<li>A list of children</li>
+				<li>Siblings</li>
+			</ul>
+			<p>These relationships depend on which tags are <em>nested</em> within other tags. A child is nested in a parent if the start tag for the child is <em>after</em> the start tag of the parent and the close tag of the child is <em>before</em> the close tag of the parent: <code>&lt;parent&gt;&lt;child&gt;&lt;/child&gt;&lt;/parent&gt;</code>.</p>
+			<p>To continue, add a tag nested within another tag, all inside the body. You can see the structure of what you made, as well as the structure of this page by opening your browser's web inspector.</p>
+			<button id="check" class="blk">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="#">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls" class="flexcont"><a href="5" class="lft">Back</a> <a href="2" class="rit">Next</a></div>
+	</div>
+	<div id="ide">
+		<div id="html" class="ta-cont">
+			<textarea id="html-ta" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>Nesting&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;p>This paragraph is nested within the body. If it were nested in the head instead, it wouldn't show up.&lt;/p>
+	&lt;/body>
+&lt;/html></textarea>
+			<code id="html-display" class="code-display"></code>
+		</div>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	var e = document.body.children;
+	for (var i = 0; i &lt; e.length; i++) if ((e[i].children || '').length) return;
+	return {msg: 'Did you nest a tag inside another one? Make sure you write your start and end tags in the right order.'};
+}</textarea>
+<script src="/learn/course.js" async=""></script>
