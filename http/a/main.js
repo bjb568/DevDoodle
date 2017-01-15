@@ -336,9 +336,9 @@ function agot(d) {
 function textareaHandler(e, s) {
 	if (this.noHandle) return delete this.nHandle;
 	if (!this.hist) this.hist = [{
-		body: '',
-		start: 0,
-		end: 0
+		body: this.value,
+		start: this.selectionStart,
+		end: this.selectionEnd
 	}];
 	if (!this.hIndex) this.hIndex = 0;
 	if (!s && e.which == 9 && !e.ctrlKey && !e.altKey && !e.metaKey) {
