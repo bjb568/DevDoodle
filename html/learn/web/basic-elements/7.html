@@ -1,0 +1,53 @@
+Basic Elements Recap
+<div id="row">
+	<div id="text">
+		<div id="text-inner">
+			<h1>Basic Elements</h1>
+			<h2>Recap</h2>
+			<p>You've learned the basic elements needed to create a webpage. Let's review them:</p>
+			<ul>
+				<li><code>&lt;p&gt;&lt;/p&gt;</code> is for paragraphs, where most of your text will go</li>
+				<li><code>&lt;h1&gt;&lt;/h1&gt;</code> to <code>&lt;h6&gt;&lt;/h6&gt;</code> are headings from most to least important</li>
+				<li><code>&lt;a&gt;&lt;/a&gt;</code> creates a hyperlink that connects webpages together</li>
+				<li><code>&lt;img /&gt;</code> is a self-closing tag, and it displays and image from an external source</li>
+				<li><code>&lt;em&gt;&lt;/em&gt;</code> and <code>&lt;strong&gt;&lt;/strong&gt;</code> mark text with emphasis, and you can put them inside a paragraph</li>
+				<li><code>&lt;!-- --&gt;</code> is a comment which users don't see, but can help you stay organized while you write HTML</li>
+			</ul>
+			<p>Next, we'll learn how tags can work together.</p>
+			<button id="check" class="blk" onclick="javascript:submit()">Submit</button>
+			<div id="passed" class="passed clearfix">
+				<h2><span id="passtext"> </span> <small class="rit"><a href="../../basic-elements/">Move on →</a></small></h2>
+			</div>
+			<div id="failed" class="failed clearfix">
+				<h2>Try Again</h2>
+				<p id="fail"> </p>
+			</div>
+		</div>
+		<div id="cntrls" class="flexcont"><a href="4" class="lft">Back</a> <a href="../nesting/" class="rit">Next ❯</a></div>
+	</div>
+	<div id="ide">
+		<div id="html" class="ta-cont">
+			<textarea id="html-ta" class="code" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="XHTML">&lt;!DOCTYPE html>
+&lt;html xmlns="http://www.w3.org/1999/xhtml">
+	&lt;head>
+		&lt;title>You did it!&lt;/title>
+	&lt;/head>
+	&lt;body>
+		&lt;h1>Congrats!&lt;/h1>
+		&lt;p&gt;&lt;em&gt;You&lt;/em&gt; did it!&lt;/p&gt;
+		&lt;img src="http://i.stack.imgur.com/VdipH.jpg" /&gt;
+		&lt;p&gt;Here's a link to &lt;a href="https://duckduckgo.com"&gt;DuckDuckGo&lt;/a&gt;.&lt;/p&gt;
+	&lt;/body>
+&lt;/html></textarea>
+			<code id="html-display" class="code-display"></code>
+		</div>
+		<iframe id="output"></iframe>
+	</div>
+</div>
+<textarea id="validator" hidden="">function validate() {
+	return {
+		success: true,
+		msg: 'On to the next section!'
+	};
+}</textarea>
+<script src="/learn/course.js" async=""></script>
