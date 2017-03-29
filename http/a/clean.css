@@ -1,10 +1,7 @@
 *::-webkit-input-placeholder { color: #999 }
 *::-moz-placeholder { color: #999 }
 body { color: #eee }
-* {
-	-webkit-font-smoothing: antialiased;
-	font-smoothing: antialiased;
-}
+* { -webkit-font-smoothing: antialiased }
 @keyframes target {
 	0%, 30% { background: #950 }
 }

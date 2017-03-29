@@ -20,10 +20,14 @@
 		"yield-yield": "^1.0.1",
 		"http2": "^3.3.4",
 		"cookie": "^0.3.1",
-		"ws": "^1.1.1",
+		"ws": "^2.2.2",
 		"mongodb": "^2.2.0",
 		"uglify-js": "^2.7.0",
-		"clean-css": "^3.4.18",
+		"clean-css": "^4.0.10",
 		"diff": "^3.0.0"
-	}
+	},
+    "devDependencies": {
+        "stylelint-csstree-validator": "^1.1.1",
+        "stylelint-no-browser-hacks": "^1.0.2"
+    }
 }
