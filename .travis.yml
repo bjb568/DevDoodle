@@ -5,7 +5,6 @@ services:
   - mongodb
 install:
   - npm install
-  - npm install -g snyk
   - npm install -g nsp
   - npm install -g eslint
   - npm install -g stylelint
