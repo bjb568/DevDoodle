@@ -715,32 +715,6 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	console.log('Connected to mongodb.'.cyan);
-	if (process.argv.includes('--test')) {
-		console.log('Running test, process will terminate when finished.'.yellow);
-		http.get({
-			port: config.port,
-			headers: {host: 'localhost'}
-		}, function(testRes) {
-			testRes.on('data', function(d) {
-				console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
-			});
-			testRes.on('end', function() {
-				console.log('HTTP test passed, starting socket test.'.green);
-				let WS = require('ws');
-				let wsc = new WS('ws://localhost:' + config.port + '/test');
-				wsc.on('open', function() {
-					console.log('Connected to socket.');
-				});
-				wsc.on('data', function(d) {
-					console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
-				});
-				wsc.on('close', function() {
-					console.log('Things seem to work!'.green);
-					process.exit();
-				});
-			});
-		});
-	}
 	if (!config.HTTP2) {
 		server = http.createServer(serverHandler).listen(config.port);
 		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
@@ -776,4 +750,30 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 		console.log(('HTTP on port 80 will redirect to HTTPS on port ' + config.port + '.').cyan);
 	}
 	if (config.sockets) require('./sockets.js').init(server);
+	if (process.argv.includes('--test')) {
+		console.log('Running test, process will terminate when finished.'.yellow);
+		http.get({
+			port: config.port,
+			headers: {host: 'localhost'}
+		}, function(testRes) {
+			testRes.on('data', function(d) {
+				console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
+			});
+			testRes.on('end', function() {
+				console.log('HTTP test passed, starting socket test.'.green);
+				let WS = require('ws');
+				let wsc = new WS('ws://localhost:' + config.port + '/test');
+				wsc.on('open', function() {
+					console.log('Connected to socket.');
+				});
+				wsc.on('data', function(d) {
+					console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
+				});
+				wsc.on('close', function() {
+					console.log('Things seem to work!'.green);
+					process.exit();
+				});
+			});
+		});
+	}
 });
