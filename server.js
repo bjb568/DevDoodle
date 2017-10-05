@@ -43,7 +43,7 @@ githubAuth = JSON.parse(githubAuth);
 
 function compressStatic(data, pn) {
 	pn = path.extname(pn);
-	if (pn == '.js') return uglifyJS.minify(data.toString(), {fromString: true}).code;
+	if (pn == '.js') return uglifyJS.minify(data.toString()).code;
 	if (pn == '.css') return new CleanCSS().minify(data).styles;
 	return data;
 }
@@ -715,6 +715,41 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	console.log('Connected to mongodb.'.cyan);
+	if (!config.HTTP2) {
+		server = http.createServer(serverHandler).listen(config.port);
+		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
+	} else {
+		let constants = require('constants');
+		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
+		server = http2.createServer({
+			key: fs.readFileSync('../Secret/devdoodle.net.key'),
+			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
+			ecdhCurve: 'secp384r1',
+			ciphers: [
+				'ECDHE-ECDSA-AES256-GCM-SHA384',
+				'ECDHE-RSA-AES256-GCM-SHA384',
+				'ECDHE-ECDSA-AES128-GCM-SHA256',
+				'ECDHE-RSA-AES128-GCM-SHA256',
+				'ECDHE-ECDSA-AES256-SHA',
+				'ECDHE-RSA-AES256-SHA'
+			].join(':'),
+			honorCipherOrder: true,
+			secureOptions: SSL_ONLY_TLS_1_2
+		}, serverHandler);
+		server.listen(config.port);
+		console.log(('DevDoodle running on port ' + config.port + ' over HTTP2.').cyan);
+	}
+	if (config.port80redirect) {
+		http.createServer(function(req, res) {
+			res.writeHead(301, {
+				Location: 'https://' + req.headers.host + (config.port == 443 ? '' : ':' + config.port) + req.url
+			});
+			res.end();
+		}).listen(80);
+		console.log(('HTTP on port 80 will redirect to HTTPS on port ' + config.port + '.').cyan);
+	}
+	if (config.sockets) require('./sockets.js').init(server);
 	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
 		http.get({
@@ -741,39 +776,4 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 			});
 		});
 	}
-	if (!config.HTTP2) {
-		server = http.createServer(serverHandler).listen(config.port);
-		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
-	} else {
-		let constants = require('constants');
-		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
-		server = http2.createServer({
-			key: fs.readFileSync('../Secret/0000_devdoodle.net.key'),
-			cert: fs.readFileSync('../Secret/0000_devdoodle.net.crt'),
-			ca: [fs.readFileSync('../Secret/0000_devdoodle.net-chain.crt')],
-			ecdhCurve: 'secp384r1',
-			ciphers: [
-				'ECDHE-ECDSA-AES256-GCM-SHA384',
-				'ECDHE-RSA-AES256-GCM-SHA384',
-				'ECDHE-ECDSA-AES128-GCM-SHA256',
-				'ECDHE-RSA-AES128-GCM-SHA256',
-				'ECDHE-ECDSA-AES256-SHA',
-				'ECDHE-RSA-AES256-SHA'
-			].join(':'),
-			honorCipherOrder: true,
-			secureOptions: SSL_ONLY_TLS_1_2
-		}, serverHandler);
-		server.listen(config.port);
-		console.log(('DevDoodle running on port ' + config.port + ' over HTTP2.').cyan);
-	}
-	if (config.port80redirect) {
-		http.createServer(function(req, res) {
-			res.writeHead(301, {
-				Location: 'https://' + req.headers.host + (config.port == 443 ? '' : ':' + config.port) + req.url
-			});
-			res.end();
-		}).listen(80);
-		console.log(('HTTP on port 80 will redirect to HTTPS on port ' + config.port + '.').cyan);
-	}
-	if (config.sockets) require('./sockets.js').init(server);
 });
