@@ -748,9 +748,9 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 		let constants = require('constants');
 		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
 		server = http2.createServer({
-			key: fs.readFileSync('../Secret/0000_devdoodle.net.key'),
-			cert: fs.readFileSync('../Secret/0000_devdoodle.net.crt'),
-			ca: [fs.readFileSync('../Secret/0000_devdoodle.net-chain.crt')],
+			key: fs.readFileSync('../Secret/devdoodle.net.key'),
+			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
 			ecdhCurve: 'secp384r1',
 			ciphers: [
 				'ECDHE-ECDSA-AES256-GCM-SHA384',
