@@ -43,7 +43,7 @@ githubAuth = JSON.parse(githubAuth);
 
 function compressStatic(data, pn) {
 	pn = path.extname(pn);
-	if (pn == '.js') return uglifyJS.minify(data.toString(), {fromString: true}).code;
+	if (pn == '.js') return uglifyJS.minify(data.toString()).code;
 	if (pn == '.css') return new CleanCSS().minify(data).styles;
 	return data;
 }
