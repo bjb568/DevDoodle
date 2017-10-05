@@ -587,7 +587,7 @@ let serverHandler = o(function*(req, res) {
 			if (errors.length) {
 				yield respondPage('Create Login', user, req, res, yield);
 				res.write(
-					(yield addVersionNonces((yield fs.readFile('html/login/new-from-github.html', yield)).toString(), req.url.pathname, yield))
+					(yield addVersionNonces((yield fs.readFile('html/new-login.html', yield)).toString(), req.url.pathname, yield))
 					.replace('$errors', errorsHTML(errors))
 					.replace('$verification-token', post.token || '')
 					.replace('$name', post.name || '')
