@@ -10,12 +10,13 @@ module.exports = {};
 module.exports.init = function(server) {
 	let wss = new ws.Server({server});
 	wss.on('connection', o(function*(tws, upgradeReq) {
-		console.log('SOCKET CONNECT ' + upgradeReq.url);
+		tws.upgradeReq = upgradeReq;
+		console.log('SOCKET CONNECT ' + tws.upgradeReq.url);
 		let i;
 		let user = yield dbcs.users.findOne({
 			cookie: {
 				$elemMatch: {
-					token: cookie.parse(upgradeReq.headers.cookie || '').id,
+					token: cookie.parse(tws.upgradeReq.headers.cookie || '').id,
 					created: {$gt: new Date().getTime() - 2592000000}
 				}
 			}
@@ -35,13 +36,13 @@ module.exports.init = function(server) {
 			for (let n in options) obj[n] = options[n];
 			tws.sendj(obj);
 		};
-		if (upgradeReq.url == '/test') {
+		if (tws.upgradeReq.url == '/test') {
 			testSocket(tws, wss);
-		} else if ((i = upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/chat\/([a-zA-Z\d_!@]+)/))) {
 			chatSocket(tws, wss, i);
-		} else if ((i = upgradeReq.url.match(/\/dev\/([a-zA-Z\d_!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/dev\/([a-zA-Z\d_!@]+)/))) {
 			programSocket(tws, wss, i);
-		} else if ((i = upgradeReq.url.match(/\/q\/([a-zA-Z\d_!@]+)/))) {
+		} else if ((i = tws.upgradeReq.url.match(/\/q\/([a-zA-Z\d_!@]+)/))) {
 			questionSocket(tws, wss, i);
 		} else tws.sendError('Invalid upgradeReq URL.');
 	}));
