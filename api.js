@@ -391,7 +391,7 @@ module.exports = o(function*(req, res, user, post) {
 			newTag.parentID = parent._id;
 			newTag.parentName = parent.name;
 		}
-		newTag._id = ((yield dbcs.qtags.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+		newTag._id = ((yield dbcs.qtags.find().sort({_id: -1}).limit(1).next(yield)) || {_id: 0})._id + 1;
 		dbcs.qtags.insert(newTag);
 		res.writeHead(200);
 		res.end(JSON.stringify(newTag));

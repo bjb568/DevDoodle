@@ -21,7 +21,7 @@ module.exports = o(function*(req, res, user) {
 				else {
 					res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 					res.write('</div>');
-					cursor.nextObject(questionSummaryHandler);
+					cursor.next(questionSummaryHandler);
 				}
 			});
 		} else {
@@ -49,5 +49,5 @@ module.exports = o(function*(req, res, user) {
 			}));
 		}
 	}
-	cursor.nextObject(questionSummaryHandler);
+	cursor.next(questionSummaryHandler);
 });

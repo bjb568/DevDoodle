@@ -243,6 +243,7 @@ let cache = {},
 	tempVerificationTokens = {};
 
 let serverHandler = o(function*(req, res) {
+	if (!req.headers.host) req.headers.host = req.headers[':authority'];
 	if (!req.headers.host) {
 		res.writeHead(400, {'Content-Type': 'text/html'});
 		return res.end('Please send the host HTTP header.');
@@ -695,8 +696,9 @@ let serverHandler = o(function*(req, res) {
 });
 console.log('Connecting to mongodb…'.cyan);
 let server;
-mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
+mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	if (err) throw err;
+	const db = dbConnection.db('DevDoodle');
 	db.createCollection('questions', o(function*(err, collection) {
 		if (err) throw err;
 		yield db.createIndex('questions', {'$**': 'text'}, {weights: {title: 3, qquestion: 1.5}}, yield);
@@ -711,9 +713,9 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	function handleCollection(err, collection) {
 		if (err) throw err;
 		dbcs[usedDBCs[i]] = collection;
-		if (usedDBCs[i] == 'chatusers') collection.drop();
 	}
 	while (i--) db.collection(usedDBCs[i], handleCollection);
+	dbcs.chatusers.remove({}, {multi: true});
 	console.log('Connected to mongodb.'.cyan);
 	if (!config.HTTP2) {
 		server = http.createServer(serverHandler).listen(config.port);
@@ -721,7 +723,7 @@ mongo.connect('mongodb://localhost:27017/DevDoodle', function(err, db) {
 	} else {
 		let constants = require('constants');
 		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
-		server = http2.createServer({
+		server = http2.createSecureServer({
 			key: fs.readFileSync('../Secret/devdoodle.net.key'),
 			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
 			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],

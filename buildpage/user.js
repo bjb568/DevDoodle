@@ -116,7 +116,7 @@ module.exports = o(function*(req, res, user) {
 						let question = yield dbcs.questions.findOne({_id: answer.question}, yield);
 						res.write('<li><a href="/qa/' + question._id + '#a' + answer._id + '">' + question.title + '</a></li>');
 						answers++;
-						cursor.nextObject(answerHandler);
+						cursor.next(answerHandler);
 					} else {
 						res.write('</ul></div>');
 						if (!answers) res.write('<p class="grey">' + (me ? 'You don\'t' : 'This user doesn\'t') + ' have any answers.</p>');
@@ -157,7 +157,7 @@ module.exports = o(function*(req, res, user) {
 						}));
 					}
 				});
-				cursor.nextObject(answerHandler);
+				cursor.next(answerHandler);
 			}
 		});
 	} else errorNotFound(req, res, user);

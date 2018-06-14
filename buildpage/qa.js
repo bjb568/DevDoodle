@@ -55,12 +55,12 @@ module.exports = o(function*(req, res, user) {
 					else {
 						res.write('<p class="qlist-tags">' + tagstr + ' <span class="rit"><a href="/qa/' + question._id + '?history">asked <time datetime="' + new Date(question.time).toISOString() + '"></time></a> by <a href="/user/' + question.user + '">' + question.user + '</a></span></p>');
 						res.write('</div>');
-						cursor.nextObject(qSummaryHandler);
+						cursor.next(qSummaryHandler);
 					}
 				});
 			} else res.end('</div>' + (yield fs.readFile('html/a/foot.html', yield)));
 		});
-		cursor.nextObject(qSummaryHandler);
+		cursor.next(qSummaryHandler);
 	} else if (req.url.pathname == '/qa/tags') {
 		yield respondPage('Tags', user, req, res, yield, {inhead: '<link rel="stylesheet" href="tags.css" />'});
 		res.write(yield addVersionNonces((yield fs.readFile('./html/qa/tags.html', yield)).toString(), req.url.pathname, yield));
@@ -272,7 +272,7 @@ module.exports = o(function*(req, res, user) {
 								).replace('$body-html', html(answer.body)).replace('$body-markdown', markdown(answer.body))
 								.replace('$time', new Date(answer.time).toISOString())
 								.replace('$commentstr', acstring);
-							cursor.nextObject(answerHandler);
+							cursor.next(answerHandler);
 						}
 					});
 				} else {
@@ -344,7 +344,7 @@ module.exports = o(function*(req, res, user) {
 					});
 				}
 			});
-			cursor.nextObject(answerHandler);
+			cursor.next(answerHandler);
 		}
 	} else errorNotFound(req, res, user);
 });

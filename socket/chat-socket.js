@@ -143,7 +143,7 @@ module.exports = o(function*(tws, wss, i) {
 			if (!message.body) return tws.sendError('Message body not submitted.');
 			message.body = message.body.toString();
 			if (message.body.length > 2880) return tws.sendError('Chat message length may not exceed 2880 characters.');
-			let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+			let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).next(yield)) || {_id: 0})._id + 1;
 			dbcs.chat.insert({
 				_id: id,
 				body: message.body,
@@ -407,7 +407,7 @@ module.exports = o(function*(tws, wss, i) {
 					desc: message.desc
 				}
 			});
-			let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).nextObject(yield)) || {_id: 0})._id + 1;
+			let id = ((yield dbcs.chat.find().sort({_id: -1}).limit(1).next(yield)) || {_id: 0})._id + 1;
 			let newMessage = 'Room description updated to ' + markdownEscape(message.name) + ': ' + message.desc;
 			dbcs.chat.insert({
 				_id: id,
