@@ -1,6 +1,6 @@
 'use strict';
 var socketTest = document.getElementById('socket-test'),
-	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/test');
+	socket = new WebSocket('wss://' + location.hostname + ':81/test');
 socket.onmessage = function(e) {
 	socketTest.appendChild(document.createTextNode('\nMessage: ' + e.data));
 };

@@ -173,7 +173,7 @@ document.getElementById('answerform').addEventListener('submit', function(e) {
 		else alert('Unknown error. Response was: ' + res);
 	}, 'body=' + encodeURIComponent(answer.value));
 });
-var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/q/' + id),
+var socket = new WebSocket('wss://' + location.hostname + ':81/q/' + id),
 	commentForms = document.getElementsByClassName('commentform');
 for (var i = 0; i < commentForms.length; i++) {
 	commentForms[i].onsubmit = function(e) {
@@ -401,10 +401,10 @@ socket.onclose = function() {
 	var addcomment = document.getElementsByClassName('addcomment')[0];
 	addcomment.parentNode.insertAfter(warning, addcomment);
 	addcomment.hidden = true;
-	socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
+	socket = new WebSocket('wss://' + location.hostname + ':81/qa/' + id);
 	setInterval(function() {
 		if (socket.readyState == 1) return location.reload();
-		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/qa/' + id);
+		socket = new WebSocket('wss://' + location.hostname + ':81/qa/' + id);
 	}, 200);
 };
 addEventListener('popstate', function(event) {

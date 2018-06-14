@@ -97,7 +97,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
 			"upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " +
-			"connect-src 'self' wss://" + req.headers.host + "; " +
+			"connect-src 'self' wss://" + req.headers.host + ":81; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
 			"img-src https: data:";
@@ -695,7 +695,24 @@ let serverHandler = o(function*(req, res) {
 	}
 });
 console.log('Connecting to mongodb…'.cyan);
-let server;
+const constants = require('constants');
+const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
+const secureServerOptions = {
+	key: fs.readFileSync('../Secret/devdoodle.net.key'),
+	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+	ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
+	ecdhCurve: 'secp384r1',
+	ciphers: [
+		'ECDHE-ECDSA-AES256-GCM-SHA384',
+		'ECDHE-RSA-AES256-GCM-SHA384',
+		'ECDHE-ECDSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-ECDSA-AES256-SHA',
+		'ECDHE-RSA-AES256-SHA'
+	].join(':'),
+	honorCipherOrder: true,
+	secureOptions: SSL_ONLY_TLS_1_2
+};
 mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	if (err) throw err;
 	const db = dbConnection.db('DevDoodle');
@@ -717,25 +734,17 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	dbcs.chatusers.remove({}, {multi: true});
 	console.log('Connected to mongodb.'.cyan);
-	let constants = require('constants');
-	const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
-	server = http2.createSecureServer({
-		key: fs.readFileSync('../Secret/devdoodle.net.key'),
-		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-		ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
-		ecdhCurve: 'secp384r1',
-		ciphers: [
-			'ECDHE-ECDSA-AES256-GCM-SHA384',
-			'ECDHE-RSA-AES256-GCM-SHA384',
-			'ECDHE-ECDSA-AES128-GCM-SHA256',
-			'ECDHE-RSA-AES128-GCM-SHA256',
-			'ECDHE-ECDSA-AES256-SHA',
-			'ECDHE-RSA-AES256-SHA'
-		].join(':'),
-		honorCipherOrder: true,
-		secureOptions: SSL_ONLY_TLS_1_2
-	}, serverHandler);
-	server.listen(443);
+	const server443 = http2.createSecureServer(secureServerOptions, serverHandler);
+	server443.listen(443);
+	server443.on('sessionError', function() {
+		console.log('sessionError', arguments);
+	});
+	server443.on('streamError', function() {
+		console.log('streamError', arguments);
+	});
+	server443.on('unknownProtocol', function(socket) {
+		console.log('unknownProtocol', socket.alpnProtocol);
+	});
 	console.log(('DevDoodle running on port 443 over HTTP2.').cyan);
 	const server80 = http.createServer(function(req, res) {
 		res.writeHead(301, {
@@ -744,7 +753,7 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 		res.end();
 	}).listen(80);
 	console.log(('HTTP on port 80 will redirect to HTTPS on port 443.').cyan);
-	require('./sockets.js').init(server80);
+	require('./sockets.js').init(https.createServer(secureServerOptions, function() {console.log('ws', arguments);}).listen(81));
 	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
 		const testRes = http2.connect('https://localhost', {rejectUnauthorized: false}).request({
@@ -757,7 +766,7 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 		testRes.on('end', function() {
 			console.log('HTTP test passed, starting socket test.'.green);
 			let WS = require('ws');
-			let wsc = new WS('ws://localhost:80/test');
+			let wsc = new WS('wss://localhost:81/test', {rejectUnauthorized: false});
 			wsc.on('open', function() {
 				console.log('Connected to socket.');
 			});

@@ -184,7 +184,7 @@ if (document.getElementById('meta')) {
 			document.getElementById('commentta').focus();
 		});
 	};
-	var socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
+	var socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
 	commentForm.onsubmit = function(e) {
 		e.preventDefault();
 		if (this.firstElementChild.mdValidate(true)) return;
@@ -297,10 +297,10 @@ if (document.getElementById('meta')) {
 		var addcomment = document.getElementById('addcomment');
 		addcomment.parentNode.insertAfter(warning, addcomment);
 		addcomment.hidden = true;
-		socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
+		socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
 		setInterval(function() {
 			if (socket.readyState == 1 && canUnload()) return location.reload();
-			socket = new WebSocket((location.protocol == 'http:' ? 'ws://' : 'wss://') + location.hostname + '/dev/' + id);
+			socket = new WebSocket('wss://' + location.hostname + ':81/dev/' + id);
 		}, 200);
 	};
 	addEventListener('popstate', function(event) {
