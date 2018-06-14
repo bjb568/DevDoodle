@@ -11,7 +11,6 @@ Before submitting a bug, try hard-reloading.
 ## Files
 
 - server.js: main server script that itself handles non-API POST requests and requires all other pieces
-- config.js: configuration options for server.js
 - api.js: required by server.js, manages POST requests to /api/*
 - buildpage: (folder) contains serverlets required by server.js that manage GET requests
 - sockets.js: required by server.js, handles socket (`ws:` or `wss:`) connections
@@ -31,7 +30,6 @@ Before submitting a bug, try hard-reloading.
 		}
 - Install a recent version of node and mongodb (run the mongod process (you must create a data directory, if it doesn't already exist)).
 - `npm install`
-- Modify `config.js` to your liking
 - `node server` (by default runs on ports 80 and 443 so requires `sudo`)
 - verify everything is working at `https://localhost/status/` (or `https://localhost:1337/status/` for a custom port)
 

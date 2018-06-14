@@ -17,7 +17,7 @@ module.exports = o(function*(req, res, user, post) {
 				path: '/',
 				expires: new Date(new Date().setDate(new Date().getDate() - 30)),
 				httpOnly: true,
-				secure: config.secureCookies
+				secure: true
 			})
 		});
 		if (user) dbcs.users.update({name: user.name}, {$set: {cookie: []}});

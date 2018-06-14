@@ -20,7 +20,7 @@ module.exports = function(req, res) {
 	for (let learnLoc in learnLocs) for (let n = 1; n <= learnLocs[learnLoc]; n++) pages.push({loc: '/learn/' + learnLoc + '/' + n, changefreq: 'monthly'});
 	function writePage(page) {
 		res.write('<url>');
-		res.write('<loc>' + (config.HTTP2 ? "https://" : "http://") + req.headers.host + page.loc + '</loc>');
+		res.write('<loc>https://' + req.headers.host + page.loc + '</loc>');
 		if (page.lastmod) res.write('<lastmod>' + page.lastmod.toISOString() + '</lastmod>');
 		if (page.changefreq) res.write('<changefreq>' + page.changefreq + '</changefreq>');
 		if (page.priority && page.priority != 0.5) res.write('<priority>' + page.priority + '</priority>');

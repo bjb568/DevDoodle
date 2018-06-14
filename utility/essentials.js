@@ -29,7 +29,6 @@ Number.prototype.bound = function(l, h) {
 	return isNaN(h) ? Math.min(this, l) : Math.max(Math.min(this, h), l);
 };
 global.o = require('yield-yield');
-global.config = require('../config.js')[process.argv.includes('--test') ? 'test' : 'normal'];
 
 const crypto = require('crypto');
 function html(input) {

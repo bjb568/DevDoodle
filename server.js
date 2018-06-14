@@ -96,15 +96,15 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 	if (typeof header['Content-Security-Policy'] != 'string') {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
-			(config.HTTP2 ? "upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " : '') +
-			"connect-src 'self' " + (config.HTTP2 ? "wss://" : "ws://") + req.headers.host + "; " +
+			"upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " +
+			"connect-src 'self' wss://" + req.headers.host + "; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
-			"img-src " + (config.HTTP2 ? 'https:' : 'http:') + " data:";
+			"img-src https: data:";
 	}
-	if (typeof header['X-XSS-Protection'] != 'string') header['X-XSS-Protection'] = '1; mode=block';
-	if (typeof header['X-Content-Type-Options'] != 'string') header['X-Content-Type-Options'] = 'nosniff';
-	if (config.HTTP2) header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
+	header['X-XSS-Protection'] = '1; mode=block';
+	header['X-Content-Type-Options'] = 'nosniff';
+	header['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
 	header['Public-Key-Pins'] = 'pin-sha256="KLobz6VOkco6/I0/GAue0G84kpL58pp8FGgCDBGD6TY="; pin-sha256="sTKPeGKe2k5mh2O0RLWC20GwB19WYssiZ81wvHeIrEo="; max-age=2592000; includeSubdomains';
 	if (user) {
 		dbcs.users.update({name: user.name}, {$set: {seen: new Date().getTime()}});
@@ -119,7 +119,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 				path: '/',
 				expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 				httpOnly: true,
-				secure: config.secureCookies
+				secure: true
 			});
 		}
 	}
@@ -512,7 +512,7 @@ let serverHandler = o(function*(req, res) {
 									path: '/',
 									expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 									httpOnly: true,
-									secure: config.secureCookies
+									secure: true
 								})
 							});
 							return res.end();
@@ -601,7 +601,7 @@ let serverHandler = o(function*(req, res) {
 					path: '/',
 					expires: new Date(new Date().setDate(new Date().getDate() + 30)),
 					httpOnly: true,
-					secure: config.secureCookies
+					secure: true
 				});
 			dbcs.users.insert({
 				name: post.name,
@@ -717,64 +717,56 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	while (i--) db.collection(usedDBCs[i], handleCollection);
 	dbcs.chatusers.remove({}, {multi: true});
 	console.log('Connected to mongodb.'.cyan);
-	if (!config.HTTP2) {
-		server = http.createServer(serverHandler).listen(config.port);
-		console.log(('DevDoodle running on port ' + config.port + ' over plain HTTP.').cyan);
-	} else {
-		let constants = require('constants');
-		const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
-		server = http2.createSecureServer({
-			key: fs.readFileSync('../Secret/devdoodle.net.key'),
-			cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-			ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
-			ecdhCurve: 'secp384r1',
-			ciphers: [
-				'ECDHE-ECDSA-AES256-GCM-SHA384',
-				'ECDHE-RSA-AES256-GCM-SHA384',
-				'ECDHE-ECDSA-AES128-GCM-SHA256',
-				'ECDHE-RSA-AES128-GCM-SHA256',
-				'ECDHE-ECDSA-AES256-SHA',
-				'ECDHE-RSA-AES256-SHA'
-			].join(':'),
-			honorCipherOrder: true,
-			secureOptions: SSL_ONLY_TLS_1_2
-		}, serverHandler);
-		server.listen(config.port);
-		console.log(('DevDoodle running on port ' + config.port + ' over HTTP2.').cyan);
-	}
-	if (config.port80redirect) {
-		http.createServer(function(req, res) {
-			res.writeHead(301, {
-				Location: 'https://' + req.headers.host + (config.port == 443 ? '' : ':' + config.port) + req.url
-			});
-			res.end();
-		}).listen(80);
-		console.log(('HTTP on port 80 will redirect to HTTPS on port ' + config.port + '.').cyan);
-	}
-	if (config.sockets) require('./sockets.js').init(server);
+	let constants = require('constants');
+	const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
+	server = http2.createSecureServer({
+		key: fs.readFileSync('../Secret/devdoodle.net.key'),
+		cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
+		ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
+		ecdhCurve: 'secp384r1',
+		ciphers: [
+			'ECDHE-ECDSA-AES256-GCM-SHA384',
+			'ECDHE-RSA-AES256-GCM-SHA384',
+			'ECDHE-ECDSA-AES128-GCM-SHA256',
+			'ECDHE-RSA-AES128-GCM-SHA256',
+			'ECDHE-ECDSA-AES256-SHA',
+			'ECDHE-RSA-AES256-SHA'
+		].join(':'),
+		honorCipherOrder: true,
+		secureOptions: SSL_ONLY_TLS_1_2
+	}, serverHandler);
+	server.listen(443);
+	console.log(('DevDoodle running on port 443 over HTTP2.').cyan);
+	const server80 = http.createServer(function(req, res) {
+		res.writeHead(301, {
+			Location: 'https://' + req.headers.host + req.url
+		});
+		res.end();
+	}).listen(80);
+	console.log(('HTTP on port 80 will redirect to HTTPS on port 443.').cyan);
+	require('./sockets.js').init(server80);
 	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
-		http.get({
-			port: config.port,
-			headers: {host: 'localhost'}
-		}, function(testRes) {
-			testRes.on('data', function(d) {
+		const testRes = http2.connect('https://localhost', {rejectUnauthorized: false}).request({
+			':path': '/',
+			':authority': 'localhost'
+		});
+		testRes.on('data', function(d) {
+			console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
+		});
+		testRes.on('end', function() {
+			console.log('HTTP test passed, starting socket test.'.green);
+			let WS = require('ws');
+			let wsc = new WS('ws://localhost:80/test');
+			wsc.on('open', function() {
+				console.log('Connected to socket.');
+			});
+			wsc.on('data', function(d) {
 				console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
 			});
-			testRes.on('end', function() {
-				console.log('HTTP test passed, starting socket test.'.green);
-				let WS = require('ws');
-				let wsc = new WS('ws://localhost:' + config.port + '/test');
-				wsc.on('open', function() {
-					console.log('Connected to socket.');
-				});
-				wsc.on('data', function(d) {
-					console.log('Data received (' + d.length + ' char' + (d.length == 1 ? '' : 's') + '):' + ('\n> ' + d.toString().replaceAll('\n', '\n> ')).grey);
-				});
-				wsc.on('close', function() {
-					console.log('Things seem to work!'.green);
-					process.exit();
-				});
+			wsc.on('close', function() {
+				console.log('Things seem to work!'.green);
+				process.exit();
 			});
 		});
 	}
