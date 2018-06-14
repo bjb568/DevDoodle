@@ -40,6 +40,42 @@ try {
 	console.log('We won\'t be able to log users in with GitHub.'.yellow);
 }
 githubAuth = JSON.parse(githubAuth);
+const constants = require('constants');
+const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
+let serverKey = '';
+try {
+	serverKey = fs.readFileSync('../Secret/devdoodle.net.key');
+} catch (e) {
+	serverKey = fs.readFileSync('secret-localhost/devdoodle.net.key');
+}
+let serverCert = '';
+try {
+	serverCert = fs.readFileSync('../Secret/devdoodle.net.crt');
+} catch (e) {
+	serverCert = fs.readFileSync('secret-localhost/devdoodle.net.crt');
+}
+let serverCA = '';
+try {
+	serverCA = fs.readFileSync('../Secret/devdoodle.net-chain.crt');
+} catch (e) {
+	serverCA = fs.readFileSync('secret-localhost/devdoodle.net-chain.crt');
+}
+const secureServerOptions = {
+	key: serverKey.toString(),
+	cert: serverCert.toString(),
+	ca: serverCA.toString(),
+	ecdhCurve: 'secp384r1',
+	ciphers: [
+		'ECDHE-ECDSA-AES256-GCM-SHA384',
+		'ECDHE-RSA-AES256-GCM-SHA384',
+		'ECDHE-ECDSA-AES128-GCM-SHA256',
+		'ECDHE-RSA-AES128-GCM-SHA256',
+		'ECDHE-ECDSA-AES256-SHA',
+		'ECDHE-RSA-AES256-SHA'
+	].join(':'),
+	honorCipherOrder: true,
+	secureOptions: SSL_ONLY_TLS_1_2
+};
 
 function compressStatic(data, pn) {
 	pn = path.extname(pn);
@@ -695,24 +731,6 @@ let serverHandler = o(function*(req, res) {
 	}
 });
 console.log('Connecting to mongodb…'.cyan);
-const constants = require('constants');
-const SSL_ONLY_TLS_1_2 = constants.SSL_OP_NO_TLSv1_1 | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_SSLv2;
-const secureServerOptions = {
-	key: fs.readFileSync('../Secret/devdoodle.net.key'),
-	cert: fs.readFileSync('../Secret/devdoodle.net.crt'),
-	ca: [fs.readFileSync('../Secret/devdoodle.net-chain.crt')],
-	ecdhCurve: 'secp384r1',
-	ciphers: [
-		'ECDHE-ECDSA-AES256-GCM-SHA384',
-		'ECDHE-RSA-AES256-GCM-SHA384',
-		'ECDHE-ECDSA-AES128-GCM-SHA256',
-		'ECDHE-RSA-AES128-GCM-SHA256',
-		'ECDHE-ECDSA-AES256-SHA',
-		'ECDHE-RSA-AES256-SHA'
-	].join(':'),
-	honorCipherOrder: true,
-	secureOptions: SSL_ONLY_TLS_1_2
-};
 mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	if (err) throw err;
 	const db = dbConnection.db('DevDoodle');
