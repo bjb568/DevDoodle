@@ -2,7 +2,7 @@
 var audio = new Audio('/a/beep.mp3'),
 	hash = parseInt(location.hash.substr(1)),
 	roomID = location.pathname.substr(6),
-	socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
+	socket = new WebSocket('wss://' + location.hostname + ':8080/chat/' + roomID + (!isNaN(hash) ? '/' + hash : '')),
 	username = document.querySelector('#nav > div:nth-of-type(3) > a:nth-child(2) span').firstChild.nodeValue,
 	rawdesc = document.getElementById('descedit').value,
 	onBottom = true,
@@ -472,9 +472,9 @@ socket.onclose = function() {
 	link.href = '';
 	warning.appendChild(link);
 	ta.parentNode.insertBefore(warning, ta);
-	socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
+	socket = new WebSocket('wss://' + location.hostname + ':8080/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 	setInterval(function() {
-		socket = new WebSocket('wss://' + location.hostname + ':81/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
+		socket = new WebSocket('wss://' + location.hostname + ':8080/chat/' + roomID + (!isNaN(hash) ? '/' + hash : ''));
 		socket.onopen = function() {
 			location.reload();
 		};

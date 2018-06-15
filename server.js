@@ -133,7 +133,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
 			"upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " +
-			"connect-src 'self' wss://" + req.headers.host + ":81; " +
+			"connect-src 'self' wss://" + req.headers.host + ":8080; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
 			"img-src https: data:";
@@ -753,7 +753,7 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	dbcs.chatusers.remove({}, {multi: true});
 	console.log('Connected to mongodb.'.cyan);
 	const server443 = http2.createSecureServer(secureServerOptions, serverHandler);
-	server443.listen(443);
+	server443.listen(10443);
 	server443.on('sessionError', function() {
 		console.log('sessionError', arguments);
 	});
@@ -763,18 +763,18 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 	server443.on('unknownProtocol', function(socket) {
 		console.log('unknownProtocol', socket.alpnProtocol);
 	});
-	console.log(('DevDoodle running on port 443 over HTTP2.').cyan);
+	console.log(('DevDoodle running on port 10443 over HTTP2.').cyan);
 	const server80 = http.createServer(function(req, res) {
 		res.writeHead(301, {
 			Location: 'https://' + req.headers.host + req.url
 		});
 		res.end();
-	}).listen(80);
-	console.log(('HTTP on port 80 will redirect to HTTPS on port 443.').cyan);
-	require('./sockets.js').init(https.createServer(secureServerOptions, function() {console.log('ws', arguments);}).listen(81));
+	}).listen(10080);
+	console.log(('HTTP on port 10080 will redirect to HTTPS.').cyan);
+	require('./sockets.js').init(https.createServer(secureServerOptions, function() {console.log('ws', arguments);}).listen(8080));
 	if (process.argv.includes('--test')) {
 		console.log('Running test, process will terminate when finished.'.yellow);
-		const testRes = http2.connect('https://localhost', {rejectUnauthorized: false}).request({
+		const testRes = http2.connect('https://localhost:10443', {rejectUnauthorized: false}).request({
 			':path': '/',
 			':authority': 'localhost'
 		});
@@ -784,7 +784,7 @@ mongo.connect('mongodb://localhost:27017/', function(err, dbConnection) {
 		testRes.on('end', function() {
 			console.log('HTTP test passed, starting socket test.'.green);
 			let WS = require('ws');
-			let wsc = new WS('wss://localhost:81/test', {rejectUnauthorized: false});
+			let wsc = new WS('wss://localhost:8080/test', {rejectUnauthorized: false});
 			wsc.on('open', function() {
 				console.log('Connected to socket.');
 			});
