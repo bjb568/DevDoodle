@@ -133,7 +133,7 @@ global.respondPage = o(function*(title, user, req, res, cb, header, status) {
 		header['Content-Security-Policy'] =
 			"default-src 'self'; " +
 			"upgrade-insecure-requests; block-all-mixed-content; referrer origin-when-cross-origin; " +
-			"connect-src 'self' wss://" + req.headers.host + ":8080; " +
+			"connect-src 'self' wss://" + req.headers.host.replace(/:\d+$/, '') + ":8080; " +
 			"child-src 'self' blob: https://www.youtube.com; " +
 			"frame-src 'self' blob: https://www.youtube.com; " +
 			"img-src https: data:";
