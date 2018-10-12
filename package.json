@@ -16,14 +16,14 @@
 		"url": "https://github.com/bjb568/DevDoodle"
 	},
 	"dependencies": {
-		"clean-css": "^4.1.9",
+		"clean-css": "^4.1.11",
 		"colors": "^1.1.2",
 		"cookie": "^0.3.1",
-		"diff": "^3.4.0",
+		"diff": "^3.5.0",
 		"http2": "^3.3.7",
 		"mongodb": "^2.2.33",
 		"uglify-js": "^3.1.5",
-		"ws": "^3.2.0",
+		"ws": "^3.3.1",
 		"yield-yield": "^1.0.1"
 	},
 	"devDependencies": {
