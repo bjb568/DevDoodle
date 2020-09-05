@@ -10,6 +10,5 @@ install:
   - npm install -g stylelint
 script:
   - npm test
-  - nsp check
   - eslint ./
   - stylelint ./*/*.css ./*/*/*.css -f verbose
